@@ -1,0 +1,1258 @@
+[
+  {
+    "title": "Tetris",
+    "image": "https://upload.wikimedia.org/wikipedia/tr/9/99/Tetris_film_afi%C5%9Fi.jpg",
+    "rating": "7.1",
+    "description": "A thrilling movie about the game Tetris.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Eternal Sunshine of the Spotless Mind",
+    "image": "https://c8.alamy.com/comp/2JHN7F2/film-poster-eternal-sunshine-of-the-spotless-mind-2004-2JHN7F2.jpg",
+    "rating": "8.3",
+    "description": "A romantic science fiction drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Aka",
+    "image": "https://tr.web.img4.acsta.net/pictures/23/03/30/10/10/0090788.jpg",
+    "rating": "6.8",
+    "description": "Action-packed thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Dungeons and Dragons",
+    "image": "https://m.media-amazon.com/images/M/MV5BOGRjMjQ0ZDAtODc0OS00MGY1LTkxMTMtODhhNjY5NTM4N2IwXkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.5",
+    "description": "Fantasy adventure film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Ambulance",
+    "image": "https://turkcealtyazi.org/images/poster/4998632.jpg",
+    "rating": "6.1",
+    "description": "High-octane action movie.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Capernaum",
+    "image": "https://m.media-amazon.com/images/M/MV5BMjA0MTVmZTEtMmZkNi00MzMzLTk3ZmEtYWY5ZDA1NWJjZmNlXkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.4",
+    "description": "A powerful Lebanese drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "T34",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/a8acc432fa31ab5b989aabbe16954b13d7c6d817b7079c7df22109c745975b2b.jpg",
+    "rating": "7",
+    "description": "Russian WWII tank movie.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Men",
+    "image": "https://img05.imgsinemalar.com/images/afis_dev/a/adamlar-1660927708.jpg",
+    "rating": "6.1",
+    "description": "A psychological horror film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Northman",
+    "image": "https://upload.wikimedia.org/wikipedia/en/8/8c/The_Northman.png",
+    "rating": "7.1",
+    "description": "Viking revenge saga.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Top Gun Maverick",
+    "image": "https://m.media-amazon.com/images/M/MV5BMDBkZDNjMWEtOTdmMi00NmExLTg5MmMtNTFlYTJlNWY5YTdmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.3",
+    "description": "Pilot action film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Splenhead",
+    "image": "https://tr.web.img3.acsta.net/pictures/22/05/17/16/39/5064862.jpg",
+    "rating": "7",
+    "description": "Documentary about music.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Fall",
+    "image": "https://m.media-amazon.com/images/M/MV5BYmZjYjAxMDEtOTE2My00MmM5LTkyYjctOWRjMjgyM2JhMDI0XkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.4",
+    "description": "Survival thriller.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "The 12th Man",
+    "image": "https://m.media-amazon.com/images/M/MV5BMzI2MDMyNTYtNTcwZS00NDI1LTlhNmMtYTIzNDliM2U3YTAzXkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.9",
+    "description": "Norwegian WWII resistance drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Mosul",
+    "image": "https://m.media-amazon.com/images/M/MV5BOGM4N2E5NDAtMWZjNC00ZWNjLTk4YjgtYTU0OGVjM2JmZDc3XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.1",
+    "description": "Action war film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Art of Racing in the Rain",
+    "image": "https://m.media-amazon.com/images/I/81CpfGZBUkL._UF1000,1000_QL80_.jpg",
+    "rating": "7.5",
+    "description": "A heartwarming dog story.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Coda",
+    "image": "https://upload.wikimedia.org/wikipedia/tr/f/fb/CODA_2021_film_afi%C5%9Fi.jpg",
+    "rating": "7.9",
+    "description": "Coming-of-age drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Free Guy",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/6d416c486e17ae7ab4856f95cbd468616659f144dc7a744b1c1cb585e9e6343b.jpg",
+    "rating": "7.1",
+    "description": "Action-comedy about a video game NPC.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Black Widow",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/a50cc7a404085ca34b56da430ebb25d893c7de6631b64d4281e3bb03693ec62f.jpg",
+    "rating": "6.7",
+    "description": "Marvel superhero film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "The Courier",
+    "image": "https://www.baskasinema.com/wp-content/uploads/2021/09/The-Courier-Afis-scaled.jpg",
+    "rating": "7.1",
+    "description": "Cold War spy thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Year Earth Changed",
+    "image": "https://m.media-amazon.com/images/M/MV5BMjdkNWFkYWQtZTE3Ni00ZGFlLTk0NGEtNGRkMWFjYjVjZTY2XkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.2",
+    "description": "Nature documentary.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "No Time to Die",
+    "image": "https://m.media-amazon.com/images/M/MV5BZGZiOGZhZDQtZmRkNy00ZmUzLTliMGEtZGU0NjExOGMxZDVkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.3",
+    "description": "James Bond action film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Last Night in Soho",
+    "image": "https://m.media-amazon.com/images/M/MV5BODdhZjBmZTEtZmQyMy00NWY5LWJiMWQtODhjODFkZWZlMjMyXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.1",
+    "description": "Psychological horror film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Dune",
+    "image": "https://filmartgallery.com/cdn/shop/files/Dune-Vintage-Movie-Poster-Original_6ac20604.jpg?v=1740625707",
+    "rating": "8",
+    "description": "Epic science fiction film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Zodiac",
+    "image": "https://m.media-amazon.com/images/I/51J8YOLxCRL._UF894,1000_QL80_.jpg",
+    "rating": "7.7",
+    "description": "Mystery thriller about a serial killer.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Paul",
+    "image": "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p8371978_p_v10_aj.jpg",
+    "rating": "7",
+    "description": "Sci-fi comedy.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Edge Of Tomorrow",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTc5OTk4MTM3M15BMl5BanBnXkFtZTgwODcxNjg3MDE@._V1_.jpg",
+    "rating": "7.9",
+    "description": "Sci-fi action with time loop.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Milyon Dolar Baby",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/116cdf2bff897e6121f2a1ba245b8ec40f5b6517d96afc357ef073f0963fc408.jpg",
+    "rating": "8.4",
+    "description": "Boxing drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Mary and Max",
+    "image": "https://m.media-amazon.com/images/M/MV5BNzY2Mjc4NjMtNGY4Mi00NzM5LTk3ZTQtN2VkNzVkMzRmM2Y2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.1",
+    "description": "Animated stop-motion drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Into the Wild",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/e0e27ea5a13ca436a17dcbe09d0bd39d50e3a8e71f4c5f674996d9aaaafbd3d4.jpg",
+    "rating": "8.1",
+    "description": "Biographical adventure drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Sisu",
+    "image": "https://m.media-amazon.com/images/M/MV5BYjAxN2RmYjktMDE2OS00MWM5LThlZTQtZDY4YzAxMWQyZWY4XkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.9",
+    "description": "Finnish action war film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Aşık Güzel",
+    "image": "https://www.google.com/search?q=Aşık+Güzel+movie+poster&tbm=isch",
+    "rating": "7.2",
+    "description": "Turkish romantic drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Mad Max 2015",
+    "image": "https://static0.moviewebimages.com/wordpress/wp-content/uploads/sharedimages/2024/04/mad-max-fury-road-poster.jpeg",
+    "rating": "8.1",
+    "description": "Post-apocalyptic action film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "İstanbul İçin Son Çağrı",
+    "image": "https://tr.web.img3.acsta.net/pictures/23/11/30/10/16/4950713.jpg",
+    "rating": "6",
+    "description": "Turkish drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Killer",
+    "image": "https://m.media-amazon.com/images/M/MV5BYjQ1MWNkNGQtMzI2ZC00OTJiLTljZDMtZTUxNDljNTI1MTk0XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.2",
+    "description": "Action thriller.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Kaptan Philips",
+    "image": "https://upload.wikimedia.org/wikipedia/tr/a/a8/Captain_Phillips_Poster.jpg",
+    "rating": "7.8",
+    "description": "Biographical thriller.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Kul",
+    "image": "https://img01.imgsinemalar.com/images/afis_dev/k/kul-1707938287.jpg",
+    "rating": "6.5",
+    "description": "Turkish drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "news world ",
+    "image": "https://m.media-amazon.com/images/M/MV5BODM5MGRiZDEtZTMxMS00N2JmLWFkYjctZDRlMjViNTNmN2UxXkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.8",
+    "description": "Western drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Power of the Dog",
+    "image": "https://m.media-amazon.com/images/M/MV5BNzgyMzA2NDEtZWUxNy00MDNmLTllMDYtNzZmNTU5ZWVmMzhlXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "6.8",
+    "description": "Western psychological drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Maymunlar Cehennemi: Yeni Krallık",
+    "image": "https://ortakoltuk.com/wp-content/uploads/2024/05/Maymunlar-Cehennemi-Yeni-Krallik-4-scaled.jpg",
+    "rating": "7.1",
+    "description": "Sci-fi action.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Canavarın Çağrısı",
+    "image": "https://tr.web.img4.acsta.net/pictures/16/09/23/11/44/592132.jpg",
+    "rating": "7.1",
+    "description": "Fantasy drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Bir Rüya İçin Ağıt",
+    "image": "https://tr.web.img4.acsta.net/pictures/bzp/01/26602.jpg",
+    "rating": "8.3",
+    "description": "Psychological drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Umudunu Kaybetme",
+    "image": "https://cocuklasinema.com/assets/admin/images/movie/cl2rthe_pursuit_of_happyness.jpg",
+    "rating": "8",
+    "description": "Biographical drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "O Brother, Where Art Thou?",
+    "image": "https://m.media-amazon.com/images/M/MV5BMDhmMzZkYzctOTQ4MS00NWEzLWI1YzMtNTllZDhkYjgwOWQ0XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.7",
+    "description": "Adventure comedy.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "A Million Ways to Die in the West",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTQ0NDcyNjg0MV5BMl5BanBnXkFtZTgwMzk4NTA4MTE@._V1_.jpg",
+    "rating": "6.1",
+    "description": "Comedy Western.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Welcome to Marwen",
+    "image": "https://m.media-amazon.com/images/M/MV5BZDAxZmUzYjAtMTRlYy00YjM0LTk5NzktNTAxMzM4NTI2ZWE3XkEyXkFqcGc@._V1_.jpg",
+    "rating": "6",
+    "description": "Biographical drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Upgrade",
+    "image": "https://m.media-amazon.com/images/M/MV5BMzM5ZDllZWItODBkMy00M2Y0LTk2MDgtMTJmYTk4MGQwNGIxXkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.5",
+    "description": "Cyberpunk action film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Ex Machina",
+    "image": "https://m.media-amazon.com/images/I/71UxhMFjSlL._UF894,1000_QL80_.jpg",
+    "rating": "7.7",
+    "description": "Science fiction thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Looper",
+    "image": "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p9076140_p_v13_ai.jpg",
+    "rating": "7.4",
+    "description": "Sci-fi action thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Source Code",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTY0MTc3MzMzNV5BMl5BanBnXkFtZTcwNDE4MjE0NA@@._V1_.jpg",
+    "rating": "7.5",
+    "description": "Sci-fi thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Prisoners",
+    "image": "https://m.media-amazon.com/images/I/710K2AFeHkL._UF894,1000_QL80_.jpg",
+    "rating": "8.1",
+    "description": "Crime thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Escape Plan",
+    "image": "https://m.media-amazon.com/images/M/MV5BYTcyMmFmYzMtZmYwMi00ZGNhLTg1ZjctODNiNTAzOWY3NjBmXkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.7",
+    "description": "Action thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Italian Job",
+    "image": "https://m.media-amazon.com/images/I/81nJVGnLWgS._UF894,1000_QL80_.jpg",
+    "rating": "7",
+    "description": "Heist action film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Mr mrs smith",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTUxMzcxNzQzOF5BMl5BanBnXkFtZTcwMzQxNjUyMw@@._V1_.jpg",
+    "rating": "6.5",
+    "description": "Action comedy.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "What Happened to Monday",
+    "image": "https://m.media-amazon.com/images/M/MV5BMjdhM2QwMTMtYjEwMC00ODY5LTk1YTAtZjlkNjdjZWZlNDVjXkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.9",
+    "description": "Sci-fi action thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Inglorious Basterds",
+    "image": "https://m.media-amazon.com/images/M/MV5BODZhMWJlNjYtNDExNC00MTIzLTllM2ItOGQ2NGVjNDQ3MzkzXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.3",
+    "description": "Quentin Tarantino's war film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Bourne Identity",
+    "image": "https://m.media-amazon.com/images/M/MV5BYTk1ZTcyMWMtMWUxYS00MmEzLTlmODYtOTk1MGRjOTg1ZjlmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.9",
+    "description": "Action spy thriller.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Perfect Storm",
+    "image": "https://m.media-amazon.com/images/M/MV5BNzIwMTc0NTI0Nl5BMl5BanBnXkFtZTcwNTk4Mzc3Mw@@._V1_.jpg",
+    "rating": "6.4",
+    "description": "Disaster drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Pride & Prejudice",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTA1NDQ3NTcyOTNeQTJeQWpwZ15BbWU3MDA0MzA4MzE@._V1_.jpg",
+    "rating": "7.8",
+    "description": "Romantic drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "20 Days in Mariupol",
+    "image": "https://m.media-amazon.com/images/M/MV5BZmY2ODlmNmQtODQ2MS00OTlkLWIyNTEtNzhhNTEyNjNjMjdjXkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.6",
+    "description": "Documentary about the siege of Mariupol.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Idea of You",
+    "image": "https://m.media-amazon.com/images/M/MV5BY2RkZmZjYTQtOGExMS00YTljLWJmNzQtMzI0ZDU3YzFjNzJkXkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.3",
+    "description": "Romantic drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Damsel",
+    "image": "https://m.media-amazon.com/images/M/MV5BZTAzODc1ZjUtNGQwZS00YTc2LTliNzQtMDdlNzllNmU5Yzk4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "6.1",
+    "description": "Fantasy adventure film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Road House",
+    "image": "https://m.media-amazon.com/images/M/MV5BODVkYjlkM2UtNWVlMS00N2U1LTgxOTYtODlmNmE1YTgzMjczXkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.2",
+    "description": "Action thriller remake.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Deadpool & Wolverine",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/dd6fb66997dd4cb5606b587bb255d2cd2cec20ecbd11852a8f6b07a1358d09a1.jpg",
+    "rating": "8",
+    "description": "Superhero action comedy.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Civil War",
+    "image": "https://m.media-amazon.com/images/M/MV5BMjQ0MTgyNjAxMV5BMl5BanBnXkFtZTgwNjUzMDkyODE@._V1_.jpg",
+    "rating": "7.6",
+    "description": "Action thriller about a civil war in the US.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Reality",
+    "image": "https://m.media-amazon.com/images/M/MV5BOWY5NjgzODAtMjZkZS00ZmRkLWIxNzQtMzI0MzhiMGZiMTY4XkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.8",
+    "description": "Biographical drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Ordinary Angels",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/e491b715b20a7d7c770a68ccd62931cfd9a471806b611e1b4eaa8c7d2cd8c051.jpg",
+    "rating": "7.1",
+    "description": "Inspirational drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Hit Man",
+    "image": "https://m.media-amazon.com/images/M/MV5BNzFhMDZmYTctOTNmZi00MjVjLThkNGItMTJhOTI2NDkzMTFiXkEyXkFqcGc@._V1_.jpg",
+    "rating": "7",
+    "description": "Action comedy.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Covenant",
+    "image": "https://m.media-amazon.com/images/M/MV5BMDY2NmI1YzAtYmE2OS00NTY4LWJjM2UtNjQzMDliYzc5MzUyXkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.5",
+    "description": "Action war film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "LaRoy",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/d225d869fa62b89f20ef5bf5ee9ff169bfaf8c9f45b718f8698d0b34ee23fcd9.jpg",
+    "rating": "6.5",
+    "description": "Crime comedy.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Assistant",
+    "image": "https://tr.web.img3.acsta.net/pictures/19/12/06/08/03/4594210.jpg",
+    "rating": "6.2",
+    "description": "Drama film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Twisters",
+    "image": "https://m.media-amazon.com/images/M/MV5BNjM4MWEwMTEtNTcwYi00ZDI4LWEwMzUtNDMzODBhZmI5MWE1XkEyXkFqcGc@._V1_.jpg",
+    "rating": "6",
+    "description": "Disaster film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Anora",
+    "image": "https://m.media-amazon.com/images/M/MV5BYThiN2M0NTItODRmNC00NDhlLWFiYTgtMWM2YTEyYzI3ZTY1XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.9",
+    "description": "Comedy drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Hain",
+    "image": "https://tr.web.img4.acsta.net/img/34/b3/34b3a3c27542970a1b47971a3c41f5ed.jpg",
+    "rating": "6",
+    "description": "Turkish drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "We Live In Time",
+    "image": "https://m.media-amazon.com/images/M/MV5BYmQwNzRiNmItODc4Ny00Mjk4LThmYWQtNjI5OGU4OGUxMmY0XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7",
+    "description": "Romantic drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Take My Hand",
+    "image": "https://m.media-amazon.com/images/I/81HOJJU6ylL._UF1000,1000_QL80_.jpg",
+    "rating": "6.5",
+    "description": "Drama film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Florida Project",
+    "image": "https://m.media-amazon.com/images/M/MV5BM2FmZThhOGMtZWFmZC00YTNmLWE4YzktMzI0Y2ZjOTlkNGFmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.6",
+    "description": "Drama film.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The Substance",
+    "image": "https://m.media-amazon.com/images/S/pv-target-images/987909fb35beba90d0751b1d0e73ecca36c916ccc5b6c62868706658ea903851.jpg",
+    "rating": "6.8",
+    "description": "Body horror film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Mad Max Furiosa",
+    "image": "https://m.media-amazon.com/images/M/MV5BNTcwYWE1NTYtOWNiYy00NzY3LWIwY2MtNjJmZDkxNDNmOWE1XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.5",
+    "description": "Post-apocalyptic action film.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Challengers",
+    "image": "https://m.media-amazon.com/images/M/MV5BZTcyZGIyODctZGJhOS00MWUyLWI5ZWEtMjg4YzhkMDczMDBhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.3",
+    "description": "Romantic sports drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Hemmin'in Olduğu Günlerden Biri",
+    "image": "https://tr.web.img2.acsta.net/img/92/94/929454e29d91bb410de0a79a33ce3746.jpg",
+    "rating": "6",
+    "description": "Turkish drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Ay dede",
+    "image": "https://tr.web.img4.acsta.net/pictures/18/04/11/12/10/1607649.jpg",
+    "rating": "6.5",
+    "description": "Turkish drama.",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "The gorge",
+    "image": "https://m.media-amazon.com/images/M/MV5BOTQ5Y2QyYTktYmFmZi00NWJlLWE0MzgtYTA4M2I0ZjQwZjcxXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "6",
+    "description": "Action thriller.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Başka bir sen",
+    "image": "https://tr.web.img4.acsta.net/img/4b/a3/4ba3c1ac9a18e2133f08017c01a3eb18.png",
+    "rating": "6",
+    "description": "Turkish drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Hakkı",
+    "image": "https://b6s54eznn8xq.merlincdn.net/Uploads/Films/festival-hakki-20241022184107996fedc534e413185faa7b9ae2bef84.jpeg",
+    "rating": "6",
+    "description": "Turkish drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Nefes yer eksi 2",
+    "image": "https://upload.wikimedia.org/wikipedia/tr/5/53/NefesYerEksi%C4%B0ki.jpg",
+    "rating": "6",
+    "description": "Turkish drama.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Gladyatör ll",
+    "image": "https://b6s54eznn8xq.merlincdn.net/Uploads/Films/gladyator-2-20241113144046c09c0a34acc34dbba257e687e2e14339.jpg",
+    "rating": "8.5",
+    "description": "Historical epic.",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Hwang-ya - tr Çöl Avcıları",
+    "image": "https://img01.imgsinemalar.com/images/afis_dev/c/badland-hunters-1706957049.jpg",
+    "rating": "2.5",
+    "description": "Berbat bir film",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Intouchables _ Can Dostum",
+    "image": "https://img.fullhdfilmizlesene.tv/poster/izle/can-dostum-intouchables-75112.webp",
+    "rating": "9",
+    "description": "Iyi",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Cici",
+    "image": "https://upload.wikimedia.org/wikipedia/tr/3/3c/CiciFilm.jpg",
+    "rating": "6.5",
+    "description": "Idare eder drama",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Inseption",
+    "image": "https://m.media-amazon.com/images/M/MV5BMjExMjkwNTQ0Nl5BMl5BanBnXkFtZTcwNTY0OTk1Mw@@._V1_.jpg",
+    "rating": "8",
+    "description": "-",
+    "watched": false,
+    "type": "movie"
+  },
+  {
+    "title": "Front of the class",
+    "image": "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p190484_p_v10_ac.jpg",
+    "rating": "8",
+    "description": "29.10.2025",
+    "watched": true,
+    "type": "movie"
+  },
+  {
+    "title": "Çekiç ve Gül",
+    "image": "https://m.media-amazon.com/images/M/MV5BODQwZTEyN2UtOTM5ZS00ZTZjLWIwNzYtM2ZhNDA2YjIyNGUwXkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.1",
+    "description": "Bir Türk polisiye dizisi.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Gibi",
+    "image": "https://m.media-amazon.com/images/M/MV5BOWY0ZGIyZjAtZDIxMC00NTY4LTgyNDEtYmMwMzBmNmQ0MmE1XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.3",
+    "description": "Bir Türk komedi dizisi.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Turk Dedektif",
+    "image": "https://upload.wikimedia.org/wikipedia/en/e/e0/The_Turkish_Detective_poster.jpg",
+    "rating": "6.2",
+    "description": "A Turkish detective series.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "The Walking Dead",
+    "image": "https://m.media-amazon.com/images/M/MV5BYWQwMGRhNGEtZTNhMy00MzVjLWJhMjItYjcwMDljMTkyNTg2XkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.1",
+    "description": "Survivors navigate a zombie apocalypse.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Şahsiyet l",
+    "image": "https://images.justwatch.com/poster/255471422/s718/sezon-1.jpg",
+    "rating": "9.1",
+    "description": "A retired judicial officer plans a murder.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Fear The Walking Dead",
+    "image": "https://m.media-amazon.com/images/M/MV5BMDU2YmNiOTktMjE4Ny00NmFhLWIxZTYtOWY0ZWQ4MWM3YjdiXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "6.8",
+    "description": "A spin-off of The Walking Dead.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Beckham",
+    "image": "https://m.media-amazon.com/images/M/MV5BZmNmZTU5ZTUtZTc0NS00ZWJlLWFlMzUtMDRmZDgzMDhjNmM0XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.7",
+    "description": "A documentary series about David Beckham.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "You",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTVlYmRhMWQtNmE0Yi00ODM1LWEzMWEtNTQzZGZhODRmZTE0XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.7",
+    "description": "A stalker becomes obsessed with a young woman.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "12 Monkeys",
+    "image": "https://m.media-amazon.com/images/M/MV5BMTkwOTcxNzMzOV5BMl5BanBnXkFtZTgwODYxNjg0ODE@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.0",
+    "description": "A time traveler is sent back to prevent a deadly plague.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "La case papel",
+    "image": "https://images.justwatch.com/poster/249335581/s718/la-casa-de-papel.jpg",
+    "rating": "8.2",
+    "description": "A group of criminals plans a heist on the Royal Mint of Spain.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Berlin",
+    "image": "https://m.media-amazon.com/images/M/MV5BYjEwNjFmNjMtMGYzNy00MzBiLWJlYjAtMGJjNTEwZGFhMjNlXkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.1",
+    "description": "A prequel to Money Heist, focusing on Berlin's past.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Dexter: New Blood",
+    "image": "https://m.media-amazon.com/images/M/MV5BZGY4YjY5MGItNzM2NS00Y2M1LWFkYTYtZjI0ZDk3NTE0NmE0XkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.1",
+    "description": "Dexter Morgan returns after living a quiet life for a decade.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Secret Invasion",
+    "image": "https://m.media-amazon.com/images/M/MV5BNmYzYzA2NzMtOTVmMC00ZDY4LThlMDctZmUyN2NlMjQ2ODViXkEyXkFqcGc@._V1_.jpg",
+    "rating": "6.0",
+    "description": "Nick Fury uncovers a conspiracy involving shapeshifting Skrulls.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "The 100",
+    "image": "https://images.justwatch.com/poster/181879579/s718/the-100.jpg",
+    "rating": "7.6",
+    "description": "Survivors from a space station return to Earth after a nuclear apocalypse.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Merlin",
+    "image": "https://m.media-amazon.com/images/M/MV5BNmI5NDgyZmQtNDc3YS00Mjg0LThmMzEtZjcyNzczOTJlYWY4XkEyXkFqcGc@._V1_.jpg",
+    "rating": "7.9",
+    "description": "Young Merlin helps Prince Arthur fulfill his destiny.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "The Walking Dead: The Ones Who Live",
+    "image": "https://m.media-amazon.com/images/M/MV5BNzRkMzA5NDEtMjc5OC00ZTYxLWI0NmYtNTJjNjdhMTk0MTlhXkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.2",
+    "description": "Rick Grimes and Michonne search for each other.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "The Walking Dead: Daryl Dixon",
+    "image": "https://m.media-amazon.com/images/M/MV5BZjFlYzg4M2ItZjlmZC00MTA2LWJlZTgtODdlZmZjNWRkMzI5XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.7",
+    "description": "Daryl Dixon finds himself in France.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "The Walking Dead: Dead City",
+    "image": "https://m.media-amazon.com/images/M/MV5BYWI0ZjgxYWYtODZmNi00ZWI0LWI4MmEtZDBmOTNmMTRlMjY0XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "7.0",
+    "description": "Maggie and Negan travel to a post-apocalyptic Manhattan.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Şahsiyet ll",
+    "image": "https://images.justwatch.com/poster/309384569/s718/sezon-2.jpg",
+    "rating": "9.0",
+    "description": "The second season of Şahsiyet.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Reacher",
+    "image": "https://m.media-amazon.com/images/M/MV5BMzdjYWZlMDQtYzdhNi00NmRlLTg2NzUtMTI3MWFhZDliNjBiXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.1",
+    "description": "A former military police investigator uncovers a conspiracy.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Silo",
+    "image": "https://resizing.flixster.com/shn-5oNS_mCn6kj_xIzhRgBmpTo=/ems.cHJkLWVtcy1hc3NldHMvdHZzZXJpZXMvMTU4MjM5NDItNGQ1Yi00NTJkLTgxMTgtOTJmY2Q3ZTVhYWNmLnBuZw==",
+    "rating": "8.1",
+    "description": "In a dystopian future, a community lives underground in a giant silo.",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "Gassal ",
+    "image": "https://m.media-amazon.com/images/M/MV5BMDU3MjIzZDctOTVlMC00MjI1LTllZjAtZmY3ZmY2NjcyZmQ2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.1",
+    "description": "A Turkish drama series.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Gangs of london",
+    "image": "https://m.media-amazon.com/images/M/MV5BODU1MmNiNWEtODJjMy00ZTRlLWFkZTctYzViNjBhOTM1OGIxXkEyXkFqcGc@._V1_.jpg",
+    "rating": "8.1",
+    "description": "A criminal empire is thrown into chaos after the assassination of its head.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Strike back",
+    "image": "https://m.media-amazon.com/images/M/MV5BOTE4YjQ3NzgtNGI1My00MzkxLWIwY2EtOTQzMzZiYzBiMTg2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.2",
+    "description": "A clandestine military intelligence unit conducts high-risk missions.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Braking Bad",
+    "image": "https://m.media-amazon.com/images/M/MV5BMzU5ZGYzNmQtMTdhYy00OGRiLTg0NmQtYjVjNzliZTg1ZGE4XkEyXkFqcGc@._V1_.jpg",
+    "rating": "9.5",
+    "description": "A chemistry teacher turns to a life of crime.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Patriot",
+    "image": "https://m.media-amazon.com/images/M/MV5BZWIzM2U5YmEtYTRhMi00MGI4LWFkNjgtNGY3YjFjMjUxMjI0XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.3",
+    "description": "An intelligence officer must prevent Iran from going nuclear.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Person of Interest",
+    "image": "https://m.media-amazon.com/images/M/MV5BOTcxNDJiMTUtN2ZhZS00OGE1LWJmZmYtN2VhYThiZTBhYWM1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "8.4",
+    "description": "A billionaire creates a machine that predicts future crimes.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Fleabag",
+    "image": "https://images.justwatch.com/poster/127750739/s718/fleabag.jpg",
+    "rating": "8.7",
+    "description": "A witty, dry-witted woman navigates life and love in London.",
+    "watched": false,
+    "type": "series"
+  },
+  {
+    "title": "Yellowstone",
+    "image": "https://m.media-amazon.com/images/M/MV5BYzE2ODQ0NmQtYmMxMS00MGRlLTgwOGEtYjRkN2FkYmZlN2JlXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "rating": "9",
+    "description": "5 Sezon Gayet iyi !",
+    "watched": true,
+    "type": "series"
+  },
+  {
+    "title": "The last of us part 1",
+    "image": "data:image/jpeg;base64,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",
+    "rating": "9.0",
+    "description": "A journey across a post-apocalyptic United States.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "God of war",
+    "image": "data:image/jpeg;base64,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",
+    "rating": "9.2",
+    "description": "Kratos and his son Atreus embark on a journey.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "Remnant 2: The Awakened King",
+    "image": "https://cdn1.epicgames.com/offer/aa598567414d42378187b8861da550f7/EGS_RemnantIITheAwakenedKing_GunfireGames_AddOn_S1_2560x1440-caafb6bd7c30c2d16e7cd535d91a3e33",
+    "rating": "8.8",
+    "description": "A new DLC for Remnant 2.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Hitman world of assassination",
+    "image": "https://cdn1.epicgames.com/offer/ed55aa5edc5941de92fd7f64de415793/EGS_HITMANWorldofAssassination_IOInteractiveAS_Bundles_S1_2560x1440-28954c94e4f7ff334c9c565c52f3cd8d",
+    "rating": "8.5",
+    "description": "Agent 47 undertakes assassination missions.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Hitman 3",
+    "image": "https://cdn1.epicgames.com/ed55aa5edc5941de92fd7f64de415793/offer/Landscape-2560x1440-1f18287d356309156374725e80c2fc6a.jpg",
+    "rating": "8.1",
+    "description": "The final installment in the World of Assassination trilogy.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Assassin's Creed Valhalla",
+    "image": "https://image.api.playstation.com/vulcan/img/rnd/202010/3023/PnqfxnHGmf9E826ECuEM9niQ.jpg",
+    "rating": "8.0",
+    "description": "A Viking raider leads his clan to settle in England.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "Mafia definitive edition",
+    "image": "https://cdn1.epicgames.com/ee8802651a004c48999169fa32eb4903/offer/EGS_MafiaDefinitiveEditionPreOrder_Hangar13_G1A_00-1920x1080-268b01e611aa17de8caedd662b8462ab.jpg",
+    "rating": "8.2",
+    "description": "A remake of the original Mafia game.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Detroit become human",
+    "image": "https://cdn1.epicgames.com/columbine/offer/DETROIT_1-2560x1440-4fd6608a56880dc5d8e9d968517113c3.jpg",
+    "rating": "8.4",
+    "description": "Three androids embark on a journey of self-discovery.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Hogwarts legacy",
+    "image": "https://cdn1.epicgames.com/offer/e97659b501af4e3981d5430dad170911/EGS_HogwartsLegacyDigitalDeluxeEdition_AvalancheSoftware_Editions_S1_2560x1440-8620ef5ee70cedeb3b2906945512d077",
+    "rating": "8.3",
+    "description": "An immersive open-world action RPG set in the world of Harry Potter.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "A plague tale requiem",
+    "image": "https://cdn1.epicgames.com/salesEvent/salesEvent/PlagueTale2_2560x1440-f5840bd8286204cb20ae573e160c29f3",
+    "rating": "8.5",
+    "description": "Amicia and Hugo continue their journey to escape the plague.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "A plague tale innocence",
+    "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/752590/capsule_616x353.jpg?t=1727793332",
+    "rating": "8.0",
+    "description": "Amicia and Hugo attempt to survive the Black Death.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Jagged Alliance 3",
+    "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1084160/capsule_616x353.jpg?t=1725000793",
+    "rating": "7.7",
+    "description": "A mercenary company is hired to rescue the kidnapped president.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Uncharted legacy",
+    "image": "https://image.api.playstation.com/vulcan/img/rnd/202010/2813/h9Xc7ZhCEGUcS05YvpEcNT0D.png",
+    "rating": "8.9",
+    "description": "A collection of remastered Uncharted games.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Dying light 2 stay human",
+    "image": "https://cdn1.epicgames.com/offer/87b7846d2eba4bc49eead0854323aba8/EGS_DyingLight2StayHumanReloadedEdition_Techland_S1_2560x1440-98867399a3a85b1c0ec61f2333b00a32",
+    "rating": "7.5",
+    "description": "A parkour master fights for survival in a zombie-infested city.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Lords of the fallen",
+    "image": "https://cdn1.epicgames.com/spt-assets/56420acb023b4f9597401dc2c5ea9352/lords-of-the-fallen-fdpym.jpg",
+    "rating": "7.1",
+    "description": "A dark fantasy action RPG.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Cyberpunk 2077 Phantom Liberty",
+    "image": "https://sm.ign.com/ign_tr/screenshot/default/cyberpunk-2077_v22h.jpg",
+    "rating": "8.7",
+    "description": "A spy-thriller expansion for Cyberpunk 2077.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "Baldur's Gate 3",
+    "image": "https://image.api.playstation.com/vulcan/ap/rnd/202302/2321/3098481c9164bb5f33069b37e49fba1a572ea3b89971ee7b.jpg",
+    "rating": "9.6",
+    "description": "A role-playing video game based on the Dungeons & Dragons tabletop role-playing system.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "Mount & Blade II: Bannerlord",
+    "image": "https://cdn1.epicgames.com/offer/aeac94c7a11048758064b82f8f8d20ed/EGS_MountBladeIIBannerlord_TaleWorldsEntertainment_S1_2560x1440-8bf54df730c18f42db30b39311ee983a",
+    "rating": "8.5",
+    "description": "A strategy action role-playing video game.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "As dusk falls",
+    "image": "https://i.ytimg.com/vi/LddX5Cepq0Y/maxresdefault.jpg",
+    "rating": "8.0",
+    "description": "An interactive drama game.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "No rest for the wicked",
+    "image": "https://i.ytimg.com/vi/DiwmiqzW6gs/maxresdefault.jpg",
+    "rating": "8.5",
+    "description": "An action role-playing video game.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Silent Hill 2",
+    "image": "https://image.api.playstation.com/vulcan/ap/rnd/202210/2000/IgwsFz9BiBrFvyV7pIWpoVgd.png",
+    "rating": "9.1",
+    "description": "A survival horror video game.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Ghost of Tsushima",
+    "image": "https://image.api.playstation.com/vulcan/ap/rnd/202010/0222/b3iB2zf2xHj9shC0XDTULxND.png",
+    "rating": "9.3",
+    "description": "A samurai action-adventure game.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Tiny Glade",
+    "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3226080/ss_79f2e5e387cf4eb9befa4970b5c234a99a3082e6.1920x1080.jpg?t=1727106806",
+    "rating": "7.9",
+    "description": "A cozy castle-building game.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Warhammer 40,000 Space Marine 2",
+    "image": "https://cdn1.epicgames.com/offer/f640a0c1648147fea7e81565b45a3003/EGS_Warhammer40000SpaceMarine2_SaberInteractive_S1_2560x1440-975214651d1d1bc6c6e5779b53958840",
+    "rating": "8.0",
+    "description": "An action game set in the Warhammer 40,000 universe.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Until Dawn",
+    "image": "https://image.api.playstation.com/vulcan/ap/rnd/202401/2910/d48262b72a5a2daa3ca3aed6c8f42c44f3fdaf2902265a13.png",
+    "rating": "8.4",
+    "description": "A group of friends must survive a night on a remote mountain.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "God of War Ragnarok",
+    "image": "https://cdn1.epicgames.com/spt-assets/edaff839f0734d16bc89d2ddb1dc9339/steel-magnolia-15owu.jpg",
+    "rating": "9.4",
+    "description": "Kratos and Atreus embark on a new journey.",
+    "watched": true,
+    "type": "game"
+  },
+  {
+    "title": "Fallout London",
+    "image": "https://static1.thegamerimages.com/wordpress/wp-content/uploads/2024/07/30-fallout-london-is-making-me-desperate-for-another-new-vegas.jpg",
+    "rating": "8.5",
+    "description": "A large-scale mod for Fallout 4.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Assassin's Creed Mirage",
+    "image": "https://img.redbull.com/images/c_limit,w_1500,h_1000/f_auto,q_auto/redbullcom/2023/10/17/jwhdp8o8aghksp0pz1nc/assassins-creed-mirage",
+    "rating": "7.7",
+    "description": "A return to the series' stealth-focused roots.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "S.T.A.L.K.E.R. 2 Heart of Chornobyl",
+    "image": "https://cdn1.epicgames.com/offer/602a0ef0aceb46cca62445439661d712/EGS_STALKER2HeartofChornobyl_GSCGameWorld_S1_2560x1440-62f2f7def1bae0e3255e49fc7177adaf",
+    "rating": "8.8",
+    "description": "A survival horror game set in the Chornobyl Exclusion Zone.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Path of Exile",
+    "image": "https://cdn.akamai.steamstatic.com/steam/apps/238960/header.jpg",
+    "rating": "9.0",
+    "description": "A free-to-play action RPG.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Eriksholm The Stolen Dream",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/ss_7584248098b6116d2d6f781a6111cc62d88377ef.1920x1080.jpg",
+    "rating": "8",
+    "description": "3dmsi guzele benziyor Büyüleyici Eriksholm şehrinde geçen, izometrik ve hikâye odaklı bir gizlilik oyununu deneyimleyin. Hanna’nın kardeşi Herman ortadan kaybolduğunda ve polis onu takip etmeye başladığında, Hanna’nın arayışı, yalnızca hayatlarını değil, tüm şehrin kaderini de değiştirecek bir dizi felaketi tetikler. ",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Call of Duty Modern Warfare II 2022",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/6f58fa117e84a5e7b44ebccb6a66560b.jpg",
+    "rating": "6",
+    "description": "Modern Warfare® II ile geri dönen efsanevi Görev Timi 141 Operatörleriyle kendimizi eşi benzeri görülmemiş küresel çatışmaların ortasında buluyoruz.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Call of Duty Modern Warfare 2023",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/library_600x900_2x-2025-07-09T154147.727-1.jpg",
+    "rating": "7",
+    "description": "Oyun, modern savaş temasına odaklanarak gerçekçi ve yoğun bir deneyim sunar. Hikaye modu, özel kuvvetler ve özgürlük savaşçılarının, kurgusal bir ülkede geçen terörist tehditlerle mücadele ettiği duygusal ve aksiyon dolu bir senaryo sunar. Başlıca karakterler arasında Yüzbaşı John Price, SAS ajanı Kyle Garrick ve CIA ajanı Alex yer alır. Oyun, ahlaki gri alanları ve savaşın sert gerçeklerini işleyen sinematik bir anlatıma sahiptir.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Little Nightmares Enhanced Edition",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/Little-Nightmares-Enhanced-Edition.jpg",
+    "rating": "5",
+    "description": "chill bir sey dene || Little Nightmares’in büyüleyici 4K ve 60 FPS kaliteyle güçlendirilmiş karanlık, tuhaf öyküsünü (yeniden) keşfet.  Little Nightmares Enhanced Edition, tercihine göre görsellere ya da kare hızına daha çok önem veren Kalite veya Performans Modu arasında seçim yapmanı sağlıyor.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "Antro",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/Antro-pc-free-download.jpg",
+    "rating": "6",
+    "description": "2 d grafikler ANTRO yeraltı metropolünün en ücra köşelerine doğru bir yolculuk yapın. Göreviniz, bilinmeyen bir alıcıya sahip bir paketi teslim etmek ve bunu yaparken de La Cúpula’nın totaliter hükümetini devirmektir. Aksiyon, bulmacalar ve 2.5D platformlarla dolu bu macerada kentsel müziğin ritmine göre oynayın.",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": "The Alters",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/The-Alters-pc-free-download.jpg",
+    "rating": "5",
+    "description": "2d-3d degisik shetered gibi 2 d kismi The Alters, kendine has özelliklere sahip iddialı bir bilim kurgu hayatta kalma oyunu. Tehlikeli bir gezegene zorunlu iniş yapan bir keşif görevinden hayatta kalan tek kişi olan Jan Dolski olarak oynuyorsun. Hayatta kalmak için hareketli üssün için yeni bir ekip kurman gerekiyor",
+    "watched": false,
+    "type": "game"
+  },
+  {
+    "title": " Expedition 33",
+    "image": "https://0.torrentoyunindir.com/wp-content/uploads/Clair-Obscur-Expedition-33-pc-free-download.jpg",
+    "rating": "6",
+    "description": "Souls tarzi boss || Ressam, yılda bir uyanır ve monolitinin üzerine çizimini yapar, lanetli numarasını yazar. Sonra o yaştaki herkes dumana dönüşüp yok olur. Yıldan yıla bu sayı azalıyor ve daha çoğumuz siliniyor. Yarın uyanacak ve “33” yazacak. Bizse yarın son görevimiz için yola çıkıyoruz, görevimiz Ressam’ı yok etmek, böylece bir daha asla ölümü resmedemeyecek.",
+    "watched": false,
+    "type": "game"
+  }
+]

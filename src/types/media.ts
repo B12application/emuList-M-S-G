@@ -1,0 +1,23 @@
+// src/types/media.ts
+import { Timestamp } from 'firebase/firestore';
+
+// Bu, veritabanındaki (DB) tip
+export type MediaType = 'movie' | 'series' | 'game';
+
+// Bu, filtreleme için kullanılan tip (URL'den gelir)
+export type FilterType = MediaType | 'all'; 
+
+// Bu, izlenme durumu filtresi (URL'den gelir)
+export type FilterStatus = 'all' | 'watched' | 'not-watched';
+
+// Veritabanı objemizin arayüzü
+export interface MediaItem {
+  id: string; 
+  title: string;
+  image?: string;
+  rating: string; 
+  description?: string;
+  watched: boolean;
+  type: MediaType; // DB'de her zaman movie, series veya game olmalı
+  createdAt: Timestamp;
+}

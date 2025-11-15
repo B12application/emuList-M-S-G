@@ -1,7 +1,7 @@
 // src/components/Header.tsx
 import { Link, NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars } from 'react-icons/fa6'; 
+import { FaMoon, FaSun, FaBars, FaPlus } from 'react-icons/fa6'; 
 import Logo from './Logo'; 
 
 interface NavLinkRenderProps {
@@ -27,11 +27,8 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
       <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
         <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          
-          {/* === RENK DEĞİŞİKLİĞİ BURADA === */}
-          {/* 'text-indigo-500' yerine 'text-rose-500' (canlı gül rengi) */}
-          <Logo className="h-6 w-6 text-rose-500" />
-          
+          {/* RENK DEĞİŞİKLİĞİ: 'text-rose-500' -> 'text-sky-500' */}
+          <Logo className="h-6 w-6 text-sky-500" />
           <span className="hidden sm:inline">Mustafa Ulusoy</span>
         </Link>
 
@@ -41,11 +38,20 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
           <NavLink to="/series" className={getNavCls}>Series</NavLink>
           <NavLink to="/game" className={getNavCls}>Games</NavLink>
           <NavLink to="/all" className={getNavCls}>All</NavLink>
-          <NavLink to="/create" className={getNavCls}>Create</NavLink>
         </nav>
 
-        {/* ... (kodun kalanı aynı) ... */}
         <div className="flex items-center gap-2">
+          
+          {/* Create Butonu (Rengi ana temayla (sky) değişmedi, nötr kaldı) */}
+          <Link
+            to="/create"
+            title="Yeni Kayıt Ekle"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          >
+            <FaPlus />
+            <span className="sr-only">Yeni Kayıt Ekle</span>
+          </Link>
+
           <button
             onClick={toggleTheme}
             className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -62,7 +68,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
           >
             <FaBars />
             <span className="sr-only">Menüyü Aç</span>
-            </button>
+          </button>
         </div>
       </div>
     </header>

@@ -1,8 +1,6 @@
-// src/components/Logo.tsx
+
 import React from 'react';
 
-// 'E' (sol dikey çubuk), 'M' (ortadaki 'V' şekli) 
-// ve 'U' (sağ dikey çubuk) harflerini temsil eden yeni SVG.
 export default function Logo({ className }: { className?: string }) {
   return (
     <svg 

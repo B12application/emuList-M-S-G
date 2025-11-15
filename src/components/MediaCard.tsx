@@ -1,6 +1,6 @@
 // src/components/MediaCard.tsx
 import { useState } from 'react';
-import type { MediaItem } from '../types/media';
+import type{ MediaItem } from '../types/media';
 import { FaEye, FaEyeSlash, FaStar, FaTrash } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -19,28 +19,18 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
     
     setIsDeleting(true);
     try {
-      const itemRef = doc(db, "mediaItems", item.id);
-      await deleteDoc(itemRef);
+      await deleteDoc(doc(db, "mediaItems", item.id));
       refetch();
-    } catch (e) {
-      console.error("Silme hatası: ", e);
-      setIsDeleting(false);
-    }
+    } catch (e) { console.error("Silme hatası: ", e); setIsDeleting(false); }
   };
 
   const handleToggle = async () => {
     setIsToggling(true);
     try {
-      const itemRef = doc(db, "mediaItems", item.id);
-      await updateDoc(itemRef, {
-        watched: !item.watched
-      });
+      await updateDoc(doc(db, "mediaItems", item.id), { watched: !item.watched });
       refetch();
-    } catch (e) {
-      console.error("Güncelleme hatası: ", e);
-    } finally {
-      setIsToggling(false);
-    }
+    } catch (e) { console.error("Güncelleme hatası: ", e);
+    } finally { setIsToggling(false); }
   };
 
   return (
@@ -51,15 +41,20 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
           alt={item.title} 
           className="h-64 w-full object-cover" 
         />
+        
+        {/* === DÜZELTME: "Watched" yazısı geri eklendi === */}
         <div className="absolute left-3 top-3">
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${item.watched 
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200" 
-            : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
-          }`}>
+          <span 
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${item.watched 
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200" 
+              : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+            }`}
+          >
             {item.watched ? <FaEye /> : <FaEyeSlash />}
             {item.watched ? "Watched" : "Not Watched"}
           </span>
         </div>
+        
         <div className="absolute right-3 top-3">
           <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
             <FaStar /> {item.rating}
@@ -80,10 +75,12 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
             {item.watched ? <FaEye /> : <FaEyeSlash />}
             Toggle
           </button>
+          
+          {/* === RENK DEĞİŞİKLİĞİ: 'rose' -> 'sky' === */}
           <button 
             onClick={handleDelete}
             disabled={isDeleting}
-            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 text-rose-600 dark:border-rose-900/60 px-3 py-2 text-sm hover:bg-rose-50 dark:hover:bg-rose-900/20 transition disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-sky-200 text-sky-600 dark:border-sky-900/60 px-3 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-900/20 transition disabled:opacity-50"
           >
             <FaTrash />
             {isDeleting ? "Siliniyor..." : "Delete"}

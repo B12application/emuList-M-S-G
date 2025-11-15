@@ -8,57 +8,67 @@ import {
   orderBy,
   getDocs,
   Query,
-  limit
-} from 'firebase/firestore';
+} from 'firebase/firestore'; // 1. 'limit', 'startAfter', 'QueryDocumentSnapshot' kaldırıldı
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-const PAGE_SIZE = 16;
-
-export default function useMedia(type: FilterType, filter: FilterStatus, page: number = 1) {
+// 2. 'PAGE_SIZE' kaldırıldı. 'page' parametresi kaldırıldı.
+export default function useMedia(
+  type: FilterType, 
+  filter: FilterStatus 
+) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [key, setKey] = useState(0);
-  const refetch = () => setKey(prevKey => prevKey + 1);
+  const [key, setKey] = useState(0); 
+  
+  // 3. 'loadingMore', 'lastVisibleDoc', 'hasMoreItems' state'leri kaldırıldı.
+
+  const refetch = () => {
+    setKey(prevKey => prevKey + 1);
+    setItems([]);
+  };
 
   useEffect(() => {
     const fetchMedia = async () => {
       setLoading(true);
       
       try {
-        const itemsRef = collection(db, "mediaItems");
-        
-        let q: Query<DocumentData> = itemsRef;
+        let q: Query<DocumentData> = collection(db, "mediaItems");
 
+        // Filtreler (değişmedi)
         if (type !== 'all') {
           q = query(q, where("type", "==", type));
         }
-
         if (filter === 'watched') {
           q = query(q, where("watched", "==", true));
         } else if (filter === 'not-watched') {
           q = query(q, where("watched", "==", false));
         }
-
-        q = query(q, orderBy("rating", "desc"), limit(PAGE_SIZE));
-
+        
+        // Sıralama (değişmedi)
+        q = query(q, orderBy("rating", "desc"));
+        
+        // 4. 'limit(PAGE_SIZE)' komutu kaldırıldı. Artık TÜMÜNÜ çekecek.
         const documentSnapshots = await getDocs(q);
 
         const mediaList = documentSnapshots.docs.map(doc => ({
           ...doc.data() as Omit<MediaItem, 'id'>,
           id: doc.id
         }));
-
+        
         setItems(mediaList);
+        
+        // 5. Tüm 'loadMore' (sayfalama) mantığı kaldırıldı.
+        
       } catch (e) {
         console.error("Veri çekilemedi: ", e);
       } finally {
         setLoading(false);
       }
     };
-
     fetchMedia();
-  }, [type, filter, page, key]); 
+  }, [type, filter, key]); 
 
+  // 6. 'loadMore' vb. fonksiyonlar return'den kaldırıldı.
   return { items, loading, refetch };
 }

@@ -1,5 +1,5 @@
-// src/components/Header.tsx
-import { Link, NavLink } from 'react-router-dom';
+
+import { Link, NavLink, useLocation } from 'react-router-dom'; 
 import { useTheme } from '../context/ThemeContext';
 import { FaMoon, FaSun, FaBars, FaPlus } from 'react-icons/fa6'; 
 import Logo from './Logo'; 
@@ -21,13 +21,23 @@ interface HeaderProps {
 
 export default function Header({ onMobileMenuOpen }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
+  
+  // 2. Mevcut konumu (URL) al
+  const location = useLocation();
+  
+  // 3. Mevcut türü ('movie', 'series', 'game') URL'den çıkar
+  const pathSegments = location.pathname.split('/');
+  const potentialType = pathSegments[1];
+  let createType = 'movie'; // Varsayılan
+  if (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game') {
+    createType = potentialType;
+  }
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-200/70 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/70">
       <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
         <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          {/* RENK DEĞİŞİKLİĞİ: 'text-rose-500' -> 'text-sky-500' */}
           <Logo className="h-6 w-6 text-sky-500" />
           <span className="hidden sm:inline">Mustafa Ulusoy</span>
         </Link>
@@ -42,9 +52,9 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
         <div className="flex items-center gap-2">
           
-          {/* Create Butonu (Rengi ana temayla (sky) değişmedi, nötr kaldı) */}
+          {/* 4. 'Create' LİNKİ GÜNCELLENDİ (artık ?type=... parametresi ekliyor) */}
           <Link
-            to="/create"
+            to={`/create?type=${createType}`}
             title="Yeni Kayıt Ekle"
             className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
           >

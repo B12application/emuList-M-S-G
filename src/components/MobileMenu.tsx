@@ -1,5 +1,5 @@
-// src/components/MobileMenu.tsx
-import { NavLink } from 'react-router-dom';
+
+import { NavLink, useLocation } from 'react-router-dom'; 
 import { FaHome, FaFilm, FaTv, FaGamepad, FaPlus, FaClone } from 'react-icons/fa';
 
 interface MobileMenuProps {
@@ -8,6 +8,17 @@ interface MobileMenuProps {
 }
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  // 2. Mevcut konumu (URL) al
+  const location = useLocation();
+
+  // 3. Mevcut türü ('movie', 'series', 'game') URL'den çıkar
+  const pathSegments = location.pathname.split('/');
+  const potentialType = pathSegments[1];
+  let createType = 'movie'; // Varsayılan
+  if (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game') {
+    createType = potentialType;
+  }
+
   return (
     <div className={`fixed inset-0 z-50 md:hidden ${isOpen ? '' : 'hidden'}`}>
       
@@ -37,10 +48,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           
           <hr className="my-2 border-gray-200 dark:border-gray-700" />
 
-          {/* RENK DEĞİŞİKLİĞİ: 'bg-rose-600' -> 'bg-sky-600' */}
+          {/* 4. 'Create' LİNKİ GÜNCELLENDİ (artık ?type=... parametresi ekliyor) */}
           <NavLink 
             onClick={onClose} 
-            to="/create" 
+            to={`/create?type=${createType}`} 
             className="flex items-center justify-center gap-3 px-3 py-2 rounded-xl bg-sky-600 text-white font-semibold hover:bg-sky-700 transition-colors"
           >
             <FaPlus className="w-5" /> Create

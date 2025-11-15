@@ -4,7 +4,7 @@ import type { MediaItem } from '../types/media';
 import { db } from '../firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Dialog, Transition, Popover } from '@headlessui/react';
-import { FaSave, FaTimes, FaLink, FaSpinner } from 'react-icons/fa';
+import { FaSave, FaLink, FaSpinner } from 'react-icons/fa';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 

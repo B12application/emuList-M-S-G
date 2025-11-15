@@ -9,9 +9,9 @@ const PROFIL_FOTOGRAFI_URL = 'https://media.licdn.com/dms/image/v2/D4D03AQHRoyTj
 
 export default function HomePage() {
   const { stats, loading } = useMediaStats();
- const { items: movieRecs, loading: movieLoading, refetch: movieRefetch } = useMedia('movie', 'not-watched', 1);
-  const { items: seriesRecs, loading: seriesLoading, refetch: seriesRefetch } = useMedia('series', 'not-watched', 1);
-  const { items: gameRecs, loading: gameLoading, refetch: gameRefetch } = useMedia('game', 'not-watched', 1);
+ const { items: movieRecs, loading: movieLoading, refetch: movieRefetch } = useMedia('movie', 'not-watched');
+  const { items: seriesRecs, loading: seriesLoading, refetch: seriesRefetch } = useMedia('series', 'not-watched');
+  const { items: gameRecs, loading: gameLoading, refetch: gameRefetch } = useMedia('game', 'not-watched');
 
   const movieRecommendation = movieRecs[0];
   const seriesRecommendation = seriesRecs[0];

@@ -6,18 +6,20 @@ import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firesto
 import type { MediaItem, MediaType } from '../types/media';
 import { FaFilm, FaTv, FaGamepad } from 'react-icons/fa';
 import MediaCard from '../components/MediaCard';
-
-// 1. YENİ: Slider kütüphanesini ve CSS'ini import et
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 export default function CreatePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const defaultType = (searchParams.get('type') as MediaType) || 'movie';
+  
+  // === HATA DÜZELTMESİ BURADA ===
+  // '|| 'movie'' varsayımını kaldırıyoruz.
+  const defaultType = (searchParams.get('type') as MediaType) || undefined;
 
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<MediaType>(defaultType);
+  // State artık 'undefined' (tanımsız) olarak başlayabilir
+  const [type, setType] = useState<MediaType | undefined>(defaultType); 
   const [rating, setRating] = useState('0'); 
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
@@ -27,6 +29,7 @@ export default function CreatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // 'type' seçilmemişse hata ver (bu kontrol zaten vardı ama artık daha anlamlı)
     if (!title || !type) {
       setError("Başlık ve Tür alanları zorunludur."); return;
     }
@@ -53,40 +56,29 @@ export default function CreatePage() {
     return `${baseCls} bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700`;
   };
   
-  // === PUANLAMA FONKSİYONLARI ===
-
-  // 2. YENİ: Slider'dan gelen 'number' değerini state'e 'string' olarak kaydeder
   const handleSliderChange = (newValue: number | number[]) => {
-    // rc-slider bazen dizi dönebilir, biz sadece ilk değeri alıyoruz
     const value = Array.isArray(newValue) ? newValue[0] : newValue;
     setRating(String(value));
   };
 
-  // Elle girişi (input) yönetir
   const handleRatingInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    if (val === "") {
-      setRating('0');
-      return;
-    }
+    if (val === "") setRating('0');
     const numVal = parseFloat(val);
     if (numVal > 9.9) setRating('9.9');
     else if (numVal < 0) setRating('0');
     else setRating(val);
   };
 
-  // 3. YENİ: Slider rengini (hex kodu) puana göre belirler
   const getRatingColor = (r: string): string => {
     const val = parseFloat(r) || 0;
-    if (val < 5) return '#ef4444'; // Tailwind Red-500
-    if (val < 8) return '#f59e0b'; // Tailwind Amber-500
-    return '#22c55e'; // Tailwind Green-500
+    if (val < 5) return '#ef4444'; // Red-500
+    if (val < 8) return '#f59e0b'; // Amber-500
+    return '#22c55e'; // Green-500
   };
 
   const ratingColor = getRatingColor(rating);
-  // === PUANLAMA BİTTİ ===
 
-  // Canlı ön izleme için dummy item
   const previewItem: MediaItem = {
     id: 'preview-id',
     title: title || "Başlık...",
@@ -94,7 +86,8 @@ export default function CreatePage() {
     rating: rating || "0",
     description: description || "Açıklama...",
     watched: watched,
-    type: type,
+    // 'type' tanımsızsa, kartta bir hata olmasın diye 'movie' varsay
+    type: type || 'movie', 
     createdAt: Timestamp.now()
   };
 
@@ -105,13 +98,11 @@ export default function CreatePage() {
       </h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* --- FORM ALANI (SOL) --- */}
         <form onSubmit={handleSubmit} className="lg:col-span-2 flex flex-col gap-6">
           
-          {/* Tür Seçimi */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
             <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-              Türü Seçin
+              Türü Seçin {type === undefined && <span className="text-red-500">* (Seçim Zorunlu)</span>}
             </label>
             <div className="flex flex-col sm:flex-row gap-3">
               <button type="button" onClick={() => setType('movie')} className={getTypeButtonCls('movie')}>
@@ -126,7 +117,7 @@ export default function CreatePage() {
             </div>
           </div>
 
-          {/* Ana Bilgiler & Durum */}
+          {/* ... (Formun geri kalanı aynı) ... */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col gap-5">
               <div>
@@ -159,13 +150,11 @@ export default function CreatePage() {
               </div>
             </div>
 
-            {/* === 4. TASARIM DEĞİŞİKLİĞİ (PUAN BÖLÜMÜ) === */}
             <div className="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col gap-5">
               <div>
                 <label htmlFor="rating" className="block text-sm font-medium mb-2">
                   Puan
                 </label>
-                {/* YENİ: rc-slider bileşeni */}
                 <div className="px-1">
                   <Slider
                     value={parseFloat(rating) || 0}
@@ -173,7 +162,6 @@ export default function CreatePage() {
                     min={0}
                     max={9.9}
                     step={0.1}
-                    // Renkli stilleri uygula
                     trackStyle={{ backgroundColor: ratingColor, height: 6 }}
                     handleStyle={{
                       borderColor: ratingColor,
@@ -187,7 +175,6 @@ export default function CreatePage() {
                     railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
                   />
                 </div>
-                {/* Elle giriş (type="number") */}
                 <input
                   type="number"
                   id="rating"
@@ -203,7 +190,6 @@ export default function CreatePage() {
                 <label className="block text-sm font-medium mb-2">
                   Durum
                 </label>
-                {/* Toggle (Aç-Kapat) Anahtarı */}
                 <button
                   type="button"
                   onClick={() => setWatched(!watched)}
@@ -222,11 +208,8 @@ export default function CreatePage() {
                 </span>
               </div>
             </div>
-            {/* === DEĞİŞİKLİK BİTTİ === */}
-
           </div>
 
-          {/* Kaydet Butonu */}
           <div className="mt-4">
             {error && (
               <p className="text-red-500 text-sm text-center mb-4">{error}</p>
@@ -241,7 +224,6 @@ export default function CreatePage() {
           </div>
         </form>
         
-        {/* --- CANLI ÖN İZLEME ALANI (SAĞ) --- */}
         <div className="lg:col-span-1">
           <h3 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
             Ön İzleme
@@ -249,7 +231,7 @@ export default function CreatePage() {
           <div className="sticky top-24">
             <MediaCard 
               item={previewItem} 
-              refetch={() => {}} // Ön izleme için boş fonksiyon
+              refetch={() => {}}
             />
           </div>
         </div>

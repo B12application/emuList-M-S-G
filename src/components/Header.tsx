@@ -1,4 +1,4 @@
-
+// src/components/Header.tsx
 import { Link, NavLink, useLocation } from 'react-router-dom'; 
 import { useTheme } from '../context/ThemeContext';
 import { FaMoon, FaSun, FaBars, FaPlus } from 'react-icons/fa6'; 
@@ -21,17 +21,19 @@ interface HeaderProps {
 
 export default function Header({ onMobileMenuOpen }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
-  
-  // 2. Mevcut konumu (URL) al
   const location = useLocation();
   
-  // 3. Mevcut türü ('movie', 'series', 'game') URL'den çıkar
+  // === HATA DÜZELTMESİ BURADA ===
   const pathSegments = location.pathname.split('/');
   const potentialType = pathSegments[1];
-  let createType = 'movie'; // Varsayılan
-  if (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game') {
-    createType = potentialType;
-  }
+  
+  // 'movie', 'series', veya 'game' sayfasındaysak tipi al
+  const createType = (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game') 
+    ? potentialType 
+    : undefined;
+
+  // Link'i oluştur: Eğer createType tanımsızsa (örn: Home'daysak) ?type= ekleme
+  const createLink = createType ? `/create?type=${createType}` : '/create';
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-200/70 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/70">
@@ -52,9 +54,9 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
         <div className="flex items-center gap-2">
           
-          {/* 4. 'Create' LİNKİ GÜNCELLENDİ (artık ?type=... parametresi ekliyor) */}
+          {/* 'Create' LİNKİ GÜNCELLENDİ (yeni 'createLink' değişkenini kullanır) */}
           <Link
-            to={`/create?type=${createType}`}
+            to={createLink}
             title="Yeni Kayıt Ekle"
             className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
           >
@@ -73,11 +75,11 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
           <button
             onClick={onMobileMenuOpen}
-            className="md:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            title="Menü"
+          	className="md:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          	title="Menü"
           >
-            <FaBars />
-            <span className="sr-only">Menüyü Aç</span>
+          	<FaBars />
+          	<span className="sr-only">Menüyü Aç</span>
           </button>
         </div>
       </div>

@@ -6,6 +6,9 @@ import { FaStar } from 'react-icons/fa';
 import { Popover, Transition } from '@headlessui/react';
 // 2. Tam kart tasarımını (MediaCard) import et
 import MediaCard from './MediaCard';
+import ImageWithFallback from './ui/ImageWithFallback';
+import EmptyState from './ui/EmptyState';
+import { FaCheckCircle } from 'react-icons/fa';
 
 interface RecCardProps {
   item: MediaItem | undefined;
@@ -16,14 +19,15 @@ interface RecCardProps {
 
 export default function RecommendationCard({ item, typeLabel, refetch }: RecCardProps) {
   
-  // Eğer izlenmeyen öneri kalmadıysa (Bu kısım değişmedi)
+  // Eğer izlenmeyen öneri kalmadıysa
   if (!item) {
     return (
-      <div className="flex flex-col gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg h-full">
-        <h4 className="font-semibold text-lg text-gray-900 dark:text-white">{typeLabel}</h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Tebrikler! Bu kategoride izlenmeyen öneri kalmadı.
-        </p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg h-full p-6">
+        <EmptyState
+          icon={<FaCheckCircle />}
+          title={`${typeLabel} Önerisi Yok`}
+          description="Tebrikler! Bu kategoride izlenmeyen öneri kalmadı."
+        />
       </div>
     );
   }
@@ -38,10 +42,10 @@ export default function RecommendationCard({ item, typeLabel, refetch }: RecCard
             <div className={`flex flex-col justify-between gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg h-full cursor-pointer transition ${open ? 'ring-2 ring-sky-500' : 'hover:ring-2 hover:ring-sky-500'}`}>
               <h4 className="font-semibold text-lg text-gray-900 dark:text-white mb-3">{typeLabel} Önerisi</h4>
               <div className="flex gap-3">
-                <img 
-                  src={item.image || "https://via.placeholder.com/100x150?text=No+Image"} 
-                  alt={item.title} 
-                  className="w-20 h-28 object-cover rounded-md flex-shrink-0" 
+                <ImageWithFallback
+                  src={item.image}
+                  alt={item.title}
+                  className="w-20 h-28 object-cover rounded-md flex-shrink-0"
                 />
                 <div className="flex flex-col min-w-0">
                   <h5 className="font-semibold line-clamp-2 truncate">{item.title}</h5>

@@ -9,6 +9,9 @@ import MediaCard from '../components/MediaCard';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } from '../services/omdbApi';
+import ImageWithFallback from '../components/ui/ImageWithFallback';
+import EmptyState from '../components/ui/EmptyState';
+import toast from 'react-hot-toast';
 
 export default function CreatePage() {
   const [searchParams] = useSearchParams();
@@ -50,11 +53,15 @@ export default function CreatePage() {
         createdAt: serverTimestamp()
       };
       await addDoc(collection(db, "mediaItems"), newMediaItem);
+      toast.success('Kayıt başarıyla eklendi');
       setIsLoading(false);
       navigate(`/${type}`); 
     } catch (err) {
       setIsLoading(false);
-      setError("Kayıt sırasında bir hata oluştu."); console.error(err);
+      const errorMessage = "Kayıt sırasında bir hata oluştu.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error(err);
     }
   };
 
@@ -113,9 +120,11 @@ export default function CreatePage() {
         setSearchResults(results);
         setShowSearchResults(results.length > 0);
       } catch (err) {
-        setSearchError(err instanceof Error ? err.message : 'Arama sırasında bir hata oluştu');
+        const errorMessage = err instanceof Error ? err.message : 'Arama sırasında bir hata oluştu';
+        setSearchError(errorMessage);
         setSearchResults([]);
         setShowSearchResults(false);
+        toast.error(errorMessage);
       } finally {
         setIsSearching(false);
       }
@@ -172,8 +181,11 @@ export default function CreatePage() {
       // Arama sonuçlarını kapat
       setShowSearchResults(false);
       setSearchQuery('');
+      toast.success('Film bilgileri yüklendi');
     } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Film detayları getirilirken bir hata oluştu');
+      const errorMessage = err instanceof Error ? err.message : 'Film detayları getirilirken bir hata oluştu';
+      setSearchError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSearching(false);
     }
@@ -268,8 +280,8 @@ export default function CreatePage() {
                         onClick={() => handleSelectSearchResult(result)}
                         className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left border-b border-gray-200 dark:border-gray-700 last:border-b-0"
                       >
-                        <img
-                          src={result.Poster && result.Poster !== 'N/A' ? result.Poster : 'https://via.placeholder.com/60x90?text=No+Image'}
+                        <ImageWithFallback
+                          src={result.Poster}
                           alt={result.Title}
                           className="w-12 h-16 object-cover rounded"
                         />
@@ -295,8 +307,12 @@ export default function CreatePage() {
 
                 {/* Sonuç Bulunamadı */}
                 {!isSearching && searchQuery.trim() && searchResults.length === 0 && !searchError && (
-                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Sonuç bulunamadı.
+                  <div className="mt-4">
+                    <EmptyState
+                      icon={<FaSearch />}
+                      title="Sonuç bulunamadı"
+                      description={`"${searchQuery}" için sonuç bulunamadı. Farklı bir arama terimi deneyin.`}
+                    />
                   </div>
                 )}
               </div>

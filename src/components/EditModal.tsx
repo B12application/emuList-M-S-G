@@ -7,6 +7,7 @@ import { Dialog, Transition, Popover } from '@headlessui/react';
 import { FaSave, FaLink, FaSpinner } from 'react-icons/fa';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import toast from 'react-hot-toast';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -39,10 +40,12 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
         image: editImage,
         rating: editRating
       });
+      toast.success('Kayıt başarıyla güncellendi');
       refetch();
       onClose();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);
+      toast.error('Kayıt güncellenirken bir hata oluştu');
     } finally {
       setIsLoading(false);
     }

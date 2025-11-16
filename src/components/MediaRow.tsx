@@ -4,6 +4,9 @@ import type{ MediaItem } from '../types/media';
 import { FaEye, FaEyeSlash, FaStar, FaTrash } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import ImageWithFallback from './ui/ImageWithFallback';
+import ConfirmDialog from './ui/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 interface MediaRowProps {
   item: MediaItem;
@@ -13,33 +16,43 @@ interface MediaRowProps {
 export default function MediaRow({ item, refetch }: MediaRowProps) {
   const [isDeleting, setIsDeleting] = useState(false); 
   const [isToggling, setIsToggling] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
   // Silme ve Toggle fonksiyonları MediaCard ile aynı
   const handleDelete = async () => {
-    if (!window.confirm("Bu kaydı silmek istediğine emin misin?")) return;
     setIsDeleting(true);
     try {
       await deleteDoc(doc(db, "mediaItems", item.id));
+      toast.success('Kayıt başarıyla silindi');
       refetch();
-    } catch (e) { console.error("Silme hatası: ", e); setIsDeleting(false); }
+    } catch (e) {
+      console.error("Silme hatası: ", e);
+      toast.error('Kayıt silinirken bir hata oluştu');
+      setIsDeleting(false);
+    }
   };
 
   const handleToggle = async () => {
     setIsToggling(true);
     try {
       await updateDoc(doc(db, "mediaItems", item.id), { watched: !item.watched });
+      toast.success(item.watched ? 'İzlenmedi olarak işaretlendi' : 'İzlendi olarak işaretlendi');
       refetch();
-    } catch (e) { console.error("Güncelleme hatası: ", e);
-    } finally { setIsToggling(false); }
+    } catch (e) {
+      console.error("Güncelleme hatası: ", e);
+      toast.error('Durum güncellenirken bir hata oluştu');
+    } finally {
+      setIsToggling(false);
+    }
   };
 
   return (
     <div className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
       {/* Resim */}
-      <img 
-        src={item.image || "https://via.placeholder.com/100x150?text=No+Image"} 
-        alt={item.title} 
-        className="h-20 w-16 object-cover rounded-md flex-shrink-0" 
+      <ImageWithFallback
+        src={item.image}
+        alt={item.title}
+        className="h-20 w-16 object-cover rounded-md flex-shrink-0"
       />
       {/* Başlık ve Puan */}
       <div className="flex-1 min-w-0">
@@ -71,7 +84,7 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
           {item.watched ? <FaEye /> : <FaEyeSlash />}
         </button>
         <button 
-          onClick={handleDelete}
+          onClick={() => setIsConfirmDialogOpen(true)}
           disabled={isDeleting}
           title="Delete"
           className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-sky-200 text-sky-600 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition disabled:opacity-50"
@@ -79,6 +92,17 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
           <FaTrash />
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Kaydı Sil"
+        message={`"${item.title}" kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`}
+        confirmText="Sil"
+        cancelText="İptal"
+        variant="danger"
+      />
     </div>
   );
 }

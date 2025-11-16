@@ -1,10 +1,12 @@
 // src/pages/MediaListPage.tsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaClone, FaSpinner, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaClone, FaSpinner, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
+import EmptyState from '../components/ui/EmptyState';
+import SkeletonCard from '../components/ui/SkeletonCard';
 
 export default function MediaListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -94,12 +96,13 @@ export default function MediaListPage() {
         </div>
     	</div>
 
-    	{loading ? (
-        <div className="flex justify-center items-center p-8 mt-6">
-          <FaSpinner className="animate-spin h-8 w-8 text-sky-500" />
-          <span className="ml-3 text-lg">Yükleniyor...</span>
+    {loading ? (
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
-    	) : (
+    ) : (
       	<>
           {/* === HATA DÜZELTMESİ BURADA === */}
           {/* 'Vbsp;' ve 'aram/>' gibi bozuk karakterler temizlendi */}
@@ -114,11 +117,17 @@ export default function MediaListPage() {
         	</div>
           {/* === HATA DÜZELTMESİ BİTTİ === */}
 
-        	{filteredItems.length === 0 && !loading && (
-          	<p className="mt-6 text-center text-gray-500">
-            {searchQuery ? "Aramanıza uygun kayıt bulunamadı." : "Bu filtreye uygun kayıt bulunamadı."}
-          </p>
-        	)}
+        {filteredItems.length === 0 && !loading && (
+          <EmptyState
+            icon={<FaInbox />}
+            title={searchQuery ? "Arama sonucu bulunamadı" : "Henüz kayıt yok"}
+            description={
+              searchQuery
+                ? `"${searchQuery}" aramasına uygun kayıt bulunamadı. Farklı bir arama terimi deneyin.`
+                : "Bu filtreye uygun kayıt bulunmuyor. Yeni bir kayıt eklemek için 'Yeni Kayıt Ekle' butonunu kullanabilirsiniz."
+            }
+          />
+        )}
       	</>
     	)}
   	</section>

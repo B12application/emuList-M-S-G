@@ -1,13 +1,17 @@
 // src/pages/CreatePage.tsx
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import type { MediaItem, MediaType } from '../types/media';
-import { FaFilm, FaTv, FaGamepad } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
 import MediaCard from '../components/MediaCard';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } from '../services/omdbApi';
+import ImageWithFallback from '../components/ui/ImageWithFallback';
+import EmptyState from '../components/ui/EmptyState';
+import toast from 'react-hot-toast';
 
 export default function CreatePage() {
   const [searchParams] = useSearchParams();
@@ -27,6 +31,15 @@ export default function CreatePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // OMDb arama state'leri
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<OMDbSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchTimeoutRef = useRef<number | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // 'type' seçilmemişse hata ver (bu kontrol zaten vardı ama artık daha anlamlı)
@@ -40,11 +53,15 @@ export default function CreatePage() {
         createdAt: serverTimestamp()
       };
       await addDoc(collection(db, "mediaItems"), newMediaItem);
+      toast.success('Kayıt başarıyla eklendi');
       setIsLoading(false);
       navigate(`/${type}`); 
     } catch (err) {
       setIsLoading(false);
-      setError("Kayıt sırasında bir hata oluştu."); console.error(err);
+      const errorMessage = "Kayıt sırasında bir hata oluştu.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error(err);
     }
   };
 
@@ -78,6 +95,101 @@ export default function CreatePage() {
   };
 
   const ratingColor = getRatingColor(rating);
+
+  // OMDb arama fonksiyonu (debounce ile)
+  useEffect(() => {
+    // Önceki timeout'u temizle
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Sadece movie ve series için arama yap
+    if (!searchQuery.trim() || (type !== 'movie' && type !== 'series')) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    // Debounce: 500ms bekle
+    searchTimeoutRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      setSearchError(null);
+      
+      try {
+        const results = await searchMovies(searchQuery, type);
+        setSearchResults(results);
+        setShowSearchResults(results.length > 0);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Arama sırasında bir hata oluştu';
+        setSearchError(errorMessage);
+        setSearchResults([]);
+        setShowSearchResults(false);
+        toast.error(errorMessage);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, type]);
+
+  // Dışarı tıklandığında veya ESC tuşuna basıldığında arama sonuçlarını kapat
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, []);
+
+  // Arama sonucu seçildiğinde formu doldur
+  const handleSelectSearchResult = async (result: OMDbSearchResult) => {
+    try {
+      setIsSearching(true);
+      setSearchError(null);
+
+      // Detaylı bilgileri getir
+      const details = await getMovieById(result.imdbID);
+
+      // Formu doldur
+      setTitle(details.Title);
+      setImage(details.Poster && details.Poster !== 'N/A' ? details.Poster : '');
+      setDescription(details.Plot && details.Plot !== 'N/A' ? details.Plot : '');
+      
+      // Rating'i normalize et
+      if (details.imdbRating && details.imdbRating !== 'N/A') {
+        setRating(normalizeRating(details.imdbRating));
+      }
+
+      // Arama sonuçlarını kapat
+      setShowSearchResults(false);
+      setSearchQuery('');
+      toast.success('Film bilgileri yüklendi');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Film detayları getirilirken bir hata oluştu';
+      setSearchError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const previewItem: MediaItem = {
     id: 'preview-id',
@@ -116,6 +228,96 @@ export default function CreatePage() {
               </button>
             </div>
           </div>
+
+          {/* OMDb Arama Bölümü - Sadece movie ve series için */}
+          {(type === 'movie' || type === 'series') && (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg" ref={searchContainerRef}>
+              <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                OMDb'den Ara (Film/Dizi Adı)
+              </label>
+              <div className="relative">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => {
+                      if (searchResults.length > 0) {
+                        setShowSearchResults(true);
+                      }
+                    }}
+                    placeholder={`${type === 'movie' ? 'Film' : 'Dizi'} adı girin...`}
+                    className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSearchResults([]);
+                        setShowSearchResults(false);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <FaTimes />
+                    </button>
+                  )}
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <FaSpinner className="animate-spin text-sky-500" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Arama Sonuçları */}
+                {showSearchResults && searchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto">
+                    {searchResults.map((result) => (
+                      <button
+                        key={result.imdbID}
+                        type="button"
+                        onClick={() => handleSelectSearchResult(result)}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                      >
+                        <ImageWithFallback
+                          src={result.Poster}
+                          alt={result.Title}
+                          className="w-12 h-16 object-cover rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                            {result.Title}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {result.Year}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Hata Mesajı */}
+                {searchError && (
+                  <div className="mt-2 text-sm text-red-500">
+                    {searchError}
+                  </div>
+                )}
+
+                {/* Sonuç Bulunamadı */}
+                {!isSearching && searchQuery.trim() && searchResults.length === 0 && !searchError && (
+                  <div className="mt-4">
+                    <EmptyState
+                      icon={<FaSearch />}
+                      title="Sonuç bulunamadı"
+                      description={`"${searchQuery}" için sonuç bulunamadı. Farklı bir arama terimi deneyin.`}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ... (Formun geri kalanı aynı) ... */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

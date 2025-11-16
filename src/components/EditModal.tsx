@@ -105,7 +105,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                     <input
                       type="text" id="editTitle" value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                     />
                   </div>
 
@@ -116,7 +116,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                     <textarea
                       id="editDesc" rows={3} value={editDesc}
                       onChange={(e) => setEditDesc(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                     />
                   </div>
 
@@ -155,7 +155,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                           type="url" value={editImage}
                           onChange={(e) => setEditImage(e.target.value)}
                           placeholder="https://..."
-                          className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg"
+                          className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-lg"
                         />
                       </Popover.Panel>
                     </Transition>

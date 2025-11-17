@@ -1,6 +1,6 @@
 // src/hooks/useMediaStats.ts
 import { useState, useEffect } from 'react';
-import { db, auth } from '../firebaseConfig';
+import { db } from '../firebaseConfig';
 import { collection, query, where, getCountFromServer } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 

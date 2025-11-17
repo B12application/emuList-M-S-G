@@ -16,7 +16,7 @@ const MUSTAFA_FOTOGRAF_URL = 'https://media.licdn.com/dms/image/v2/D4D03AQHRoyTj
 export default function HomePage() {
   // 5. YENİ: Kullanıcı bilgileri ve yönlendirici
   const { user } = useAuth();
-  const { profile, loading: profileLoading } = useUserProfile();
+  const { profile } = useUserProfile();
   const navigate = useNavigate();
 
   // 6. YENİ: Korumalı Rota Mantığı

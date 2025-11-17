@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 // 1. YENİ: 'auth' import edildi
-import { db, auth } from '../firebaseConfig'; 
+import { db } from '../firebaseConfig'; 
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import type { MediaItem, MediaType } from '../types/media';
 import { FaFilm, FaTv, FaGamepad, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';

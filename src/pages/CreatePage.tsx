@@ -1,7 +1,8 @@
 // src/pages/CreatePage.tsx
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { db } from '../firebaseConfig';
+// 1. YENİ: 'auth' import edildi
+import { db, auth } from '../firebaseConfig'; 
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import type { MediaItem, MediaType } from '../types/media';
 import { FaFilm, FaTv, FaGamepad, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
@@ -12,17 +13,15 @@ import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } fr
 import ImageWithFallback from '../components/ui/ImageWithFallback';
 import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';
+// 2. YENİ: 'useAuth' (kullanıcı hafızası) import edildi
+import { useAuth } from '../context/AuthContext'; 
 
 export default function CreatePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
-  // === HATA DÜZELTMESİ BURADA ===
-  // '|| 'movie'' varsayımını kaldırıyoruz.
   const defaultType = (searchParams.get('type') as MediaType) || undefined;
 
   const [title, setTitle] = useState('');
-  // State artık 'undefined' (tanımsız) olarak başlayabilir
   const [type, setType] = useState<MediaType | undefined>(defaultType); 
   const [rating, setRating] = useState('0'); 
   const [image, setImage] = useState('');
@@ -31,7 +30,10 @@ export default function CreatePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // OMDb arama state'leri
+  // 3. YENİ: Giriş yapan kullanıcı bilgisi alındı
+  const { user } = useAuth();
+
+  // OMDb arama state'leri (Değişmedi)
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<OMDbSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -40,9 +42,18 @@ export default function CreatePage() {
   const searchTimeoutRef = useRef<number | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  // === 4. DEĞİŞİKLİK BURADA (handleSubmit GÜNCELLENDİ) ===
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 'type' seçilmemişse hata ver (bu kontrol zaten vardı ama artık daha anlamlı)
+
+    // 4a. YENİ: Kullanıcı giriş kontrolü
+    if (!user) {
+      const errorMessage = "Kayıt eklemek için giriş yapmalısınız.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return;
+    }
+    
     if (!title || !type) {
       setError("Başlık ve Tür alanları zorunludur."); return;
     }
@@ -50,7 +61,8 @@ export default function CreatePage() {
     try {
       const newMediaItem = {
         title, type, rating, image, description, watched,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        userId: user.uid // 4b. YENİ: Kayda 'userId' eklendi
       };
       await addDoc(collection(db, "mediaItems"), newMediaItem);
       toast.success('Kayıt başarıyla eklendi');
@@ -64,6 +76,7 @@ export default function CreatePage() {
       console.error(err);
     }
   };
+  // === DEĞİŞİKLİK BİTTİ ===
 
   const getTypeButtonCls = (buttonType: MediaType) => {
     const baseCls = "flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold rounded-lg transition-colors";
@@ -96,25 +109,19 @@ export default function CreatePage() {
 
   const ratingColor = getRatingColor(rating);
 
-  // OMDb arama fonksiyonu (debounce ile)
+  // OMDb arama fonksiyonu (Değişmedi)
   useEffect(() => {
-    // Önceki timeout'u temizle
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
-
-    // Sadece movie ve series için arama yap
     if (!searchQuery.trim() || (type !== 'movie' && type !== 'series')) {
       setSearchResults([]);
       setShowSearchResults(false);
       return;
     }
-
-    // Debounce: 500ms bekle
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true);
       setSearchError(null);
-      
       try {
         const results = await searchMovies(searchQuery, type);
         setSearchResults(results);
@@ -137,20 +144,18 @@ export default function CreatePage() {
     };
   }, [searchQuery, type]);
 
-  // Dışarı tıklandığında veya ESC tuşuna basıldığında arama sonuçlarını kapat
+  // Dışarı tıklandığında (Değişmedi)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setShowSearchResults(false);
       }
     };
-
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowSearchResults(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscapeKey);
     return () => {
@@ -159,26 +164,18 @@ export default function CreatePage() {
     };
   }, []);
 
-  // Arama sonucu seçildiğinde formu doldur
+  // Arama sonucu seçildiğinde (Değişmedi)
   const handleSelectSearchResult = async (result: OMDbSearchResult) => {
     try {
       setIsSearching(true);
       setSearchError(null);
-
-      // Detaylı bilgileri getir
       const details = await getMovieById(result.imdbID);
-
-      // Formu doldur
       setTitle(details.Title);
       setImage(details.Poster && details.Poster !== 'N/A' ? details.Poster : '');
       setDescription(details.Plot && details.Plot !== 'N/A' ? details.Plot : '');
-      
-      // Rating'i normalize et
       if (details.imdbRating && details.imdbRating !== 'N/A') {
         setRating(normalizeRating(details.imdbRating));
       }
-
-      // Arama sonuçlarını kapat
       setShowSearchResults(false);
       setSearchQuery('');
       toast.success('Film bilgileri yüklendi');
@@ -191,6 +188,7 @@ export default function CreatePage() {
     }
   };
 
+  // Ön izleme (Değişmedi)
   const previewItem: MediaItem = {
     id: 'preview-id',
     title: title || "Başlık...",
@@ -198,11 +196,11 @@ export default function CreatePage() {
     rating: rating || "0",
     description: description || "Açıklama...",
     watched: watched,
-    // 'type' tanımsızsa, kartta bir hata olmasın diye 'movie' varsay
     type: type || 'movie', 
     createdAt: Timestamp.now()
   };
 
+  // === JSX (TÜM GÖRÜNÜM) DEĞİŞMEDİ ===
   return (
     <section className="py-10 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
@@ -229,7 +227,6 @@ export default function CreatePage() {
             </div>
           </div>
 
-          {/* OMDb Arama Bölümü - Sadece movie ve series için */}
           {(type === 'movie' || type === 'series') && (
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg" ref={searchContainerRef}>
               <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
@@ -269,8 +266,6 @@ export default function CreatePage() {
                     </div>
                   )}
                 </div>
-
-                {/* Arama Sonuçları */}
                 {showSearchResults && searchResults.length > 0 && (
                   <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto">
                     {searchResults.map((result) => (
@@ -297,15 +292,11 @@ export default function CreatePage() {
                     ))}
                   </div>
                 )}
-
-                {/* Hata Mesajı */}
                 {searchError && (
                   <div className="mt-2 text-sm text-red-500">
                     {searchError}
                   </div>
                 )}
-
-                {/* Sonuç Bulunamadı */}
                 {!isSearching && searchQuery.trim() && searchResults.length === 0 && !searchError && (
                   <div className="mt-4">
                     <EmptyState
@@ -319,7 +310,6 @@ export default function CreatePage() {
             </div>
           )}
 
-          {/* ... (Formun geri kalanı aynı) ... */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col gap-5">
               <div>

@@ -1,8 +1,11 @@
 // src/components/Header.tsx
 import { Link, NavLink, useLocation } from 'react-router-dom'; 
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus } from 'react-icons/fa6'; 
+import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt } from 'react-icons/fa'; // 1. Yeni ikonlar eklendi
 import Logo from './Logo'; 
+import { useAuth } from '../context/AuthContext'; // 2. Kullanıcı hafızası (Auth) import edildi
+import { signOut } from 'firebase/auth'; // 3. Çıkış yapma fonksiyonu import edildi
+import { auth } from '../firebaseConfig';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -12,7 +15,7 @@ interface NavLinkRenderProps {
 const getNavCls = ({ isActive }: NavLinkRenderProps) => {
   return isActive
     ? "text-indigo-600 font-semibold px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30"
-    : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-xl";
+  	: "text-gray-700 dark:text-gray-300 hover:text-indigo-600 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-xl";
 };
 
 interface HeaderProps {
@@ -21,19 +24,20 @@ interface HeaderProps {
 
 export default function Header({ onMobileMenuOpen }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth(); // 4. Giriş yapmış kullanıcıyı al
   const location = useLocation();
   
-  // === HATA DÜZELTMESİ BURADA ===
   const pathSegments = location.pathname.split('/');
   const potentialType = pathSegments[1];
-  
-  // 'movie', 'series', veya 'game' sayfasındaysak tipi al
   const createType = (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game') 
     ? potentialType 
     : undefined;
-
-  // Link'i oluştur: Eğer createType tanımsızsa (örn: Home'daysak) ?type= ekleme
   const createLink = createType ? `/create?type=${createType}` : '/create';
+
+  const handleLogout = () => {
+    signOut(auth);
+    // (AuthContext sayesinde çıkış yapıldığını tüm uygulama otomatik olarak anlayacak)
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-200/70 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/70">
@@ -41,48 +45,82 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
         
         <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <Logo className="h-6 w-6 text-sky-500" />
-          <span className="hidden sm:inline">Mustafa Ulusoy</span>
+          {/* 5. DEĞİŞİKLİK: Statik "Mustafa Ulusoy" yazısı kaldırıldı */}
+          {/* <span className="hidden sm:inline">Mustafa Ulusoy</span> */}
         </Link>
 
-        <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
-          <NavLink to="/" end className={getNavCls}>Home</NavLink>
-          <NavLink to="/movie" className={getNavCls}>Movies</NavLink>
-          <NavLink to="/series" className={getNavCls}>Series</NavLink>
-          <NavLink to="/game" className={getNavCls}>Games</NavLink>
-          <NavLink to="/all" className={getNavCls}>All</NavLink>
-        </nav>
+      	{/* 6. DEĞİŞİKLİK: Navigasyon sadece kullanıcı giriş yapmışsa görünür */}
+        {user && (
+          <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
+            <NavLink to="/" end className={getNavCls}>Home</NavLink>
+            <NavLink to="/movie" className={getNavCls}>Movies</NavLink>
+            <NavLink to="/series" className={getNavCls}>Series</NavLink>
+            <NavLink to="/game" className={getNavCls}>Games</NavLink>
+            <NavLink to="/all" className={getNavCls}>All</NavLink>
+          </nav>
+        )}
 
         <div className="flex items-center gap-2">
           
-          {/* 'Create' LİNKİ GÜNCELLENDİ (yeni 'createLink' değişkenini kullanır) */}
-          <Link
-            to={createLink}
-            title="Yeni Kayıt Ekle"
-            className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          >
-            <FaPlus />
-            <span className="sr-only">Yeni Kayıt Ekle</span>
-          </Link>
+          {/* 7. YENİ MANTIK: Kullanıcı durumuna göre butonları göster */}
+          {user ? (
+            // --- KULLANICI GİRİŞ YAPMIŞSA ---
+            <>
+              <Link
+                to={createLink}
+                title="Yeni Kayıt Ekle"
+                className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                <FaPlus />
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                title="Çıkış Yap"
+                className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-red-200 text-red-600 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              >
+                <FaSignOutAlt />
+              </button>
+            </>
+          ) : (
+            // --- KULLANICI GİRİŞ YAPMAMIŞSA ---
+            <>
+              <Link 
+                to="/login"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition"
+              >
+                <FaSignInAlt /> Giriş Yap
+              </Link>
+              <Link 
+                to="/signup"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-xl transition"
+              >
+                <FaUserPlus /> Kayıt Ol
+              </Link>
+            </>
+          )}
 
           <button
-            onClick={toggleTheme}
-            className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            title="Tema"
-          >
-            {isDark ? <FaMoon /> : <FaSun />}
-            <span className="sr-only">Tema Değiştir</span>
-          </button>
+          	onClick={toggleTheme}
+            // 8. DEĞİŞİKLİK: Sadece giriş yaptıysa göster
+          	className={`h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition ${!user ? 'hidden sm:inline-flex' : ''}`}
+          	title="Tema"
+        	>
+          	{isDark ? <FaMoon /> : <FaSun />}
+        	</button>
 
-          <button
-            onClick={onMobileMenuOpen}
-          	className="md:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          	title="Menü"
-          >
-          	<FaBars />
-          	<span className="sr-only">Menüyü Aç</span>
-          </button>
-        </div>
-      </div>
-    </header>
+        	{/* 9. DEĞİŞİKLİK: Mobil menü butonu sadece giriş yaptıysa görünür */}
+          {user && (
+            <button
+              onClick={onMobileMenuOpen}
+              className="md:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              title="Menü"
+            >
+              <FaBars />
+            </button>
+          )}
+      	</div>
+    	</div>
+  	</header>
   );
 }

@@ -1,6 +1,6 @@
 // src/hooks/useMedia.ts
 import { useState, useEffect } from 'react';
-import { db } from '../firebaseConfig';
+import { db, auth } from '../firebaseConfig'; // 1. auth import edildi
 import {
   collection,
   query,
@@ -8,11 +8,15 @@ import {
   orderBy,
   getDocs,
   Query,
-} from 'firebase/firestore'; // 1. 'limit', 'startAfter', 'QueryDocumentSnapshot' kaldırıldı
+  limit,
+  startAfter, 
+  QueryDocumentSnapshot 
+} from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-// 2. 'PAGE_SIZE' kaldırıldı. 'page' parametresi kaldırıldı.
+const PAGE_SIZE = 16; 
+
 export default function useMedia(
   type: FilterType, 
   filter: FilterStatus 
@@ -20,22 +24,40 @@ export default function useMedia(
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [key, setKey] = useState(0); 
+
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastVisibleDoc, setLastVisibleDoc] = useState<QueryDocumentSnapshot | null>(null);
+  const [hasMoreItems, setHasMoreItems] = useState(true);
   
-  // 3. 'loadingMore', 'lastVisibleDoc', 'hasMoreItems' state'leri kaldırıldı.
+  // 2. YENİ: Giriş yapan kullanıcının kimliğini (UID) al
+  const currentUserId = auth.currentUser?.uid;
 
   const refetch = () => {
     setKey(prevKey => prevKey + 1);
     setItems([]);
+    setLastVisibleDoc(null);
   };
 
   useEffect(() => {
     const fetchMedia = async () => {
       setLoading(true);
+      setHasMoreItems(true); 
+
+      // 3. YENİ: Kullanıcı giriş yapmamışsa sorguyu çalıştırma
+      if (!currentUserId) {
+        setLoading(false);
+        setItems([]);
+        return; 
+      }
       
       try {
         let q: Query<DocumentData> = collection(db, "mediaItems");
 
-        // Filtreler (değişmedi)
+        // 4. YENİ: EN ÖNEMLİ KURAL
+        // Sorguya "sahibi benim olanları" ekle
+        q = query(q, where("userId", "==", currentUserId));
+
+        // Filtreler
         if (type !== 'all') {
           q = query(q, where("type", "==", type));
         }
@@ -45,20 +67,24 @@ export default function useMedia(
           q = query(q, where("watched", "==", false));
         }
         
-        // Sıralama (değişmedi)
         q = query(q, orderBy("rating", "desc"));
         
-        // 4. 'limit(PAGE_SIZE)' komutu kaldırıldı. Artık TÜMÜNÜ çekecek.
-        const documentSnapshots = await getDocs(q);
+        const firstPageQuery = query(q, limit(PAGE_SIZE));
+        const documentSnapshots = await getDocs(firstPageQuery);
 
         const mediaList = documentSnapshots.docs.map(doc => ({
           ...doc.data() as Omit<MediaItem, 'id'>,
           id: doc.id
         }));
         
-        setItems(mediaList);
-        
-        // 5. Tüm 'loadMore' (sayfalama) mantığı kaldırıldı.
+        setItems(mediaList); 
+
+        const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+        setLastVisibleDoc(lastDoc);
+
+        if (documentSnapshots.docs.length < PAGE_SIZE) {
+          setHasMoreItems(false);
+        }
         
       } catch (e) {
         console.error("Veri çekilemedi: ", e);
@@ -67,8 +93,50 @@ export default function useMedia(
       }
     };
     fetchMedia();
-  }, [type, filter, key]); 
+  // 5. currentUserId'yi bağımlılıklara ekle
+  }, [type, filter, key, currentUserId]); 
 
-  // 6. 'loadMore' vb. fonksiyonlar return'den kaldırıldı.
-  return { items, loading, refetch };
+  const loadMore = async () => {
+    // 6. YENİ: Kullanıcı ID'sini tekrar al
+    const currentUserId = auth.currentUser?.uid;
+    if (!lastVisibleDoc || loadingMore || !currentUserId) return; 
+    
+    setLoadingMore(true);
+    try {
+      let q: Query<DocumentData> = collection(db, "mediaItems");
+      
+      // 7. YENİ: "Daha Fazla Yükle" sorgusuna da 'userId' ekle
+      q = query(q, where("userId", "==", currentUserId));
+      
+      if (type !== 'all') q = query(q, where("type", "==", type));
+      if (filter === 'watched') q = query(q, where("watched", "==", true));
+      else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
+      q = query(q, orderBy("rating", "desc"));
+
+      const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));
+      
+      const documentSnapshots = await getDocs(nextQuery);
+
+      const newItems = documentSnapshots.docs.map(doc => ({
+        ...doc.data() as Omit<MediaItem, 'id'>,
+        id: doc.id
+      }));
+
+      setItems(prevItems => [...prevItems, ...newItems]); 
+
+      const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+      setLastVisibleDoc(lastDoc);
+
+      if (documentSnapshots.docs.length < PAGE_SIZE) {
+        setHasMoreItems(false);
+      }
+
+    } catch (e) {
+      console.error("Daha fazla veri çekilemedi: ", e);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  return { items, loading, refetch, loadMore, loadingMore, hasMoreItems };
 }

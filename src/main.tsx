@@ -4,10 +4,12 @@ import App from './App.tsx';
 import './index.css';
 import { ThemeProvider } from './context/ThemeContext.tsx';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
+      <AuthProvider>
       <App />
       <Toaster
         position="top-right"
@@ -31,6 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           },
         }}
       />
+      </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

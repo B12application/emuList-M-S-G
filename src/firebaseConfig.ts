@@ -1,6 +1,9 @@
 // src/firebaseConfig.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
+
 
 // .env dosyasındaki değişkenleri oku
 const firebaseConfig = {
@@ -15,6 +18,8 @@ const firebaseConfig = {
 
 // Firebase'i başlat
 const app = initializeApp(firebaseConfig);
+
+export const auth = getAuth(app);
 
 // Veritabanını 'db' olarak dışa aktar
 export const db = getFirestore(app);

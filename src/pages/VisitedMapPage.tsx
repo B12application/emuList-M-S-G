@@ -1,127 +1,55 @@
 // src/pages/VisitedMapPage.tsx
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc } from 'firebase/firestore';
 import { FaSpinner } from 'react-icons/fa';
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { FaPlus, FaMinus, FaCompress } from "react-icons/fa6";
 
-// === 1. İZOLE EDİLMİŞ HARİTA BİLEŞENİ ===
-// Bu bileşen, Tooltip (mouse) hareket ettiğinde YENİLENMEZ (Re-render olmaz).
-// Bu sayede harita bozulmaz.
-const TurkeyMap = memo(({ 
-  svgContent, 
-  visitedProvinces, 
-  isDark,
-  onProvinceClick, 
-  onProvinceHover, 
-  onProvinceLeave 
-}: { 
-  svgContent: string, 
-  visitedProvinces: string[], 
-  isDark: boolean,
-  onProvinceClick: (id: string) => void,
-  onProvinceHover: (e: MouseEvent, label: string) => void,
-  onProvinceLeave: () => void
-}) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Renkler
-  const defaultColor = isDark ? "#374151" : "#E5E7EB"; 
-  const visitedColor = "#10B981"; 
-  const hoverColor = "#0ea5e9"; 
-  const strokeColor = isDark ? "#1f2937" : "#FFFFFF";
-
-  // Haritayı Boyama ve Olayları Ekleme
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const paths = container.querySelectorAll('path');
-
-    paths.forEach((path) => {
-      // ID Kontrolü ve Düzeltme (TR-34 -> TR34 gibi uyumsuzlukları önlemek için)
-      // SVG'den gelen ID'deki tireyi (-) kaldırıyoruz ki veritabanı ile eşleşsin.
-      const rawId = path.id; 
-      if (!rawId || !rawId.startsWith('TR')) return;
-      
-      // Veritabanı formatına (TR34) çevir
-      const provinceId = rawId.replace('-', ''); 
-      
-      const provinceName = path.getAttribute('title') || path.getAttribute('name') || provinceId;
-      const plateNumber = provinceId.replace('TR', '');
-      const label = `${plateNumber} - ${provinceName}`;
-
-      const isVisited = visitedProvinces.includes(provinceId);
-
-      // Stilleri Doğrudan Uygula
-      path.style.fill = isVisited ? visitedColor : defaultColor;
-      path.style.stroke = strokeColor;
-      path.style.strokeWidth = "1";
-      path.style.cursor = "pointer";
-      path.style.transition = "fill 0.2s ease";
-
-      // Önceki event listener'ları temizle (Çakışmayı önler)
-      path.onclick = null;
-      path.onmouseenter = null;
-      path.onmouseleave = null;
-      path.onmousemove = null;
-
-      // Yeni Eventleri Ekle
-      path.onmouseenter = (e: any) => {
-        path.style.fill = hoverColor;
-        onProvinceHover(e, label);
-      };
-      
-      path.onmousemove = (e: any) => {
-         // Mouse hareketini üst bileşene ilet
-         onProvinceHover(e, label);
-      };
-
-      path.onmouseleave = () => {
-        path.style.fill = visitedProvinces.includes(provinceId) ? visitedColor : defaultColor;
-        onProvinceLeave();
-      };
-
-      path.onclick = () => {
-        onProvinceClick(provinceId);
-      };
-    });
-  }, [svgContent, visitedProvinces, isDark, defaultColor, visitedColor, hoverColor, strokeColor, onProvinceClick, onProvinceHover, onProvinceLeave]);
-
-  return (
-    <div 
-      ref={containerRef}
-      className="w-full h-full flex justify-center"
-      dangerouslySetInnerHTML={{ __html: svgContent }} 
-    />
-  );
-});
-
-
-// === 2. ANA SAYFA BİLEŞENİ ===
 export default function VisitedMapPage() {
   const { isDark } = useTheme();
   const { user } = useAuth();
   const [visitedProvinces, setVisitedProvinces] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<{ show: boolean; text: string; x: number; y: number }>({ show: false, text: '', x: 0, y: 0 });
   
-  // Tooltip state'i (Sadece bu değişecek, harita değil)
-  const [tooltip, setTooltip] = useState({ show: false, text: '', x: 0, y: 0 });
+  const svgObjectRef = useRef<HTMLObjectElement>(null); 
+  const [isSvgLoaded, setIsSvgLoaded] = useState(false);
+  const listenersRef = useRef<(() => void)[]>([]); 
 
-  // SVG Dosyasını Çek
-  useEffect(() => {
-    fetch('/turkey-map.svg')
-      .then(res => res.text())
-      .then(text => setSvgContent(text))
-      .catch(err => console.error("SVG yüklenemedi:", err));
-  }, []);
+  // Renkler
+  const defaultColor = isDark ? "#374151" : "#E5E7EB"; 
+  const visitedColor = "#10B981"; 
+  const hoverColor = "#0ea5e9"; 
+  const strokeColor = isDark ? "#1f2937" : "#FFFFFF"; 
 
-  // Firebase Verisi Çek
+  // Tıklama Fonksiyonu
+  const handleProvinceClick = useCallback(async (provinceId: string) => {
+    if (!user) return;
+    const userDocRef = doc(db, 'users', user.uid);
+    const isVisited = visitedProvinces.includes(provinceId);
+    
+    // Optimistik update
+    setVisitedProvinces(prev => 
+      isVisited ? prev.filter(p => p !== provinceId) : [...prev, provinceId]
+    );
+
+    try {
+      if (isVisited) await updateDoc(userDocRef, { visitedProvinces: arrayRemove(provinceId) });
+      else await updateDoc(userDocRef, { visitedProvinces: arrayUnion(provinceId) });
+    } catch (e) { 
+      console.error("Kaydetme hatası: ", e);
+      setVisitedProvinces(visitedProvinces); // Hata olursa geri al
+    }
+  }, [user, visitedProvinces]); 
+
+  // Firebase'den veri çekme
   useEffect(() => {
     if (!user) { setLoading(false); return; }
-    const fetchVisited = async () => {
+    const fetchVisitedProvinces = async () => {
+      setLoading(true);
       try {
         const userDocRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(userDocRef);
@@ -134,44 +62,74 @@ export default function VisitedMapPage() {
       } catch (error) { console.error("Veri hatası:", error); } 
       finally { setLoading(false); }
     };
-    fetchVisited();
+    fetchVisitedProvinces();
   }, [user]);
 
-  // Tıklama Mantığı (Callback ile sabitlendi)
-  const handleProvinceClick = useCallback(async (provinceId: string) => {
-    if (!user) return;
-    const userDocRef = doc(db, 'users', user.uid);
+  // Boyama ve etkileşim kurma fonksiyonu
+  const setupMapInteractions = useCallback(() => {
+    if (!isSvgLoaded || !svgObjectRef.current) return;
+    const svgDoc = svgObjectRef.current.contentDocument;
+    if (!svgDoc) return; 
+
+    // Önceki listener'ları temizle
+    listenersRef.current.forEach(cleanup => cleanup());
+    listenersRef.current = [];
+
+    const paths = svgDoc.querySelectorAll('path[id^="TR"]');
     
-    // Güncel state'i al (prev kullanarak)
-    setVisitedProvinces(prev => {
-      const isVisited = prev.includes(provinceId);
-      const newVisited = isVisited 
-        ? prev.filter(p => p !== provinceId) 
-        : [...prev, provinceId];
-      
-      // Firebase güncellemesi (State güncellemesinin yan etkisi olarak)
-      (async () => {
-        try {
-          if (isVisited) await updateDoc(userDocRef, { visitedProvinces: arrayRemove(provinceId) });
-          else await updateDoc(userDocRef, { visitedProvinces: arrayUnion(provinceId) });
-        } catch (e) { console.error("Kaydetme hatası", e); }
-      })();
+    paths.forEach(path => {
+      const svgPath = path as SVGPathElement;
+      const provinceId = svgPath.id;
+      const provinceName = svgPath.getAttribute('title') || svgPath.getAttribute('name') || provinceId;
+      if (!provinceId || !provinceId.startsWith('TR')) return;
 
-      return newVisited;
+      const isVisited = visitedProvinces.includes(provinceId);
+      const plateNumber = provinceId.replace('TR', '');
+      const label = `${plateNumber} - ${provinceName}`;
+
+      // Stiller
+      svgPath.style.fill = isVisited ? visitedColor : defaultColor;
+      svgPath.style.stroke = strokeColor;
+      svgPath.style.cursor = "pointer";
+      svgPath.style.transition = "fill 0.15s ease-in-out";
+
+      // Olayları tanımla
+      const handleMouseEnter = (e: MouseEvent) => {
+        svgPath.style.fill = hoverColor;
+        setTooltip(() => ({ show: true, text: label, x: e.clientX, y: e.clientY }));
+      };
+      const handleMouseMove = (e: MouseEvent) => {
+        setTooltip(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
+      };
+      const handleMouseLeave = () => {
+        const isCurrentlyVisited = visitedProvinces.includes(provinceId);
+        svgPath.style.fill = isCurrentlyVisited ? visitedColor : defaultColor;
+        setTooltip(prev => ({ ...prev, show: false }));
+      };
+      const handleClick = () => handleProvinceClick(provinceId);
+
+      // Olayları Ekle
+      svgPath.addEventListener('mouseenter', handleMouseEnter as EventListener);
+      svgPath.addEventListener('mousemove', handleMouseMove as EventListener);
+      svgPath.addEventListener('mouseleave', handleMouseLeave as EventListener);
+      svgPath.addEventListener('click', handleClick as EventListener);
+
+      // Temizleme listesine ekle
+      listenersRef.current.push(() => {
+        svgPath.removeEventListener('mouseenter', handleMouseEnter as EventListener);
+        svgPath.removeEventListener('mousemove', handleMouseMove as EventListener);
+        svgPath.removeEventListener('mouseleave', handleMouseLeave as EventListener);
+        svgPath.removeEventListener('click', handleClick as EventListener);
+      });
     });
-  }, [user]);
+  }, [isSvgLoaded, visitedProvinces, isDark, strokeColor, visitedColor, defaultColor, hoverColor, handleProvinceClick]);
 
-  // Tooltip Yönetimi
-  const handleHover = useCallback((e: MouseEvent, text: string) => {
-    setTooltip({ show: true, text, x: e.clientX, y: e.clientY });
-  }, []);
+  // Harita yüklendiğinde veya veriler değiştiğinde haritayı "boya"
+  useEffect(() => {
+    setupMapInteractions();
+  }, [visitedProvinces, isDark, setupMapInteractions]);
 
-  const handleLeave = useCallback(() => {
-    setTooltip(prev => ({ ...prev, show: false }));
-  }, []);
-
-
-  if (loading || !svgContent) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center p-8 mt-6">
         <FaSpinner className="animate-spin h-8 w-8 text-sky-500" />
@@ -186,7 +144,7 @@ export default function VisitedMapPage() {
         Ziyaret Ettiğim Yerler
       </h1>
       
-      {/* Tooltip (Haritadan bağımsız, üst katmanda) */}
+      {/* Tooltip */}
       {tooltip.show && (
         <div 
           className="fixed z-50 px-3 py-1.5 bg-gray-800 text-white text-sm font-medium rounded shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-full -mt-4 whitespace-nowrap"
@@ -200,18 +158,95 @@ export default function VisitedMapPage() {
         Ziyaret ettiğin ili seçmek için harita üzerinden tıkla.
       </p>
 
-      <div className="w-full h-auto border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 p-4">
-        
-        {/* İzole Harita Bileşeni */}
-        <TurkeyMap 
-          svgContent={svgContent}
-          visitedProvinces={visitedProvinces}
-          isDark={isDark}
-          onProvinceClick={handleProvinceClick}
-          onProvinceHover={handleHover}
-          onProvinceLeave={handleLeave}
-        />
+      {/* GÜNCELLENMİŞ ZOOM KOMPONENTİ */}
+      <div className="w-full h-[70vh] border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 relative">
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.5}
+          maxScale={8}
+          centerOnInit={true}
+          wheel={{ step: 0.2 }}
+          panning={{ 
+            velocityDisabled: true,
+            excluded: ['button', 'input', 'select', 'textarea'] 
+          }}
+          doubleClick={{ disabled: true }}
+        >
+          {({ zoomIn, zoomOut, resetTransform, centerView }) => (
+            <>
+              {/* Kontrol Butonları */}
+              <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+                <button 
+                  onClick={() => zoomIn()} 
+                  className="p-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"
+                  title="Yakınlaş"
+                >
+                  <FaPlus />
+                </button>
+                <button 
+                  onClick={() => zoomOut()} 
+                  className="p-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"
+                  title="Uzaklaş"
+                >
+                  <FaMinus />
+                </button>
+                <button 
+                  onClick={() => { resetTransform(); centerView(1); }} 
+                  className="p-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"
+                  title="Sıfırla"
+                >
+                  <FaCompress />
+                </button>
+              </div>
 
+              {/* Harita Bileşeni - Geliştirilmiş Stil */}
+              <TransformComponent
+                wrapperStyle={{
+                  width: "100%",
+                  height: "100%",
+                  cursor: "grab"
+                }}
+                contentStyle={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <div className="flex items-center justify-center w-full h-full p-4">
+                  <object
+                    ref={svgObjectRef}
+                    id="turkey-svg-map"
+                    type="image/svg+xml"
+                    data="/turkey-map.svg"
+                    className="max-w-full max-h-full w-auto h-auto"
+                    style={{ 
+                      minWidth: "300px",
+                      minHeight: "300px"
+                    }}
+                    onLoad={() => setIsSvgLoaded(true)}
+                  >
+                    <div className="text-center text-gray-500 dark:text-gray-400">
+                      Harita yüklenemedi. Lütfen sayfayı yenileyin.
+                    </div>
+                  </object>
+                </div>
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
+      </div>
+
+      {/* Kullanım Talimatları */}
+      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+        <h3 className="font-medium mb-2">Kullanım Kılavuzu:</h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Haritayı kaydırmak için <strong>tıklayıp sürükleyin</strong></li>
+          <li>Yakınlaştırmak için <strong>mouse tekerleğini ileri itin</strong> veya <strong>+ butonuna tıklayın</strong></li>
+          <li>Uzaklaştırmak için <strong>mouse tekerleğini geri çekin</strong> veya <strong>- butonuna tıklayın</strong></li>
+          <li>Görünümü sıfırlamak için <strong>⤢ butonuna tıklayın</strong></li>
+        </ul>
       </div>
     </section>
   );

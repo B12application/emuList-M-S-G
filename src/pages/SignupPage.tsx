@@ -99,7 +99,8 @@ export default function SignupPage() {
           uid: user.uid,
           email: user.email,
           displayName: user.displayName, // Google'dan gelen adı al
-          gender: '' // Cinsiyet belli değil
+          gender: '',
+          visitedProvinces: []
         });
       }
       navigate('/');

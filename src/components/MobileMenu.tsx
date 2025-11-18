@@ -1,6 +1,6 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation } from 'react-router-dom'; 
-import { FaHome, FaFilm, FaTv, FaGamepad, FaPlus, FaClone } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaPlus, FaClone,FaMap } from 'react-icons/fa';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -45,6 +45,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </NavLink>
           <NavLink onClick={onClose} to="/all" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
             <FaClone className="w-6" /> All
+          </NavLink>
+          <NavLink onClick={onClose} to="/map" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+            <FaMap className="w-6" /> Harita
           </NavLink>
           
           <hr className="my-2 border-gray-200 dark:border-gray-700" />

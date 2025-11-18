@@ -1,11 +1,12 @@
 // src/components/Header.tsx
 import { Link, NavLink, useLocation } from 'react-router-dom'; 
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt } from 'react-icons/fa'; // 1. Yeni ikonlar eklendi
+import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt,FaMap } from 'react-icons/fa'; // 1. Yeni ikonlar eklendi
 import Logo from './Logo'; 
 import { useAuth } from '../context/AuthContext'; // 2. Kullanıcı hafızası (Auth) import edildi
 import { signOut } from 'firebase/auth'; // 3. Çıkış yapma fonksiyonu import edildi
 import { auth } from '../firebaseConfig';
+
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -57,6 +58,8 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
             <NavLink to="/series" className={getNavCls}>Series</NavLink>
             <NavLink to="/game" className={getNavCls}>Games</NavLink>
             <NavLink to="/all" className={getNavCls}>All</NavLink>
+
+            <NavLink to="/map" className={getNavCls}><FaMap className="mr-1" /> Harita</NavLink>
           </nav>
         )}
 

@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext.tsx';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext.tsx'
 
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>

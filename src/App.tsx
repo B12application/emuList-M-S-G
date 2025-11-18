@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import VisitedMapPage from './pages/VisitedMapPage';
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -27,7 +29,7 @@ const router = createBrowserRouter([
       { path: 'all', element: <MediaListPage /> },
       { path: 'create', element: <CreatePage /> },
       
-      
+      { path: 'map', element: <VisitedMapPage /> },
     ]
   },
   

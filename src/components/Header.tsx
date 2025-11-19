@@ -42,24 +42,26 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-200/70 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/70">
-      <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        
-        <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <Logo className="h-6 w-6 text-sky-500" />
-          {/* 5. DEĞİŞİKLİK: Statik "Mustafa Ulusoy" yazısı kaldırıldı */}
-          {/* <span className="hidden sm:inline">Mustafa Ulusoy</span> */}
-        </Link>
+      <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        
+        <Link to="/" className="flex items-center gap-2 font-bold tracking-tighter text-2xl">
+          <Logo className="h-8 w-8 text-rose-500" />
+          
+          <span className="hidden sm:inline bg-gradient-to-r from-rose-500 to-orange-500 bg-clip-text text-transparent">
+            B12
+          </span>
+        </Link>
 
       	{/* 6. DEĞİŞİKLİK: Navigasyon sadece kullanıcı giriş yapmışsa görünür */}
         {user && (
           <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
-            <NavLink to="/" end className={getNavCls}>Home</NavLink>
-            <NavLink to="/movie" className={getNavCls}>Movies</NavLink>
-            <NavLink to="/series" className={getNavCls}>Series</NavLink>
-            <NavLink to="/game" className={getNavCls}>Games</NavLink>
-            <NavLink to="/all" className={getNavCls}>All</NavLink>
+            <NavLink to="/" end className={getNavCls}>Anasayfa</NavLink>
+            <NavLink to="/movie" className={getNavCls}>Filmler</NavLink>
+            <NavLink to="/series" className={getNavCls}>Diziler</NavLink>
+            <NavLink to="/game" className={getNavCls}>Oyunlar</NavLink>
+            <NavLink to="/all" className={getNavCls}>Hepsi</NavLink>
 
-            <NavLink to="/map" className={getNavCls}><FaMap className="mr-1" /> Harita</NavLink>
+            <NavLink to="/map" className={getNavCls}><FaMap className="mr-1" /></NavLink>
           </nav>
         )}
 

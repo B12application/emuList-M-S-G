@@ -57,41 +57,48 @@ export default function HomePage() {
   return (
     <section className="py-10">
       
-      {/* === GÜNCELLENMİŞ AÇILIŞ EKRANI === */}
       <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-16">
-        <div className="flex-shrink-0">
-          <img 
-            // 9. YENİ: src dinamik hale geldi
-            src={getAvatar()} 
-          	alt="Profil" 
-          	className="h-40 w-40 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-800"
-        	/>
-      	</div>
-      	
+        
+        <div className="flex-shrink-0">
+          <img 
+            src={getAvatar()} 
+            alt="Profil" 
+            className="h-40 w-40 rounded-full object-cover shadow-xl border-4 border-white dark:border-gray-800 ring-4 ring-rose-100 dark:ring-rose-900/30"
+          />
+        </div>
       	<div>
-        	<h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-            {/* 10. YENİ: İsim dinamik hale geldi */}
-          	{displayName}
-        	</h1>
-        	<p className="mt-4 text-lg leading-8 text-gray-600 dark:text-gray-300">
-          	Film, dizi ve oyun arşivine hoş geldin.
-        	</p>
-        	<div className="mt-6 flex gap-4">
-          	<Link 
-            	to="/all" 
-          	  className="px-5 py-3 rounded-lg bg-sky-600 text-white font-semibold text-sm hover:bg-sky-700 transition"
-          	>
-            	Tüm Arşivi Gör
-          	</Link>
-          	<Link 
-            	to="/create" 
-            	className="px-5 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          	>
-            	Yeni Kayıt Ekle
-          	</Link>
-        	</div>
-      	</div>
-    	</div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 text-xs font-bold uppercase tracking-wide">
+              Unutkanlığa Son
+            </span>
+          </div>
+          
+          <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white sm:text-6xl">
+            Dijital Hafıza <span className="text-rose-500">Vitamini.</span>
+          </h1>
+          
+          <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+            <strong>{displayName}</strong>, hafızanı taze tutmaya hoş geldin! 
+            İzlediğin filmleri, bitirdiğin oyunları unutmamak için günde bir doz 
+            <strong> B12</strong> almayı unutma. 
+          </p>
+          
+          <div className="mt-8 flex gap-4">
+            <Link 
+              to="/create" 
+              className="px-6 py-3 rounded-xl bg-rose-600 text-white font-bold shadow-lg shadow-rose-500/30 hover:bg-rose-700 hover:shadow-rose-500/50 transition-all transform hover:-translate-y-1"
+            >
+              + Doz Ekle
+            </Link>
+            <Link 
+              to="/all" 
+              className="px-6 py-3 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold border border-gray-200 dark:border-gray-700 hover:border-rose-200 dark:hover:border-rose-900 transition-all"
+            >
+              Arşivi İncele
+            </Link>
+          </div>
+        </div>
+      </div>
 
     	{/* === İSTATİSTİK BÖLÜMÜ (Değişmedi) === */}
     	<div className="mt-16 mb-12">

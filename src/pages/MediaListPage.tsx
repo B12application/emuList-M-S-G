@@ -1,7 +1,7 @@
 // src/pages/MediaListPage.tsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaClone, FaSpinner, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -15,22 +15,28 @@ export default function MediaListPage() {
   const type: FilterType = (location.pathname.split('/')[1] as FilterType) || 'all';
   const filter: FilterStatus = (searchParams.get('filter') as FilterStatus) || 'all';
   
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState<MediaItem[]>([]);
-  
-  const { items, loading, refetch } = useMedia(type, filter);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredItems, setFilteredItems] = useState<MediaItem[]>([]);
 
-  useEffect(() => {
-    if (searchQuery === '') {
-      setFilteredItems(items);
-    } else {
-      setFilteredItems(
-        items.filter(item =>
-          item.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    }
-  }, [items, searchQuery]); 
+  // 1. YENİ: Arama kutusu dolu mu?
+  const isSearchActive = searchQuery.trim().length > 0;
+  
+  // 2. GÜNCELLENDİ: 'isSearchActive' bilgisini hook'a gönderiyoruz.
+  // Ayrıca silinen 'loadMore' vb. özellikleri geri aldık.
+  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive);
+
+  // Arama Filtrelemesi (Client-Side)
+  useEffect(() => {
+    if (!isSearchActive) {
+      setFilteredItems(items);
+    } else {
+      setFilteredItems(
+        items.filter(item =>
+          item.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+  }, [items, searchQuery, isSearchActive]); 
 
   const getActiveTab = (t: FilterType) => {
     return type === t
@@ -45,7 +51,7 @@ export default function MediaListPage() {
   };
 
   const handleFilterChange = (newFilter: FilterStatus) => {
-    refetch(); 
+    refetch(); 
     setSearchParams(prev => {
       prev.set('filter', newFilter);
       return prev;
@@ -70,66 +76,85 @@ export default function MediaListPage() {
           <Link className={`px-4 py-2 text-sm transition ${getActiveTab("series")}`} to="/series"><FaTv className="mr-2 inline" /> Series</Link>
           <Link className={`px-4 py-2 text-sm transition ${getActiveTab("game")}`} to="/game"><FaGamepad className="mr-2 inline" /> Games</Link>
           <Link className={`px-4 py-2 text-sm transition ${getActiveTab("all")}`} to="/all"><FaClone className="mr-2 inline" /> All</Link>
-      	</div>
-      	<div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          <div className="flex rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <button title="All" className={`px-4 py-2 text-sm transition ${getActiveFilter("all")}`} onClick={() => handleFilterChange('all')}>
-              <FaGlobeAmericas />
-            </button>
-            <button title="Watched" className={`px-4 py-2 text-sm transition ${getActiveFilter("watched")}`} onClick={() => handleFilterChange('watched')}>
-              <FaEye />
-            </button>
-            <button title="Not Watched" className={`px-4 py-2 text-sm transition ${getActiveFilter("not-watched")}`} onClick={() => handleFilterChange('not-watched')}>
-              <FaEyeSlash />
-            </button>
-          </div>
-          <div className="relative flex-1 sm:flex-auto">
-            <input 
-              type="text"
-              placeholder="Başlığa göre ara..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-full px-4 py-2 pl-10 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm"
-            />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          </div>
-        </div>
-    	</div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <div className="flex rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <button title="All" className={`px-4 py-2 text-sm transition ${getActiveFilter("all")}`} onClick={() => handleFilterChange('all')}>
+              <FaGlobeAmericas />
+            </button>
+            <button title="Watched" className={`px-4 py-2 text-sm transition ${getActiveFilter("watched")}`} onClick={() => handleFilterChange('watched')}>
+              <FaEye />
+            </button>
+            <button title="Not Watched" className={`px-4 py-2 text-sm transition ${getActiveFilter("not-watched")}`} onClick={() => handleFilterChange('not-watched')}>
+              <FaEyeSlash />
+            </button>
+          </div>
+          <div className="relative flex-1 sm:flex-auto">
+            <input 
+              type="text"
+              placeholder="Başlığa göre ara..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-full px-4 py-2 pl-10 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm"
+            />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+        </div>
+      </div>
 
-    {loading ? (
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-    ) : (
-      	<>
-          {/* === HATA DÜZELTMESİ BURADA === */}
-          {/* 'Vbsp;' ve 'aram/>' gibi bozuk karakterler temizlendi */}
-        	<div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          	{filteredItems.map(item => (
-            	<MediaCard 
-              	key={item.id} 
-              	item={item} 
-              	refetch={refetch} 
-            	/>
-          	))}
-        	</div>
-          {/* === HATA DÜZELTMESİ BİTTİ === */}
+      {loading ? (
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredItems.map(item => (
+              <MediaCard 
+                key={item.id} 
+                item={item} 
+                refetch={refetch} 
+              />
+            ))}
+          </div>
 
-        {filteredItems.length === 0 && !loading && (
-          <EmptyState
-            icon={<FaInbox />}
-            title={searchQuery ? "Arama sonucu bulunamadı" : "Henüz kayıt yok"}
-            description={
-              searchQuery
-                ? `"${searchQuery}" aramasına uygun kayıt bulunamadı. Farklı bir arama terimi deneyin.`
-                : "Bu filtreye uygun kayıt bulunmuyor. Yeni bir kayıt eklemek için 'Yeni Kayıt Ekle' butonunu kullanabilirsiniz."
-            }
-          />
-        )}
-      	</>
-    	)}
-  	</section>
+          {/* 3. YENİ: "Daha Fazla Yükle" butonu (Sadece arama YOKSA görünür) */}
+          <div className="mt-8 text-center">
+            {hasMoreItems && !isSearchActive ? (
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-6 py-3 rounded-lg bg-sky-600 text-white font-semibold text-sm hover:bg-sky-700 transition disabled:opacity-50 disabled:bg-sky-400"
+              >
+                {loadingMore ? (
+                  <FaSpinner className="animate-spin h-5 w-5 inline-block" />
+                ) : (
+                  "Daha Fazla Yükle"
+                )}
+              </button>
+            ) : (
+              // Arama yoksa ve daha fazla veri yoksa
+              items.length > 0 && !isSearchActive && (
+                <p className="text-gray-500 dark:text-gray-400">Gösterilecek başka sonuç yok.</p>
+              )
+            )}
+          </div>
+
+          {filteredItems.length === 0 && !loading && (
+            <EmptyState
+              icon={<FaInbox />}
+              title={searchQuery ? "Arama sonucu bulunamadı" : "Henüz kayıt yok"}
+              description={
+                searchQuery
+                  ? `"${searchQuery}" aramasına uygun kayıt bulunamadı. Farklı bir arama terimi deneyin.`
+                  : "Bu filtreye uygun kayıt bulunmuyor. Yeni bir kayıt eklemek için 'Yeni Kayıt Ekle' butonunu kullanabilirsiniz."
+              }
+            />
+          )}
+        </>
+      )}
+    </section>
   );
 }

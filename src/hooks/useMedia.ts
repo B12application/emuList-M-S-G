@@ -1,6 +1,6 @@
 // src/hooks/useMedia.ts
 import { useState, useEffect } from 'react';
-import { db, auth } from '../firebaseConfig'; // 1. auth import edildi
+import { db, auth } from '../firebaseConfig';
 import {
   collection,
   query,
@@ -9,8 +9,8 @@ import {
   getDocs,
   Query,
   limit,
-  startAfter, 
-  QueryDocumentSnapshot 
+  startAfter, // Geri geldi
+  QueryDocumentSnapshot // Geri geldi
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
@@ -19,19 +19,18 @@ const PAGE_SIZE = 16;
 
 export default function useMedia(
   type: FilterType, 
-  filter: FilterStatus 
+  filter: FilterStatus,
+  isSearchActive: boolean // 1. YENİ: Arama yapılıyor mu?
 ) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [key, setKey] = useState(0); 
 
+  // Silinen State'ler GERİ GELDİ
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastVisibleDoc, setLastVisibleDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [hasMoreItems, setHasMoreItems] = useState(true);
   
-  // 2. YENİ: Giriş yapan kullanıcının kimliğini (UID) al
-  const currentUserId = auth.currentUser?.uid;
-
   const refetch = () => {
     setKey(prevKey => prevKey + 1);
     setItems([]);
@@ -39,11 +38,11 @@ export default function useMedia(
   };
 
   useEffect(() => {
+    const currentUserId = auth.currentUser?.uid;
     const fetchMedia = async () => {
       setLoading(true);
       setHasMoreItems(true); 
 
-      // 3. YENİ: Kullanıcı giriş yapmamışsa sorguyu çalıştırma
       if (!currentUserId) {
         setLoading(false);
         setItems([]);
@@ -53,24 +52,22 @@ export default function useMedia(
       try {
         let q: Query<DocumentData> = collection(db, "mediaItems");
 
-        // 4. YENİ: EN ÖNEMLİ KURAL
-        // Sorguya "sahibi benim olanları" ekle
+        // Temel Sorgular
         q = query(q, where("userId", "==", currentUserId));
-
-        // Filtreler
-        if (type !== 'all') {
-          q = query(q, where("type", "==", type));
-        }
-        if (filter === 'watched') {
-          q = query(q, where("watched", "==", true));
-        } else if (filter === 'not-watched') {
-          q = query(q, where("watched", "==", false));
-        }
+        if (type !== 'all') q = query(q, where("type", "==", type));
+        if (filter === 'watched') q = query(q, where("watched", "==", true));
+        else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
         
         q = query(q, orderBy("rating", "desc"));
         
-        const firstPageQuery = query(q, limit(PAGE_SIZE));
-        const documentSnapshots = await getDocs(firstPageQuery);
+        // 2. ÖNEMLİ MANTIK: 
+        // Eğer arama yapılıyorsa (isSearchActive), limiti KALDIR (Hepsini çek).
+        // Eğer arama yoksa, limiti (PAGE_SIZE) UYGULA.
+        if (!isSearchActive) {
+            q = query(q, limit(PAGE_SIZE));
+        }
+        
+        const documentSnapshots = await getDocs(q);
 
         const mediaList = documentSnapshots.docs.map(doc => ({
           ...doc.data() as Omit<MediaItem, 'id'>,
@@ -79,11 +76,17 @@ export default function useMedia(
         
         setItems(mediaList); 
 
-        const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-        setLastVisibleDoc(lastDoc);
-
-        if (documentSnapshots.docs.length < PAGE_SIZE) {
-          setHasMoreItems(false);
+        // Pagination için son dökümanı kaydet (Sadece normal modda)
+        if (!isSearchActive && documentSnapshots.docs.length > 0) {
+            const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+            setLastVisibleDoc(lastDoc);
+            
+            if (documentSnapshots.docs.length < PAGE_SIZE) {
+              setHasMoreItems(false);
+            }
+        } else {
+            // Arama modundaysak veya veri yoksa 'Daha Fazla Yükle'yi kapat
+            setHasMoreItems(false);
         }
         
       } catch (e) {
@@ -92,20 +95,19 @@ export default function useMedia(
         setLoading(false);
       }
     };
-    fetchMedia();
-  // 5. currentUserId'yi bağımlılıklara ekle
-  }, [type, filter, key, currentUserId]); 
 
+    fetchMedia();
+  }, [type, filter, key, isSearchActive]); // isSearchActive değişince yeniden çalışır
+
+  // Silinen 'loadMore' Fonksiyonu GERİ GELDİ
   const loadMore = async () => {
-    // 6. YENİ: Kullanıcı ID'sini tekrar al
     const currentUserId = auth.currentUser?.uid;
-    if (!lastVisibleDoc || loadingMore || !currentUserId) return; 
+    // Arama yapılıyorsa loadMore çalışmasın
+    if (!lastVisibleDoc || loadingMore || !currentUserId || isSearchActive) return; 
     
     setLoadingMore(true);
     try {
       let q: Query<DocumentData> = collection(db, "mediaItems");
-      
-      // 7. YENİ: "Daha Fazla Yükle" sorgusuna da 'userId' ekle
       q = query(q, where("userId", "==", currentUserId));
       
       if (type !== 'all') q = query(q, where("type", "==", type));
@@ -113,6 +115,7 @@ export default function useMedia(
       else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
       q = query(q, orderBy("rating", "desc"));
 
+      // Kaldığın yerden devam et
       const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));
       
       const documentSnapshots = await getDocs(nextQuery);

@@ -197,7 +197,7 @@ export default function VisitedMapPage() {
       
       {tooltip.show && (
         <div 
-          className="fixed z-[9999] px-3 py-2 text-sm font-bold text-white bg-gray-900 dark:bg-gray-700 rounded-lg shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-[130%]"
+          className="fixed z-9999 px-3 py-2 text-sm font-bold text-white bg-gray-900 dark:bg-gray-700 rounded-lg shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-[130%]"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
           {tooltip.text}

@@ -20,6 +20,9 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); 
 
+  // === YENİ MANTIK: Tür Oyun mu? ===
+  const isGame = item.type === 'game';
+
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
@@ -49,23 +52,20 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
 
   return (
     <>
-      {/* === TASARIM DEĞİŞİKLİĞİ BURADA ===
-        Eklenen sınıflar:
-        - hover:scale-105  -> Üzerine gelince %5 büyür
-        - hover:shadow-xl  -> Gölgeyi derinleştirir
-        - transition-all   -> Tüm değişimleri animasyonlu yapar
-        - duration-300     -> Animasyon 300ms sürer (yumuşak geçiş)
-        - ease-in-out      -> Hızlanarak başlar, yavaşlayarak durur
-        - hover:z-10       -> Büyüyünce diğer kartların üstüne çıkar
-      */}
-      <article className="group relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900 shadow-sm hover:shadow-xxl hover:scale-125 hover:z-10 transition-all duration-300 ease-in-out">
+      <article className="group relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:scale-105 hover:z-10 transition-all duration-300 ease-in-out flex flex-col h-full">
         
-        <div className="relative">
+        <div className="relative w-full bg-gray-50 dark:bg-gray-800">
+          {/* === DÜZELTME BURADA: Türe göre sınıf (class) değiştirme === */}
           <ImageWithFallback
             src={item.image}
             alt={item.title}
-            className="h-64 w-full object-cover transition-transform duration-500 group-hover:brightness-110" 
+            className={`w-full transition-transform duration-500 group-hover:scale-105 ${
+              isGame 
+                ? 'h-56 object-cover' // OYUNSA: Daha kısa (yatay) ve alanı doldur
+                : 'h-96 object-contain bg-gray-100 dark:bg-gray-800' // FİLMSE: Uzun (dikey) ve sığdır
+            }`}
           />
+          
           <div className="absolute left-3 top-3">
             <span 
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${item.watched 
@@ -84,7 +84,7 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
           </div>
         </div>
 
-        <div className="p-4 flex flex-col gap-3">
+        <div className="p-4 flex flex-col gap-3 flex-1">
           <h3 className="text-base font-semibold line-clamp-1 group-hover:text-sky-600 transition-colors">
             {item.title}
           </h3>
@@ -92,7 +92,7 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
             {item.description || "Bu kayıt için açıklama eklenmemiş."}
           </p>
           
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-auto flex items-center justify-between pt-2">
             <button 
               onClick={handleToggle}
               disabled={isToggling}

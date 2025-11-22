@@ -32,9 +32,9 @@ export default function HomePage() {
   const { stats, loading: statsLoading } = useMediaStats();
   
   // 7. YENİ: useMedia çağrıları artık 2 argüman alıyor (page kaldırıldı)
-  const { items: movieRecs, loading: movieLoading, refetch: movieRefetch } = useMedia('movie', 'not-watched');
-  const { items: seriesRecs, loading: seriesLoading, refetch: seriesRefetch } = useMedia('series', 'not-watched');
-  const { items: gameRecs, loading: gameLoading, refetch: gameRefetch } = useMedia('game', 'not-watched');
+ const { items: movieRecs, loading: movieLoading, refetch: movieRefetch } = useMedia('movie', 'not-watched', false);
+  const { items: seriesRecs, loading: seriesLoading, refetch: seriesRefetch } = useMedia('series', 'not-watched', false);
+  const { items: gameRecs, loading: gameLoading, refetch: gameRefetch } = useMedia('game', 'not-watched', false);
 
   const movieRecommendation = movieRecs[0];
   const seriesRecommendation = seriesRecs[0];

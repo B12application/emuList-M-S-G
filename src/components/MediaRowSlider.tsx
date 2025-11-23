@@ -10,7 +10,7 @@ interface MediaRowSliderProps {
   rowIndex: number; // Bu prop zorunlu
 }
 
-export default function MediaRowSlider({ items, refetch, rowIndex }: MediaRowSliderProps) {
+export default function MediaRowSlider({ items, refetch }: MediaRowSliderProps) {
   const [slideIndex, setSlideIndex] = useState(0);
 
   // 4'lü gruplar halinde sayfa sayısı

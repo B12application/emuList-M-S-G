@@ -9,24 +9,24 @@ import {
   getDocs,
   Query,
   limit,
-  startAfter, // Geri geldi
-  QueryDocumentSnapshot // Geri geldi
+  startAfter, 
+  QueryDocumentSnapshot 
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-const PAGE_SIZE = 16; 
+// === DEĞİŞİKLİK BURADA: 16 yerine 32 yapıldı (4 satır x 8 film) ===
+const PAGE_SIZE = 32; 
 
 export default function useMedia(
   type: FilterType, 
   filter: FilterStatus,
-  isSearchActive: boolean // 1. YENİ: Arama yapılıyor mu?
+  isSearchActive: boolean 
 ) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [key, setKey] = useState(0); 
 
-  // Silinen State'ler GERİ GELDİ
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastVisibleDoc, setLastVisibleDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [hasMoreItems, setHasMoreItems] = useState(true);
@@ -52,7 +52,6 @@ export default function useMedia(
       try {
         let q: Query<DocumentData> = collection(db, "mediaItems");
 
-        // Temel Sorgular
         q = query(q, where("userId", "==", currentUserId));
         if (type !== 'all') q = query(q, where("type", "==", type));
         if (filter === 'watched') q = query(q, where("watched", "==", true));
@@ -60,9 +59,6 @@ export default function useMedia(
         
         q = query(q, orderBy("rating", "desc"));
         
-        // 2. ÖNEMLİ MANTIK: 
-        // Eğer arama yapılıyorsa (isSearchActive), limiti KALDIR (Hepsini çek).
-        // Eğer arama yoksa, limiti (PAGE_SIZE) UYGULA.
         if (!isSearchActive) {
             q = query(q, limit(PAGE_SIZE));
         }
@@ -76,7 +72,6 @@ export default function useMedia(
         
         setItems(mediaList); 
 
-        // Pagination için son dökümanı kaydet (Sadece normal modda)
         if (!isSearchActive && documentSnapshots.docs.length > 0) {
             const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
             setLastVisibleDoc(lastDoc);
@@ -85,7 +80,6 @@ export default function useMedia(
               setHasMoreItems(false);
             }
         } else {
-            // Arama modundaysak veya veri yoksa 'Daha Fazla Yükle'yi kapat
             setHasMoreItems(false);
         }
         
@@ -97,12 +91,10 @@ export default function useMedia(
     };
 
     fetchMedia();
-  }, [type, filter, key, isSearchActive]); // isSearchActive değişince yeniden çalışır
+  }, [type, filter, key, isSearchActive]); 
 
-  // Silinen 'loadMore' Fonksiyonu GERİ GELDİ
   const loadMore = async () => {
     const currentUserId = auth.currentUser?.uid;
-    // Arama yapılıyorsa loadMore çalışmasın
     if (!lastVisibleDoc || loadingMore || !currentUserId || isSearchActive) return; 
     
     setLoadingMore(true);
@@ -115,7 +107,6 @@ export default function useMedia(
       else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
       q = query(q, orderBy("rating", "desc"));
 
-      // Kaldığın yerden devam et
       const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));
       
       const documentSnapshots = await getDocs(nextQuery);

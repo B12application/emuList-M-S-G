@@ -20,7 +20,7 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); 
 
-  // === YENİ MANTIK: Tür Oyun mu? ===
+  // Tür Oyun mu?
   const isGame = item.type === 'game';
 
   const handleDelete = async () => {
@@ -55,14 +55,13 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
       <article className="group relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:scale-105 hover:z-10 transition-all duration-300 ease-in-out flex flex-col h-full">
         
         <div className="relative w-full bg-gray-50 dark:bg-gray-800">
-          {/* === DÜZELTME BURADA: Türe göre sınıf (class) değiştirme === */}
           <ImageWithFallback
             src={item.image}
             alt={item.title}
             className={`w-full transition-transform duration-500 group-hover:scale-105 ${
               isGame 
-                ? 'h-56 object-cover' // OYUNSA: Daha kısa (yatay) ve alanı doldur
-                : 'h-96 object-contain bg-gray-100 dark:bg-gray-800' // FİLMSE: Uzun (dikey) ve sığdır
+                ? 'h-56 object-cover' 
+                : 'h-96 object-contain bg-gray-100 dark:bg-gray-800'
             }`}
           />
           
@@ -74,7 +73,10 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
               }`}
             >
               {item.watched ? <FaEye /> : <FaEyeSlash />}
-              {item.watched ? "Watched" : "Not Watched"}
+              {/* Mobilde yazıyı gizle (sadece md ve üstünde göster) */}
+              <span className="hidden md:inline">
+                {item.watched ? "Watched" : "Not Watched"}
+              </span>
             </span>
           </div>
           <div className="absolute right-3 top-3">
@@ -92,14 +94,19 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
             {item.description || "Bu kayıt için açıklama eklenmemiş."}
           </p>
           
-          <div className="mt-auto flex items-center justify-between pt-2">
+          <div className="mt-auto flex items-center justify-between pt-2 gap-2">
+            {/* === DÜZELTME BURADA: Toggle Butonu === */}
             <button 
               onClick={handleToggle}
               disabled={isToggling}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50"
+              // 'justify-center' ekledik (ikonu ortalamak için)
+              // 'flex-1' ekledik (mobilde alanı doldursun diye)
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
             >
               {item.watched ? <FaEye /> : <FaEyeSlash />}
-              Toggle
+              
+              {/* Mobilde 'Toggle' yazısını gizle (hidden md:inline) */}
+              <span className="hidden md:inline">Toggle</span>
             </button>
             
             <div className="flex gap-2">

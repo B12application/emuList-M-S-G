@@ -15,8 +15,7 @@ import {
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-// === DEĞİŞİKLİK: 18 (Grid için ideal sayı) ===
-const PAGE_SIZE = 20; 
+const PAGE_SIZE = 18; 
 
 export default function useMedia(
   type: FilterType, 
@@ -40,13 +39,16 @@ export default function useMedia(
 
   useEffect(() => {
     const currentUserId = auth.currentUser?.uid;
-    const fetchMedia = async () => {
-      setLoading(true);
-      setHasMoreItems(true); 
 
+    // === 1. DÜZELTME: Değişiklik olduğu an eski listeyi SİL ===
+    setItems([]); 
+    setLoading(true);
+    setHasMoreItems(true); 
+    setLastVisibleDoc(null);
+
+    const fetchMedia = async () => {
       if (!currentUserId) {
         setLoading(false);
-        setItems([]);
         return; 
       }
       
@@ -60,7 +62,6 @@ export default function useMedia(
         
         q = query(q, orderBy(sortBy, "desc"));
         
-        // Eğer arama yoksa LİMİT koy (Sayfalama)
         if (!isSearchActive) {
             q = query(q, limit(PAGE_SIZE));
         }
@@ -74,7 +75,6 @@ export default function useMedia(
         
         setItems(mediaList); 
 
-        // Arama yoksa sayfalama için son dökümanı kaydet
         if (!isSearchActive && documentSnapshots.docs.length > 0) {
             const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
             setLastVisibleDoc(lastDoc);
@@ -88,6 +88,8 @@ export default function useMedia(
         
       } catch (e) {
         console.error("Veri çekilemedi: ", e);
+        // Hata durumunda da listeyi boş bırak (Eski veri görünmesin)
+        setItems([]); 
       } finally {
         setLoading(false);
       }

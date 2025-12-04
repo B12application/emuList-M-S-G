@@ -30,22 +30,45 @@ export default function MediaListPage() {
 
   useEffect(() => {
     let result = [...items];
+    
+    // Arama Filtrelemesi (Değişmedi)
     if (isSearchActive) {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(item => item.title.toLowerCase().includes(lowerQuery));
     }
 
-    // Client-side sıralama (Tarih için sunucu tarafı sıralama hook'ta yapılıyor ama burada da garanti olsun)
+    // === DÜZELTİLMİŞ SIRALAMA MANTIĞI ===
     if (sortOption === 'rating') {
       result.sort((a, b) => Number(b.rating) - Number(a.rating));
     } else if (sortOption === 'title') {
       result.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortOption === 'date') {
-       result.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+       // Tarihe Göre (En Yeni -> En Eski)
+       result.sort((a, b) => {
+         // 1. Tarihleri milisaniyeye çeviren yardımcı fonksiyon
+         const getTime = (date: any) => {
+           if (!date) return 0; // Tarih yoksa en sona at
+           if (date.toMillis) return date.toMillis(); // Firebase Timestamp ise
+           if (date.seconds) return date.seconds * 1000; // Sadece seconds varsa
+           if (date instanceof Date) return date.getTime(); // JS Date objesi ise
+           return 0; // Tanımsız format
+         };
+
+         const timeA = getTime(a.createdAt);
+         const timeB = getTime(b.createdAt);
+
+         // B - A (Azalan sıra: Yeni -> Eski)
+         // Eğer değerler eşitse (aynı anda eklendiyse), başlığa göre sırala ki yerleri oynamasın
+         if (timeB === timeA) {
+            return a.title.localeCompare(b.title);
+         }
+         return timeB - timeA;
+       });
     }
+    // === DÜZELTME BİTTİ ===
 
     setFilteredItems(result);
-  }, [items, searchQuery, sortOption, isSearchActive]); 
+  }, [items, searchQuery, sortOption, isSearchActive]);
 
   const getActiveTab = (t: FilterType) => type === t ? "text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
   const getActiveFilter = (f: FilterStatus) => filter === f ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";

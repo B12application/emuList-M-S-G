@@ -1,7 +1,6 @@
 // src/components/MediaCard.tsx
 import { useState } from 'react';
 import type { MediaItem } from '../types/media';
-// 1. YENİ: FaCalendarAlt ikonu eklendi
 import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -23,10 +22,8 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
 
   const isGame = item.type === 'game';
 
-  // 2. YENİ: Tarihi Formatla
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
-    // Firestore Timestamp'i JS Date'e çevir
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
   };
@@ -98,7 +95,6 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
             {item.title}
           </h3>
 
-          {/* 3. YENİ: Tarih Bilgisi */}
           {item.createdAt && (
             <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-1">
               <FaCalendarAlt />
@@ -111,8 +107,13 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
           </p>
           
           <div className="mt-auto flex items-center justify-between pt-2 gap-2">
+            
+            {/* === DÜZELTME 1: Toggle Butonu (stopPropagation eklendi) === */}
             <button 
-              onClick={handleToggle}
+              onClick={(e) => {
+                e.stopPropagation(); // Tıklamayı karta iletme!
+                handleToggle();
+              }}
               disabled={isToggling}
               className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
             >
@@ -121,16 +122,25 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
             </button>
             
             <div className="flex gap-2">
+              
+              {/* === DÜZELTME 2: Edit Butonu (stopPropagation eklendi) === */}
               <button 
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Tıklamayı karta iletme!
+                  setIsEditModalOpen(true);
+                }}
                 title="Edit"
                 className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:text-sky-300 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition"
               >
                 <FaPen />
               </button>
               
+              {/* === DÜZELTME 3: Delete Butonu (stopPropagation eklendi) === */}
               <button 
-                onClick={() => setIsConfirmDialogOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Tıklamayı karta iletme!
+                  setIsConfirmDialogOpen(true);
+                }}
                 disabled={isDeleting}
                 title="Delete"
                 className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 text-red-300 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
@@ -142,6 +152,7 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
         </div>
       </article>
 
+      {/* Modallar kartın dışında olduğu için tıklama sorunundan etkilenmezler */}
       <EditModal 
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

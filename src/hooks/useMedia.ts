@@ -11,18 +11,17 @@ import {
   limit,
   startAfter, 
   QueryDocumentSnapshot 
-  
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-const PAGE_SIZE = 16; 
+// === DEĞİŞİKLİK: 18 (Grid için ideal sayı) ===
+const PAGE_SIZE = 20; 
 
 export default function useMedia(
   type: FilterType, 
   filter: FilterStatus,
   isSearchActive: boolean,
-  // 1. YENİ: Sıralama parametresi eklendi (Varsayılan: Puan)
   sortBy: 'rating' | 'createdAt' = 'rating' 
 ) {
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -59,9 +58,9 @@ export default function useMedia(
         if (filter === 'watched') q = query(q, where("watched", "==", true));
         else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
         
-        // 2. GÜNCELLENDİ: Parametreden gelen 'sortBy'a göre sırala
         q = query(q, orderBy(sortBy, "desc"));
         
+        // Eğer arama yoksa LİMİT koy (Sayfalama)
         if (!isSearchActive) {
             q = query(q, limit(PAGE_SIZE));
         }
@@ -75,6 +74,7 @@ export default function useMedia(
         
         setItems(mediaList); 
 
+        // Arama yoksa sayfalama için son dökümanı kaydet
         if (!isSearchActive && documentSnapshots.docs.length > 0) {
             const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
             setLastVisibleDoc(lastDoc);
@@ -94,7 +94,6 @@ export default function useMedia(
     };
 
     fetchMedia();
-  // 3. sortBy bağımlılıklara eklendi
   }, [type, filter, key, isSearchActive, sortBy]); 
 
   const loadMore = async () => {
@@ -109,8 +108,6 @@ export default function useMedia(
       if (type !== 'all') q = query(q, where("type", "==", type));
       if (filter === 'watched') q = query(q, where("watched", "==", true));
       else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
-      
-      // 4. GÜNCELLENDİ: Load More da aynı sıralamayı kullanmalı
       q = query(q, orderBy(sortBy, "desc"));
 
       const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));

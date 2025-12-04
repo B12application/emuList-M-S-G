@@ -1,7 +1,7 @@
 // src/pages/MediaListPage.tsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaList, FaThLarge, FaCalendarAlt } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner,  FaCalendarAlt } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';

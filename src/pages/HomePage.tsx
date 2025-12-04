@@ -163,36 +163,57 @@ export default function HomePage() {
 
 
       {/* === İSTATİSTİK BÖLÜMÜ (SENİN TASARIMIN) === */}
-      <div className="mt-16 mb-12">
-        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-          <FaChartPie /> İstatistikler
-        </h2>
-        {statsLoading ? (
-          <div className="flex justify-center items-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
-            <FaSpinner className="animate-spin h-8 w-8 text-sky-500" />
-            <span className="ml-3 text-lg">İstatistikler yükleniyor...</span>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
-              <h4 className="text-lg font-medium text-gray-500 dark:text-gray-400">Toplam Kayıt</h4>
-              <p className="text-4xl font-bold text-sky-600 dark:text-sky-400">{stats.totalCount}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
-              <h4 className="text-lg font-medium text-gray-500 dark:text-gray-400">Film Sayısı</h4>
-              <p className="text-4xl font-bold text-sky-600 dark:text-sky-400">{stats.movieCount}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
-              <h4 className="text-lg font-medium text-gray-500 dark:text-gray-400">Dizi Sayısı</h4>
-              <p className="text-4xl font-bold text-sky-600 dark:text-sky-400">{stats.seriesCount}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center">
-              <h4 className="text-lg font-medium text-gray-500 dark:text-gray-400">Oyun Sayısı</h4>
-              <p className="text-4xl font-bold text-sky-600 dark:text-sky-400">{stats.gameCount}</p>
-            </div>
-          </div>
-        )}
+     <div className="mt-16 mb-12">
+  <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3 text-gray-900 dark:text-gray-200">
+    <FaChartPie className="text-red-500" /> İstatistikler
+  </h2>
+
+  {statsLoading ? (
+    <div className="flex flex-col justify-center items-center p-10 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-3xl shadow-xl border border-white/20 backdrop-blur-md">
+      <FaSpinner className="animate-spin h-10 w-10 text-red-500" />
+      <span className="mt-3 text-lg text-gray-700 dark:text-gray-300 font-medium">
+        İstatistikler yükleniyor...
+      </span>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+
+      {/* Kart */}
+      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+        <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Toplam Kayıt</h4>
+        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+          {stats.totalCount}
+        </p>
       </div>
+
+      {/* Kart */}
+      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+        <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Film Sayısı</h4>
+        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+          {stats.movieCount}
+        </p>
+      </div>
+
+      {/* Kart */}
+      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+        <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Dizi Sayısı</h4>
+        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+          {stats.seriesCount}
+        </p>
+      </div>
+
+      {/* Kart */}
+      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+        <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Oyun Sayısı</h4>
+        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+          {stats.gameCount}
+        </p>
+      </div>
+
+    </div>
+  )}
+</div>
+
 
       {/* === 4. YENİ BÖLÜM: GELİŞTİRİCİ GÜNLÜĞÜ & TOZLU RAFLAR === */}
       {/* Burası "Tarih Eklemesi" ile ilgili istediğin yeni bölüm */}
@@ -280,15 +301,65 @@ export default function HomePage() {
       </div>
 
       {/* === NAVİGASYON KARTLARI (Değişmedi) === */}
-      <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3">
-        <Link to="/movie" className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-2xl transition-shadow p-8">
-          <div><FaFilm className="h-12 w-12 text-sky-500" /><h3 className="mt-4 text-2xl font-semibold text-gray-900 dark:text-white">Filmler</h3><p className="mt-2 text-gray-600 dark:text-gray-400">İzlediğin veya izleyeceğin filmleri listele.</p></div><span className="mt-6 font-semibold text-sky-600 group-hover:underline">Listeye Git &rarr;</span>
+     <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3">
+        {/* FİLM KARTI */}
+        <Link to="/movie" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
+          {/* Arka Plan Gradyanı (Hover'da görünür) */}
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Varsayılan Arka Plan */}
+          <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
+          
+          {/* İçerik */}
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-sky-600 dark:text-sky-400 transition-colors">
+                <FaFilm size={28} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">Filmler</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-blue-100">İzlediğin filmleri puanla, listele ve arşivle.</p>
+          </div>
+          <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-sky-600 group-hover:text-white group-hover:translate-x-2 transition-all">
+                Listeye Git <FaArrowRight />
+            </span>
+          </div>
         </Link>
-        <Link to="/series" className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-2xl transition-shadow p-8">
-          <div><FaTv className="h-12 w-12 text-sky-500" /><h3 className="mt-4 text-2xl font-semibold text-gray-900 dark:text-white">Diziler</h3><p className="mt-2 text-gray-600 dark:text-gray-400">Tüm dizi koleksiyonunu yönet.</p></div><span className="mt-6 font-semibold text-sky-600 group-hover:underline">Listeye Git &rarr;</span>
+
+        {/* DİZİ KARTI */}
+        <Link to="/series" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
+          
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-emerald-600 dark:text-emerald-400 transition-colors">
+                <FaTv size={28} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">Diziler</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-emerald-100">Tüm dizi koleksiyonunu ve sezonları yönet.</p>
+          </div>
+          <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 group-hover:text-white group-hover:translate-x-2 transition-all">
+                Listeye Git <FaArrowRight />
+            </span>
+          </div>
         </Link>
-        <Link to="/game" className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-2xl transition-shadow p-8">
-          <div><FaGamepad className="h-12 w-12 text-sky-500" /><h3 className="mt-4 text-2xl font-semibold text-gray-900 dark:text-white">Oyunlar</h3><p className="mt-2 text-gray-600 dark:text-gray-400">Oynadığın veya bitirdiğin oyunlar.</p></div><span className="mt-6 font-semibold text-sky-600 group-hover:underline">Listeye Git &rarr;</span>
+
+        {/* OYUN KARTI */}
+        <Link to="/game" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
+          
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-amber-600 dark:text-amber-400 transition-colors">
+                <FaGamepad size={28} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">Oyunlar</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-amber-100">Bitirdiğin ve oynayacağın oyunları listele.</p>
+          </div>
+          <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-amber-600 group-hover:text-white group-hover:translate-x-2 transition-all">
+                Listeye Git <FaArrowRight />
+            </span>
+          </div>
         </Link>
       </div>
 

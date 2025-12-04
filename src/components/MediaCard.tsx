@@ -1,7 +1,8 @@
 // src/components/MediaCard.tsx
 import { useState } from 'react';
 import type { MediaItem } from '../types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner } from 'react-icons/fa';
+// 1. YENİ: FaCalendarAlt ikonu eklendi
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -20,8 +21,15 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); 
 
-  // Tür Oyun mu?
   const isGame = item.type === 'game';
+
+  // 2. YENİ: Tarihi Formatla
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return '';
+    // Firestore Timestamp'i JS Date'e çevir
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -73,7 +81,6 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
               }`}
             >
               {item.watched ? <FaEye /> : <FaEyeSlash />}
-              {/* Mobilde yazıyı gizle (sadece md ve üstünde göster) */}
               <span className="hidden md:inline">
                 {item.watched ? "Watched" : "Not Watched"}
               </span>
@@ -86,26 +93,30 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
           </div>
         </div>
 
-        <div className="p-4 flex flex-col gap-3 flex-1">
+        <div className="p-4 flex flex-col gap-2 flex-1">
           <h3 className="text-base font-semibold line-clamp-1 group-hover:text-sky-600 transition-colors">
             {item.title}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 h-14">
+
+          {/* 3. YENİ: Tarih Bilgisi */}
+          {item.createdAt && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-1">
+              <FaCalendarAlt />
+              <span>Eklendi: {formatDate(item.createdAt)}</span>
+            </div>
+          )}
+
+          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 h-14 mb-1">
             {item.description || "Bu kayıt için açıklama eklenmemiş."}
           </p>
           
           <div className="mt-auto flex items-center justify-between pt-2 gap-2">
-            {/* === DÜZELTME BURADA: Toggle Butonu === */}
             <button 
               onClick={handleToggle}
               disabled={isToggling}
-              // 'justify-center' ekledik (ikonu ortalamak için)
-              // 'flex-1' ekledik (mobilde alanı doldursun diye)
               className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
             >
               {item.watched ? <FaEye /> : <FaEyeSlash />}
-              
-              {/* Mobilde 'Toggle' yazısını gizle (hidden md:inline) */}
               <span className="hidden md:inline">Toggle</span>
             </button>
             

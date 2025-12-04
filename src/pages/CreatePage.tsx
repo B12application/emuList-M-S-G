@@ -1,9 +1,9 @@
 // src/pages/CreatePage.tsx
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-// 1. YENİ: 'auth' import edildi
 import { db } from '../firebaseConfig'; 
-import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+// 1. YENİ: getDocs, query, where import edildi
+import { addDoc, collection, serverTimestamp, Timestamp, getDocs, query, where } from 'firebase/firestore';
 import type { MediaItem, MediaType } from '../types/media';
 import { FaFilm, FaTv, FaGamepad, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
 import MediaCard from '../components/MediaCard';
@@ -13,7 +13,6 @@ import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } fr
 import ImageWithFallback from '../components/ui/ImageWithFallback';
 import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';
-// 2. YENİ: 'useAuth' (kullanıcı hafızası) import edildi
 import { useAuth } from '../context/AuthContext'; 
 
 export default function CreatePage() {
@@ -30,10 +29,6 @@ export default function CreatePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 3. YENİ: Giriş yapan kullanıcı bilgisi alındı
-  const { user } = useAuth();
-
-  // OMDb arama state'leri (Değişmedi)
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<OMDbSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -42,27 +37,53 @@ export default function CreatePage() {
   const searchTimeoutRef = useRef<number | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // === 4. DEĞİŞİKLİK BURADA (handleSubmit GÜNCELLENDİ) ===
+  const { user } = useAuth(); 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 4a. YENİ: Kullanıcı giriş kontrolü
+    
     if (!user) {
       const errorMessage = "Kayıt eklemek için giriş yapmalısınız.";
       setError(errorMessage);
       toast.error(errorMessage);
       return;
     }
-    
+
     if (!title || !type) {
       setError("Başlık ve Tür alanları zorunludur."); return;
     }
-    setIsLoading(true); setError(null);
+
+    setIsLoading(true); 
+    setError(null);
+
     try {
+      // === 2. YENİ: BENZERLİK KONTROLÜ (Bu kısım eksikti) ===
+      // Kullanıcının tüm kayıtlarını çekip başlık kontrolü yapıyoruz.
+      const q = query(collection(db, "mediaItems"), where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      // Girilen başlığı normalize et (boşlukları sil, küçük harfe çevir)
+      const normalizedNewTitle = title.trim().toLowerCase();
+
+      const isDuplicate = querySnapshot.docs.some(doc => {
+        const existingTitle = doc.data().title;
+        // Mevcut başlığı normalize et ve karşılaştır
+        return existingTitle && existingTitle.trim().toLowerCase() === normalizedNewTitle;
+      });
+
+      if (isDuplicate) {
+        const errorMsg = `"${title}" zaten listenizde mevcut! (Aynı isimle tekrar eklenemez)`;
+        setError(errorMsg);
+        toast.error(errorMsg, { duration: 4000 });
+        setIsLoading(false);
+        return; // İşlemi durdur, kaydetme
+      }
+      // === KONTROL BİTİŞİ ===
+
       const newMediaItem = {
         title, type, rating, image, description, watched,
         createdAt: serverTimestamp(),
-        userId: user.uid // 4b. YENİ: Kayda 'userId' eklendi
+        userId: user.uid 
       };
       await addDoc(collection(db, "mediaItems"), newMediaItem);
       toast.success('Kayıt başarıyla eklendi');
@@ -76,7 +97,6 @@ export default function CreatePage() {
       console.error(err);
     }
   };
-  // === DEĞİŞİKLİK BİTTİ ===
 
   const getTypeButtonCls = (buttonType: MediaType) => {
     const baseCls = "flex-1 flex items-center justify-center gap-2 px-4 py-3 font-semibold rounded-lg transition-colors";
@@ -102,14 +122,14 @@ export default function CreatePage() {
 
   const getRatingColor = (r: string): string => {
     const val = parseFloat(r) || 0;
-    if (val < 5) return '#ef4444'; // Red-500
-    if (val < 8) return '#f59e0b'; // Amber-500
-    return '#22c55e'; // Green-500
+    if (val < 5) return '#ef4444'; 
+    if (val < 8) return '#f59e0b'; 
+    return '#22c55e'; 
   };
 
   const ratingColor = getRatingColor(rating);
 
-  // OMDb arama fonksiyonu (Değişmedi)
+  // OMDb arama fonksiyonu
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -144,7 +164,7 @@ export default function CreatePage() {
     };
   }, [searchQuery, type]);
 
-  // Dışarı tıklandığında (Değişmedi)
+  // Dışarı tıklandığında
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -164,7 +184,7 @@ export default function CreatePage() {
     };
   }, []);
 
-  // Arama sonucu seçildiğinde (Değişmedi)
+  // Arama sonucu seçildiğinde
   const handleSelectSearchResult = async (result: OMDbSearchResult) => {
     try {
       setIsSearching(true);
@@ -188,7 +208,6 @@ export default function CreatePage() {
     }
   };
 
-  // Ön izleme (Değişmedi)
   const previewItem: MediaItem = {
     id: 'preview-id',
     title: title || "Başlık...",
@@ -200,7 +219,6 @@ export default function CreatePage() {
     createdAt: Timestamp.now()
   };
 
-  // === JSX (TÜM GÖRÜNÜM) DEĞİŞMEDİ ===
   return (
     <section className="py-10 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
@@ -266,6 +284,7 @@ export default function CreatePage() {
                     </div>
                   )}
                 </div>
+
                 {showSearchResults && searchResults.length > 0 && (
                   <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto">
                     {searchResults.map((result) => (
@@ -292,11 +311,13 @@ export default function CreatePage() {
                     ))}
                   </div>
                 )}
+
                 {searchError && (
                   <div className="mt-2 text-sm text-red-500">
                     {searchError}
                   </div>
                 )}
+
                 {!isSearching && searchQuery.trim() && searchResults.length === 0 && !searchError && (
                   <div className="mt-4">
                     <EmptyState
@@ -385,7 +406,7 @@ export default function CreatePage() {
                 <button
                   type="button"
                   onClick={() => setWatched(!watched)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
                     watched ? 'bg-sky-600' : 'bg-gray-200 dark:bg-gray-600'
                   }`}
                 >

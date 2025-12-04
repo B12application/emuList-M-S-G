@@ -11,17 +11,19 @@ import {
   limit,
   startAfter, 
   QueryDocumentSnapshot 
+  
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore'; 
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-// === DEĞİŞİKLİK BURADA: 16 yerine 32 yapıldı (4 satır x 8 film) ===
-const PAGE_SIZE = 32; 
+const PAGE_SIZE = 16; 
 
 export default function useMedia(
   type: FilterType, 
   filter: FilterStatus,
-  isSearchActive: boolean 
+  isSearchActive: boolean,
+  // 1. YENİ: Sıralama parametresi eklendi (Varsayılan: Puan)
+  sortBy: 'rating' | 'createdAt' = 'rating' 
 ) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,8 @@ export default function useMedia(
         if (filter === 'watched') q = query(q, where("watched", "==", true));
         else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
         
-        q = query(q, orderBy("rating", "desc"));
+        // 2. GÜNCELLENDİ: Parametreden gelen 'sortBy'a göre sırala
+        q = query(q, orderBy(sortBy, "desc"));
         
         if (!isSearchActive) {
             q = query(q, limit(PAGE_SIZE));
@@ -91,7 +94,8 @@ export default function useMedia(
     };
 
     fetchMedia();
-  }, [type, filter, key, isSearchActive]); 
+  // 3. sortBy bağımlılıklara eklendi
+  }, [type, filter, key, isSearchActive, sortBy]); 
 
   const loadMore = async () => {
     const currentUserId = auth.currentUser?.uid;
@@ -105,7 +109,9 @@ export default function useMedia(
       if (type !== 'all') q = query(q, where("type", "==", type));
       if (filter === 'watched') q = query(q, where("watched", "==", true));
       else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
-      q = query(q, orderBy("rating", "desc"));
+      
+      // 4. GÜNCELLENDİ: Load More da aynı sıralamayı kullanmalı
+      q = query(q, orderBy(sortBy, "desc"));
 
       const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));
       

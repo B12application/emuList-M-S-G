@@ -20,4 +20,5 @@ export interface MediaItem {
   watched: boolean;
   type: MediaType; // DB'de her zaman movie, series veya game olmalı
   createdAt: Timestamp;
+    tags?: string[];
 }

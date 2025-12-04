@@ -1,8 +1,8 @@
 // src/pages/MediaListPage.tsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-// 1. YENİ İKONLAR: FaList (Liste) ve FaThLarge (Izgara/Grid) eklendi
-import { FaFilm, FaTv, FaGamepad, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaList, FaThLarge } from 'react-icons/fa';
+// 1. YENİ: FaCalendarAlt eklendi
+import { FaFilm, FaTv, FaGamepad, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaList, FaThLarge, FaCalendarAlt } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -21,10 +21,9 @@ export default function MediaListPage() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<MediaItem[]>([]);
-  const [sortOption, setSortOption] = useState<'rating' | 'title'>('rating');
+  // 2. YENİ: SortOption tipi güncellendi ('date' eklendi)
+  const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date'>('rating');
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
-
-  // 2. YENİ STATE: Görünüm Modu (Varsayılan 'list')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const isSearchActive = searchQuery.trim().length > 0;
@@ -36,11 +35,21 @@ export default function MediaListPage() {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(item => item.title.toLowerCase().includes(lowerQuery));
     }
+
+    // 3. YENİ: Tarihe göre sıralama mantığı
     if (sortOption === 'rating') {
       result.sort((a, b) => Number(b.rating) - Number(a.rating));
     } else if (sortOption === 'title') {
       result.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortOption === 'date') {
+      // En yeniden en eskiye (Timestamp seconds karşılaştırması)
+      result.sort((a, b) => {
+         const timeA = a.createdAt?.seconds || 0;
+         const timeB = b.createdAt?.seconds || 0;
+         return timeB - timeA;
+      });
     }
+
     setFilteredItems(result);
   }, [items, searchQuery, sortOption, isSearchActive]); 
 
@@ -52,9 +61,10 @@ export default function MediaListPage() {
 
   const getActiveTab = (t: FilterType) => type === t ? "text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
   const getActiveFilter = (f: FilterStatus) => filter === f ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
-  const getActiveSort = (s: 'rating' | 'title') => sortOption === s ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
   
-  // 3. YENİ: Görünüm butonları için aktiflik stili
+  // 4. YENİ: Sıralama buton stili için tip güncellemesi
+  const getActiveSort = (s: 'rating' | 'title' | 'date') => sortOption === s ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
+
   const getActiveView = (v: 'list' | 'grid') => viewMode === v ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
 
   const handleFilterChange = (newFilter: FilterStatus) => {
@@ -76,26 +86,24 @@ export default function MediaListPage() {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          {/* Filtreler */}
           <div className="flex rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden self-start">
             <button title="Tümü" className={`px-4 py-2 text-sm transition ${getActiveFilter("all")}`} onClick={() => handleFilterChange('all')}><FaGlobeAmericas /></button>
             <button title="İzlenenler" className={`px-4 py-2 text-sm transition ${getActiveFilter("watched")}`} onClick={() => handleFilterChange('watched')}><FaEye /></button>
             <button title="İzlenmeyenler" className={`px-4 py-2 text-sm transition ${getActiveFilter("not-watched")}`} onClick={() => handleFilterChange('not-watched')}><FaEyeSlash /></button>
           </div>
           
-          {/* Sıralama */}
+          {/* 5. YENİ: Sıralama Butonları (Puan, A-Z, Tarih) */}
           <div className="flex rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden self-start">
             <button title="Puana Göre" className={`px-4 py-2 text-sm transition ${getActiveSort('rating')}`} onClick={() => setSortOption('rating')}><FaStar /></button>
             <button title="İsme Göre" className={`px-4 py-2 text-sm transition ${getActiveSort('title')}`} onClick={() => setSortOption('title')}><FaSortAlphaDown /></button>
+            <button title="Eklenme Tarihine Göre" className={`px-4 py-2 text-sm transition ${getActiveSort('date')}`} onClick={() => setSortOption('date')}><FaCalendarAlt /></button>
           </div>
 
-          {/* 4. YENİ: Görünüm Değiştirme Butonları (Sadece Mobilde İşe Yarar ama Her Yerde Görünmesi Erişim İçin İyidir) */}
           <div className="flex lg:hidden rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden self-start">
             <button title="Liste Görünümü" className={`px-4 py-2 text-sm transition ${getActiveView('list')}`} onClick={() => setViewMode('list')}><FaList /></button>
             <button title="Izgara Görünümü" className={`px-4 py-2 text-sm transition ${getActiveView('grid')}`} onClick={() => setViewMode('grid')}><FaThLarge /></button>
           </div>
 
-          {/* Arama */}
           <div className="relative flex-1 sm:flex-auto">
             <input type="text" placeholder="Başlığa göre ara..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full h-full px-4 py-2.5 pl-10 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition" />
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -109,13 +117,8 @@ export default function MediaListPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-12">
-          
-          {/* ======================================================== */}
-          {/* 5. YENİ: MOBİL GÖRÜNÜM (Switch Mantığı)                */}
-          {/* ======================================================== */}
           <div className="block lg:hidden">
              {viewMode === 'list' ? (
-               // LISTE MODU (MobileMediaItem)
                <div className="space-y-4">
                  {filteredItems.map(item => (
                     <MobileMediaItem 
@@ -127,7 +130,6 @@ export default function MediaListPage() {
                  ))}
                </div>
              ) : (
-               // IZGARA MODU (MediaCard)
                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3">
                   {filteredItems.map(item => (
                     <MediaCard key={item.id} item={item} refetch={refetch} />
@@ -136,7 +138,6 @@ export default function MediaListPage() {
              )}
           </div>
 
-          {/* MASAÜSTÜ GÖRÜNÜM (Değişmedi - Slider) */}
           <div className="hidden lg:block space-y-8 px-6">
             {chunkedItems.map((chunk, index) => (
                <div key={index} className="relative">
@@ -145,7 +146,6 @@ export default function MediaListPage() {
             ))}
           </div>
 
-          {/* Load More Butonu */}
           {!isSearchActive && hasMoreItems && (
             <div className="flex justify-center py-8">
               <button onClick={loadMore} disabled={loadingMore} className="group flex items-center gap-3 px-8 py-3 rounded-full bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-200 dark:hover:border-sky-800 transition-all transform hover:-translate-y-1">

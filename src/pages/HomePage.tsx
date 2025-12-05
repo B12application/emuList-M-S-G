@@ -376,14 +376,14 @@ export default function HomePage() {
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* SOL: Kütüphane Günlüğü (Timeline) */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
               <FaCalendarCheck className="text-sky-500" /> Kütüphane Günlüğü
             </h2>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden flex-1">
             {allLoading ? (
               <div className="p-8 flex justify-center"><FaSpinner className="animate-spin h-6 w-6 text-sky-500" /></div>
             ) : recentActivity.length > 0 ? (
@@ -422,36 +422,39 @@ export default function HomePage() {
         </div>
 
         {/* SAĞ: Tozlu Raflar (Backlog) */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 flex flex-col">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
             <FaHourglassHalf className="text-amber-500" /> Tozlu Raflar
           </h2>
-          <div className="space-y-4">
-            {dustyItems.length > 0 ? (
-              dustyItems.map(item => (
-                <div key={item.id} className="relative group bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-4 rounded-2xl hover:shadow-md transition-all">
-                  <div className="absolute top-3 right-3">
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                      <FaHistory /> Unutuldu
-                    </span>
-                  </div>
-                  <h4 className="font-bold text-gray-900 dark:text-white pr-16 truncate">{item.title}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
-                    Eklenme: {formatDate(item.createdAt)}
-                  </p>
-                  <button
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden p-4 flex-1">
+            <div className="space-y-4">
+              {dustyItems.length > 0 ? (
+                dustyItems.map(item => (
+                  <div
+                    key={item.id}
                     onClick={() => setSelectedRecentItem(item)}
-                    className="text-xs font-bold text-sky-600 hover:text-sky-700 dark:hover:text-sky-400 flex items-center gap-1"
+                    className="relative group bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-4 rounded-2xl hover:shadow-lg hover:-translate-y-1 hover:border-amber-200 dark:hover:border-amber-800 transition-all duration-300 cursor-pointer"
                   >
-                    Şimdi İncele <FaArrowRight size={10} />
-                  </button>
+                    <div className="absolute top-3 right-3">
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <FaHistory /> Unutuldu
+                      </span>
+                    </div>
+                    <h4 className="font-bold text-gray-900 dark:text-white pr-16 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{item.title}</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
+                      Eklenme: {formatDate(item.createdAt)}
+                    </p>
+                    <div className="flex items-center gap-1 text-xs font-bold text-sky-600 dark:text-sky-400 group-hover:text-sky-700 dark:group-hover:text-sky-300 group-hover:gap-2 transition-all">
+                      Şimdi İncele <FaArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-2xl text-center text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
+                  Harika! Hiçbir içeriği unutmamışsın.
                 </div>
-              ))
-            ) : (
-              <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl text-center text-sm text-gray-500 border border-dashed border-gray-300 dark:border-gray-700">
-                Harika! Hiçbir içeriği unutmamışsın.
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -535,14 +538,15 @@ export default function HomePage() {
             <RecommendationCard item={seriesRecommendation} typeLabel="Dizi" refetch={seriesRefetch} />
             <RecommendationCard item={gameRecommendation} typeLabel="Oyun" refetch={gameRefetch} />
           </div>
-        )}
-      </div>
+        )
+        }
+      </div >
 
       {/* === FOOTER */}
-      <div className="mt-20 relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 text-center shadow-2xl">
+      < div className="mt-20 relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 text-center shadow-2xl" >
 
         {/* Arka plan ışık efektleri */}
-        <div className="absolute top-0 left-0 w-56 h-56 bg-white/30 rounded-full blur-3xl -translate-x-20 -translate-y-20" />
+        < div className="absolute top-0 left-0 w-56 h-56 bg-white/30 rounded-full blur-3xl -translate-x-20 -translate-y-20" />
         <div className="absolute bottom-0 right-0 w-72 h-72 bg-red-500/20 rounded-full blur-2xl translate-x-20 translate-y-20" />
 
         <div className="relative">
@@ -561,9 +565,14 @@ export default function HomePage() {
             {/* İçerik Ekle */}
             <Link
               to="/create"
-              className="px-8 py-3 bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/40 hover:shadow-red-500/60 transition-all hover:-translate-y-1 flex items-center gap-2"
+              className="group px-6 py-3 rounded-xl bg-red-500 text-white font-bold 
+             shadow-lg shadow-red-500/30 transition-all transform 
+             hover:-translate-y-1 hover:shadow-red-500/50 
+             hover:bg-linear-to-r hover:from-red-500 hover:to-red-600 
+             flex items-center gap-2"
             >
-              <FaPlus /> İçerik Ekle
+              <FaPlus className="transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110" />
+              İçerik Ekle
             </Link>
 
             {/* Koleksiyon */}
@@ -576,13 +585,13 @@ export default function HomePage() {
 
           </div>
         </div>
-      </div>
+      </div >
 
 
       {/* Modallar */}
-      <DetailModal isOpen={!!randomItem} onClose={() => setRandomItem(null)} item={randomItem} refetch={() => { }} />
-      <DetailModal isOpen={!!selectedRecentItem} onClose={() => setSelectedRecentItem(null)} item={selectedRecentItem} refetch={allRefetch} />
+      < DetailModal isOpen={!!randomItem} onClose={() => setRandomItem(null)} item={randomItem} refetch={() => { }} />
+      < DetailModal isOpen={!!selectedRecentItem} onClose={() => setSelectedRecentItem(null)} item={selectedRecentItem} refetch={allRefetch} />
 
-    </section>
+    </section >
   );
 }

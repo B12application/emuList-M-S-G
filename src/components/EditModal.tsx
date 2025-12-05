@@ -3,11 +3,10 @@ import { useState, useEffect, Fragment } from 'react';
 import type { MediaItem } from '../types/media';
 import { db } from '../firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
-import { Dialog, Transition, Popover } from '@headlessui/react';
-import { FaSave, FaLink, FaSpinner } from 'react-icons/fa';
+import { Dialog, Transition } from '@headlessui/react';
+import { FaSave, FaLink, FaSpinner, FaTimes } from 'react-icons/fa';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import toast from 'react-hot-toast';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -22,13 +21,15 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
   const [editImage, setEditImage] = useState(item.image || '');
   const [editRating, setEditRating] = useState(item.rating || '0');
   const [isLoading, setIsLoading] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
 
   useEffect(() => {
     setEditTitle(item.title);
     setEditDesc(item.description || '');
     setEditImage(item.image || '');
     setEditRating(item.rating || '0');
-  }, [item]);
+    setShowUrlInput(false);
+  }, [item, isOpen]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -40,12 +41,10 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
         image: editImage,
         rating: editRating
       });
-      toast.success('Kayıt başarıyla güncellendi');
       refetch();
       onClose();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);
-      toast.error('Kayıt güncellenirken bir hata oluştu');
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +64,9 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
+      {/* 'onClose' sadece dışarı (backdrop) tıklandığında çalışır */}
       <Dialog as="div" className="relative z-50" onClose={onClose}>
+        
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -75,21 +76,27 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/50" />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
+              // 1. DÜZELTME: 'scale' (Zoom) efektleri kaldırıldı. Sadece Opacity ve Translate kaldı.
               enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
+              enterFrom="opacity-0 translate-y-4"
+              enterTo="opacity-100 translate-y-0"
               leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-4"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel 
+                // 2. DÜZELTME: 'onClick={e => e.stopPropagation()}'
+                // Bu, modalın içine yapılan tıklamaların dışarı sızmasını ve diğer şeyleri tetiklemesini engeller.
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all"
+              >
                 <Dialog.Title
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
@@ -121,7 +128,6 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                   </div>
 
                   <div>
-                    {/* === DEĞİŞİKLİK BURADA === */}
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Puan: <span className="font-bold">{editRating}</span>
                     </label>
@@ -132,34 +138,46 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                         min={0} max={9.9} step={0.1}
                         trackStyle={{ backgroundColor: ratingColor, height: 6 }}
                         handleStyle={{ borderColor: ratingColor, backgroundColor: 'white', height: 18, width: 18, marginTop: -6, opacity: 1 }}
-                        railStyle={{ backgroundColor: '#4b5563', height: 6 }} // dark:bg-gray-600
+                        railStyle={{ backgroundColor: '#4b5563', height: 6 }}
                       />
                     </div>
                   </div>
 
-                  <Popover className="relative">
-                    <Popover.Button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm font-medium">
-                      <FaLink /> Görsel URL'sini Düzenle
-                    </Popover.Button>
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="opacity-0 translate-y-1"
-                      enterTo="opacity-100 translate-y-0"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="opacity-100 translate-y-0"
-                      leaveTo="opacity-0 translate-y-1"
-                    >
-                      <Popover.Panel className="absolute z-10 mt-2 w-full">
-                        <input
-                          type="url" value={editImage}
-                          onChange={(e) => setEditImage(e.target.value)}
-                          placeholder="https://..."
-                          className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg"
-                        />
-                      </Popover.Panel>
-                    </Transition>
-                  </Popover>
+                  <div>
+                    {!showUrlInput ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowUrlInput(true)}
+                        className="flex items-center gap-2 text-sky-600 hover:text-sky-500 text-sm font-medium transition"
+                      >
+                        <FaLink /> Görsel URL'sini Değiştir
+                      </button>
+                    ) : (
+                      <div className="flex gap-2 items-center animate-fadeIn">
+                        <div className="flex-1">
+                          <label htmlFor="editImage" className="sr-only">Görsel URL</label>
+                          <input
+                            type="url" 
+                            id="editImage"
+                            value={editImage}
+                            onChange={(e) => setEditImage(e.target.value)}
+                            placeholder="https://..."
+                            className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+                            autoFocus
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowUrlInput(false)}
+                          className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                          title="Kapat"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">

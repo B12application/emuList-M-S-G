@@ -87,7 +87,7 @@ export default function HomePage() {
     <section className="py-10">
       
       {/* === AÇILIŞ EKRANI (SENİN TASARIMIN) === */}
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 mb-16 shadow-2xl">
+    <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 mb-16 shadow-2xl">
   {/* Arka plan dekorları */}
   <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full -translate-y-32 translate-x-32" />
   <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -translate-x-24 translate-y-24" />
@@ -95,8 +95,8 @@ export default function HomePage() {
   <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-12">
 
     {/* Avatar */}
-    <div className="flex-shrink-0 relative">
-      <div className="absolute -inset-4 bg-gradient-to-r from-white/40 to-transparent rounded-full blur-xl" />
+    <div className="shrink-0 relative">
+      <div className="absolute -inset-4 bg-linear-to-r from-white/40 to-transparent rounded-full blur-xl" />
       <img 
         src={getAvatar()} 
         alt="Profil" 
@@ -118,7 +118,7 @@ export default function HomePage() {
       {/* Başlık */}
       <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
         Merhaba,{" "}
-        <span className="bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+        <span className="bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
           {displayName}
         </span>
       </h1>
@@ -132,28 +132,43 @@ export default function HomePage() {
 
         {/* Yeni Ekle */}
         <Link 
-          to="/create"
-          className="group px-6 py-3 rounded-xl bg-red-500 text-white font-bold shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
-        >
-          <FaPlus /> Yeni Ekle
-        </Link>
+  to="/create"
+  className="group px-6 py-3 rounded-xl bg-red-500 text-white font-bold 
+             shadow-lg shadow-red-500/30 transition-all transform 
+             hover:-translate-y-1 hover:shadow-red-500/50 
+             hover:bg-linear-to-r hover:from-red-500 hover:to-red-600 
+             flex items-center gap-2"
+>
+  <FaPlus className="transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110" />
+  Yeni Ekle
+</Link>
 
-        {/* Koleksiyon */}
-        <Link 
-          to="/all"
-          className="group px-6 py-3 rounded-xl bg-transparent border-2 border-gray-600 dark:border-gray-300 text-gray-900 dark:text-gray-200 font-bold hover:bg-white/20 transition-all flex items-center gap-2"
-        >
-          <FaArchive /> Koleksiyonu Gör
-        </Link>
+{/* Koleksiyon */}
+<Link 
+  to="/all"
+  className="group px-6 py-3 rounded-xl bg-transparent border-2 border-gray-600 
+             dark:border-gray-300 text-gray-900 dark:text-gray-200 font-bold 
+             transition-all relative overflow-hidden flex items-center gap-2
+             hover:-translate-y-1 hover:shadow-xl">
+  {/* Hafif parıltı animasyonu */}
+  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 
+                  transition-opacity duration-300" />
 
-        {/* Şansıma */}
-        <button 
-          onClick={handleRandomPick}
-          className="group px-6 py-3 rounded-xl bg-gradient-to-r from-gray-700 to-gray-900 text-white font-bold shadow-lg shadow-gray-700/30 hover:shadow-gray-700/50 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
-        >
-          <FaRandom className="group-hover:rotate-180 transition-transform duration-500" /> 
-          Şansıma Ne Çıkar?
-        </button>
+  <FaArchive className="transition-transform duration-300 group-hover:-translate-x-1" />
+  Koleksiyonu Gör
+</Link>
+
+{/* Şansıma */}
+<button 
+  onClick={handleRandomPick}
+  className="group px-6 py-3 rounded-xl bg-linear-to-r from-gray-700 to-gray-900 
+             text-white font-bold shadow-lg shadow-gray-700/30 
+             hover:shadow-gray-700/50 transition-all transform 
+             hover:-translate-y-0.5 flex items-center gap-2"
+>
+  <FaRandom className="group-hover:rotate-180 transition-transform duration-500" /> 
+  Şansıma Ne Çıkar?
+</button>
 
       </div>
     </div>
@@ -169,7 +184,7 @@ export default function HomePage() {
   </h2>
 
   {statsLoading ? (
-    <div className="flex flex-col justify-center items-center p-10 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-3xl shadow-xl border border-white/20 backdrop-blur-md">
+    <div className="flex flex-col justify-center items-center p-10 bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-3xl shadow-xl border border-white/20 backdrop-blur-md">
       <FaSpinner className="animate-spin h-10 w-10 text-red-500" />
       <span className="mt-3 text-lg text-gray-700 dark:text-gray-300 font-medium">
         İstatistikler yükleniyor...
@@ -179,33 +194,33 @@ export default function HomePage() {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
 
       {/* Kart */}
-      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+      <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
         <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Toplam Kayıt</h4>
-        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+        <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
           {stats.totalCount}
         </p>
       </div>
 
       {/* Kart */}
-      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+      <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
         <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Film Sayısı</h4>
-        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+        <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
           {stats.movieCount}
         </p>
       </div>
 
       {/* Kart */}
-      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+      <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
         <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Dizi Sayısı</h4>
-        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+        <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
           {stats.seriesCount}
         </p>
       </div>
 
       {/* Kart */}
-      <div className="group bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+      <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
         <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Oyun Sayısı</h4>
-        <p className="text-4xl font-black mt-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+        <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
           {stats.gameCount}
         </p>
       </div>
@@ -238,7 +253,7 @@ export default function HomePage() {
                         className={`flex items-center gap-4 p-4 cursor-pointer ${idx !== recentActivity.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''} hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group`}
                     >
                        {/* Küçük Resim */}
-                       <div className="flex-shrink-0 w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden relative">
+                       <div className="shrink-0 w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden relative">
                           {item.image ? <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><FaFilm /></div>}
                        </div>
                        
@@ -305,7 +320,7 @@ export default function HomePage() {
         {/* FİLM KARTI */}
         <Link to="/movie" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
           {/* Arka Plan Gradyanı (Hover'da görünür) */}
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-linear-to-r from-sky-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {/* Varsayılan Arka Plan */}
           <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
           
@@ -326,7 +341,7 @@ export default function HomePage() {
 
         {/* DİZİ KARTI */}
         <Link to="/series" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-linear-to-br from-emerald-400 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
           
           <div className="relative z-10">
@@ -345,7 +360,7 @@ export default function HomePage() {
 
         {/* OYUN KARTI */}
         <Link to="/game" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-linear-to-br from-amber-400 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
           
           <div className="relative z-10">
@@ -383,7 +398,7 @@ export default function HomePage() {
       </div>
 
       {/* === FOOTER */}
-      <div className="mt-20 relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 text-center shadow-2xl">
+      <div className="mt-20 relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 text-center shadow-2xl">
 
   {/* Arka plan ışık efektleri */}
   <div className="absolute top-0 left-0 w-56 h-56 bg-white/30 rounded-full blur-3xl -translate-x-20 -translate-y-20" />

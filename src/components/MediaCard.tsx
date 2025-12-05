@@ -1,5 +1,5 @@
 // src/components/MediaCard.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { MediaItem } from '../types/media';
 import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
@@ -12,13 +12,20 @@ import toast from 'react-hot-toast';
 interface MediaCardProps {
   item: MediaItem;
   refetch: () => void;
+  // 1. YENİ: Bu kartın modal içinde olup olmadığını belirten prop
+  isModal?: boolean; 
 }
 
-export default function MediaCard({ item, refetch }: MediaCardProps) {
+export default function MediaCard({ item, refetch, isModal = false }: MediaCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); 
+  const [localWatched, setLocalWatched] = useState(item.watched);
+
+  useEffect(() => {
+    setLocalWatched(item.watched);
+  }, [item.watched]);
 
   const isGame = item.type === 'game';
 
@@ -42,28 +49,43 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
   };
 
   const handleToggle = async () => {
+    const newValue = !localWatched;
+    setLocalWatched(newValue); 
+    
     setIsToggling(true);
     try {
-      await updateDoc(doc(db, "mediaItems", item.id), { watched: !item.watched });
-      toast.success(item.watched ? 'İzlenmedi olarak işaretlendi' : 'İzlendi olarak işaretlendi');
+      await updateDoc(doc(db, "mediaItems", item.id), { watched: newValue });
+      toast.success(newValue ? 'İzlendi olarak işaretlendi' : 'İzlenmedi olarak işaretlendi');
       refetch();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);
       toast.error('Durum güncellenirken bir hata oluştu');
+      setLocalWatched(!newValue);
     } finally {
       setIsToggling(false);
     }
   };
 
+  // 2. YENİ: Modal içindeysek hover efektlerini devre dışı bırak
+  const containerHoverClasses = isModal 
+    ? "" // Modal içindeyse efekt yok
+    : "hover:shadow-xl hover:scale-105 hover:z-10"; // Listede ise büyüsün
+
+  const imageHoverClasses = isModal
+    ? "" // Modal içindeyse resim büyümesin
+    : "group-hover:scale-105"; // Listede ise resim zoom yapsın
+
   return (
     <>
-      <article className="group relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:scale-105 hover:z-10 transition-all duration-300 ease-in-out flex flex-col h-full">
+      <article 
+        className={`group relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 ease-in-out flex flex-col h-full ${containerHoverClasses}`}
+      >
         
         <div className="relative w-full bg-gray-50 dark:bg-gray-800">
           <ImageWithFallback
             src={item.image}
             alt={item.title}
-            className={`w-full transition-transform duration-500 group-hover:scale-105 ${
+            className={`w-full transition-transform duration-500 ${imageHoverClasses} ${
               isGame 
                 ? 'h-56 object-cover' 
                 : 'h-96 object-contain bg-gray-100 dark:bg-gray-800'
@@ -72,14 +94,15 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
           
           <div className="absolute left-3 top-3">
             <span 
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${item.watched 
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${
+                localWatched 
                 ? "bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200" 
                 : "bg-rose-100/90 text-rose-700 dark:bg-rose-900/80 dark:text-rose-200"
               }`}
             >
-              {item.watched ? <FaEye /> : <FaEyeSlash />}
+              {localWatched ? <FaEye /> : <FaEyeSlash />}
               <span className="hidden md:inline">
-                {item.watched ? "Watched" : "Not Watched"}
+                {localWatched ? "Watched" : "Not Watched"}
               </span>
             </span>
           </div>
@@ -108,25 +131,22 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
           
           <div className="mt-auto flex items-center justify-between pt-2 gap-2">
             
-            {/* === DÜZELTME 1: Toggle Butonu (stopPropagation eklendi) === */}
             <button 
               onClick={(e) => {
-                e.stopPropagation(); // Tıklamayı karta iletme!
+                e.stopPropagation(); 
                 handleToggle();
               }}
               disabled={isToggling}
               className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
             >
-              {item.watched ? <FaEye /> : <FaEyeSlash />}
+              {localWatched ? <FaEye /> : <FaEyeSlash />}
               <span className="hidden md:inline">Toggle</span>
             </button>
             
             <div className="flex gap-2">
-              
-              {/* === DÜZELTME 2: Edit Butonu (stopPropagation eklendi) === */}
               <button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Tıklamayı karta iletme!
+                  e.stopPropagation(); 
                   setIsEditModalOpen(true);
                 }}
                 title="Edit"
@@ -135,10 +155,9 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
                 <FaPen />
               </button>
               
-              {/* === DÜZELTME 3: Delete Butonu (stopPropagation eklendi) === */}
               <button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Tıklamayı karta iletme!
+                  e.stopPropagation(); 
                   setIsConfirmDialogOpen(true);
                 }}
                 disabled={isDeleting}
@@ -152,7 +171,6 @@ export default function MediaCard({ item, refetch }: MediaCardProps) {
         </div>
       </article>
 
-      {/* Modallar kartın dışında olduğu için tıklama sorunundan etkilenmezler */}
       <EditModal 
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

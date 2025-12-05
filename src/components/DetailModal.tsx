@@ -42,16 +42,16 @@ export default function DetailModal({ isOpen, onClose, item, refetch }: DetailMo
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-transparent text-left align-middle shadow-xl transition-all relative">
-                {/* Kapatma Butonu */}
                 <button 
                   onClick={onClose}
-                  className="absolute top-2 right-2 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                  className="absolute top-2 right-2 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors cursor-pointer hover:scale-110 shadow-lg border border-white/20"
+                  title="Kapat"
                 >
                   <FaTimes />
                 </button>
 
-                {/* Masaüstü kart tasarımını (MediaCard) burada kullanıyoruz */}
-                <MediaCard item={item} refetch={refetch} />
+                {/* 1. DÜZELTME: isModal={true} ekledik. Artık modal içinde zoom yapmayacak. */}
+                <MediaCard item={item} refetch={refetch} isModal={true} />
                 
               </Dialog.Panel>
             </Transition.Child>

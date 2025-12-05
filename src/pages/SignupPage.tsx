@@ -1,15 +1,14 @@
 // src/pages/SignupPage.tsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// 1. YENİ: Gerekli tüm importlar
-import { 
-  createUserWithEmailAndPassword, 
-  updateProfile, // Profili (Ad/Soyad) güncellemek için
-  GoogleAuthProvider, 
-  signInWithPopup 
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig'; 
-import { doc, setDoc, getDoc } from 'firebase/firestore'; 
+import { auth, db } from '../firebaseConfig';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import LoginPanda from '../components/LoginPanda';
 import { useAuth } from '../context/AuthContext';
 import { FaGoogle } from 'react-icons/fa';
@@ -18,14 +17,14 @@ import '../index.css';
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // YENİ
-  const [name, setName] = useState(''); // YENİ
-  const [surname, setSurname] = useState(''); // YENİ
-  const [gender, setGender] = useState<'male' | 'female' | ''>(''); 
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [isWatching, setIsWatching] = useState(true); // Panda state'i
+  const [isWatching, setIsWatching] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -34,10 +33,8 @@ export default function SignupPage() {
     return null;
   }
 
-  // E-posta ile Kayıt
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 2. YENİ: Validasyon (Kontroller)
     if (!name || !surname) {
       setError("Ad ve Soyad alanları zorunludur."); return;
     }
@@ -51,16 +48,13 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      // 3. Auth'a kaydet
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 4. YENİ: Auth profiline Ad/Soyad ekle
       await updateProfile(user, {
         displayName: `${name} ${surname}`
       });
 
-      // 5. Firestore 'users' koleksiyonuna kaydet
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
@@ -68,7 +62,7 @@ export default function SignupPage() {
         gender: gender
       });
 
-      navigate('/'); 
+      navigate('/');
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setError("Bu e-posta adresi zaten kullanımda.");
@@ -82,7 +76,6 @@ export default function SignupPage() {
     }
   };
 
-  // Google ile Kayıt (Login ile aynı)
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError(null);
@@ -98,7 +91,7 @@ export default function SignupPage() {
         await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName, // Google'dan gelen adı al
+          displayName: user.displayName,
           gender: '',
           visitedProvinces: []
         });
@@ -112,98 +105,130 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen py-12 px-4 bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md space-y-6">
+    <div className="relative flex justify-center items-center min-h-screen py-12 px-4 overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-black">
+      {/* Floating Stars Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(50)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 2}s`,
+              opacity: Math.random() * 0.7 + 0.3
+            }}
+          />
+        ))}
+        {/* Shooting Stars */}
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`shoot-${i}`}
+            className="absolute w-1 h-1 bg-white rounded-full animate-shoot"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 50}%`,
+              animationDelay: `${i * 5}s`
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative w-full max-w-md space-y-8 z-10">
         <LoginPanda isWatching={isWatching} />
-        <div className="bg-white dark:bg-gray-800 p-8 shadow-2xl rounded-2xl">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <div className="bg-gray-900/40 backdrop-blur-md p-8 shadow-2xl rounded-2xl border border-gray-700/50">
+          <h2 className="text-center text-3xl font-bold tracking-tight text-white mb-8">
             Kayıt Ol
           </h2>
-          
-          <form className="mt-8 space-y-6" onSubmit={handleSignup}>
-            
-            {/* 6. YENİ: Ad ve Soyad Alanları */}
+
+          <form className="mt-6 space-y-5" onSubmit={handleSignup}>
+
             <div className="flex gap-4">
               <div className="flex-1">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ad</label>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">Ad</label>
                 <input id="name" type="text" required value={name}
                   onChange={(e) => setName(e.target.value)}
                   onFocus={() => setIsWatching(true)}
-                  className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  placeholder="Adınız"
                 />
               </div>
               <div className="flex-1">
-                <label htmlFor="surname" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Soyad</label>
+                <label htmlFor="surname" className="block text-sm font-medium text-gray-300 mb-2">Soyad</label>
                 <input id="surname" type="text" required value={surname}
                   onChange={(e) => setSurname(e.target.value)}
                   onFocus={() => setIsWatching(true)}
-                  className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  placeholder="Soyadınız"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">E-posta</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
               <input id="email" type="email" required value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onFocus={() => setIsWatching(true)}
-                className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Şifre (En az 6 karakter)</label>
-              <input id="password" type="password" required value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setIsWatching(false)}
-                className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
-              />
-            </div>
-            
-            {/* 7. YENİ: Şifre Tekrarı Alanı */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Şifre Tekrar</label>
-              <input id="confirmPassword" type="password" required value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onFocus={() => setIsWatching(false)}
-                className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                placeholder="ornek@email.com"
               />
             </div>
 
-            {/* Cinsiyet Seçimi (Değişmedi) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cinsiyet</label>
-              <div className="mt-2 flex gap-4">
-                <label className="flex items-center">
-                  <input type="radio" name="gender" value="male" 
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Şifre (En az 6 karakter)</label>
+              <input id="password" type="password" required value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setIsWatching(false)}
+                onBlur={() => setIsWatching(true)}
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">Şifre Tekrar</label>
+              <input id="confirmPassword" type="password" required value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onFocus={() => setIsWatching(false)}
+                onBlur={() => setIsWatching(true)}
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-3">Cinsiyet</label>
+              <div className="flex gap-4">
+                <label className="flex items-center cursor-pointer px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/30 hover:bg-gray-800/50 transition-all flex-1">
+                  <input type="radio" name="gender" value="male"
                     checked={gender === 'male'} onChange={() => setGender('male')}
-                    className="h-4 w-4 text-sky-600 border-gray-300"
+                    className="h-4 w-4 text-blue-500 border-gray-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700 dark:text-gray-300">Erkek</span>
+                  <span className="ml-2 text-gray-300 font-medium">Erkek</span>
                 </label>
-                <label className="flex items-center">
-                  <input type="radio" name="gender" value="female" 
+                <label className="flex items-center cursor-pointer px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/30 hover:bg-gray-800/50 transition-all flex-1">
+                  <input type="radio" name="gender" value="female"
                     checked={gender === 'female'} onChange={() => setGender('female')}
-                    className="h-4 w-4 text-sky-600 border-gray-300"
+                    className="h-4 w-4 text-blue-500 border-gray-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700 dark:text-gray-300">Kadın</span>
+                  <span className="ml-2 text-gray-300 font-medium">Kadın</span>
                 </label>
               </div>
             </div>
 
-            {error && (<p className="text-center text-sm text-red-500">{error}</p>)}
+            {error && (<p className="text-center text-sm text-red-400 bg-red-900/20 py-2 px-4 rounded-lg border border-red-800/30">{error}</p>)}
 
             <div>
               <button type="submit" disabled={loading || googleLoading}
-                className="w-full px-6 py-3 rounded-xl bg-sky-600 text-white font-semibold text-lg hover:bg-sky-700 transition disabled:opacity-50">
+                className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all hover:shadow-lg hover:shadow-blue-500/50 disabled:opacity-50 disabled:hover:shadow-none">
                 {loading ? "Kayıt olunuyor..." : "Kayıt Ol"}
               </button>
             </div>
-            
-            {/* 8. YENİ: "veya" ayıracı ve Google Butonu */}
-            <div className="relative flex items-center justify-center">
-              <span className="absolute inset-x-0 h-px bg-gray-300 dark:bg-gray-600"></span>
-              <span className="relative bg-white dark:bg-gray-800 px-4 text-sm text-gray-500">
+
+            <div className="relative flex items-center justify-center my-6">
+              <span className="absolute inset-x-0 h-px bg-gray-700"></span>
+              <span className="relative bg-gray-900 px-4 text-sm text-gray-400">
                 veya
               </span>
             </div>
@@ -212,16 +237,16 @@ export default function SignupPage() {
                 type="button"
                 disabled={loading || googleLoading}
                 onClick={handleGoogleLogin}
-                className="w-full flex justify-center items-center gap-3 px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50"
+                className="w-full flex justify-center items-center gap-3 px-6 py-3 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-white font-semibold transition-all disabled:opacity-50"
               >
-                <FaGoogle className="text-red-500" />
+                <FaGoogle className="text-red-400" />
                 {googleLoading ? "Yönlendiriliyor..." : "Google ile Kayıt Ol"}
               </button>
             </div>
-            
-            <div className="text-sm text-center">
-              <Link to="/login" className="font-medium text-sky-600 hover:text-sky-500">
-                Zaten hesabın var mı? Giriş Yap
+
+            <div className="text-sm text-center mt-6">
+              <Link to="/login" className="text-gray-300 hover:text-white transition font-medium">
+                Zaten hesabın var mı? <span className="text-blue-400 hover:text-blue-300">Giriş Yap</span>
               </Link>
             </div>
           </form>

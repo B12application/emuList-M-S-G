@@ -1,18 +1,17 @@
 // src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// 1. YENİ: Google girişi için gerekli import'lar eklendi
-import { 
-  signInWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  signInWithPopup 
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig'; // db import edildi
-import { doc, setDoc, getDoc } from 'firebase/firestore'; // Firestore kontrolü için import edildi
+import { auth, db } from '../firebaseConfig';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import LoginPanda from '../components/LoginPanda'; 
-import { FaGoogle } from 'react-icons/fa'; // Google ikonu
-import '../index.css'; 
+import LoginPanda from '../components/LoginPanda';
+import { FaGoogle } from 'react-icons/fa';
+import '../index.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,21 +21,20 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [isWatching, setIsWatching] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   if (user) {
     navigate('/');
-    return null; 
+    return null;
   }
 
-  // E-posta ile giriş
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/'); 
+      navigate('/');
     } catch (err: any) {
       setError("E-posta veya şifre hatalı.");
     } finally {
@@ -44,7 +42,6 @@ export default function LoginPage() {
     }
   };
 
-  // 2. YENİ: Google ile Giriş Fonksiyonu
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError(null);
@@ -53,20 +50,17 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // ÖNEMLİ: Google ile ilk kez mi giriş yapıyor?
-      // Firestore 'users' koleksiyonunda kaydı var mı diye kontrol et.
       const userDocRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userDocRef);
 
       if (!docSnap.exists()) {
-        // Kaydı yoksa, Firestore'a temel bilgilerini (cinsiyet olmadan) ekle
         await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email,
-          gender: '' // Cinsiyet daha sonra profilden ayarlanabilir
+          gender: ''
         });
       }
-      navigate('/'); // Giriş başarılı
+      navigate('/');
     } catch (err: any) {
       setError("Google ile giriş yapılamadı.");
     } finally {
@@ -75,50 +69,80 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen py-12 px-4 bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md space-y-6">
-        
+    <div className="relative flex justify-center items-center min-h-screen py-12 px-4 overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-black">
+      {/* Floating Stars Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(50)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 2}s`,
+              opacity: Math.random() * 0.7 + 0.3
+            }}
+          />
+        ))}
+        {/* Shooting Stars */}
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`shoot-${i}`}
+            className="absolute w-1 h-1 bg-white rounded-full animate-shoot"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 50}%`,
+              animationDelay: `${i * 5}s`
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative w-full max-w-md space-y-8 z-10">
+
         <LoginPanda isWatching={isWatching} />
-        
-        <div className="bg-white dark:bg-gray-800 p-8 shadow-2xl rounded-2xl">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+
+        <div className="bg-gray-900/40 backdrop-blur-md p-8 shadow-2xl rounded-2xl border border-gray-700/50">
+          <h2 className="text-center text-3xl font-bold tracking-tight text-white mb-8">
             Giriş Yap
           </h2>
-          
-          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-            {/* ... (E-posta ve Şifre alanları aynı) ... */}
+
+          <form className="mt-6 space-y-5" onSubmit={handleLogin}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">E-posta</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
               <input
                 id="email" type="email" required value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onFocus={() => setIsWatching(true)}
-                className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                placeholder="ornek@email.com"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Şifre</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Şifre</label>
               <input
                 id="password" type="password" required value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onFocus={() => setIsWatching(false)}
-                className="mt-1 w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                onBlur={() => setIsWatching(true)}
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                placeholder="••••••••"
               />
             </div>
 
-            {error && (<p className="text-center text-sm text-red-500">{error}</p>)}
+            {error && (<p className="text-center text-sm text-red-400 bg-red-900/20 py-2 px-4 rounded-lg border border-red-800/30">{error}</p>)}
 
             <div>
               <button type="submit" disabled={loading || googleLoading}
-                className="w-full px-6 py-3 rounded-xl bg-sky-600 text-white font-semibold text-lg hover:bg-sky-700 transition disabled:opacity-50">
+                className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all hover:shadow-lg hover:shadow-blue-500/50 disabled:opacity-50 disabled:hover:shadow-none">
                 {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
               </button>
             </div>
 
-            {/* 3. YENİ: "veya" ayıracı ve Google Butonu */}
-            <div className="relative flex items-center justify-center">
-              <span className="absolute inset-x-0 h-px bg-gray-300 dark:bg-gray-600"></span>
-              <span className="relative bg-white dark:bg-gray-800 px-4 text-sm text-gray-500">
+            <div className="relative flex items-center justify-center my-6">
+              <span className="absolute inset-x-0 h-px bg-gray-700"></span>
+              <span className="relative bg-gray-900 px-4 text-sm text-gray-400">
                 veya
               </span>
             </div>
@@ -127,20 +151,18 @@ export default function LoginPage() {
                 type="button"
                 disabled={loading || googleLoading}
                 onClick={handleGoogleLogin}
-                className="w-full flex justify-center items-center gap-3 px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50"
+                className="w-full flex justify-center items-center gap-3 px-6 py-3 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-white font-semibold transition-all disabled:opacity-50"
               >
-                <FaGoogle className="text-red-500" />
+                <FaGoogle className="text-red-400" />
                 {googleLoading ? "Yönlendiriliyor..." : "Google ile Giriş Yap"}
               </button>
             </div>
-            
-            <div className="text-sm text-center">
-              <Link to="/signup" className="font-medium text-sky-600 hover:text-sky-500">
-                Hesabın yok mu? Kayıt Ol
+
+            <div className="text-sm text-center space-y-3 mt-6">
+              <Link to="/signup" className="block text-gray-300 hover:text-white transition font-medium">
+                Hesabın yok mu? <span className="text-blue-400 hover:text-blue-300">Kayıt Ol</span>
               </Link>
-            </div>
-            <div className="text-sm text-center">
-              <Link to="/sifremi-unuttum" className="font-medium text-gray-500 hover:text-gray-400">
+              <Link to="/sifremi-unuttum" className="block text-gray-500 hover:text-gray-400 transition text-xs">
                 Şifremi unuttum
               </Link>
             </div>

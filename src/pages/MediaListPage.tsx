@@ -61,22 +61,11 @@ export default function MediaListPage() {
   const handleFilterChange = (newFilter: FilterStatus) => {
     refetch(); setSearchParams(prev => { prev.set('filter', newFilter); return prev; }, { replace: true });
   };
-  const getTitle = () => {
-    if (type === 'series') return t('media.moviesSeries');
-    if (type === 'game') return t('media.gamesPlural');
-    if (type === 'movie') return t('media.movies');
-    if (type === 'book') return t('media.booksPlural');
-    return t('nav.all');
-  };
 
   return (
     <section className="py-6">
       {/* Yeni Modern Başlık ve Navigasyon */}
       <div className="mb-8">
-        {/* Başlık */}
-        <h1 className="text-3xl font-bold tracking-tight mb-6 bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
-          {getTitle()}
-        </h1>
 
         {/* Ana Kontrol Paneli - Modern Card Tasarımı */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">

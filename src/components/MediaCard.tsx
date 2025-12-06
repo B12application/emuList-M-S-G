@@ -156,6 +156,13 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
             {item.title}
           </h3>
 
+          {/* Kitaplar için yazar bilgisi */}
+          {item.type === 'book' && item.author && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 italic -mt-1">
+              {item.author}
+            </p>
+          )}
+
           {item.createdAt && (
             <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-1">
               <FaCalendarAlt />

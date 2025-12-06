@@ -22,4 +22,5 @@ export interface MediaItem {
   createdAt: Timestamp;
   tags?: string[];
   isFavorite?: boolean; // Bu hafta izlenecekler/favoriler için
+  author?: string; // Kitaplar için yazar bilgisi
 }

@@ -10,6 +10,7 @@ import MediaCard from '../components/MediaCard';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } from '../services/omdbApi';
+import { searchBooks, getBookById, normalizeBookRating, getBookCoverUrl, formatAuthors, type GoogleBooksSearchResult } from '../services/googleBooksApi';
 import ImageWithFallback from '../components/ui/ImageWithFallback';
 import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';
@@ -27,6 +28,7 @@ export default function CreatePage() {
   const [rating, setRating] = useState('0');
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
+  const [author, setAuthor] = useState(''); // Kitaplar için yazar
   const [watched, setWatched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +40,15 @@ export default function CreatePage() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchTimeoutRef = useRef<number | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Book search states
+  const [bookSearchQuery, setBookSearchQuery] = useState('');
+  const [bookSearchResults, setBookSearchResults] = useState<GoogleBooksSearchResult[]>([]);
+  const [isBookSearching, setIsBookSearching] = useState(false);
+  const [bookSearchError, setBookSearchError] = useState<string | null>(null);
+  const [showBookSearchResults, setShowBookSearchResults] = useState(false);
+  const bookSearchTimeoutRef = useRef<number | null>(null);
+  const bookSearchContainerRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
 
@@ -82,11 +93,17 @@ export default function CreatePage() {
       }
       // === KONTROL BİTİŞİ ===
 
-      const newMediaItem = {
+      const newMediaItem: any = {
         title, type, rating, image, description, watched,
         createdAt: serverTimestamp(),
         userId: user.uid
       };
+
+      // Kitaplar için yazar bilgisini ekle
+      if (type === 'book' && author) {
+        newMediaItem.author = author;
+      }
+
       await addDoc(collection(db, "mediaItems"), newMediaItem);
       toast.success(t('create.successAdded'));
       setIsLoading(false);
@@ -172,10 +189,14 @@ export default function CreatePage() {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setShowSearchResults(false);
       }
+      if (bookSearchContainerRef.current && !bookSearchContainerRef.current.contains(event.target as Node)) {
+        setShowBookSearchResults(false);
+      }
     };
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowSearchResults(false);
+        setShowBookSearchResults(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -185,6 +206,41 @@ export default function CreatePage() {
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, []);
+
+  // Google Books arama fonksiyonu
+  useEffect(() => {
+    if (bookSearchTimeoutRef.current) {
+      clearTimeout(bookSearchTimeoutRef.current);
+    }
+    if (!bookSearchQuery.trim() || type !== 'book') {
+      setBookSearchResults([]);
+      setShowBookSearchResults(false);
+      return;
+    }
+    bookSearchTimeoutRef.current = setTimeout(async () => {
+      setIsBookSearching(true);
+      setBookSearchError(null);
+      try {
+        const results = await searchBooks(bookSearchQuery);
+        setBookSearchResults(results);
+        setShowBookSearchResults(results.length > 0);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Kitap arama sırasında bir hata oluştu';
+        setBookSearchError(errorMessage);
+        setBookSearchResults([]);
+        setShowBookSearchResults(false);
+        toast.error(errorMessage);
+      } finally {
+        setIsBookSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (bookSearchTimeoutRef.current) {
+        clearTimeout(bookSearchTimeoutRef.current);
+      }
+    };
+  }, [bookSearchQuery, type]);
 
   // Arama sonucu seçildiğinde
   const handleSelectSearchResult = async (result: OMDbSearchResult) => {
@@ -210,6 +266,38 @@ export default function CreatePage() {
     }
   };
 
+  // Kitap arama sonucu seçildiğinde
+  const handleSelectBookResult = async (result: GoogleBooksSearchResult) => {
+    try {
+      setIsBookSearching(true);
+      setBookSearchError(null);
+      const details = await getBookById(result.id);
+
+      setTitle(details.volumeInfo.title);
+      const coverUrl = getBookCoverUrl(details.volumeInfo.imageLinks);
+      setImage(coverUrl);
+      setDescription(details.volumeInfo.description || '');
+
+      // Yazar bilgisini kaydet
+      const authorInfo = formatAuthors(details.volumeInfo.authors);
+      setAuthor(authorInfo);
+
+      if (details.volumeInfo.averageRating) {
+        setRating(normalizeBookRating(details.volumeInfo.averageRating));
+      }
+
+      setShowBookSearchResults(false);
+      setBookSearchQuery('');
+      toast.success(t('create.loaded'));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : t('common.error');
+      setBookSearchError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsBookSearching(false);
+    }
+  };
+
   const previewItem: MediaItem = {
     id: 'preview-id',
     title: title || "Başlık...",
@@ -218,7 +306,8 @@ export default function CreatePage() {
     description: description || "Açıklama...",
     watched: watched,
     type: type || 'movie',
-    createdAt: Timestamp.now()
+    createdAt: Timestamp.now(),
+    author: type === 'book' ? author : undefined // Kitaplar için yazar göster
   };
 
   return (
@@ -329,6 +418,95 @@ export default function CreatePage() {
                       icon={<FaSearch />}
                       title={t('create.noResults')}
                       description={`"${searchQuery}" ${t('create.tryDifferent')}`}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {type === 'book' && (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg" ref={bookSearchContainerRef}>
+              <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                {t('create.searchGoogleBooks')}
+              </label>
+              <div className="relative">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={bookSearchQuery}
+                    onChange={(e) => setBookSearchQuery(e.target.value)}
+                    onFocus={() => {
+                      if (bookSearchResults.length > 0) {
+                        setShowBookSearchResults(true);
+                      }
+                    }}
+                    placeholder={t('create.bookSearchPlaceholder')}
+                    className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  {bookSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBookSearchQuery('');
+                        setBookSearchResults([]);
+                        setShowBookSearchResults(false);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <FaTimes />
+                    </button>
+                  )}
+                  {isBookSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <FaSpinner className="animate-spin text-sky-500" />
+                    </div>
+                  )}
+                </div>
+
+                {showBookSearchResults && bookSearchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto">
+                    {bookSearchResults.map((result) => (
+                      <button
+                        key={result.id}
+                        type="button"
+                        onClick={() => handleSelectBookResult(result)}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                      >
+                        <ImageWithFallback
+                          src={result.volumeInfo.imageLinks?.thumbnail || ''}
+                          alt={result.volumeInfo.title}
+                          className="w-12 h-16 object-cover rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                            {result.volumeInfo.title}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {formatAuthors(result.volumeInfo.authors)}
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                            {result.volumeInfo.publishedDate?.split('-')[0] || ''}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {bookSearchError && (
+                  <div className="mt-2 text-sm text-red-500">
+                    {bookSearchError}
+                  </div>
+                )}
+
+                {!isBookSearching && bookSearchQuery.trim() && bookSearchResults.length === 0 && !bookSearchError && (
+                  <div className="mt-4">
+                    <EmptyState
+                      icon={<FaSearch />}
+                      title={t('create.noResults')}
+                      description={`"${bookSearchQuery}" ${t('create.tryDifferent')}`}
                     />
                   </div>
                 )}

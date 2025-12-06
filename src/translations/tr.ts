@@ -128,7 +128,7 @@ export const translationsTR = {
     list: {
         status: 'Durum',
         sortBy: 'Sırala',
-        view: 'Görünüm',
+        view: 'Liste',
         all: 'Tümü',
         watched: 'İzlenenler',
         notWatched: 'İzlenmeyenler',

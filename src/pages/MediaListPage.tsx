@@ -107,11 +107,11 @@ export default function MediaListPage() {
             <div className="hidden lg:block w-px bg-gray-200 dark:bg-gray-700" />
 
             {/* Sağ: Filtreler ve Kontroller */}
-            <div className="flex-1 flex flex-wrap items-center gap-3">
+            <div className="flex-1 flex flex-wrap items-center gap-2">
 
               {/* Durum Filtresi */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">{t('list.status')}:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('list.status')}:</span>
                 <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
                   <button title={t('list.all')} className={`px-3 py-2 text-sm transition ${getActiveFilter("all")}`} onClick={() => handleFilterChange('all')}>
                     <FaGlobeAmericas />
@@ -126,8 +126,8 @@ export default function MediaListPage() {
               </div>
 
               {/* Sıralama */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">{t('list.sortBy')}:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('list.sortBy')}:</span>
                 <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
                   <button title={t('list.byRating')} className={`px-3 py-2 text-sm transition ${getActiveSort('rating')}`} onClick={() => setSortOption('rating')}>
                     <FaStar />
@@ -142,8 +142,8 @@ export default function MediaListPage() {
               </div>
 
               {/* Görünüm */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">{t('list.view')}:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('list.view')}:</span>
                 <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
                   <button title={t('list.grid')} className={`px-3 py-2 text-sm transition ${viewMode === 'grid' ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setViewMode('grid')}>
                     <FaTh />
@@ -155,7 +155,7 @@ export default function MediaListPage() {
               </div>
 
               {/* Arama */}
-              <div className="relative flex-1 min-w-[200px]">
+              <div className="relative flex-1 min-w-[150px]">
                 <input
                   type="text"
                   placeholder={t('list.searchPlaceholder')}

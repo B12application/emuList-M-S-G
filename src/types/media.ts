@@ -2,7 +2,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 // Bu, veritabanındaki (DB) tip
-export type MediaType = 'movie' | 'series' | 'game';
+export type MediaType = 'movie' | 'series' | 'game' | 'book';
 
 // Bu, filtreleme için kullanılan tip (URL'den gelir)
 export type FilterType = MediaType | 'all';
@@ -18,7 +18,7 @@ export interface MediaItem {
   rating: string;
   description?: string;
   watched: boolean;
-  type: MediaType; // DB'de her zaman movie, series veya game olmalı
+  type: MediaType; // DB'de her zaman movie, series, game veya book olmalı
   createdAt: Timestamp;
   tags?: string[];
   isFavorite?: boolean; // Bu hafta izlenecekler/favoriler için

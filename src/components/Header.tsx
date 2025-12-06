@@ -6,6 +6,7 @@ import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import { useLanguage } from '../context/LanguageContext';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -26,10 +27,11 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
   const location = useLocation();
+  const { language, setLanguage, t } = useLanguage();
 
   const pathSegments = location.pathname.split('/');
   const potentialType = pathSegments[1];
-  const createType = (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game')
+  const createType = (potentialType === 'movie' || potentialType === 'series' || potentialType === 'game' || potentialType === 'book')
     ? potentialType
     : undefined;
   const createLink = createType ? `/create?type=${createType}` : '/create';
@@ -52,11 +54,12 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
         {/* Navigasyon */}
         {user && (
           <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
-            <NavLink to="/" end className={getNavCls}>Anasayfa</NavLink>
-            <NavLink to="/movie" className={getNavCls}>Filmler</NavLink>
-            <NavLink to="/series" className={getNavCls}>Diziler</NavLink>
-            <NavLink to="/game" className={getNavCls}>Oyunlar</NavLink>
-            <NavLink to="/all" className={getNavCls}>Hepsi</NavLink>
+            <NavLink to="/" end className={getNavCls}>{t('nav.home')}</NavLink>
+            <NavLink to="/movie" className={getNavCls}>{t('nav.movies')}</NavLink>
+            <NavLink to="/series" className={getNavCls}>{t('nav.series')}</NavLink>
+            <NavLink to="/game" className={getNavCls}>{t('nav.games')}</NavLink>
+            <NavLink to="/book" className={getNavCls}>{t('nav.books')}</NavLink>
+            <NavLink to="/all" className={getNavCls}>{t('nav.all')}</NavLink>
             <NavLink to="/map" className={getNavCls}><FaMap /></NavLink>
           </nav>
         )}
@@ -104,6 +107,15 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
             title="Tema"
           >
             {isDark ? <FaMoon /> : <FaSun />}
+          </button>
+
+          {/* Dil Seçici */}
+          <button
+            onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
+            className={`h-10 px-3 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition text-sm font-semibold ${!user ? 'hidden sm:inline-flex' : ''}`}
+            title="Language / Dil"
+          >
+            {language === 'tr' ? 'EN' : 'TR'}
           </button>
 
           {user && (

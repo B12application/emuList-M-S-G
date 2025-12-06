@@ -5,54 +5,49 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc } from 'firebase/firestore';
 import { FaSpinner } from 'react-icons/fa';
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { FaPlus, FaMinus, FaCompress } from "react-icons/fa6";
-
-// Tooltip state type
-interface TooltipState {
-  show: boolean;
-  text: string;
-  x: number;
-  y: number;
-}
+import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
+import { FaPlus, FaMinus, FaExpand, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 
 export default function VisitedMapPage() {
   const { isDark } = useTheme();
   const { user } = useAuth();
   const [visitedProvinces, setVisitedProvinces] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tooltip, setTooltip] = useState<TooltipState>({ show: false, text: '', x: 0, y: 0 });
-  
-  const svgObjectRef = useRef<HTMLObjectElement>(null); 
-  const [isSvgLoaded, setIsSvgLoaded] = useState(false);
-  const listenersRef = useRef<(() => void)[]>([]); 
 
-  // Renkler
-  const defaultColor = isDark ? "#374151" : "#E5E7EB"; 
-  const visitedColor = "#a62147"; 
-  const hoverColor = "#000"; 
-  const strokeColor = isDark ? "#1f2937" : "#FFFFFF"; 
-  // 1. DÜZELTME: Yazı Rengi (Mobilde ve Koyu Modda daha iyi görünsün diye)
-  const textColor = isDark ? "#FFFFFF" : "#333333"; 
+  const svgObjectRef = useRef<HTMLObjectElement>(null);
+  const [isSvgLoaded, setIsSvgLoaded] = useState(false);
+  const listenersRef = useRef<(() => void)[]>([]);
+  const transformRef = useRef<ReactZoomPanPinchRef>(null);
+
+  // Track transform state for pan controls
+  const [transformState, setTransformState] = useState({ positionX: 0, positionY: 0, scale: 1 });
+
+  // Modern Color Palette
+  const defaultColor = isDark ? "#374151" : "#E5E7EB";
+  const visitedColor = isDark ? "#dc2626" : "#b91c1c";
+  const hoverColor = isDark ? "#f59e0b" : "#f97316";
+  const strokeColor = isDark ? "#1f2937" : "#FFFFFF";
+  const textColor = isDark ? "#FFFFFF" : "#1f2937";
+  const glowColor = isDark ? "rgba(220, 38, 38, 0.6)" : "rgba(185, 28, 28, 0.4)";
 
   // Tıklama Fonksiyonu
   const handleProvinceClick = useCallback(async (provinceId: string) => {
     if (!user) return;
     const userDocRef = doc(db, 'users', user.uid);
     const isVisited = visitedProvinces.includes(provinceId);
-    
-    setVisitedProvinces(prev => 
+
+    setVisitedProvinces(prev =>
       isVisited ? prev.filter(p => p !== provinceId) : [...prev, provinceId]
     );
 
     try {
       if (isVisited) await updateDoc(userDocRef, { visitedProvinces: arrayRemove(provinceId) });
       else await updateDoc(userDocRef, { visitedProvinces: arrayUnion(provinceId) });
-    } catch (e) { 
+    } catch (e) {
       console.error("Kaydetme hatası: ", e);
       setVisitedProvinces(visitedProvinces);
     }
-  }, [user, visitedProvinces]); 
+  }, [user, visitedProvinces]);
 
   // Firebase'den veri çekme
   useEffect(() => {
@@ -68,7 +63,7 @@ export default function VisitedMapPage() {
           await setDoc(userDocRef, { visitedProvinces: [] }, { merge: true });
           setVisitedProvinces([]);
         }
-      } catch (error) { console.error("Veri hatası:", error); } 
+      } catch (error) { console.error("Veri hatası:", error); }
       finally { setLoading(false); }
     };
     fetchVisitedProvinces();
@@ -78,7 +73,7 @@ export default function VisitedMapPage() {
   const setupMapInteractions = useCallback(() => {
     if (!isSvgLoaded || !svgObjectRef.current) return;
     const svgDoc = svgObjectRef.current.contentDocument;
-    if (!svgDoc) return; 
+    if (!svgDoc) return;
 
     listenersRef.current.forEach(cleanup => cleanup());
     listenersRef.current = [];
@@ -88,7 +83,7 @@ export default function VisitedMapPage() {
     oldLabels.forEach(label => label.remove());
 
     const paths = svgDoc.querySelectorAll('path[id^="TR"]');
-    
+
     paths.forEach(path => {
       const svgPath = path as SVGPathElement;
       const provinceId = svgPath.id;
@@ -96,56 +91,52 @@ export default function VisitedMapPage() {
       if (!provinceId || !provinceId.startsWith('TR')) return;
 
       const isVisited = visitedProvinces.includes(provinceId);
-      const plateNumber = provinceId.replace('TR', '');
-      const label = `${plateNumber} - ${provinceName}`;
 
       svgPath.style.fill = isVisited ? visitedColor : defaultColor;
       svgPath.style.stroke = strokeColor;
       svgPath.style.strokeWidth = "0.5";
       svgPath.style.cursor = "pointer";
       svgPath.style.transition = "fill 0.15s ease-in-out";
-      svgPath.style.touchAction = "manipulation"; 
+      svgPath.style.touchAction = "manipulation";
+      svgPath.style.pointerEvents = "auto";
 
-      // İsimleri Yaz (Ziyaret edilenler için)
-      if (isVisited) {
-        const bbox = (svgPath as SVGGraphicsElement).getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
+      // Add labels - different styles for visited vs unvisited
+      const bbox = (svgPath as SVGGraphicsElement).getBBox();
+      const centerX = bbox.x + bbox.width / 2;
+      const centerY = bbox.y + bbox.height / 2;
 
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", String(centerX));
-        text.setAttribute("y", String(centerY));
-        text.setAttribute("class", "province-label"); 
-        text.setAttribute("text-anchor", "middle"); 
-        text.setAttribute("dominant-baseline", "middle"); 
-        // 2. DÜZELTME: Yazı boyutu ve stili
-        text.setAttribute("font-size", "14px"); // Biraz daha büyük
-        text.setAttribute("font-family", "sans-serif");
-        text.setAttribute("font-weight", "bold");
-        text.setAttribute("fill", textColor); // Beyaz veya Koyu Gri
-        // Yazıya gölge (stroke) ekleyerek okunabilirliği artır
-        text.setAttribute("stroke", isDark ? "#000" : "#FFF");
-        text.setAttribute("stroke-width", "0.5px");
-        text.setAttribute("paint-order", "stroke");
-        text.setAttribute("pointer-events", "none"); 
-        text.textContent = provinceName;
+      // Simple black text - bold and clear
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", String(centerX));
+      text.setAttribute("y", String(centerY));
+      text.setAttribute("class", "province-label");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute("font-size", "11px");
+      text.setAttribute("font-family", "'Inter', 'Segoe UI', sans-serif");
+      text.setAttribute("font-weight", "700");
+      text.setAttribute("fill", "#000000");
+      text.setAttribute("pointer-events", "none");
+      text.textContent = provinceName;
 
-        if (svgPath.parentNode) {
-          svgPath.parentNode.appendChild(text);
-        }
+      if (svgPath.parentNode) {
+        svgPath.parentNode.appendChild(text);
       }
 
-      const handleMouseEnter = (e: MouseEvent) => {
+      const handleMouseEnter = () => {
         svgPath.style.fill = hoverColor;
-        setTooltip(() => ({ show: true, text: label, x: e.clientX, y: e.clientY }));
+        svgPath.style.transform = "scale(1.02)";
+        svgPath.style.transformOrigin = "center";
+        svgPath.style.filter = `drop-shadow(0 4px 12px ${glowColor})`;
       };
-      const handleMouseMove = (e: MouseEvent) => {
-        setTooltip(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
+      const handleMouseMove = () => {
+        // Tooltip removed
       };
       const handleMouseLeave = () => {
         const isCurrentlyVisited = visitedProvinces.includes(provinceId);
         svgPath.style.fill = isCurrentlyVisited ? visitedColor : defaultColor;
-        setTooltip(prev => ({ ...prev, show: false }));
+        svgPath.style.transform = "scale(1)";
+        svgPath.style.filter = isCurrentlyVisited ? "drop-shadow(0 2px 4px rgba(0,0,0,0.2))" : "drop-shadow(0 1px 2px rgba(0,0,0,0.1))";
       };
       const handleClick = (e: Event) => {
         e.preventDefault();
@@ -166,7 +157,7 @@ export default function VisitedMapPage() {
         svgPath.removeEventListener('touchend', handleClick as EventListener);
       });
     });
-  }, [isSvgLoaded, visitedProvinces, isDark, strokeColor, visitedColor, defaultColor, hoverColor, handleProvinceClick, textColor]);
+  }, [isSvgLoaded, visitedProvinces, isDark, strokeColor, visitedColor, defaultColor, hoverColor, handleProvinceClick, textColor, glowColor]);
 
   useEffect(() => {
     if (isSvgLoaded) {
@@ -194,49 +185,117 @@ export default function VisitedMapPage() {
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
         Ziyaret Ettiğim Yerler
       </h1>
-      
-      {tooltip.show && (
-        <div 
-          className="fixed z-9999 px-3 py-2 text-sm font-bold text-white bg-gray-900 dark:bg-gray-700 rounded-lg shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-[130%]"
-          style={{ left: tooltip.x, top: tooltip.y }}
-        >
-          {tooltip.text}
-        </div>
-      )}
-      
-      <p className="mb-4 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-        Ziyaret ettiğin ili seçmek için harita üzerinden tıkla.
-      </p>
 
-      {/* 3. DÜZELTME: Mobil Uyumlu Konteyner */}
-      <div className="flex-1 w-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 relative touch-none">
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+          Haritayı hareket ettirmek için ok butonlarını, yakınlaştırmak için +/- butonlarını kullan. Şehir seçmek için tıkla.
+        </p>
+
+        {/* City Counter */}
+        <div className="flex items-center gap-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-6 py-3 rounded-xl shadow-sm">
+          <div className="flex items-baseline gap-2">
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              {visitedProvinces.length}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">/ 81 il</div>
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+            ziyaret edildi
+          </div>
+        </div>
+      </div>
+
+      {/* Map Container - Button Controlled */}
+      <div className="flex-1 w-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 relative">
         <TransformWrapper
+          ref={transformRef}
           initialScale={1}
-          minScale={0.5}
-          maxScale={15}
+          minScale={0.3}
+          maxScale={10}
           centerOnInit={true}
-          wheel={{ step: 0.1 }} 
-          panning={{ 
-            velocityDisabled: false, 
-            excluded: [] 
-          }}
-          pinch={{ disabled: false }}
-          doubleClick={{ disabled: true }}
+          limitToBounds={false}
+          onTransformed={(_ref, state) => setTransformState({ positionX: state.positionX, positionY: state.positionY, scale: state.scale })}
         >
-          {({ zoomIn, zoomOut, resetTransform, centerView }) => (
+          {({ zoomIn, zoomOut, resetTransform, setTransform }) => (
             <>
-              <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-                <button onClick={() => zoomIn()} className="p-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"><FaPlus /></button>
-                <button onClick={() => zoomOut()} className="p-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"><FaMinus /></button>
-                <button onClick={() => { resetTransform(); centerView(1); }} className="p-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition border border-gray-200 dark:border-gray-600"><FaCompress /></button>
+              {/* Control Panel */}
+              <div className="absolute bottom-4 right-4 z-10 flex gap-3">
+                {/* Pan Controls - D-Pad Style */}
+                <div className="bg-white/90 dark:bg-gray-900/90 p-2.5 rounded-xl shadow-lg backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50">
+                  <div className="grid grid-cols-3 grid-rows-3 gap-1.5">
+                    {/* Top row */}
+                    <div></div>
+                    <button
+                      onClick={() => setTransform(transformState.positionX, transformState.positionY - 50, transformState.scale)}
+                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      title="Yukarı"
+                    >
+                      <FaArrowUp className="text-sm" />
+                    </button>
+                    <div></div>
+
+                    {/* Middle row */}
+                    <button
+                      onClick={() => setTransform(transformState.positionX - 50, transformState.positionY, transformState.scale)}
+                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      title="Sol"
+                    >
+                      <FaArrowLeft className="text-sm" />
+                    </button>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                    </div>
+                    <button
+                      onClick={() => setTransform(transformState.positionX + 50, transformState.positionY, transformState.scale)}
+                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      title="Sağ"
+                    >
+                      <FaArrowRight className="text-sm" />
+                    </button>
+
+                    {/* Bottom row */}
+                    <div></div>
+                    <button
+                      onClick={() => setTransform(transformState.positionX, transformState.positionY + 50, transformState.scale)}
+                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      title="Aşağı"
+                    >
+                      <FaArrowDown className="text-sm" />
+                    </button>
+                    <div></div>
+                  </div>
+                </div>
+
+                {/* Zoom Controls */}
+                <div className="flex flex-col gap-2 bg-white/90 dark:bg-gray-900/90 p-2.5 rounded-xl shadow-lg backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50">
+                  <button
+                    onClick={() => zoomIn()}
+                    className="p-3 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-500 text-white rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                    title="Yakınlaştır"
+                  >
+                    <FaPlus className="text-sm" />
+                  </button>
+                  <button
+                    onClick={() => zoomOut()}
+                    className="p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                    title="Uzaklaştır"
+                  >
+                    <FaMinus className="text-sm" />
+                  </button>
+                  <button
+                    onClick={() => resetTransform()}
+                    className="p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                    title="Sıfırla"
+                  >
+                    <FaExpand className="text-sm" />
+                  </button>
+                </div>
               </div>
 
               <TransformComponent
                 wrapperStyle={{
                   width: "100%",
-                  height: "100%",
-                  cursor: "grab",
-                  touchAction: "none"
+                  height: "100%"
                 }}
                 contentStyle={{
                   width: "100%",
@@ -246,24 +305,22 @@ export default function VisitedMapPage() {
                   justifyContent: "center"
                 }}
               >
-                {/* 4. DÜZELTME: Mobilde taşmayı önleyen stil */}
                 <div className="w-full h-full flex items-center justify-center p-2">
-                    <object
+                  <object
                     ref={svgObjectRef}
                     id="turkey-svg-map"
                     type="image/svg+xml"
                     data="/turkey-map.svg"
-                    className="max-w-full max-h-full object-contain pointer-events-auto" 
-                    style={{ 
-                        maxWidth: "100%", 
-                        maxHeight: "100%",
-                        // Mobilde çok küçük kalmaması için min boyut
-                        minWidth: "300px" 
+                    className="max-w-full max-h-full object-contain pointer-events-auto"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      minWidth: "280px"
                     }}
                     onLoad={() => setIsSvgLoaded(true)}
-                    >
+                  >
                     Harita yüklenemedi.
-                    </object>
+                  </object>
                 </div>
               </TransformComponent>
             </>

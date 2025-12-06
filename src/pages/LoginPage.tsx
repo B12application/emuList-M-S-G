@@ -9,11 +9,13 @@ import {
 import { auth, db } from '../firebaseConfig';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import LoginPanda from '../components/LoginPanda';
 import { FaGoogle } from 'react-icons/fa';
 import '../index.css';
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/');
     } catch (err: any) {
-      setError("E-posta veya şifre hatalı.");
+      setError(t('auth.loginError'));
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function LoginPage() {
       }
       navigate('/');
     } catch (err: any) {
-      setError("Google ile giriş yapılamadı.");
+      setError(t('auth.googleError'));
     } finally {
       setGoogleLoading(false);
     }
@@ -105,12 +107,12 @@ export default function LoginPage() {
 
         <div className="bg-gray-900/40 backdrop-blur-md p-8 shadow-2xl rounded-2xl border border-gray-700/50">
           <h2 className="text-center text-3xl font-bold tracking-tight text-white mb-8">
-            Giriş Yap
+            {t('auth.login')}
           </h2>
 
           <form className="mt-6 space-y-5" onSubmit={handleLogin}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">{t('auth.email')}</label>
               <input
                 id="email" type="email" required value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -120,7 +122,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Şifre</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">{t('auth.password')}</label>
               <input
                 id="password" type="password" required value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -136,14 +138,14 @@ export default function LoginPage() {
             <div>
               <button type="submit" disabled={loading || googleLoading}
                 className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all hover:shadow-lg hover:shadow-blue-500/50 disabled:opacity-50 disabled:hover:shadow-none">
-                {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
+                {loading ? t('auth.loggingIn') : t('auth.login')}
               </button>
             </div>
 
             <div className="relative flex items-center justify-center my-6">
               <span className="absolute inset-x-0 h-px bg-gray-700"></span>
               <span className="relative bg-gray-900 px-4 text-sm text-gray-400">
-                veya
+                {t('auth.or')}
               </span>
             </div>
             <div>
@@ -154,16 +156,16 @@ export default function LoginPage() {
                 className="w-full flex justify-center items-center gap-3 px-6 py-3 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-white font-semibold transition-all disabled:opacity-50"
               >
                 <FaGoogle className="text-red-400" />
-                {googleLoading ? "Yönlendiriliyor..." : "Google ile Giriş Yap"}
+                {googleLoading ? t('auth.redirecting') : t('auth.googleLogin')}
               </button>
             </div>
 
             <div className="text-sm text-center space-y-3 mt-6">
               <Link to="/signup" className="block text-gray-300 hover:text-white transition font-medium">
-                Hesabın yok mu? <span className="text-blue-400 hover:text-blue-300">Kayıt Ol</span>
+                {t('auth.dontHaveAccount')} <span className="text-blue-400 hover:text-blue-300">{t('auth.signup')}</span>
               </Link>
               <Link to="/sifremi-unuttum" className="block text-gray-500 hover:text-gray-400 transition text-xs">
-                Şifremi unuttum
+                {t('auth.forgotPassword')}
               </Link>
             </div>
           </form>

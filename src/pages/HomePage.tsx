@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // 1. YENİ İKONLAR EKLENDİ: FaCalendarCheck, FaHistory, FaArrowRight, FaHourglassHalf, FaStar
-import { FaFilm, FaTv, FaGamepad, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';
@@ -11,6 +11,7 @@ import useUserProfile from '../hooks/useUserProfile';
 import type { MediaItem } from '../types/media';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { useLanguage } from '../context/LanguageContext';
 
 import DetailModal from '../components/DetailModal';
 
@@ -22,6 +23,7 @@ export default function HomePage() {
   const { user } = useAuth();
   const { profile } = useUserProfile();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [randomItem, setRandomItem] = useState<MediaItem | null>(null);
   const [selectedRecentItem, setSelectedRecentItem] = useState<MediaItem | null>(null);
@@ -43,11 +45,13 @@ export default function HomePage() {
   const { items: movieRecs, loading: movieLoading, refetch: movieRefetch } = useMedia('movie', 'not-watched', false);
   const { items: seriesRecs, loading: seriesLoading, refetch: seriesRefetch } = useMedia('series', 'not-watched', false);
   const { items: gameRecs, loading: gameLoading, refetch: gameRefetch } = useMedia('game', 'not-watched', false);
+  const { items: bookRecs, loading: bookLoading, refetch: bookRefetch } = useMedia('book', 'not-watched', false);
 
   const movieRecommendation = movieRecs[0];
   const seriesRecommendation = seriesRecs[0];
   const gameRecommendation = gameRecs[0];
-  const recommendationsLoading = movieLoading || seriesLoading || gameLoading;
+  const bookRecommendation = bookRecs[0];
+  const recommendationsLoading = movieLoading || seriesLoading || gameLoading || bookLoading;
 
   // 3. YENİ: VERİ İŞLEME (Günlük ve Tozlu Raflar)
 
@@ -80,7 +84,7 @@ export default function HomePage() {
   };
 
   const handleRandomPick = () => {
-    const pool = [...movieRecs, ...seriesRecs, ...gameRecs];
+    const pool = [...movieRecs, ...seriesRecs, ...gameRecs, ...bookRecs];
     if (pool.length > 0) {
       const random = pool[Math.floor(Math.random() * pool.length)];
       setRandomItem(random);
@@ -116,20 +120,19 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/30 backdrop-blur-sm mb-4">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-sm font-bold uppercase tracking-wider">Hafıza Merkezi</span>
+              <span className="text-sm font-bold uppercase tracking-wider">{t('home.memoryCenter')}</span>
             </div>
 
             {/* Başlık */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
-              Merhaba,{" "}
+              {t('home.welcome')},{" "}
               <span className="bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 {displayName}
               </span>
             </h1>
 
             <p className="mt-4 text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl">
-              Dijital hafızanı yönetmenin akıllı yolu. İzlediklerini, oynadıklarını ve
-              keşfettiklerini asla unutma!
+              {t('home.heroDescription')}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -144,7 +147,7 @@ export default function HomePage() {
              flex items-center gap-2"
               >
                 <FaPlus className="transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110" />
-                Yeni Ekle
+                {t('home.addNew')}
               </Link>
 
               {/* Koleksiyon */}
@@ -159,7 +162,7 @@ export default function HomePage() {
                   transition-opacity duration-300" />
 
                 <FaArchive className="transition-transform duration-300 group-hover:-translate-x-1" />
-                Koleksiyonu Gör
+                {t('home.viewCollection')}
               </Link>
 
               {/* Şansıma */}
@@ -171,7 +174,7 @@ export default function HomePage() {
              hover:-translate-y-0.5 flex items-center gap-2"
               >
                 <FaRandom className="group-hover:rotate-180 transition-transform duration-500" />
-                Şansıma Ne Çıkar?
+                {t('home.randomButton')}
               </button>
 
             </div>
@@ -184,22 +187,22 @@ export default function HomePage() {
       {/* === İSTATİSTİK BÖLÜMÜ (SENİN TASARIMIN) === */}
       <div className="mt-16 mb-12">
         <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3 text-gray-900 dark:text-gray-200">
-          <FaChartPie className="text-red-500" /> İstatistikler
+          <FaChartPie className="text-red-500" /> {t('home.stats')}
         </h2>
 
         {statsLoading ? (
           <div className="flex flex-col justify-center items-center p-10 bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-3xl shadow-xl border border-white/20 backdrop-blur-md">
             <FaSpinner className="animate-spin h-10 w-10 text-red-500" />
             <span className="mt-3 text-lg text-gray-700 dark:text-gray-300 font-medium">
-              İstatistikler yükleniyor...
+              {t('home.statsLoading')}
             </span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
 
             {/* Kart */}
             <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
-              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Toplam Kayıt</h4>
+              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">{t('home.totalItems')}</h4>
               <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 {stats.totalCount}
               </p>
@@ -207,7 +210,7 @@ export default function HomePage() {
 
             {/* Kart */}
             <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
-              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Film Sayısı</h4>
+              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">{t('home.movieCount')}</h4>
               <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 {stats.movieCount}
               </p>
@@ -215,7 +218,7 @@ export default function HomePage() {
 
             {/* Kart */}
             <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
-              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Dizi Sayısı</h4>
+              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">{t('home.seriesCount')}</h4>
               <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 {stats.seriesCount}
               </p>
@@ -223,9 +226,17 @@ export default function HomePage() {
 
             {/* Kart */}
             <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
-              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">Oyun Sayısı</h4>
+              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">{t('home.gameCount')}</h4>
               <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 {stats.gameCount}
+              </p>
+            </div>
+
+            {/* Kart - Kitap */}
+            <div className="group bg-linear-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-200/70 dark:border-gray-700/40 hover:-translate-y-1 hover:shadow-2xl transition-all text-center">
+              <h4 className="text-md font-semibold text-gray-600 dark:text-gray-400">{t('home.bookCount')}</h4>
+              <p className="text-4xl font-black mt-2 bg-linear-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+                {stats.bookCount}
               </p>
             </div>
 
@@ -313,7 +324,7 @@ export default function HomePage() {
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
                           : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
                           }`}>
-                          {item.watched ? 'İzlendi' : 'İzlenmedi'}
+                          {item.watched ? t('card.watched') : t('card.notWatched')}
                         </span>
                       </div>
                     </div>
@@ -329,12 +340,12 @@ export default function HomePage() {
                     disabled={favoritesPage === 0}
                     className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    <FaArrowRight className="rotate-180" /> Önceki
+                    <FaArrowRight className="rotate-180" /> {t('home.prev')}
                   </button>
 
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Sayfa {favoritesPage + 1} / {totalPages}
+                      {t('home.page')} {favoritesPage + 1} / {totalPages}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-500">
                       ({favoriteItems.length} favori)
@@ -346,7 +357,7 @@ export default function HomePage() {
                     disabled={favoritesPage >= totalPages - 1}
                     className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    Sonraki <FaArrowRight />
+                    {t('home.next')} <FaArrowRight />
                   </button>
                 </div>
               )}
@@ -359,10 +370,10 @@ export default function HomePage() {
               <div className="relative">
                 <FaHeart className="mx-auto h-16 w-16 text-blue-300 dark:text-blue-700 mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 mb-2">
-                  Henüz favori içerik eklenmemiş
+                  {t('home.noFavoritesTitle')}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                  Bu hafta izlemek istediğin film, dizi veya oyunları kalp ikonuna tıklayarak favorilere ekleyebilirsin!
+                  {t('home.noFavoritesDesc')}
                 </p>
               </div>
             </div>
@@ -379,7 +390,7 @@ export default function HomePage() {
         <div className="lg:col-span-2 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-              <FaCalendarCheck className="text-sky-500" /> Kütüphane Günlüğü
+              <FaCalendarCheck className="text-sky-500" /> {t('home.recentActivity')}
             </h2>
           </div>
 
@@ -401,7 +412,7 @@ export default function HomePage() {
                   {/* Bilgi */}
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-sky-500 transition-colors">{item.title}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.description || 'Açıklama yok'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.description || t('home.noDescription')}</p>
                   </div>
 
                   {/* Tarih ve Tür */}
@@ -416,7 +427,7 @@ export default function HomePage() {
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-gray-500 text-sm">Henüz kayıt eklenmemiş.</div>
+              <div className="p-8 text-center text-gray-500 text-sm">{t('home.noRecent')}</div>
             )}
           </div>
         </div>
@@ -424,7 +435,7 @@ export default function HomePage() {
         {/* SAĞ: Tozlu Raflar (Backlog) */}
         <div className="lg:col-span-1 flex flex-col">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
-            <FaHourglassHalf className="text-amber-500" /> Tozlu Raflar
+            <FaHourglassHalf className="text-amber-500" /> {t('home.dustyShelf')}
           </h2>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden p-4 flex-1">
             <div className="space-y-4">
@@ -437,7 +448,7 @@ export default function HomePage() {
                   >
                     <div className="absolute top-3 right-3">
                       <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <FaHistory /> Unutuldu
+                        <FaHistory /> {t('home.forgotten')}
                       </span>
                     </div>
                     <h4 className="font-bold text-gray-900 dark:text-white pr-16 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{item.title}</h4>
@@ -445,13 +456,13 @@ export default function HomePage() {
                       Eklenme: {formatDate(item.createdAt)}
                     </p>
                     <div className="flex items-center gap-1 text-xs font-bold text-sky-600 dark:text-sky-400 group-hover:text-sky-700 dark:group-hover:text-sky-300 group-hover:gap-2 transition-all">
-                      Şimdi İncele <FaArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
+                      {t('home.inspectNow')} <FaArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-2xl text-center text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600">
-                  Harika! Hiçbir içeriği unutmamışsın.
+                  {t('home.noDusty')}
                 </div>
               )}
             </div>
@@ -459,8 +470,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* === NAVİGASYON KARTLARI (Değişmedi) === */}
-      <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3">
+      {/* === NAVİGASYON KARTLARI === */}
+      <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {/* FİLM KARTI */}
         <Link to="/movie" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
           {/* Arka Plan Gradyanı (Hover'da görünür) */}
@@ -473,12 +484,12 @@ export default function HomePage() {
             <div className="w-14 h-14 rounded-2xl bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-sky-600 dark:text-sky-400 transition-colors">
               <FaFilm size={28} />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">Filmler</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-blue-100">İzlediğin filmleri puanla, listele ve arşivle.</p>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">{t('nav.movies')}</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-blue-100">{t('home.movieDesc')}</p>
           </div>
           <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
             <span className="inline-flex items-center gap-2 text-sm font-bold text-sky-600 group-hover:text-white group-hover:translate-x-2 transition-all">
-              Listeye Git <FaArrowRight />
+              {t('home.goToList')} <FaArrowRight />
             </span>
           </div>
         </Link>
@@ -492,12 +503,12 @@ export default function HomePage() {
             <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-emerald-600 dark:text-emerald-400 transition-colors">
               <FaTv size={28} />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">Diziler</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-emerald-100">Tüm dizi koleksiyonunu ve sezonları yönet.</p>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">{t('nav.series')}</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-emerald-100">{t('home.seriesDesc')}</p>
           </div>
           <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
             <span className="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 group-hover:text-white group-hover:translate-x-2 transition-all">
-              Listeye Git <FaArrowRight />
+              {t('home.goToList')} <FaArrowRight />
             </span>
           </div>
         </Link>
@@ -511,12 +522,31 @@ export default function HomePage() {
             <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-amber-600 dark:text-amber-400 transition-colors">
               <FaGamepad size={28} />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">Oyunlar</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-amber-100">Bitirdiğin ve oynayacağın oyunları listele.</p>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">{t('nav.games')}</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-amber-100">{t('home.gameDesc')}</p>
           </div>
           <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
             <span className="inline-flex items-center gap-2 text-sm font-bold text-amber-600 group-hover:text-white group-hover:translate-x-2 transition-all">
-              Listeye Git <FaArrowRight />
+              {t('home.goToList')} <FaArrowRight />
+            </span>
+          </div>
+        </Link>
+
+        {/* KİTAP KARTI */}
+        <Link to="/book" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-linear-to-br from-purple-400 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-white dark:bg-gray-800 group-hover:opacity-0 transition-opacity duration-300" />
+
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-purple-600 dark:text-purple-400 transition-colors">
+              <FaBook size={28} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white">{t('nav.books')}</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm group-hover:text-purple-100">{t('home.bookDesc')}</p>
+          </div>
+          <div className="relative z-10 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 group-hover:border-white/20">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 group-hover:text-white group-hover:translate-x-2 transition-all">
+              {t('home.goToList')} <FaArrowRight />
             </span>
           </div>
         </Link>
@@ -525,7 +555,7 @@ export default function HomePage() {
       {/* === ÖNERİLER BÖLÜMÜ (Değişmedi) === */}
       <div className="mt-20">
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-          <FaLightbulb /> Senin İçin Öneriler (İzlenmeyenler)
+          <FaLightbulb /> {t('home.recommendations')}
         </h2>
         {recommendationsLoading ? (
           <div className="flex justify-center items-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
@@ -533,10 +563,11 @@ export default function HomePage() {
             <span className="ml-3 text-lg">Öneriler yükleniyor...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <RecommendationCard item={movieRecommendation} typeLabel="Film" refetch={movieRefetch} />
             <RecommendationCard item={seriesRecommendation} typeLabel="Dizi" refetch={seriesRefetch} />
             <RecommendationCard item={gameRecommendation} typeLabel="Oyun" refetch={gameRefetch} />
+            <RecommendationCard item={bookRecommendation} typeLabel="Kitap" refetch={bookRefetch} />
           </div>
         )
         }
@@ -552,12 +583,11 @@ export default function HomePage() {
         <div className="relative">
 
           <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight">
-            Hafızanı dijitalleştir, asla unutma!
+            {t('home.footerTitle')}
           </h3>
 
           <p className="text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Filmler, diziler, oyunlar... Tüm dijital deneyimlerini tek bir yerde topla.
-            Geçmişini keşfet, geleceğini planla.
+            {t('home.footerText')}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
@@ -572,7 +602,7 @@ export default function HomePage() {
              flex items-center gap-2"
             >
               <FaPlus className="transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110" />
-              İçerik Ekle
+              {t('home.footerAdd')}
             </Link>
 
             {/* Koleksiyon */}
@@ -580,7 +610,7 @@ export default function HomePage() {
               to="/all"
               className="px-8 py-3 bg-transparent border-2 border-gray-800 dark:border-gray-300 text-gray-900 dark:text-white font-bold rounded-xl hover:bg-gray-900/10 dark:hover:bg-white/10 transition-all flex items-center gap-2"
             >
-              <FaArchive /> Tüm Koleksiyonu Gör
+              <FaArchive /> {t('home.footerCollection')}
             </Link>
 
           </div>

@@ -4,6 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import type { MediaItem } from '../types/media';
 import MediaCard from './MediaCard';
 import { FaTimes } from 'react-icons/fa';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DetailModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface DetailModalProps {
 }
 
 export default function DetailModal({ isOpen, onClose, item, refetch }: DetailModalProps) {
+  const { t } = useLanguage();
   if (!item) return null;
 
   return (
@@ -42,17 +44,17 @@ export default function DetailModal({ isOpen, onClose, item, refetch }: DetailMo
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-transparent text-left align-middle shadow-xl transition-all relative">
-                <button 
+                <button
                   onClick={onClose}
                   className="absolute top-2 right-2 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors cursor-pointer hover:scale-110 shadow-lg border border-white/20"
-                  title="Kapat"
+                  title={t('common.close') || 'Kapat'}
                 >
                   <FaTimes />
                 </button>
 
                 {/* 1. DÜZELTME: isModal={true} ekledik. Artık modal içinde zoom yapmayacak. */}
                 <MediaCard item={item} refetch={refetch} isModal={true} />
-                
+
               </Dialog.Panel>
             </Transition.Child>
           </div>

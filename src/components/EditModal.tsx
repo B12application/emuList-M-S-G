@@ -7,6 +7,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { FaSave, FaLink, FaSpinner, FaTimes } from 'react-icons/fa';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useLanguage } from '../context/LanguageContext';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface EditModalProps {
 }
 
 export default function EditModal({ isOpen, onClose, item, refetch }: EditModalProps) {
+  const { t } = useLanguage();
   const [editTitle, setEditTitle] = useState(item.title);
   const [editDesc, setEditDesc] = useState(item.description || '');
   const [editImage, setEditImage] = useState(item.image || '');
@@ -66,7 +68,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
     <Transition appear show={isOpen} as={Fragment}>
       {/* 'onClose' sadece dışarı (backdrop) tıklandığında çalışır */}
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        
+
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -91,7 +93,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-4"
             >
-              <Dialog.Panel 
+              <Dialog.Panel
                 // 2. DÜZELTME: 'onClick={e => e.stopPropagation()}'
                 // Bu, modalın içine yapılan tıklamaların dışarı sızmasını ve diğer şeyleri tetiklemesini engeller.
                 onClick={(e) => e.stopPropagation()}
@@ -101,13 +103,13 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
                 >
-                  "<i>{item.title}</i>" Kaydını Düzenle
+                  {t('modal.editTitle').replace('{title}', item.title)}
                 </Dialog.Title>
-                
+
                 <div className="mt-4 flex flex-col gap-4">
                   <div>
                     <label htmlFor="editTitle" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      Başlık
+                      {t('create.titleLabel')}
                     </label>
                     <input
                       type="text" id="editTitle" value={editTitle}
@@ -118,7 +120,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
 
                   <div>
                     <label htmlFor="editDesc" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      Açıklama
+                      {t('create.descriptionLabel')}
                     </label>
                     <textarea
                       id="editDesc" rows={3} value={editDesc}
@@ -129,7 +131,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
 
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                      Puan: <span className="font-bold">{editRating}</span>
+                      {t('create.ratingLabel')}: <span className="font-bold">{editRating}</span>
                     </label>
                     <div className="px-1">
                       <Slider
@@ -150,14 +152,14 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                         onClick={() => setShowUrlInput(true)}
                         className="flex items-center gap-2 text-sky-600 hover:text-sky-500 text-sm font-medium transition"
                       >
-                        <FaLink /> Görsel URL'sini Değiştir
+                        <FaLink /> {t('modal.changeImage')}
                       </button>
                     ) : (
                       <div className="flex gap-2 items-center animate-fadeIn">
                         <div className="flex-1">
-                          <label htmlFor="editImage" className="sr-only">Görsel URL</label>
+                          <label htmlFor="editImage" className="sr-only">{t('create.imageLabel')}</label>
                           <input
-                            type="url" 
+                            type="url"
                             id="editImage"
                             value={editImage}
                             onChange={(e) => setEditImage(e.target.value)}
@@ -170,7 +172,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                           type="button"
                           onClick={() => setShowUrlInput(false)}
                           className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                          title="Kapat"
+                          title={t('common.close') || 'Kapat'}
                         >
                           <FaTimes />
                         </button>
@@ -186,7 +188,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                     className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600"
                     onClick={onClose}
                   >
-                    İptal
+                    {t('actions.cancel')}
                   </button>
                   <button
                     type="button"
@@ -195,7 +197,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                     onClick={handleSave}
                   >
                     {isLoading ? <FaSpinner className="animate-spin" /> : <FaSave />}
-                    Kaydet
+                    {t('actions.save')}
                   </button>
                 </div>
               </Dialog.Panel>

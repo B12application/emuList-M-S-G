@@ -15,8 +15,8 @@ import { useLanguage } from '../context/LanguageContext';
 
 import DetailModal from '../components/DetailModal';
 
-const MALE_AVATAR_URL = '/male.png';
-const FEMALE_AVATAR_URL = '/female.png';
+const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
+const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
 const MUSTAFA_FOTOGRAF_URL = 'https://media.licdn.com/dms/image/v2/D4D03AQFVgcz9aWEWPQ/profile-displayphoto-scale_400_400/B4DZrVBAm4HsAg-/0/1764510406029?e=1766620800&v=beta&t=gombvy-MJsL6YnjW6WtztxL89KG2x1_39u8jP8Nmtak';
 
 export default function HomePage() {

@@ -9,28 +9,28 @@ import {
   getDocs,
   Query,
   limit,
-  startAfter, 
-  QueryDocumentSnapshot 
+  startAfter,
+  QueryDocumentSnapshot
 } from 'firebase/firestore';
-import type { DocumentData } from 'firebase/firestore'; 
+import type { DocumentData } from 'firebase/firestore';
 import type { MediaItem, FilterType, FilterStatus } from '../types/media';
 
-const PAGE_SIZE = 18; 
+const PAGE_SIZE = 20;
 
 export default function useMedia(
-  type: FilterType, 
+  type: FilterType,
   filter: FilterStatus,
   isSearchActive: boolean,
-  sortBy: 'rating' | 'createdAt' = 'rating' 
+  sortBy: 'rating' | 'createdAt' = 'rating'
 ) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [key, setKey] = useState(0); 
+  const [key, setKey] = useState(0);
 
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastVisibleDoc, setLastVisibleDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [hasMoreItems, setHasMoreItems] = useState(true);
-  
+
   const refetch = () => {
     setKey(prevKey => prevKey + 1);
     setItems([]);
@@ -41,17 +41,17 @@ export default function useMedia(
     const currentUserId = auth.currentUser?.uid;
 
     // === 1. DÜZELTME: Değişiklik olduğu an eski listeyi SİL ===
-    setItems([]); 
+    setItems([]);
     setLoading(true);
-    setHasMoreItems(true); 
+    setHasMoreItems(true);
     setLastVisibleDoc(null);
 
     const fetchMedia = async () => {
       if (!currentUserId) {
         setLoading(false);
-        return; 
+        return;
       }
-      
+
       try {
         let q: Query<DocumentData> = collection(db, "mediaItems");
 
@@ -59,61 +59,61 @@ export default function useMedia(
         if (type !== 'all') q = query(q, where("type", "==", type));
         if (filter === 'watched') q = query(q, where("watched", "==", true));
         else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
-        
+
         q = query(q, orderBy(sortBy, "desc"));
-        
+
         if (!isSearchActive) {
-            q = query(q, limit(PAGE_SIZE));
+          q = query(q, limit(PAGE_SIZE));
         }
-        
+
         const documentSnapshots = await getDocs(q);
 
         const mediaList = documentSnapshots.docs.map(doc => ({
           ...doc.data() as Omit<MediaItem, 'id'>,
           id: doc.id
         }));
-        
-        setItems(mediaList); 
+
+        setItems(mediaList);
 
         if (!isSearchActive && documentSnapshots.docs.length > 0) {
-            const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-            setLastVisibleDoc(lastDoc);
-            
-            if (documentSnapshots.docs.length < PAGE_SIZE) {
-              setHasMoreItems(false);
-            }
-        } else {
+          const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+          setLastVisibleDoc(lastDoc);
+
+          if (documentSnapshots.docs.length < PAGE_SIZE) {
             setHasMoreItems(false);
+          }
+        } else {
+          setHasMoreItems(false);
         }
-        
+
       } catch (e) {
         console.error("Veri çekilemedi: ", e);
         // Hata durumunda da listeyi boş bırak (Eski veri görünmesin)
-        setItems([]); 
+        setItems([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMedia();
-  }, [type, filter, key, isSearchActive, sortBy]); 
+  }, [type, filter, key, isSearchActive, sortBy]);
 
   const loadMore = async () => {
     const currentUserId = auth.currentUser?.uid;
-    if (!lastVisibleDoc || loadingMore || !currentUserId || isSearchActive) return; 
-    
+    if (!lastVisibleDoc || loadingMore || !currentUserId || isSearchActive) return;
+
     setLoadingMore(true);
     try {
       let q: Query<DocumentData> = collection(db, "mediaItems");
       q = query(q, where("userId", "==", currentUserId));
-      
+
       if (type !== 'all') q = query(q, where("type", "==", type));
       if (filter === 'watched') q = query(q, where("watched", "==", true));
       else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
       q = query(q, orderBy(sortBy, "desc"));
 
       const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));
-      
+
       const documentSnapshots = await getDocs(nextQuery);
 
       const newItems = documentSnapshots.docs.map(doc => ({
@@ -121,7 +121,7 @@ export default function useMedia(
         id: doc.id
       }));
 
-      setItems(prevItems => [...prevItems, ...newItems]); 
+      setItems(prevItems => [...prevItems, ...newItems]);
 
       const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
       setLastVisibleDoc(lastDoc);

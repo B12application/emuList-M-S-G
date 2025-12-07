@@ -7,10 +7,12 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc } from 'firebas
 import { FaSpinner } from 'react-icons/fa';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 import { FaPlus, FaMinus, FaExpand, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+import { useLanguage } from '../context/LanguageContext';
 
 export default function VisitedMapPage() {
   const { isDark } = useTheme();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [visitedProvinces, setVisitedProvinces] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +28,10 @@ export default function VisitedMapPage() {
   const defaultColor = isDark ? "#374151" : "#E5E7EB";
   const visitedColor = isDark ? "#dc2626" : "#b91c1c";
   const hoverColor = isDark ? "#f59e0b" : "#f97316";
-  const strokeColor = "transparent"; // Remove visible borders
+  const strokeColor = "transparent";
   const textColor = isDark ? "#FFFFFF" : "#1f2937";
   const glowColor = isDark ? "rgba(220, 38, 38, 0.6)" : "rgba(185, 28, 28, 0.4)";
 
-  // Tıklama Fonksiyonu
   const handleProvinceClick = useCallback(async (provinceId: string) => {
     if (!user) return;
     const userDocRef = doc(db, 'users', user.uid);
@@ -41,14 +42,12 @@ export default function VisitedMapPage() {
     );
 
     try {
-      // Ensure document exists first
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName
       }, { merge: true });
 
-      // Then update the array
       if (isVisited) await updateDoc(userDocRef, { visitedProvinces: arrayRemove(provinceId) });
       else await updateDoc(userDocRef, { visitedProvinces: arrayUnion(provinceId) });
     } catch (e) {
@@ -57,7 +56,6 @@ export default function VisitedMapPage() {
     }
   }, [user, visitedProvinces]);
 
-  // Firebase'den veri çekme
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     const fetchVisitedProvinces = async () => {
@@ -77,7 +75,6 @@ export default function VisitedMapPage() {
     fetchVisitedProvinces();
   }, [user]);
 
-  // Harita Etkileşimleri
   const setupMapInteractions = useCallback(() => {
     if (!isSvgLoaded || !svgObjectRef.current) return;
     const svgDoc = svgObjectRef.current.contentDocument;
@@ -86,7 +83,6 @@ export default function VisitedMapPage() {
     listenersRef.current.forEach(cleanup => cleanup());
     listenersRef.current = [];
 
-    // Eski etiketleri temizle
     const oldLabels = svgDoc.querySelectorAll('.province-label');
     oldLabels.forEach(label => label.remove());
 
@@ -108,12 +104,10 @@ export default function VisitedMapPage() {
       svgPath.style.touchAction = "manipulation";
       svgPath.style.pointerEvents = "auto";
 
-      // Add labels - different styles for visited vs unvisited
       const bbox = (svgPath as SVGGraphicsElement).getBBox();
       const centerX = bbox.x + bbox.width / 2;
       const centerY = bbox.y + bbox.height / 2;
 
-      // Simple black text - bold and clear
       const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
       text.setAttribute("x", String(centerX));
       text.setAttribute("y", String(centerY));
@@ -137,9 +131,8 @@ export default function VisitedMapPage() {
         svgPath.style.transformOrigin = "center";
         svgPath.style.filter = `drop-shadow(0 4px 12px ${glowColor})`;
       };
-      const handleMouseMove = () => {
-        // Tooltip removed
-      };
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const handleMouseMove = () => { };
       const handleMouseLeave = () => {
         const isCurrentlyVisited = visitedProvinces.includes(provinceId);
         svgPath.style.fill = isCurrentlyVisited ? visitedColor : defaultColor;
@@ -170,6 +163,12 @@ export default function VisitedMapPage() {
   useEffect(() => {
     if (isSvgLoaded) {
       setupMapInteractions();
+      // Force recenter after SVG load for better initial positioning
+      setTimeout(() => {
+        if (transformRef.current) {
+          transformRef.current.resetTransform();
+        }
+      }, 100);
     }
   }, [isSvgLoaded, setupMapInteractions]);
 
@@ -183,7 +182,7 @@ export default function VisitedMapPage() {
     return (
       <div className="flex justify-center items-center p-8 mt-6">
         <FaSpinner className="animate-spin h-8 w-8 text-sky-500" />
-        <span className="ml-3 text-lg">Harita Yükleniyor...</span>
+        <span className="ml-3 text-lg">{t('mapPage.loading')}</span>
       </div>
     );
   }
@@ -191,12 +190,12 @@ export default function VisitedMapPage() {
   return (
     <section className="py-6 relative h-[calc(100vh-100px)] flex flex-col">
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
-        Ziyaret Ettiğim Yerler
+        {t('mapPage.title')}
       </h1>
 
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-          Haritayı hareket ettirmek için ok butonlarını, yakınlaştırmak için +/- butonlarını kullan. Şehir seçmek için tıkla.
+          {t('mapPage.instructions')}
         </p>
 
         {/* City Counter */}
@@ -205,10 +204,10 @@ export default function VisitedMapPage() {
             <div className="text-3xl font-bold text-gray-900 dark:text-white">
               {visitedProvinces.length}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">/ 81 il</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">/ 81 {t('mapPage.cities')}</div>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-            ziyaret edildi
+            {t('mapPage.visited')}
           </div>
         </div>
       </div>
@@ -217,9 +216,9 @@ export default function VisitedMapPage() {
       <div className="flex-1 w-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 relative">
         <TransformWrapper
           ref={transformRef}
-          initialScale={1}
-          minScale={0.3}
-          maxScale={10}
+          initialScale={1.1}
+          minScale={0.5}
+          maxScale={8}
           centerOnInit={true}
           limitToBounds={false}
           onTransformed={(_ref, state) => setTransformState({ positionX: state.positionX, positionY: state.positionY, scale: state.scale })}
@@ -236,7 +235,7 @@ export default function VisitedMapPage() {
                     <button
                       onClick={() => setTransform(transformState.positionX, transformState.positionY - 50, transformState.scale)}
                       className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                      title="Yukarı"
+                      title={t('mapPage.controls.up')}
                     >
                       <FaArrowUp className="text-sm" />
                     </button>
@@ -246,7 +245,7 @@ export default function VisitedMapPage() {
                     <button
                       onClick={() => setTransform(transformState.positionX - 50, transformState.positionY, transformState.scale)}
                       className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                      title="Sol"
+                      title={t('mapPage.controls.left')}
                     >
                       <FaArrowLeft className="text-sm" />
                     </button>
@@ -256,7 +255,7 @@ export default function VisitedMapPage() {
                     <button
                       onClick={() => setTransform(transformState.positionX + 50, transformState.positionY, transformState.scale)}
                       className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                      title="Sağ"
+                      title={t('mapPage.controls.right')}
                     >
                       <FaArrowRight className="text-sm" />
                     </button>
@@ -266,7 +265,7 @@ export default function VisitedMapPage() {
                     <button
                       onClick={() => setTransform(transformState.positionX, transformState.positionY + 50, transformState.scale)}
                       className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                      title="Aşağı"
+                      title={t('mapPage.controls.down')}
                     >
                       <FaArrowDown className="text-sm" />
                     </button>
@@ -279,21 +278,21 @@ export default function VisitedMapPage() {
                   <button
                     onClick={() => zoomIn()}
                     className="p-3 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-500 text-white rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                    title="Yakınlaştır"
+                    title={t('mapPage.controls.zoomIn')}
                   >
                     <FaPlus className="text-sm" />
                   </button>
                   <button
                     onClick={() => zoomOut()}
                     className="p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                    title="Uzaklaştır"
+                    title={t('mapPage.controls.zoomOut')}
                   >
                     <FaMinus className="text-sm" />
                   </button>
                   <button
                     onClick={() => resetTransform()}
                     className="p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
-                    title="Sıfırla"
+                    title={t('mapPage.controls.reset')}
                   >
                     <FaExpand className="text-sm" />
                   </button>
@@ -327,14 +326,14 @@ export default function VisitedMapPage() {
                     }}
                     onLoad={() => setIsSvgLoaded(true)}
                   >
-                    Harita yüklenemedi.
-                  </object>
-                </div>
-              </TransformComponent>
+                    {t('mapPage.error')}
+                  </object >
+                </div >
+              </TransformComponent >
             </>
           )}
-        </TransformWrapper>
-      </div>
-    </section>
+        </TransformWrapper >
+      </div >
+    </section >
   );
 }

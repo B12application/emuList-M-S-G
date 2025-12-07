@@ -8,7 +8,27 @@ export const translationsTR = {
         games: 'Oyunlar',
         books: 'Kitaplar',
         all: 'Tümü',
-        map: 'Harita',
+        map: 'Haritam',
+        collection: 'Listem',
+    },
+
+    // Map Page
+    mapPage: {
+        title: 'Ziyaret Ettiğim Yerler',
+        loading: 'Harita Yükleniyor...',
+        instructions: 'Haritayı hareket ettirmek için ok butonlarını, yakınlaştırmak için +/- butonlarını kullan. Şehir seçmek için tıkla.',
+        visited: 'ziyaret edildi',
+        cities: 'Şehir',
+        error: 'Harita yüklenemedi.',
+        controls: {
+            up: 'Yukarı',
+            down: 'Aşağı',
+            left: 'Sol',
+            right: 'Sağ',
+            zoomIn: 'Yakınlaştır',
+            zoomOut: 'Uzaklaştır',
+            reset: 'Sıfırla'
+        }
     },
 
     // Auth

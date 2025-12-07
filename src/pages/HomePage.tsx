@@ -1109,6 +1109,11 @@ export default function HomePage() {
             </Link>
 
           </div>
+
+          {/* B12 Logo - Bottom Right */}
+          <div className="absolute bottom-4 right-4">
+            <img src="/logob12.png" alt="B12 Logo" className="h-16 w-16 object-contain opacity-70 hover:opacity-100 transition-opacity" />
+          </div>
         </div>
       </div >
 

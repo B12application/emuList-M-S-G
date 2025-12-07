@@ -10,12 +10,16 @@ export default function Logo({ className }: { className?: string }) {
       {/* Gradient Definitions */}
       <defs>
         <linearGradient id="capsuleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ef4444" />
-          <stop offset="100%" stopColor="#f97316" />
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#facc15" />
         </linearGradient>
         <linearGradient id="capsuleShine" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="white" stopOpacity="0.3" />
           <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#facc15" />
         </linearGradient>
       </defs>
 
@@ -56,7 +60,7 @@ export default function Logo({ className }: { className?: string }) {
         fontFamily="system-ui, -apple-system, sans-serif"
         fontSize="12"
         fontWeight="800"
-        fill="white"
+        fill="url(#textGradient)"
         textAnchor="middle"
         dominantBaseline="middle"
       >

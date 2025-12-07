@@ -1,8 +1,9 @@
 // src/components/Header.tsx
+import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaMap } from 'react-icons/fa';
-import Logo from './Logo';
+import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup } from 'react-icons/fa';
+import EyeTracker from './EyeTracker';
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -28,6 +29,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
   const { user } = useAuth();
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
+  const [showListsDropdown, setShowListsDropdown] = useState(false);
 
   const pathSegments = location.pathname.split('/');
   const potentialType = pathSegments[1];
@@ -35,6 +37,15 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
     ? potentialType
     : undefined;
   const createLink = createType ? `/create?type=${createType}` : '/create';
+
+  /* New logic for active icon */
+  const getActiveIcon = () => {
+    if (location.pathname.startsWith('/movie')) return <FaFilm className="text-blue-500" />;
+    if (location.pathname.startsWith('/series')) return <FaTv className="text-emerald-500" />;
+    if (location.pathname.startsWith('/game')) return <FaGamepad className="text-amber-500" />;
+    if (location.pathname.startsWith('/book')) return <FaBook className="text-purple-500" />;
+    return <FaLayerGroup className="text-gray-400 group-hover:text-rose-500" />;
+  };
 
   const handleLogout = () => {
     signOut(auth);
@@ -44,25 +55,81 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
     <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80">
       <div className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
-        <Link to="/" className="flex items-center gap-2 font-bold tracking-tight text-2xl">
-          <Logo className="h-8 w-8 text-rose-500" />
-          <span className="bg-gradient-to-r from-rose-500 to-orange-500 bg-clip-text text-transparent">
-            B12
-          </span>
+        {/* Sol - Gözler */}
+        <Link to="/">
+          <EyeTracker />
         </Link>
 
-        {/* Navigasyon */}
+        {/* Orta - Anasayfa, Listeler, Harita */}
         {user && (
-          <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
+          <nav className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center gap-2 text-sm font-medium">
             <NavLink to="/" end className={getNavCls}>{t('nav.home')}</NavLink>
-            <NavLink to="/movie" className={getNavCls}>{t('nav.movies')}</NavLink>
-            <NavLink to="/series" className={getNavCls}>{t('nav.series')}</NavLink>
-            <NavLink to="/game" className={getNavCls}>{t('nav.games')}</NavLink>
-            <NavLink to="/book" className={getNavCls}>{t('nav.books')}</NavLink>
-            <NavLink to="/all" className={getNavCls}>{t('nav.all')}</NavLink>
-            <NavLink to="/map" className={getNavCls}><FaMap /></NavLink>
+
+            {/* Koleksiyonum Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowListsDropdown(true)}
+              onMouseLeave={() => setShowListsDropdown(false)}
+            >
+              <button
+                className={`px-3 py-2 rounded-lg transition flex items-center gap-2 group ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
+                  ? "text-rose-600 dark:text-rose-400 font-semibold bg-rose-50 dark:bg-rose-950/30"
+                  : "text-gray-700 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                aria-expanded={showListsDropdown}
+              >
+                {/* Dynamic Icon */}
+                {getActiveIcon()}
+
+                <span>{t('nav.collection')}</span>
+                <svg className={`w-4 h-4 transition-transform duration-200 ${showListsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showListsDropdown && (
+                <div className="absolute top-full left-0 pt-2 min-w-[160px] z-50">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1 overflow-hidden">
+                    <NavLink
+                      to="/movie"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                    >
+                      <FaFilm className="text-blue-500" />
+                      {t('nav.movies')}
+                    </NavLink>
+                    <NavLink
+                      to="/series"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                    >
+                      <FaTv className="text-emerald-500" />
+                      {t('nav.series')}
+                    </NavLink>
+                    <NavLink
+                      to="/game"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                    >
+                      <FaGamepad className="text-amber-500" />
+                      {t('nav.games')}
+                    </NavLink>
+                    <NavLink
+                      to="/book"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                    >
+                      <FaBook className="text-purple-500" />
+                      {t('nav.books')}
+                    </NavLink>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Harita */}
+            <NavLink to="/map" className={getNavCls}>
+              {t('nav.map')}
+            </NavLink>
           </nav>
         )}
+
 
         <div className="flex items-center gap-2">
 

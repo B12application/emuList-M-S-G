@@ -8,7 +8,27 @@ export const translationsEN = {
         games: 'Games',
         books: 'Books',
         all: 'All',
-        map: 'Map',
+        map: 'My Map',
+        collection: 'My List',
+    },
+
+    // Map Page
+    mapPage: {
+        title: 'Places I Visited',
+        loading: 'Map Loading...',
+        instructions: 'Use arrow buttons to pan, +/- buttons to zoom. Click to select a city.',
+        visited: 'visited',
+        cities: 'Cities',
+        error: 'Map could not be loaded.',
+        controls: {
+            up: 'Up',
+            down: 'Down',
+            left: 'Left',
+            right: 'Right',
+            zoomIn: 'Zoom In',
+            zoomOut: 'Zoom Out',
+            reset: 'Reset'
+        }
     },
 
     // Auth

@@ -252,6 +252,16 @@ export default function HomePage() {
           </div>
 
         </div>
+
+        {/* B12 Pill Design */}
+        <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 flex rounded-full overflow-hidden shadow-lg font-black text-sm md:text-base z-20 select-none transform hover:scale-105 transition-transform duration-300">
+          <div className="bg-white/40 dark:bg-black/30 backdrop-blur-md text-gray-800 dark:text-gray-200 hover:bg-red-500 hover:text-white transition-all duration-300 px-4 py-2 cursor-pointer flex items-center justify-center">
+            B
+          </div>
+          <div className="bg-white/40 dark:bg-black/30 backdrop-blur-md text-gray-800 dark:text-gray-200 hover:bg-blue-600 hover:text-white transition-all duration-300 px-3 py-2 cursor-pointer flex items-center justify-center">
+            12
+          </div>
+        </div>
       </div>
 
 

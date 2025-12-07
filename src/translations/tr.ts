@@ -122,6 +122,41 @@ export const translationsTR = {
         footerAdd: 'İçerik Ekle',
         footerCollection: 'Tüm Koleksiyonu Gör',
 
+        // Best Recommendations
+        bestRecsTitle: 'En İyi Öneriler',
+        bestRecsMostWatched: '2025\'in En Çok İzlenenleri',
+        bestRecsBestMovies: 'En İyi Filmler',
+        bestRecsAwardWinning: 'Ödüllü Filmler',
+        bestRecsTopSeries: 'Öne Çıkan Diziler',
+        bestRecsTopBooks: 'Önerilen Kitaplar',
+        bestRecsSeeAll: 'Tümünü Gör',
+
+        // Admin Panel
+        adminManage: 'Önerileri Yönet',
+        adminPassword: 'Admin Şifresi',
+        adminPasswordPlaceholder: 'Şifreyi girin...',
+        adminLogin: 'Giriş Yap',
+        adminWrongPassword: 'Hatalı şifre!',
+        adminAddRec: 'Öneri Ekle',
+        adminSearchMovie: 'Film/Dizi Ara',
+        adminCategory: 'Kategori',
+        adminCategoryMostWatched: '2025 En Çok İzlenenler',
+        adminCategoryBestMovies: 'En İyi Filmler',
+        adminCategoryAwardWinning: 'Ödüllü Filmler',
+        adminCategoryTopSeries: 'Öne Çıkan Diziler',
+        adminCategoryTopBooks: 'Önerilen Kitaplar',
+        adminAddToRecs: 'Önerilere Ekle',
+        adminRecAdded: 'Öneri başarıyla eklendi!',
+        adminRecDeleted: 'Öneri silindi',
+        adminRecError: 'İşlem sırasında hata oluştu',
+        addToCollection: 'Koleksiyona Ekle',
+        alreadyInCollection: 'Bu içerik zaten koleksiyonunuzda!',
+        addedToCollection: 'Koleksiyona eklendi!',
+        expandRecs: 'Önerileri Göster',
+        collapseRecs: 'Önerileri Gizle',
+        add: 'Ekle',
+        collectionRecommendations: 'Koleksiyonundaki Öneriler',
+
     },
 
     // MediaListPage

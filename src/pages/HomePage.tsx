@@ -1,19 +1,23 @@
 // src/pages/HomePage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // 1. YENİ İKONLAR EKLENDİ: FaCalendarCheck, FaHistory, FaArrowRight, FaHourglassHalf, FaStar
-import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';
 import RecommendationCard from '../components/RecommendationCard';
 import useUserProfile from '../hooks/useUserProfile';
 import type { MediaItem } from '../types/media';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, addDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useLanguage } from '../context/LanguageContext';
+import toast from 'react-hot-toast';
 
 import DetailModal from '../components/DetailModal';
+import AdminRecommendationsPanel from '../components/AdminRecommendationsPanel';
+import { fetchRecommendations, groupRecommendationsByCategory } from '../services/recommendationService';
+import type { Recommendation } from '../types/recommendation';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
@@ -29,6 +33,18 @@ export default function HomePage() {
   const [selectedRecentItem, setSelectedRecentItem] = useState<MediaItem | null>(null);
   const [favoritesPage, setFavoritesPage] = useState(0);
   const FAVORITES_PER_PAGE = 4;
+
+  // Best Recommendations State
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recsLoading, setRecsLoading] = useState(false);
+  const [recsExpanded, setRecsExpanded] = useState(true); // Başta açık gelsin
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [collectionRecsExpanded, setCollectionRecsExpanded] = useState(true); // Koleksiyon önerileri açık başlasın
+
+  // Pagination State for 2025 Best Recommendations
+  const [recFilmPage, setRecFilmPage] = useState(1);
+  const [recSeriesPage, setRecSeriesPage] = useState(1);
+  const RECS_PER_PAGE = 4;
 
   // 2. YENİ: Tarihçe ve Günlük için TÜM verileri çekiyoruz
   // 3. parametre 'true' olduğu için limit olmadan hepsini çeker.
@@ -73,6 +89,60 @@ export default function HomePage() {
     return new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long' }).format(date);
   };
 
+  // Load recommendations from Firebase
+  useEffect(() => {
+    loadRecommendations();
+  }, []);
+
+  const loadRecommendations = async () => {
+    setRecsLoading(true);
+    const recs = await fetchRecommendations();
+    setRecommendations(recs);
+    setRecsLoading(false);
+  };
+
+  // Add recommendation to user's collection
+  const handleAddToCollection = async (rec: Recommendation) => {
+    if (!user) {
+      toast.error(t('create.loginRequired'));
+      return;
+    }
+
+    try {
+      // Check if item already exists
+      const q = query(
+        collection(db, 'mediaItems'),
+        where('userId', '==', user.uid),
+        where('title', '==', rec.title)
+      );
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        toast.error(t('home.alreadyInCollection'));
+        return;
+      }
+
+      // Add to collection
+      await addDoc(collection(db, 'mediaItems'), {
+        userId: user.uid,
+        title: rec.title,
+        type: rec.type,
+        image: rec.image || '',
+        description: rec.description || '',
+        rating: rec.rating || '0',
+        watched: false,
+        isFavorite: false,
+        createdAt: Timestamp.now()
+      });
+
+      toast.success(t('home.addedToCollection'));
+      allRefetch(); // Refresh user's items
+    } catch (error) {
+      console.error('Error adding to collection:', error);
+      toast.error(t('home.adminRecError'));
+    }
+  };
+
   // Profil (Değişmedi)
   const displayName = user.displayName || user.email?.split('@')[0] || "Kullanıcı";
   const getAvatar = () => {
@@ -82,6 +152,7 @@ export default function HomePage() {
     if (profile?.gender === 'female') return FEMALE_AVATAR_URL;
     return MALE_AVATAR_URL;
   };
+
 
   const handleRandomPick = () => {
     const pool = [...movieRecs, ...seriesRecs, ...gameRecs, ...bookRecs];
@@ -249,7 +320,7 @@ export default function HomePage() {
       <div className="mt-16">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold flex items-center gap-3 text-gray-900 dark:text-gray-200">
-            <FaHeart className="text-red-500" /> Bu Hafta İzleyeceklerim
+            <FaHeart className="text-red-500" /> {t('home.favorites')}
           </h2>
         </div>
 
@@ -552,26 +623,450 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* === ÖNERİLER BÖLÜMÜ (Değişmedi) === */}
+      {/* === EN İYİ ÖNERİLER BÖLÜMÜ (DİNAMİK & YÖNETİLEBİLİR) === */}
       <div className="mt-20">
-        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-          <FaLightbulb /> {t('home.recommendations')}
-        </h2>
-        {recommendationsLoading ? (
-          <div className="flex justify-center items-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
-            <FaSpinner className="animate-spin h-8 w-8 text-sky-500" />
-            <span className="ml-3 text-lg">Öneriler yükleniyor...</span>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-200 flex items-center gap-3">
+            <FaStar className="text-amber-500" /> {t('home.bestRecsTitle')}
+          </h2>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAdminPanel(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition"
+            >
+              <FaCog /> {t('home.adminManage')}
+            </button>
+
+            <button
+              onClick={() => setRecsExpanded(!recsExpanded)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-600 dark:text-gray-400"
+              title={recsExpanded ? t('home.collapseRecs') : t('home.expandRecs')}
+            >
+              {recsExpanded ? <FaChevronUp /> : <FaChevronDown />}
+            </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <RecommendationCard item={movieRecommendation} typeLabel="Film" refetch={movieRefetch} />
-            <RecommendationCard item={seriesRecommendation} typeLabel="Dizi" refetch={seriesRefetch} />
-            <RecommendationCard item={gameRecommendation} typeLabel="Oyun" refetch={gameRefetch} />
-            <RecommendationCard item={bookRecommendation} typeLabel="Kitap" refetch={bookRefetch} />
+        </div>
+
+        {recsExpanded && (
+          <div className="space-y-12">
+            {recsLoading ? (
+              <div className="flex justify-center py-12">
+                <FaSpinner className="animate-spin h-10 w-10 text-amber-500" />
+              </div>
+            ) : (() => {
+              const grouped = groupRecommendationsByCategory(recommendations);
+
+              return (
+                <>
+                  {/* FİLMLER VE DİZİLER - Yan Yana Modern Tasarım */}
+                  {grouped['most-watched-2025'].length > 0 && (() => {
+                    const allFilms = grouped['most-watched-2025'].filter(rec => rec.type === 'movie');
+                    const allSeries = grouped['most-watched-2025'].filter(rec => rec.type === 'series');
+
+                    // Pagination Logic
+                    const totalFilmPages = Math.ceil(allFilms.length / RECS_PER_PAGE);
+                    const totalSeriesPages = Math.ceil(allSeries.length / RECS_PER_PAGE);
+
+                    const films = allFilms.slice((recFilmPage - 1) * RECS_PER_PAGE, recFilmPage * RECS_PER_PAGE);
+                    const series = allSeries.slice((recSeriesPage - 1) * RECS_PER_PAGE, recSeriesPage * RECS_PER_PAGE);
+
+                    return (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                        {/* SOL: Filmler */}
+                        {allFilms.length > 0 && (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md">
+                                <FaFilm className="text-white" size={18} />
+                              </div>
+                              <h4 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                                {t('nav.movies')}
+                              </h4>
+                              <span className="ml-auto bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">
+                                {allFilms.length}
+                              </span>
+                            </div>
+                            <div className="space-y-3 min-h-[500px]">
+                              {films.map((rec) => (
+                                <div
+                                  key={rec.id}
+                                  onClick={() => handleAddToCollection(rec)}
+                                  className="group cursor-pointer"
+                                >
+                                  <div className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden hover:scale-[1.02] hover:border-blue-400 dark:hover:border-blue-500">
+                                    <div className="flex">
+                                      <div className="relative w-24 h-32 flex-shrink-0 overflow-hidden">
+                                        {rec.image && (
+                                          <img
+                                            src={rec.image}
+                                            alt={rec.title}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                          />
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                          <div className="bg-blue-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs transform scale-90 group-hover:scale-100 transition-transform">
+                                            + {t('home.add')}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex-1 p-3 flex flex-col justify-between">
+                                        <div>
+                                          <h5 className="font-bold text-sm text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+                                            {rec.title}
+                                          </h5>
+                                          {rec.description && (
+                                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">{rec.description}</p>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-1 mt-2">
+                                          <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-md">
+                                            <FaStar size={11} className="text-amber-500" />
+                                            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{rec.rating}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Film Pagination Controls */}
+                            {totalFilmPages > 1 && (
+                              <div className="flex justify-center items-center gap-4 mt-4">
+                                <button
+                                  onClick={() => setRecFilmPage(p => Math.max(1, p - 1))}
+                                  disabled={recFilmPage === 1}
+                                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                  <FaChevronUp className="-rotate-90" />
+                                </button>
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                  {recFilmPage} / {totalFilmPages}
+                                </span>
+                                <button
+                                  onClick={() => setRecFilmPage(p => Math.min(totalFilmPages, p + 1))}
+                                  disabled={recFilmPage === totalFilmPages}
+                                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                  <FaChevronDown className="-rotate-90" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* SAĞ: Diziler */}
+                        {allSeries.length > 0 && (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-md">
+                                <FaTv className="text-white" size={18} />
+                              </div>
+                              <h4 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                                {t('nav.series')}
+                              </h4>
+                              <span className="ml-auto bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full text-sm font-semibold">
+                                {allSeries.length}
+                              </span>
+                            </div>
+                            <div className="space-y-3 min-h-[500px]">
+                              {series.map((rec) => (
+                                <div
+                                  key={rec.id}
+                                  onClick={() => handleAddToCollection(rec)}
+                                  className="group cursor-pointer"
+                                >
+                                  <div className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden hover:scale-[1.02] hover:border-emerald-400 dark:hover:border-emerald-500">
+                                    <div className="flex">
+                                      <div className="relative w-24 h-32 flex-shrink-0 overflow-hidden">
+                                        {rec.image && (
+                                          <img
+                                            src={rec.image}
+                                            alt={rec.title}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                          />
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                          <div className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs transform scale-90 group-hover:scale-100 transition-transform">
+                                            + {t('home.add')}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex-1 p-3 flex flex-col justify-between">
+                                        <div>
+                                          <h5 className="font-bold text-sm text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-1">
+                                            {rec.title}
+                                          </h5>
+                                          {rec.description && (
+                                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">{rec.description}</p>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-1 mt-2">
+                                          <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-md">
+                                            <FaStar size={11} className="text-amber-500" />
+                                            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{rec.rating}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Series Pagination Controls */}
+                            {totalSeriesPages > 1 && (
+                              <div className="flex justify-center items-center gap-4 mt-4">
+                                <button
+                                  onClick={() => setRecSeriesPage(p => Math.max(1, p - 1))}
+                                  disabled={recSeriesPage === 1}
+                                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                  <FaChevronUp className="-rotate-90" />
+                                </button>
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                  {recSeriesPage} / {totalSeriesPages}
+                                </span>
+                                <button
+                                  onClick={() => setRecSeriesPage(p => Math.min(totalSeriesPages, p + 1))}
+                                  disabled={recSeriesPage === totalSeriesPages}
+                                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                  <FaChevronDown className="-rotate-90" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                      </div>
+                    );
+                  })()}
+
+                  {/* En İyi Filmler */}
+
+                  {grouped['best-movies'].length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-300">
+                        {t('home.bestRecsBestMovies')}
+                      </h3>
+                      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
+                        {grouped['best-movies'].map((rec) => (
+                          <div
+                            key={rec.id}
+                            onClick={() => handleAddToCollection(rec)}
+                            className="group flex-shrink-0 w-48 snap-start cursor-pointer"
+                          >
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                              <div className="relative h-64 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                {rec.image && <img src={rec.image} alt={rec.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />}
+                                <div className="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                                  <FaStar size={12} /> <span className="text-sm font-bold">{rec.rating}</span>
+                                </div>
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <span className="text-white font-bold text-sm px-4 py-2 bg-red-500 rounded-lg">
+                                    {t('home.addToCollection')}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3">
+                                <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-red-500 transition-colors">{rec.title}</h4>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ödüllü Filmler */}
+                  {grouped['award-winning'].length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-300 flex items-center gap-2">
+                        <FaStar className="text-amber-500" />
+                        {t('home.bestRecsAwardWinning')}
+                      </h3>
+                      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
+                        {grouped['award-winning'].map((rec) => (
+                          <div
+                            key={rec.id}
+                            onClick={() => handleAddToCollection(rec)}
+                            className="group flex-shrink-0 w-48 snap-start cursor-pointer"
+                          >
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                              <div className="relative h-64 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                {rec.image && <img src={rec.image} alt={rec.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />}
+                                {rec.award && (
+                                  <div className="absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg">
+                                    {rec.award}
+                                  </div>
+                                )}
+                                <div className="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                                  <FaStar size={12} /> <span className="text-sm font-bold">{rec.rating}</span>
+                                </div>
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <span className="text-white font-bold text-sm px-4 py-2 bg-red-500 rounded-lg">
+                                    {t('home.addToCollection')}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3">
+                                <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-amber-500 transition-colors">{rec.title}</h4>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Öne Çıkan Diziler */}
+                  {grouped['top-series'].length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-300">
+                        {t('home.bestRecsTopSeries')}
+                      </h3>
+                      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
+                        {grouped['top-series'].map((rec) => (
+                          <div
+                            key={rec.id}
+                            onClick={() => handleAddToCollection(rec)}
+                            className="group flex-shrink-0 w-48 snap-start cursor-pointer"
+                          >
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                              <div className="relative h-64 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                {rec.image && <img src={rec.image} alt={rec.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />}
+                                <div className="absolute top-2 right-2 bg-emerald-500 text-white px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                                  <FaStar size={12} /> <span className="text-sm font-bold">{rec.rating}</span>
+                                </div>
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <span className="text-white font-bold text-sm px-4 py-2 bg-red-500 rounded-lg">
+                                    {t('home.addToCollection')}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3">
+                                <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-emerald-500 transition-colors">{rec.title}</h4>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Önerilen Kitaplar */}
+                  {grouped['top-books'].length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-300">
+                        {t('home.bestRecsTop Books')}
+                      </h3>
+                      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
+                        {grouped['top-books'].map((rec) => (
+                          <div
+                            key={rec.id}
+                            onClick={() => handleAddToCollection(rec)}
+                            className="group flex-shrink-0 w-48 snap-start cursor-pointer"
+                          >
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                              <div className="relative h-64 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                {rec.image && <img src={rec.image} alt={rec.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />}
+                                <div className="absolute top-2 right-2 bg-purple-500 text-white px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                                  <FaStar size={12} /> <span className="text-sm font-bold">{rec.rating}</span>
+                                </div>
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <span className="text-white font-bold text-sm px-4 py-2 bg-red-500 rounded-lg">
+                                    {t('home.addToCollection')}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3">
+                                <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate group-hover:text-purple-500 transition-colors">{rec.title}</h4>
+                                {rec.author && <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{rec.author}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No recommendations message */}
+                  {recommendations.length === 0 && (
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-12 text-center border-2 border-dashed border-gray-300 dark:border-gray-700">
+                      <FaStar className="mx-auto h-16 w-16 text-gray-300 dark:text-gray-700 mb-4" />
+                      <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        Henüz öneri eklenmemiş
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">
+                        Admin panelinden öneri ekleyebilirsiniz.
+                      </p>
+                      <button
+                        onClick={() => setShowAdminPanel(true)}
+                        className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition"
+                      >
+                        {t('home.adminManage')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )
         }
       </div >
+
+      {/* Admin Panel Modal */}
+      < AdminRecommendationsPanel
+        isOpen={showAdminPanel}
+        onClose={() => setShowAdminPanel(false)
+        }
+        onUpdate={loadRecommendations}
+      />
+
+
+      {/* === KOLEKSİYONUNDAKİ ÖNERİLER BÖLÜMÜ (AÇILIR/KAPANIR) === */}
+      < div className="mt-20" >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-200 flex items-center gap-3">
+            <FaLightbulb className="text-yellow-500" /> {t('home.collectionRecommendations')}
+          </h2>
+          <button
+            onClick={() => setCollectionRecsExpanded(!collectionRecsExpanded)}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-600 dark:text-gray-400"
+            title={collectionRecsExpanded ? t('home.collapseRecs') : t('home.expandRecs')}
+          >
+            {collectionRecsExpanded ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+        </div>
+
+        {
+          collectionRecsExpanded && (
+            <>
+              {recommendationsLoading ? (
+                <div className="flex justify-center items-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+                  <FaSpinner className="animate-spin h-8 w-8 text-sky-500" />
+                  <span className="ml-3 text-lg">{t('home.recommendationsLoading')}</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <RecommendationCard item={movieRecommendation} typeLabel="Film" refetch={movieRefetch} />
+                  <RecommendationCard item={seriesRecommendation} typeLabel="Dizi" refetch={seriesRefetch} />
+                  <RecommendationCard item={gameRecommendation} typeLabel="Oyun" refetch={gameRefetch} />
+                  <RecommendationCard item={bookRecommendation} typeLabel="Kitap" refetch={bookRefetch} />
+                </div>
+              )}
+            </>
+          )
+        }
+      </div >
+
 
       {/* === FOOTER */}
       < div className="mt-20 relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 p-8 md:p-12 text-center shadow-2xl" >

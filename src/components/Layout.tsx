@@ -1,5 +1,5 @@
 // src/components/Layout.tsx
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 // import DesktopSidebar from './DesktopSidebar'; // Bunu hiç yapmamıştık
@@ -11,19 +11,19 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 antialiased">
-      
+
       {/* 3. Header'a "aç" fonksiyonunu gönder */}
       <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
-      
+
       {/* <DesktopSidebar /> */}
-      
+
       {/* 4. MobileMenu'ye "durum" (isOpen) ve "kapat" fonksiyonlarını gönder */}
-      <MobileMenu 
-        isOpen={isMobileMenuOpen} 
-        onClose={() => setIsMobileMenuOpen(false)} 
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
-      
-      <main className="pt-20 md:pr-20">
+
+      <main className="pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Outlet />
         </div>

@@ -26,7 +26,7 @@ export default function VisitedMapPage() {
   const defaultColor = isDark ? "#374151" : "#E5E7EB";
   const visitedColor = isDark ? "#dc2626" : "#b91c1c";
   const hoverColor = isDark ? "#f59e0b" : "#f97316";
-  const strokeColor = isDark ? "#1f2937" : "#FFFFFF";
+  const strokeColor = "transparent"; // Remove visible borders
   const textColor = isDark ? "#FFFFFF" : "#1f2937";
   const glowColor = isDark ? "rgba(220, 38, 38, 0.6)" : "rgba(185, 28, 28, 0.4)";
 
@@ -41,6 +41,14 @@ export default function VisitedMapPage() {
     );
 
     try {
+      // Ensure document exists first
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName
+      }, { merge: true });
+
+      // Then update the array
       if (isVisited) await updateDoc(userDocRef, { visitedProvinces: arrayRemove(provinceId) });
       else await updateDoc(userDocRef, { visitedProvinces: arrayUnion(provinceId) });
     } catch (e) {

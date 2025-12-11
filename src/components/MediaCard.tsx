@@ -60,7 +60,10 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
     setIsToggling(true);
     try {
       await updateDoc(doc(db, "mediaItems", item.id), { watched: newValue });
-      toast.success(newValue ? t('toast.watched') : t('toast.notWatched'));
+      toast.success(newValue
+        ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
+        : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
+      );
       refetch();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);
@@ -123,7 +126,10 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
             >
               {localWatched ? <FaEye /> : <FaEyeSlash />}
               <span className="hidden md:inline">
-                {localWatched ? t('card.watched') : t('card.notWatched')}
+                {localWatched
+                  ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
+                  : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
+                }
               </span>
             </span>
           </div>

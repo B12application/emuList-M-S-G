@@ -598,7 +598,10 @@ export default function CreatePage() {
                   />
                 </button>
                 <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {watched ? t('card.watched') : t('card.notWatched')}
+                  {watched
+                    ? (type === 'game' ? t('media.played') : type === 'book' ? t('media.read') : t('media.watched'))
+                    : (type === 'game' ? t('media.notPlayed') : type === 'book' ? t('media.notRead') : t('media.notWatched'))
+                  }
                 </span>
               </div>
             </div>

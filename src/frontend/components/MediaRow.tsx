@@ -1,8 +1,8 @@
 // src/components/MediaRow.tsx
 import { useState } from 'react';
-import type{ MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import { FaEye, FaEyeSlash, FaStar, FaTrash } from 'react-icons/fa';
-import { db } from '../firebaseConfig';
+import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import ImageWithFallback from './ui/ImageWithFallback';
 import ConfirmDialog from './ui/ConfirmDialog';
@@ -14,7 +14,7 @@ interface MediaRowProps {
 }
 
 export default function MediaRow({ item, refetch }: MediaRowProps) {
-  const [isDeleting, setIsDeleting] = useState(false); 
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
@@ -61,21 +61,21 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
           <FaStar /> {item.rating}
         </div>
       </div>
-      
+
       {/* Durum (İkon) */}
-      <span 
+      <span
         title={item.watched ? "Watched" : "Not Watched"}
-        className={`inline-flex items-center justify-center p-2 rounded-full text-xs font-medium ${item.watched 
-          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200" 
+        className={`inline-flex items-center justify-center p-2 rounded-full text-xs font-medium ${item.watched
+          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
           : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
-        }`}
+          }`}
       >
         {item.watched ? <FaEye /> : <FaEyeSlash />}
       </span>
 
       {/* Butonlar */}
       <div className="flex gap-2">
-        <button 
+        <button
           onClick={handleToggle}
           disabled={isToggling}
           title="Toggle Watched"
@@ -83,7 +83,7 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
         >
           {item.watched ? <FaEye /> : <FaEyeSlash />}
         </button>
-        <button 
+        <button
           onClick={() => setIsConfirmDialogOpen(true)}
           disabled={isDeleting}
           title="Delete"

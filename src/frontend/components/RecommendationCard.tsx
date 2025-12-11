@@ -1,6 +1,6 @@
 // src/components/RecommendationCard.tsx
 import { Fragment } from 'react';
-import type { MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import { FaStar, FaFilm, FaTv, FaGamepad, FaBook } from 'react-icons/fa';
 import { Popover, Transition } from '@headlessui/react';
 import MediaCard from './MediaCard';

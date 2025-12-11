@@ -1,7 +1,7 @@
 // src/components/DetailModal.tsx
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import type { MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import MediaCard from './MediaCard';
 import { FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';

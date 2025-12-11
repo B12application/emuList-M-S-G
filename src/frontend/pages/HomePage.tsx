@@ -8,16 +8,17 @@ import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';
 import RecommendationCard from '../components/RecommendationCard';
 import useUserProfile from '../hooks/useUserProfile';
-import type { MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import { doc, updateDoc, collection, addDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db } from '../../backend/config/firebaseConfig';
+import LuckyDipModal from '../components/LuckyDipModal';
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
 
 import DetailModal from '../components/DetailModal';
 import AdminRecommendationsPanel from '../components/AdminRecommendationsPanel';
-import { fetchRecommendations, groupRecommendationsByCategory } from '../services/recommendationService';
-import type { Recommendation } from '../types/recommendation';
+import { fetchRecommendations, groupRecommendationsByCategory } from '../../backend/services/recommendationService';
+import type { Recommendation } from '../../backend/types/recommendation';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
@@ -155,11 +156,49 @@ export default function HomePage() {
 
 
   const handleRandomPick = () => {
-    const pool = [...movieRecs, ...seriesRecs, ...gameRecs, ...bookRecs];
-    if (pool.length > 0) {
-      const random = pool[Math.floor(Math.random() * pool.length)];
+    // 1. User's unwatched items
+    const userPool = [...movieRecs, ...seriesRecs, ...gameRecs, ...bookRecs];
+
+    // 2. Admin recommendations (mapped to MediaItem compatible format)
+    const adminPool = recommendations.map(rec => ({
+      id: rec.id,
+      title: rec.title,
+      image: rec.image,
+      rating: rec.rating,
+      description: rec.description,
+      type: rec.type as any, // Cast for compatibility
+      watched: false,
+      createdAt: rec.createdAt,
+      isFavorite: false,
+      _source: 'recommendation' // Tag source
+    } as MediaItem));
+
+    // Combine pools
+    const fullPool = [...userPool, ...adminPool];
+
+    if (fullPool.length > 0) {
+      const random = fullPool[Math.floor(Math.random() * fullPool.length)];
       setRandomItem(random);
+    } else {
+      toast.error(t('home.noItemsToPick') || 'Şeçilecek öğe bulunamadı!');
     }
+  };
+
+  // Wrapper for Add to Collection to handle MediaItem
+  const handleAddRandomToCollection = async (item: MediaItem) => {
+    // If it's already in user's collection (checked by ID presence in userPool logic usually, but here we check DB)
+    // Re-use handleAddToCollection but map MediaItem back to Recommendation-like object
+    const recLike: Recommendation = {
+      id: item.id,
+      title: item.title,
+      type: item.type as any,
+      image: item.image || '',
+      description: item.description,
+      rating: item.rating,
+      category: 'best-movies', // Dummy
+      createdAt: Timestamp.now()
+    };
+    await handleAddToCollection(recLike);
   };
 
   return (
@@ -1132,7 +1171,13 @@ export default function HomePage() {
 
 
       {/* Modallar */}
-      < DetailModal isOpen={!!randomItem} onClose={() => setRandomItem(null)} item={randomItem} refetch={() => { }} />
+      <LuckyDipModal
+        isOpen={!!randomItem}
+        onClose={() => setRandomItem(null)}
+        item={randomItem}
+        onSpinAgain={handleRandomPick}
+        onAddToCollection={handleAddRandomToCollection}
+      />
       < DetailModal isOpen={!!selectedRecentItem} onClose={() => setSelectedRecentItem(null)} item={selectedRecentItem} refetch={allRefetch} />
 
     </section >

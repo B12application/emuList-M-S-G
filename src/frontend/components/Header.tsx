@@ -6,7 +6,7 @@ import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, F
 import EyeTracker from './EyeTracker';
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { auth } from '../../backend/config/firebaseConfig';
 import { useLanguage } from '../context/LanguageContext';
 
 interface NavLinkRenderProps {

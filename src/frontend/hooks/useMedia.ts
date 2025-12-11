@@ -1,6 +1,6 @@
 // src/hooks/useMedia.ts
 import { useState, useEffect } from 'react';
-import { db, auth } from '../firebaseConfig';
+import { db, auth } from '../../backend/config/firebaseConfig';
 import {
   collection,
   query,
@@ -13,7 +13,7 @@ import {
   QueryDocumentSnapshot
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
-import type { MediaItem, FilterType, FilterStatus } from '../types/media';
+import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 
 const PAGE_SIZE = 20;
 

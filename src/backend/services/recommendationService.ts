@@ -11,7 +11,7 @@ import {
     orderBy,
     Timestamp
 } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db } from '../config/firebaseConfig';
 import type { Recommendation, RecommendationInput, RecommendationCategory } from '../types/recommendation';
 
 const RECOMMENDATIONS_COLLECTION = 'recommendations';

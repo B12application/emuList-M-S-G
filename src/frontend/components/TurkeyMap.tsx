@@ -16,19 +16,19 @@ const TurkeyMap: React.FC<TurkeyMapProps> = ({
     visitedColor: customVisited,
     defaultColor: customDefault,
 }) => {
-    const { theme } = useTheme();
+    const { isDark } = useTheme();
     const [hoveredProvince, setHoveredProvince] = React.useState<string | null>(null);
 
     // Define colors based on theme, with optional overrides
     const strokeColor = "#ffffff";
     const visitedColor = customVisited || "#ef4444"; // red-500
-    const defaultColor = customDefault || (theme === 'dark' ? "#374151" : "#d1d5db"); // gray-700 : gray-300
-    const hoverColor = theme === 'dark' ? "#4b5563" : "#9ca3af"; // gray-600 : gray-400
+    const defaultColor = customDefault || (isDark ? "#374151" : "#d1d5db"); // gray-700 : gray-300
+    const hoverColor = isDark ? "#4b5563" : "#9ca3af"; // gray-600 : gray-400
 
     // Text color logic: white on visited, contrasting on default
     const getTextColor = (isVisited: boolean) => {
         if (isVisited) return "#ffffff";
-        return theme === 'dark' ? "#e5e7eb" : "#1f2937"; // gray-200 : gray-800
+        return isDark ? "#e5e7eb" : "#1f2937"; // gray-200 : gray-800
     };
 
     return (

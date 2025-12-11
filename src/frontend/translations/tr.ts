@@ -230,6 +230,7 @@ export const translationsTR = {
         selectType: 'Türü Seçin',
         typeRequired: '(Seçim Zorunlu)',
         searchOMDb: 'OMDb\'den Ara (Film/Dizi Adı)',
+        searchRAWG: 'RAWG\'den Ara (Oyun Adı)',
         searchGoogleBooks: 'Google Books\'tan Ara',
         searchPlaceholder: 'adı girin...',
         bookSearchPlaceholder: 'kitap adı veya yazar girin...',

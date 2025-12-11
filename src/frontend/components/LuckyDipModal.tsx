@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaTimes, FaRedo, FaPlus, FaStar } from 'react-icons/fa';
+import { FaTimes, FaRedo, FaStar } from 'react-icons/fa';
 import ImageWithFallback from './ui/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -9,18 +9,14 @@ interface LuckyDipModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSpinAgain: () => void;
-    onAddToCollection: (item: MediaItem) => void;
     item: MediaItem | null;
-    isAdding?: boolean;
 }
 
 export default function LuckyDipModal({
     isOpen,
     onClose,
     onSpinAgain,
-    onAddToCollection,
     item,
-    isAdding = false
 }: LuckyDipModalProps) {
     const { t } = useLanguage();
 
@@ -79,13 +75,14 @@ export default function LuckyDipModal({
                                                 src={item.image}
                                                 alt={item.title}
                                                 className="w-full h-full object-cover"
+                                                wrapperClassName="w-full h-full"
                                             />
                                             <div className="absolute top-2 right-2 bg-black/60 text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-sm">
                                                 <FaStar className="text-yellow-400" /> {item.rating}
                                             </div>
                                             <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 to-transparent p-3 pt-8">
                                                 <span className="text-white text-sm font-bold block text-center truncate">
-                                                    {item.type.toUpperCase()}
+                                                    {t(`media.${item.type}`) || item.type.toUpperCase()}
                                                 </span>
                                             </div>
                                         </div>
@@ -100,28 +97,13 @@ export default function LuckyDipModal({
                                             </p>
                                         )}
 
-                                        {/* Actions */}
                                         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                                             <button
                                                 onClick={onSpinAgain}
                                                 className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                             >
-                                                <FaRedo className={isAdding ? 'animate-spin' : ''} />
+                                                <FaRedo />
                                                 {t('home.spinAgain') || 'Tekrar Dene'}
-                                            </button>
-
-                                            <button
-                                                onClick={() => onAddToCollection(item)}
-                                                disabled={isAdding}
-                                                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
-                                            >
-                                                {isAdding ? (
-                                                    <span className="flex items-center gap-2">Ekleniyor...</span>
-                                                ) : (
-                                                    <>
-                                                        <FaPlus /> {t('home.add') || 'Listeme Ekle'}
-                                                    </>
-                                                )}
                                             </button>
                                         </div>
 

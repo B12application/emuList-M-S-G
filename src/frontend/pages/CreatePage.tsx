@@ -11,6 +11,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } from '../../backend/services/omdbApi';
 import { searchBooks, getBookById, normalizeBookRating, getBookCoverUrl, formatAuthors, type GoogleBooksSearchResult } from '../../backend/services/googleBooksApi';
+import { searchGames, getGameById, normalizeGameRating, type RAWGGameResult } from '../../backend/services/rawgApi';
 import ImageWithFallback from '../components/ui/ImageWithFallback';
 import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';
@@ -49,6 +50,15 @@ export default function CreatePage() {
   const [showBookSearchResults, setShowBookSearchResults] = useState(false);
   const bookSearchTimeoutRef = useRef<number | null>(null);
   const bookSearchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Game search states
+  const [gameSearchQuery, setGameSearchQuery] = useState('');
+  const [gameSearchResults, setGameSearchResults] = useState<RAWGGameResult[]>([]);
+  const [isGameSearching, setIsGameSearching] = useState(false);
+  const [gameSearchError, setGameSearchError] = useState<string | null>(null);
+  const [showGameSearchResults, setShowGameSearchResults] = useState(false);
+  const gameSearchTimeoutRef = useRef<number | null>(null);
+  const gameSearchContainerRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
 
@@ -192,11 +202,15 @@ export default function CreatePage() {
       if (bookSearchContainerRef.current && !bookSearchContainerRef.current.contains(event.target as Node)) {
         setShowBookSearchResults(false);
       }
+      if (gameSearchContainerRef.current && !gameSearchContainerRef.current.contains(event.target as Node)) {
+        setShowGameSearchResults(false);
+      }
     };
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowSearchResults(false);
         setShowBookSearchResults(false);
+        setShowGameSearchResults(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -241,6 +255,41 @@ export default function CreatePage() {
       }
     };
   }, [bookSearchQuery, type]);
+
+  // RAWG (Oyun) arama fonksiyonu
+  useEffect(() => {
+    if (gameSearchTimeoutRef.current) {
+      clearTimeout(gameSearchTimeoutRef.current);
+    }
+    if (!gameSearchQuery.trim() || type !== 'game') {
+      setGameSearchResults([]);
+      setShowGameSearchResults(false);
+      return;
+    }
+    gameSearchTimeoutRef.current = setTimeout(async () => {
+      setIsGameSearching(true);
+      setGameSearchError(null);
+      try {
+        const results = await searchGames(gameSearchQuery);
+        setGameSearchResults(results);
+        setShowGameSearchResults(results.length > 0);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Oyun arama sırasında bir hata oluştu';
+        setGameSearchError(errorMessage);
+        setGameSearchResults([]);
+        setShowGameSearchResults(false);
+        toast.error(errorMessage);
+      } finally {
+        setIsGameSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (gameSearchTimeoutRef.current) {
+        clearTimeout(gameSearchTimeoutRef.current);
+      }
+    };
+  }, [gameSearchQuery, type]);
 
   // Arama sonucu seçildiğinde
   const handleSelectSearchResult = async (result: OMDbSearchResult) => {
@@ -295,6 +344,35 @@ export default function CreatePage() {
       toast.error(errorMessage);
     } finally {
       setIsBookSearching(false);
+    }
+  };
+
+  // Oyun arama sonucu seçildiğinde
+  const handleSelectGameResult = async (result: RAWGGameResult) => {
+    try {
+      setIsGameSearching(true);
+      setGameSearchError(null);
+      const details = await getGameById(result.id);
+
+      setTitle(details.name);
+      setImage(details.background_image || '');
+      // RAWG returns HTML in description usually, we might need description_raw if available or strip tags.
+      // details.description_raw is usually cleaner if available.
+      setDescription(details.description_raw || details.description || '');
+
+      if (details.rating) {
+        setRating(normalizeGameRating(details.rating));
+      }
+
+      setShowGameSearchResults(false);
+      setGameSearchQuery('');
+      toast.success(t('create.loaded'));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : t('common.error');
+      setGameSearchError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsGameSearching(false);
     }
   };
 
@@ -507,6 +585,92 @@ export default function CreatePage() {
                       icon={<FaSearch />}
                       title={t('create.noResults')}
                       description={`"${bookSearchQuery}" ${t('create.tryDifferent')}`}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {type === 'game' && (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg" ref={gameSearchContainerRef}>
+              <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                {t('create.searchRAWG')}
+              </label>
+              <div className="relative">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={gameSearchQuery}
+                    onChange={(e) => setGameSearchQuery(e.target.value)}
+                    onFocus={() => {
+                      if (gameSearchResults.length > 0) {
+                        setShowGameSearchResults(true);
+                      }
+                    }}
+                    placeholder={t('create.searchPlaceholder')}
+                    className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  {gameSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGameSearchQuery('');
+                        setGameSearchResults([]);
+                        setShowGameSearchResults(false);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <FaTimes />
+                    </button>
+                  )}
+                  {isGameSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <FaSpinner className="animate-spin text-sky-500" />
+                    </div>
+                  )}
+                </div>
+
+                {showGameSearchResults && gameSearchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto">
+                    {gameSearchResults.map((result) => (
+                      <button
+                        key={result.id}
+                        type="button"
+                        onClick={() => handleSelectGameResult(result)}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                      >
+                        <ImageWithFallback
+                          src={result.background_image || ''}
+                          alt={result.name}
+                          className="w-12 h-16 object-cover rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                            {result.name}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {result.released?.split('-')[0] || ''}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {gameSearchError && (
+                  <div className="mt-2 text-sm text-red-500">
+                    {gameSearchError}
+                  </div>
+                )}
+
+                {!isGameSearching && gameSearchQuery.trim() && gameSearchResults.length === 0 && !gameSearchError && (
+                  <div className="mt-4">
+                    <EmptyState
+                      icon={<FaSearch />}
+                      title={t('create.noResults')}
+                      description={`"${gameSearchQuery}" ${t('create.tryDifferent')}`}
                     />
                   </div>
                 )}

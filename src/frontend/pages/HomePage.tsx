@@ -184,22 +184,7 @@ export default function HomePage() {
     }
   };
 
-  // Wrapper for Add to Collection to handle MediaItem
-  const handleAddRandomToCollection = async (item: MediaItem) => {
-    // If it's already in user's collection (checked by ID presence in userPool logic usually, but here we check DB)
-    // Re-use handleAddToCollection but map MediaItem back to Recommendation-like object
-    const recLike: Recommendation = {
-      id: item.id,
-      title: item.title,
-      type: item.type as any,
-      image: item.image || '',
-      description: item.description,
-      rating: item.rating,
-      category: 'best-movies', // Dummy
-      createdAt: Timestamp.now()
-    };
-    await handleAddToCollection(recLike);
-  };
+
 
   return (
     <section className="py-10">
@@ -1176,7 +1161,6 @@ export default function HomePage() {
         onClose={() => setRandomItem(null)}
         item={randomItem}
         onSpinAgain={handleRandomPick}
-        onAddToCollection={handleAddRandomToCollection}
       />
       < DetailModal isOpen={!!selectedRecentItem} onClose={() => setSelectedRecentItem(null)} item={selectedRecentItem} refetch={allRefetch} />
 

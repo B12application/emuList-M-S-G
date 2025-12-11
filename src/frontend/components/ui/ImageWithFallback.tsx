@@ -8,6 +8,7 @@ interface ImageWithFallbackProps {
   className?: string;
   fallbackIcon?: React.ReactNode;
   fallbackClassName?: string;
+  wrapperClassName?: string;
 }
 
 export default function ImageWithFallback({
@@ -16,6 +17,7 @@ export default function ImageWithFallback({
   className = '',
   fallbackIcon,
   fallbackClassName = '',
+  wrapperClassName = '',
 }: ImageWithFallbackProps) {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +77,7 @@ export default function ImageWithFallback({
   }
 
   return (
-    <div className="relative">
+    <div className={`relative ${wrapperClassName}`}>
       {isLoading && (
         <div
           className={`absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700 animate-pulse ${className}`}

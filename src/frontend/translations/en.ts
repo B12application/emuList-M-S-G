@@ -141,6 +141,8 @@ export const translationsEN = {
         noRecent: 'No items added yet.',
         footerAdd: 'Add Content',
         footerCollection: 'View Full Collection',
+        spinAgain: 'Spin Again',
+        luckyDipTitle: 'Lucky Dip Result!',
 
         // Best Recommendations
         bestRecsTitle: 'Top Picks',
@@ -227,6 +229,7 @@ export const translationsEN = {
         selectType: 'Select Type',
         typeRequired: '(Required)',
         searchOMDb: 'Search OMDb (Movie/Series Name)',
+        searchRAWG: 'Search RAWG (Game Name)',
         searchGoogleBooks: 'Search Google Books',
         searchPlaceholder: 'Enter name...',
         bookSearchPlaceholder: 'enter book name or author...',

@@ -1,0 +1,47 @@
+[33md912848[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mMapfixed[m[33m)[m HEAD@{0}: checkout: moving from Mapfixed to Mapfixed
+[33md912848[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mMapfixed[m[33m)[m HEAD@{1}: commit (merge): Merge branch 'main' of https://github.com/emulusoy/emuList-M-S-G into Mapfixed
+[33m2e1357c[m[33m ([m[1;31morigin/mapfixed[m[33m)[m HEAD@{2}: checkout: moving from main to Mapfixed
+[33mc5d8bae[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{3}: commit: .
+[33m29e7827[m HEAD@{4}: commit: Distinctions were made between viewed, read, and played on the homepage. Explanations were added to the best recommendations section.
+[33m5d2ba77[m HEAD@{5}: pull --tags origin main: Fast-forward
+[33m12044e4[m HEAD@{6}: commit: b12 logo add
+[33m72736a8[m HEAD@{7}: commit: 1.3
+[33m051bd43[m HEAD@{8}: commit: vix map
+[33md59c3b6[m HEAD@{9}: commit: new top picks section added
+[33mb1e804a[m HEAD@{10}: commit: fix image
+[33m313f175[m HEAD@{11}: commit: edit png male female fix
+[33me664ef0[m HEAD@{12}: commit: Google book apı
+[33m07f77cb[m HEAD@{13}: commit: fix list navbar
+[33m1f652b1[m HEAD@{14}: commit: fixx
+[33mf231ec8[m HEAD@{15}: commit: 1.2.0
+[33m6bf52bc[m HEAD@{16}: commit: .
+[33ma3835f5[m HEAD@{17}: commit: 1.1.4 antigravity
+[33m6b187fe[m HEAD@{18}: commit: fix edit modal
+[33mf6abe51[m HEAD@{19}: commit: fixed all
+[33m4c02889[m HEAD@{20}: commit: fix
+[33mb516338[m HEAD@{21}: commit: fix
+[33m3d67718[m HEAD@{22}: commit: 1.1.3
+[33m12bcbc8[m HEAD@{23}: commit: 1.1.2
+[33m6935274[m HEAD@{24}: commit: netlifyyy fix rowIndex
+[33m87e3451[m HEAD@{25}: commit: Mediacard Slider added emu
+[33md2c08a9[m HEAD@{26}: commit: pagination!
+[33mee29877[m HEAD@{27}: commit: Fix: Netlify refresh SPA routing
+[33me022fbf[m HEAD@{28}: commit: Fix: Netlify 404 refresh
+[33m1f86d77[m HEAD@{29}: commit: fixed
+[33m11b26c6[m HEAD@{30}: commit: fx
+[33ma37bb68[m HEAD@{31}: commit: 1.1.1
+[33m35138d2[m HEAD@{32}: commit: Logo-title-homepage edit
+[33m457f93b[m HEAD@{33}: commit: Fıxed map
+[33m2a11d9c[m HEAD@{34}: commit: Add interactive Turkey map with SVG and Firebase integration
+[33mfe506c2[m HEAD@{35}: commit: fix
+[33md0e87e7[m HEAD@{36}: commit: 1.1.0
+[33m0e3ec84[m HEAD@{37}: commit: API fix
+[33m4493474[m HEAD@{38}: pull --tags origin main: Fast-forward
+[33mb3c4838[m HEAD@{39}: commit: 1.0.4
+[33me098cb9[m HEAD@{40}: commit: Edit modal added 1.0.4
+[33mcbb560f[m HEAD@{41}: commit: 1.0.3
+[33m7f15708[m HEAD@{42}: commit: 1.0.2
+[33md1b942f[m HEAD@{43}: commit: 1.0.1
+[33m490c8bd[m HEAD@{44}: commit: Live version 1.0.0
+[33m911b12a[m HEAD@{45}: commit: 22
+[33m515d3b4[m HEAD@{46}: commit (initial): first commit

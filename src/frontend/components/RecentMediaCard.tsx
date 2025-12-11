@@ -1,5 +1,5 @@
 // src/components/RecentMediaCard.tsx
-import type { MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import { FaStar, FaCalendarAlt, FaFilm, FaTv, FaGamepad } from 'react-icons/fa';
 import ImageWithFallback from './ui/ImageWithFallback';
 
@@ -9,7 +9,7 @@ interface RecentMediaCardProps {
 }
 
 export default function RecentMediaCard({ item, onClick }: RecentMediaCardProps) {
-  
+
   // Tarihi formatla
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
@@ -28,17 +28,17 @@ export default function RecentMediaCard({ item, onClick }: RecentMediaCardProps)
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="group relative flex-shrink-0 w-80 bg-white dark:bg-gray-800/80 backdrop-blur-sm border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl hover:border-sky-200 dark:hover:border-sky-900 transition-all duration-300 transform hover:-translate-y-1"
     >
       <div className="flex h-full">
         {/* Sol: Resim (Genişletildi) */}
         <div className="w-32 h-full relative overflow-hidden">
-          <ImageWithFallback 
-            src={item.image} 
-            alt={item.title} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+          <ImageWithFallback
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
         </div>
@@ -59,9 +59,9 @@ export default function RecentMediaCard({ item, onClick }: RecentMediaCardProps)
             <h3 className="font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 mb-1">
               {item.title}
             </h3>
-            
+
             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-               {item.description || "Açıklama girilmemiş."}
+              {item.description || "Açıklama girilmemiş."}
             </p>
           </div>
 

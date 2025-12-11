@@ -1,16 +1,16 @@
 // src/pages/CreatePage.tsx
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { db } from '../firebaseConfig';
+import { db } from '../../backend/config/firebaseConfig';
 // 1. YENİ: getDocs, query, where import edildi
 import { addDoc, collection, serverTimestamp, Timestamp, getDocs, query, where } from 'firebase/firestore';
-import type { MediaItem, MediaType } from '../types/media';
+import type { MediaItem, MediaType } from '../../backend/types/media';
 import { FaFilm, FaTv, FaGamepad, FaBook, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
 import MediaCard from '../components/MediaCard';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } from '../services/omdbApi';
-import { searchBooks, getBookById, normalizeBookRating, getBookCoverUrl, formatAuthors, type GoogleBooksSearchResult } from '../services/googleBooksApi';
+import { searchMovies, getMovieById, normalizeRating, type OMDbSearchResult } from '../../backend/services/omdbApi';
+import { searchBooks, getBookById, normalizeBookRating, getBookCoverUrl, formatAuthors, type GoogleBooksSearchResult } from '../../backend/services/googleBooksApi';
 import ImageWithFallback from '../components/ui/ImageWithFallback';
 import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';

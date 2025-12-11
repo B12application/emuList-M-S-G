@@ -1,8 +1,8 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
-import type { MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart } from 'react-icons/fa';
-import { db } from '../firebaseConfig';
+import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
 import ImageWithFallback from './ui/ImageWithFallback';

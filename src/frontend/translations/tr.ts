@@ -141,6 +141,8 @@ export const translationsTR = {
         noRecent: 'Henüz kayıt eklenmemiş.',
         footerAdd: 'İçerik Ekle',
         footerCollection: 'Tüm Koleksiyonu Gör',
+        spinAgain: 'Tekrar Dene',
+        luckyDipTitle: 'Şansına Bu Çıktı!',
 
         // Best Recommendations
         bestRecsTitle: 'En İyi Öneriler',

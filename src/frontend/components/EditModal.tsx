@@ -1,7 +1,7 @@
 // src/components/EditModal.tsx
 import { useState, useEffect, Fragment } from 'react';
-import type { MediaItem } from '../types/media';
-import { db } from '../firebaseConfig';
+import type { MediaItem } from '../../backend/types/media';
+import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Dialog, Transition } from '@headlessui/react';
 import { FaSave, FaLink, FaSpinner, FaTimes } from 'react-icons/fa';

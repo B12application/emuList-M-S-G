@@ -1,6 +1,6 @@
 // src/hooks/useUserProfile.ts
 import { useState, useEffect } from 'react';
-import { db } from '../firebaseConfig';
+import { db } from '../../backend/config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 

@@ -1,13 +1,13 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { ReactNode } from 'react'; 
-import { onAuthStateChanged } from 'firebase/auth'; 
-import type { User } from 'firebase/auth'; 
+import type { ReactNode } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
-import { auth } from '../firebaseConfig';
+import { auth } from '../../backend/config/firebaseConfig';
 
 interface AuthContextType {
-  user: User | null; 
+  user: User | null;
   loading: boolean;
 }
 
@@ -19,11 +19,11 @@ export function AuthProvider({ children }: { children: ReactNode }) { // 'ReactN
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); 
+      setUser(currentUser);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []); 
+  }, []);
 
   const value = {
     user,
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) { // 'ReactN
 
   return (
     <AuthContext.Provider value={value}>
-      {children} 
+      {children}
     </AuthContext.Provider>
   );
 }

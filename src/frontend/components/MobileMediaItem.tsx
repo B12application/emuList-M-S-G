@@ -1,8 +1,8 @@
 // src/components/MobileMediaItem.tsx
 import { useState } from 'react';
-import type { MediaItem } from '../types/media';
+import type { MediaItem } from '../../backend/types/media';
 import { FaTrash, FaPen, FaSpinner } from 'react-icons/fa';
-import { db } from '../firebaseConfig';
+import { db } from '../../backend/config/firebaseConfig';
 import { doc, deleteDoc } from 'firebase/firestore';
 import ImageWithFallback from './ui/ImageWithFallback';
 import EditModal from './EditModal';
@@ -36,7 +36,7 @@ export default function MobileMediaItem({ item, refetch, onClick }: MobileMediaI
   return (
     <>
       {/* Kartın Kendisi (Tıklanabilir) */}
-      <div 
+      <div
         onClick={onClick}
         className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 active:scale-95 transition-transform cursor-pointer"
       >
@@ -62,13 +62,13 @@ export default function MobileMediaItem({ item, refetch, onClick }: MobileMediaI
 
         {/* Sağ: Edit/Delete Butonları (Tıklamayı durdurur - stopPropagation) */}
         <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
-          <button 
+          <button
             onClick={() => setIsEditModalOpen(true)}
             className="p-2 rounded-lg text-sky-600 bg-sky-50 dark:bg-sky-900/20 dark:text-sky-400"
           >
             <FaPen size={14} />
           </button>
-          <button 
+          <button
             onClick={() => setIsConfirmDialogOpen(true)}
             disabled={isDeleting}
             className="p-2 rounded-lg text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 disabled:opacity-50"
@@ -79,7 +79,7 @@ export default function MobileMediaItem({ item, refetch, onClick }: MobileMediaI
       </div>
 
       {/* Modallar */}
-      <EditModal 
+      <EditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         item={item}

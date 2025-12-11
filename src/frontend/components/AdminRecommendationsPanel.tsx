@@ -4,13 +4,13 @@ import { Dialog } from '@headlessui/react';
 import { FaSearch, FaPlus, FaTrash, FaTimes, FaStar, FaLock, FaSpinner } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import type { Recommendation, RecommendationCategory, RecommendationInput } from '../types/recommendation';
+import type { Recommendation, RecommendationCategory, RecommendationInput } from '../../backend/types/recommendation';
 import {
     fetchRecommendations,
     addRecommendation,
     deleteRecommendation,
     groupRecommendationsByCategory
-} from '../services/recommendationService';
+} from '../../backend/services/recommendationService';
 import toast from 'react-hot-toast';
 
 const ADMIN_UID = import.meta.env.VITE_ADMIN_UID || 'ZKU7SObBkeNzMicltUKJjo6ybHH2';

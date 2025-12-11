@@ -405,7 +405,10 @@ export default function HomePage() {
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
                           : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
                           }`}>
-                          {item.watched ? t('card.watched') : t('card.notWatched')}
+                          {item.watched
+                            ? (item.type === 'book' ? t('media.read') : item.type === 'game' ? t('media.played') : t('media.watched'))
+                            : (item.type === 'book' ? t('media.notRead') : item.type === 'game' ? t('media.notPlayed') : t('media.notWatched'))
+                          }
                         </span>
                       </div>
                     </div>

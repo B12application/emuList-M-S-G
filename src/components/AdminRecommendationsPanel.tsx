@@ -29,6 +29,7 @@ interface SearchResult {
     Type: string;
     Poster: string;
     imdbRating?: string;
+    Plot?: string;
 }
 
 export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }: AdminRecommendationsPanelProps) {
@@ -81,7 +82,8 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                         const detailData = await detailResponse.json();
                         return {
                             ...item,
-                            imdbRating: detailData.imdbRating || 'N/A'
+                            imdbRating: detailData.imdbRating || 'N/A',
+                            Plot: detailData.Plot || ''
                         };
                     })
                 );
@@ -98,13 +100,18 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
     };
 
     const handleAddRecommendation = async (result: SearchResult) => {
+        // Açıklama: Plot varsa kulllan, yoksa sadece yıl bilgisi
+        const description = result.Plot && result.Plot !== 'N/A'
+            ? `(${result.Year}) ${result.Plot}`
+            : result.Year;
+
         const recData: RecommendationInput = {
             title: result.Title,
             rating: result.imdbRating || 'N/A',
             image: result.Poster !== 'N/A' ? result.Poster : '',
             type: result.Type === 'series' ? 'series' : 'movie',
             category: selectedCategory,
-            description: `${result.Year}`
+            description: description
         };
 
         const id = await addRecommendation(recData);

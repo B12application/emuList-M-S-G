@@ -8,6 +8,9 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
+import StatsPage from './pages/StatsPage';
 import VisitedMapPage from './pages/VisitedMapPage';
 import { LanguageProvider } from './context/LanguageContext';
 
@@ -32,6 +35,9 @@ const router = createBrowserRouter([
       { path: 'create', element: <CreatePage /> },
 
       { path: 'map', element: <VisitedMapPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'stats', element: <StatsPage /> }, // New Stats Route
     ]
   },
 

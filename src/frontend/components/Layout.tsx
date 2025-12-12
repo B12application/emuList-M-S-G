@@ -23,7 +23,7 @@ export default function Layout() {
         onClose={() => setIsMobileMenuOpen(false)}
       />
 
-      <main className="pt-20">
+      <main className="pt-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Outlet />
         </div>

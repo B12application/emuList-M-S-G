@@ -86,7 +86,12 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
             {/* Logo Area */}
             <Link to="/" className="flex items-center gap-2 group">
               <div className="relative transform transition-transform duration-300 group-hover:scale-110">
-                <EyeTracker />
+                <div className="hidden md:block">
+                  <EyeTracker />
+                </div>
+                <div className="md:hidden font-black text-2xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-rose-500 to-orange-500">
+                  B12
+                </div>
               </div>
             </Link>
 

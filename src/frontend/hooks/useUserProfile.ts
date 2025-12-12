@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext';
 
 interface UserProfile {
   gender: 'male' | 'female' | '';
+  bio?: string;
+  avatarUrl?: string;
 }
 
 export default function useUserProfile() {

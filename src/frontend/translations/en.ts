@@ -10,6 +10,7 @@ export const translationsEN = {
         all: 'All',
         map: 'My Map',
         collection: 'My List',
+        feed: 'Activity',
     },
 
     // Map Page
@@ -354,6 +355,25 @@ export const translationsEN = {
         confirm: 'Confirm',
         back: 'Back',
     },
+
+    // Feed Page
+    feed: {
+        title: 'Activity',
+        empty: 'No activity yet',
+        emptyDesc: 'Add, watch, or favorite content and it will appear here.',
+        loadingActivities: 'Loading activities...',
+        mediaAdded: 'added',
+        mediaWatched: 'marked as watched',
+        favoriteAdded: 'added to favorites',
+        favoriteRemoved: 'removed from favorites',
+        justNow: 'Just now',
+        minutesAgo: 'minutes ago',
+        hoursAgo: 'hours ago',
+        daysAgo: 'days ago',
+        weeksAgo: 'weeks ago',
+        monthsAgo: 'months ago',
+    },
+
     // Footer
     footer: {
         subtitle: 'Digital Experience & Design',

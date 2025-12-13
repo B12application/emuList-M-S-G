@@ -1,6 +1,6 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaChevronRight } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaChevronRight, FaHistory } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -121,6 +121,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
             <NavLink onClick={onClose} to="/all" className={getNavLinkCls}>
               {({ isActive }) => <><FaClone className={isActive ? "text-rose-500" : "text-gray-400"} /> {t('nav.all')}</>}
+            </NavLink>
+            <NavLink onClick={onClose} to="/feed" className={getNavLinkCls}>
+              {({ isActive }) => <><FaHistory className={isActive ? "text-violet-500" : "text-gray-400"} /> {t('nav.feed')}</>}
             </NavLink>
             <NavLink onClick={onClose} to="/map" className={getNavLinkCls}>
               {({ isActive }) => <><FaMap className={isActive ? "text-indigo-500" : "text-gray-400"} /> {t('nav.map')}</>}

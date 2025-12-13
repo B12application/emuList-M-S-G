@@ -12,6 +12,7 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import StatsPage from './pages/StatsPage';
 import VisitedMapPage from './pages/VisitedMapPage';
+import FeedPage from './pages/FeedPage';
 import { LanguageProvider } from './context/LanguageContext';
 
 const router = createBrowserRouter([
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
       { path: 'create', element: <CreatePage /> },
 
       { path: 'map', element: <VisitedMapPage /> },
+      { path: 'feed', element: <FeedPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'stats', element: <StatsPage /> }, // New Stats Route

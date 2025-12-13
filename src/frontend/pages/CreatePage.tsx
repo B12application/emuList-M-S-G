@@ -17,6 +17,7 @@ import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { createActivity } from '../../backend/services/activityService';
 
 export default function CreatePage() {
   const { t } = useLanguage();
@@ -114,7 +115,26 @@ export default function CreatePage() {
         newMediaItem.author = author;
       }
 
-      await addDoc(collection(db, "mediaItems"), newMediaItem);
+      const docRef = await addDoc(collection(db, "mediaItems"), newMediaItem);
+
+      // Create activity for media added
+      try {
+        await createActivity(
+          user.uid,
+          user.displayName || 'User',
+          user.photoURL || undefined,
+          'media_added',
+          {
+            ...newMediaItem,
+            id: docRef.id,
+            createdAt: Timestamp.now()
+          } as any
+        );
+      } catch (activityError) {
+        console.error('Error creating activity:', activityError);
+        // Don't fail the whole operation if activity creation fails
+      }
+
       toast.success(t('create.successAdded'));
       setIsLoading(false);
       navigate(`/${type}`);

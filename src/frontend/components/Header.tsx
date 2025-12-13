@@ -157,6 +157,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                   </AnimatePresence>
                 </div>
 
+                <NavLink to="/feed" className={getNavCls}>{t('nav.feed')}</NavLink>
                 <NavLink to="/map" className={getNavCls}>{t('nav.map')}</NavLink>
               </nav>
             )}

@@ -10,6 +10,7 @@ export const translationsTR = {
         all: 'Tümü',
         map: 'Haritam',
         collection: 'Listem',
+        feed: 'Aktiviteler',
     },
 
     // Map Page
@@ -353,6 +354,25 @@ export const translationsTR = {
         confirm: 'Onayla',
         back: 'Geri',
     },
+
+    // Feed Page
+    feed: {
+        title: 'Aktiviteler',
+        empty: 'Henüz aktivite yok',
+        emptyDesc: 'İçerik ekledikçe, izledikçe veya favorilere ekledikçe burada görünecek.',
+        loadingActivities: 'Aktiviteler yükleniyor...',
+        mediaAdded: 'eklendi',
+        mediaWatched: 'izlendi olarak işaretlendi',
+        favoriteAdded: 'favorilere eklendi',
+        favoriteRemoved: 'favorilerden çıkarıldı',
+        justNow: 'Az önce',
+        minutesAgo: 'dakika önce',
+        hoursAgo: 'saat önce',
+        daysAgo: 'gün önce',
+        weeksAgo: 'hafta önce',
+        monthsAgo: 'ay önce',
+    },
+
     // Footer
     footer: {
         subtitle: 'Dijital Deneyim ve Tasarım',

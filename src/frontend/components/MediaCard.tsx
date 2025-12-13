@@ -9,6 +9,8 @@ import ImageWithFallback from './ui/ImageWithFallback';
 import ConfirmDialog from './ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { createActivity, deleteActivitiesForMedia } from '../../backend/services/activityService';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -19,6 +21,7 @@ interface MediaCardProps {
 
 export default function MediaCard({ item, refetch, isModal = false }: MediaCardProps) {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -44,6 +47,16 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
     setIsDeleting(true);
     try {
       await deleteDoc(doc(db, "mediaItems", item.id));
+
+      // Delete all related activities
+      if (user) {
+        try {
+          await deleteActivitiesForMedia(user.uid, item.id);
+        } catch (activityError) {
+          console.error('Error deleting activities:', activityError);
+        }
+      }
+
       toast.success(t('toast.deleted'));
       refetch();
     } catch (e) {
@@ -60,6 +73,22 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
     setIsToggling(true);
     try {
       await updateDoc(doc(db, "mediaItems", item.id), { watched: newValue });
+
+      // Create activity only when marking as watched
+      if (newValue && user) {
+        try {
+          await createActivity(
+            user.uid,
+            user.displayName || 'User',
+            user.photoURL || undefined,
+            'media_watched',
+            item
+          );
+        } catch (activityError) {
+          console.error('Error creating activity:', activityError);
+        }
+      }
+
       toast.success(newValue
         ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
         : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
@@ -81,6 +110,22 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
     setIsTogglingFavorite(true);
     try {
       await updateDoc(doc(db, "mediaItems", item.id), { isFavorite: newValue });
+
+      // Create activity for favorite changes
+      if (user) {
+        try {
+          await createActivity(
+            user.uid,
+            user.displayName || 'User',
+            user.photoURL || undefined,
+            newValue ? 'favorite_added' : 'favorite_removed',
+            item
+          );
+        } catch (activityError) {
+          console.error('Error creating activity:', activityError);
+        }
+      }
+
       toast.success(newValue ? t('toast.favoriteAdded') : t('toast.favoriteRemoved'));
       refetch();
     } catch (e) {

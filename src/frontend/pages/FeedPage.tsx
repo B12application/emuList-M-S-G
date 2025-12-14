@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { FaHistory, FaInbox } from 'react-icons/fa';
 import useActivities from '../hooks/useActivities';
 import ActivityCard from '../components/ActivityCard';
+import SearchBar from '../components/SearchBar';
+import { ActivityCardSkeleton } from '../components/ui/SkeletonLoader';
 import { useLanguage } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 
@@ -44,11 +46,19 @@ export default function FeedPage() {
         return (
             <div className="min-h-screen pt-24 pb-16">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-rose-500 border-t-transparent mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
-                            {t('feed.loadingActivities')}
-                        </p>
+                    <div className="mb-8">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-3 bg-gradient-to-br from-rose-500 to-orange-500 rounded-2xl text-white shadow-lg">
+                                <FaHistory className="text-2xl" />
+                            </div>
+                            <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+                                {t('feed.title')}
+                            </h1>
+                        </div>
+                        <SearchBar />
+                    </div>
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4, 5].map(i => <ActivityCardSkeleton key={i} />)}
                     </div>
                 </div>
             </div>
@@ -65,7 +75,7 @@ export default function FeedPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-4">
                         <div className="p-3 bg-gradient-to-br from-rose-500 to-orange-500 rounded-2xl text-white shadow-lg shadow-rose-500/30">
                             <FaHistory className="text-2xl" />
                         </div>
@@ -73,7 +83,13 @@ export default function FeedPage() {
                             {t('feed.title')}
                         </h1>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm ml-16">
+
+                    {/* Search Bar */}
+                    <div className="mb-4">
+                        <SearchBar />
+                    </div>
+
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
                         {groupedActivities.length > 0
                             ? `${groupedActivities.length} içerik aktivitesi`
                             : t('feed.emptyDesc')}

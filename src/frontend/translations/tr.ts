@@ -75,6 +75,13 @@ export const translationsTR = {
         notRead: 'Okunmadı',
         played: 'Oynandı',
         notPlayed: 'Oynanmadı',
+        // Profile owner actions (they did it)
+        watchedByUser: 'İzledi',
+        readByUser: 'Okudu',
+        playedByUser: 'Oynadı',
+        notWatchedByUser: 'İzlemedi',
+        notReadByUser: 'Okumadı',
+        notPlayedByUser: 'Oynamadı',
     },
 
     // Actions
@@ -201,6 +208,12 @@ export const translationsTR = {
         lastActivity: 'Son Aktiviteler',
         memberSince: 'Üyeliği',
         email: 'E-posta',
+        locationLabel: 'Konum',
+        locationPlaceholder: 'Şehir, Ülke',
+        socialLinks: 'Sosyal Medya',
+        twitterPlaceholder: 'Twitter kullanıcı adı',
+        instagramPlaceholder: 'Instagram kullanıcı adı',
+        websitePlaceholder: 'Web sitesi URL',
     },
 
     // Settings
@@ -355,6 +368,36 @@ export const translationsTR = {
         back: 'Geri',
     },
 
+    // Search
+    search: {
+        placeholder: 'Kullanıcı ara...',
+        noResults: 'Kullanıcı bulunamadı',
+        users: 'Kullanıcılar',
+    },
+
+    // Notifications
+    notifications: {
+        title: 'Bildirimler',
+        empty: 'Henüz bildirim yok',
+        markAllRead: 'Tümünü okundu işaretle',
+        followed: 'seni takip etmeye başladı',
+        liked: 'aktiviteni beğendi',
+        commented: 'aktivitene yorum yaptı',
+    },
+
+    // Activity Reactions
+    reactions: {
+        like: 'Beğen',
+        liked: 'Beğenildi',
+        comment: 'Yorum Yap',
+        comments: 'Yorum',
+        writeComment: 'Yorum yaz...',
+        send: 'Gönder',
+        noComments: 'Henüz yorum yok',
+        showComments: 'Yorumları göster',
+        hideComments: 'Yorumları gizle',
+    },
+
     // Feed Page
     feed: {
         title: 'Aktiviteler',
@@ -371,6 +414,15 @@ export const translationsTR = {
         daysAgo: 'gün önce',
         weeksAgo: 'hafta önce',
         monthsAgo: 'ay önce',
+    },
+
+    // Public Profile
+    publicProfile: {
+        title: 'Kullanıcı Profili',
+        backToFeed: 'Aktivitelere Dön',
+        userLibrary: 'Kütüphanesi',
+        memberSince: 'Üye:',
+        noItems: 'Bu kullanıcının henüz eklediği içerik yok.',
     },
 
     // Footer

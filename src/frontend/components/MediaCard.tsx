@@ -17,9 +17,11 @@ interface MediaCardProps {
   refetch: () => void;
   // 1. YENİ: Bu kartın modal içinde olup olmadığını belirten prop
   isModal?: boolean;
+  // Read-only mode for viewing other users' profiles
+  readOnly?: boolean;
 }
 
-export default function MediaCard({ item, refetch, isModal = false }: MediaCardProps) {
+export default function MediaCard({ item, refetch, isModal = false, readOnly = false }: MediaCardProps) {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -189,7 +191,7 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
                 e.stopPropagation();
                 handleFavoriteToggle();
               }}
-              disabled={isTogglingFavorite}
+              disabled={isTogglingFavorite || readOnly}
               className="inline-flex items-center justify-center w-7 h-7 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50"
               style={{
                 backgroundColor: localIsFavorite ? 'rgba(239, 68, 68, 0.9)' : 'rgba(255, 255, 255, 0.9)',
@@ -225,45 +227,48 @@ export default function MediaCard({ item, refetch, isModal = false }: MediaCardP
             {item.description || t('card.noDescription')}
           </p>
 
-          <div className="mt-auto flex items-center justify-between pt-2 gap-2">
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle();
-              }}
-              disabled={isToggling}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
-            >
-              {localWatched ? <FaEye /> : <FaEyeSlash />}
-              <span className="hidden md:inline">{t('actions.toggleStatus')}</span>
-            </button>
-
-            <div className="flex gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditModalOpen(true);
-                }}
-                title={t('actions.edit')}
-                className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:text-sky-300 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition"
-              >
-                <FaPen />
-              </button>
+          {/* Only show action buttons if not in read-only mode */}
+          {!readOnly && (
+            <div className="mt-auto flex items-center justify-between pt-2 gap-2">
 
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsConfirmDialogOpen(true);
+                  handleToggle();
                 }}
-                disabled={isDeleting}
-                title={t('actions.delete')}
-                className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 text-red-300 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
+                disabled={isToggling}
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
               >
-                {isDeleting ? <FaSpinner className="animate-spin" /> : <FaTrash />}
+                {localWatched ? <FaEye /> : <FaEyeSlash />}
+                <span className="hidden md:inline">{t('actions.toggleStatus')}</span>
               </button>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditModalOpen(true);
+                  }}
+                  title={t('actions.edit')}
+                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:text-sky-300 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition"
+                >
+                  <FaPen />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmDialogOpen(true);
+                  }}
+                  disabled={isDeleting}
+                  title={t('actions.delete')}
+                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 text-red-300 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
+                >
+                  {isDeleting ? <FaSpinner className="animate-spin" /> : <FaTrash />}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </article>
 

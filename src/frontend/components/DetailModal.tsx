@@ -7,13 +7,14 @@ import { FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
 
 interface DetailModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   item: MediaItem | null;
-  refetch: () => void;
+  refetch?: () => void;
+  readOnly?: boolean;
 }
 
-export default function DetailModal({ isOpen, onClose, item, refetch }: DetailModalProps) {
+export default function DetailModal({ isOpen = true, onClose, item, refetch = () => { }, readOnly = false }: DetailModalProps) {
   const { t } = useLanguage();
   if (!item) return null;
 
@@ -53,7 +54,7 @@ export default function DetailModal({ isOpen, onClose, item, refetch }: DetailMo
                 </button>
 
                 {/* 1. DÜZELTME: isModal={true} ekledik. Artık modal içinde zoom yapmayacak. */}
-                <MediaCard item={item} refetch={refetch} isModal={true} />
+                <MediaCard item={item} refetch={refetch} isModal={true} readOnly={readOnly} />
 
               </Dialog.Panel>
             </Transition.Child>

@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Media Items - GÜNCELLEME: Herkes okuyabilir (public profiles için), sadece sahibi yazabilir
+    match /mediaItems/{itemId} {
+      allow read: if request.auth != null; // ✅ Public read for viewing other users' libraries
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Users Collection - GÜNCELLEME: Herkes okuyabilir (public profiles için), sadece sahibi yazabilir
+    match /users/{userId} {
+      allow read: if request.auth != null; // ✅ Public read for viewing user profiles
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User Profiles - kullanıcılar kendi profillerini yazabilir, herkesi okuyabilir
+    match /userProfiles/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Recommendations - herkes okuyabilir, sadece admin yazabilir
+    match /recommendations/{recId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == 'ZKU7SObBkeNzMicltUKJjo6ybHH2';
+    }
+    
+    // Activities - ALL authenticated users can read (for social feed), users can only create/delete their own
+    match /activities/{activityId} {
+      allow read: if request.auth != null; // Anyone logged in can see all activities
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Notifications - recipients can read their notifications, anyone can create
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.recipientId;
+      allow create: if request.auth != null;
+      allow update,delete: if request.auth != null && request.auth.uid == resource.data.recipientId;
+    }
+    
+    // Activity Likes - users can like/unlike activities
+    match /activityLikes/{likeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Activity Comments - users can comment on activities
+    match /activityComments/{commentId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}

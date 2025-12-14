@@ -25,8 +25,18 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [displayName, setDisplayName] = useState(user?.displayName || '');
     const [bio, setBio] = useState('');
-    const [avatarUrl, setAvatarUrl] = useState(user?.photoURL || '');
+    const [avatarUrl, setAvatarUrl] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Gender-based avatar URLs
+    const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
+    const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
+
+    // Get the appropriate avatar based on gender
+    const getDefaultAvatar = () => {
+        if (profile?.gender === 'female') return FEMALE_AVATAR_URL;
+        return MALE_AVATAR_URL;
+    };
 
     useEffect(() => {
         if (profile?.bio) setBio(profile.bio);
@@ -34,21 +44,48 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (user?.displayName) setDisplayName(user.displayName);
-        if (user?.photoURL) setAvatarUrl(user.photoURL);
-    }, [user]);
+        // Only use photoURL if it's a custom one (not our default avatars)
+        if (user?.photoURL &&
+            user.photoURL !== MALE_AVATAR_URL &&
+            user.photoURL !== FEMALE_AVATAR_URL) {
+            setAvatarUrl(user.photoURL);
+        } else {
+            setAvatarUrl(''); // Will use gender-based default
+        }
+    }, [user, profile]);
 
     const handleSave = async () => {
         if (!user) return;
         setLoading(true);
         try {
-            if (displayName !== user.displayName || avatarUrl !== user.photoURL) {
-                await updateProfile(user, { displayName, photoURL: avatarUrl });
+            // Determine final photoURL to save
+            let finalPhotoURL: string | null = null;
+
+            if (avatarUrl && avatarUrl.trim() !== '') {
+                // User provided a custom URL - use it
+                finalPhotoURL = avatarUrl.trim();
+            } else {
+                // No custom URL - set to null so gender-based avatar will be used
+                finalPhotoURL = null;
             }
+
+            // Update Firebase Auth profile
+            if (displayName !== user.displayName || finalPhotoURL !== user.photoURL) {
+                await updateProfile(user, {
+                    displayName,
+                    photoURL: finalPhotoURL
+                });
+            }
+
+            // Update Firestore user document
             const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, { bio }, { merge: true });
 
             toast.success(t('profile.saveSuccess') || 'Profil güncellendi!');
             setIsEditing(false);
+
+            // Force reload to show updated avatar
+            window.location.reload();
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error(t('profile.saveError') || 'Hata oluştu.');
@@ -130,7 +167,7 @@ export default function ProfilePage() {
                     <div className="relative inline-block mb-6">
                         <div className="w-48 h-48 rounded-full p-1.5 bg-gradient-to-br from-stone-600 via-amber-600 to-white mx-auto shadow-2xl">
                             <img
-                                src={avatarUrl || 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png'}
+                                src={avatarUrl || getDefaultAvatar()}
                                 alt="Profile"
                                 className="w-full h-full object-cover rounded-full bg-gray-100 dark:bg-gray-900 border-4 border-white dark:border-stone-800"
                             />
@@ -152,14 +189,17 @@ export default function ProfilePage() {
                                 className="w-full text-center text-2xl font-black bg-gray-50 dark:bg-stone-950/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-stone-500 focus:outline-hidden"
                                 placeholder="İsim"
                             />
-                            <div className="flex gap-2">
+                            <div className="space-y-2">
                                 <input
                                     type="text"
                                     value={avatarUrl}
                                     onChange={(e) => setAvatarUrl(e.target.value)}
-                                    className="w-full text-center text-xs bg-gray-50 dark:bg-stone-950/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-gray-500"
-                                    placeholder="Avatar URL"
+                                    className="w-full text-center text-xs bg-gray-50 dark:bg-stone-950/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-gray-500 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                                    placeholder="https://example.com/photo.jpg"
                                 />
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+                                    💡 Özel fotoğraf URL'si girin veya boş bırakın ({profile?.gender === 'female' ? 'kadın' : 'erkek'} avatar kullanılır)
+                                </p>
                             </div>
                             <textarea
                                 value={bio}

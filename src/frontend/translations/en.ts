@@ -75,6 +75,13 @@ export const translationsEN = {
         notRead: 'Not Read',
         played: 'Played',
         notPlayed: 'Not Played',
+        // Profile owner actions (they did it)
+        watchedByUser: 'Watched',
+        readByUser: 'Read',
+        playedByUser: 'Played',
+        notWatchedByUser: 'Not Watched',
+        notReadByUser: 'Not Read',
+        notPlayedByUser: 'Not Played',
     },
 
     // Actions
@@ -201,6 +208,12 @@ export const translationsEN = {
         lastActivity: 'Recent Activity',
         memberSince: 'Member Since',
         email: 'Email',
+        locationLabel: 'Location',
+        locationPlaceholder: 'City, Country',
+        socialLinks: 'Social Media',
+        twitterPlaceholder: 'Twitter username',
+        instagramPlaceholder: 'Instagram username',
+        websitePlaceholder: 'Website URL',
     },
 
     // Settings
@@ -356,6 +369,36 @@ export const translationsEN = {
         back: 'Back',
     },
 
+    // Search
+    search: {
+        placeholder: 'Search users...',
+        noResults: 'No users found',
+        users: 'Users',
+    },
+
+    // Notifications
+    notifications: {
+        title: 'Notifications',
+        empty: 'No notifications yet',
+        markAllRead: 'Mark all as read',
+        followed: 'started following you',
+        liked: 'liked your activity',
+        commented: 'commented on your activity',
+    },
+
+    // Activity Reactions
+    reactions: {
+        like: 'Like',
+        liked: 'Liked',
+        comment: 'Comment',
+        comments: 'Comments',
+        writeComment: 'Write a comment...',
+        send: 'Send',
+        noComments: 'No comments yet',
+        showComments: 'Show comments',
+        hideComments: 'Hide comments',
+    },
+
     // Feed Page
     feed: {
         title: 'Activity',
@@ -372,6 +415,15 @@ export const translationsEN = {
         daysAgo: 'days ago',
         weeksAgo: 'weeks ago',
         monthsAgo: 'months ago',
+    },
+
+    // Public Profile
+    publicProfile: {
+        title: 'User Profile',
+        backToFeed: 'Back to Feed',
+        userLibrary: 'Library',
+        memberSince: 'Member:',
+        noItems: 'This user has not added any content yet.',
     },
 
     // Footer

@@ -147,10 +147,21 @@ export default function HomePage() {
     // Profil (Değişmedi)
     const displayName = user.displayName || user.email?.split('@')[0] || "Kullanıcı";
     const getAvatar = () => {
-        if (user.photoURL) return user.photoURL;
+        // Special case for Mustafa
         if (user.uid === 'ZKU7SObBkeNzMicltUKJjo6ybHH2') return MUSTAFA_FOTOGRAF_URL;
-        if (profile?.gender === 'male') return MALE_AVATAR_URL;
+
+        // Only use photoURL if it's a custom one (not our default avatars)
+        if (user.photoURL &&
+            user.photoURL !== MALE_AVATAR_URL &&
+            user.photoURL !== FEMALE_AVATAR_URL) {
+            return user.photoURL;
+        }
+
+        // Use gender-based avatar
         if (profile?.gender === 'female') return FEMALE_AVATAR_URL;
+        if (profile?.gender === 'male') return MALE_AVATAR_URL;
+
+        // Default fallback
         return MALE_AVATAR_URL;
     };
 

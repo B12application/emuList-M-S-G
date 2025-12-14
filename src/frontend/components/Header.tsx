@@ -4,11 +4,13 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown } from 'react-icons/fa';
 import EyeTracker from './EyeTracker';
+import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../backend/config/firebaseConfig';
 import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import useUserProfile from '../hooks/useUserProfile';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -34,10 +36,32 @@ interface HeaderProps {
 export default function Header({ onMobileMenuOpen }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const { profile } = useUserProfile();
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
   const [showListsDropdown, setShowListsDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // Gender-based avatar URLs
+  const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
+  const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
+
+  // Get avatar based on gender
+  const getAvatar = () => {
+    // Only use photoURL if it's a custom one (not our default avatars)
+    if (user?.photoURL &&
+      user.photoURL !== MALE_AVATAR_URL &&
+      user.photoURL !== FEMALE_AVATAR_URL) {
+      return user.photoURL;
+    }
+
+    // Use gender-based avatar
+    if (profile?.gender === 'female') return FEMALE_AVATAR_URL;
+    if (profile?.gender === 'male') return MALE_AVATAR_URL;
+
+    // Default fallback
+    return MALE_AVATAR_URL;
+  };
 
   // Scroll effect for additional styling if needed (e.g. shrinking)
   useEffect(() => {
@@ -183,7 +207,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                     >
                       <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm z-10 relative">
                         <img
-                          src={user.photoURL || 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png'}
+                          src={getAvatar()}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
@@ -257,6 +281,9 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
               {/* Theme & Language Toggles */}
               <div className="flex items-center gap-1 pl-2 border-l border-gray-200 dark:border-gray-800">
+                {/* Notification Bell */}
+                <NotificationDropdown />
+
                 <button
                   onClick={toggleTheme}
                   className="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"

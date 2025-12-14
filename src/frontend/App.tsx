@@ -1,5 +1,6 @@
 // src/App.tsx
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import MediaListPage from './pages/MediaListPage';
 import CreatePage from './pages/CreatePage';
@@ -9,11 +10,13 @@ import SignupPage from './pages/SignupPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import ProfilePage from './pages/ProfilePage';
+import PublicProfilePage from './pages/PublicProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import StatsPage from './pages/StatsPage';
 import VisitedMapPage from './pages/VisitedMapPage';
 import FeedPage from './pages/FeedPage';
 import { LanguageProvider } from './context/LanguageContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 const router = createBrowserRouter([
   {
@@ -38,6 +41,7 @@ const router = createBrowserRouter([
       { path: 'map', element: <VisitedMapPage /> },
       { path: 'feed', element: <FeedPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'user/:userId', element: <PublicProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'stats', element: <StatsPage /> }, // New Stats Route
     ]
@@ -56,7 +60,10 @@ const router = createBrowserRouter([
 function App() {
   return (
     <LanguageProvider>
-      <RouterProvider router={router} />
+      <NotificationProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </NotificationProvider>
     </LanguageProvider>
   );
 }

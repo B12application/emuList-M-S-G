@@ -5,7 +5,6 @@ import { FaArrowLeft, FaFilm, FaTv, FaGamepad, FaBook, FaSpinner, FaUser, FaStar
 import { getUserProfile, getUserMediaItems, getUserStats, type PublicUserProfile, type UserStats } from '../../backend/services/userProfileService';
 import type { MediaItem, MediaType, FilterStatus } from '../../backend/types/media';
 import { useLanguage } from '../context/LanguageContext';
-import { ProfileSkeleton, MediaCardSkeleton } from '../components/ui/SkeletonLoader';
 import DetailModal from '../components/DetailModal';
 import { motion } from 'framer-motion';
 

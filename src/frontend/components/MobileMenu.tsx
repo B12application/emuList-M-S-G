@@ -1,6 +1,6 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaChevronRight, FaHistory } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -34,11 +34,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
     }`;
 
-  const getIconCls = (isActive: boolean, colorCls: string) =>
-    `w-8 h-8 flex items-center justify-center rounded-xl transition-colors ${isActive
-      ? `bg-${colorCls}-100 dark:bg-${colorCls}-900/30 text-${colorCls}-600 dark:text-${colorCls}-400`
-      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-    }`;
+
 
   if (!isOpen) return null;
 

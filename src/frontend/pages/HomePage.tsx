@@ -19,6 +19,7 @@ import DetailModal from '../components/DetailModal';
 import AdminRecommendationsPanel from '../components/AdminRecommendationsPanel';
 import { fetchRecommendations, groupRecommendationsByCategory } from '../../backend/services/recommendationService';
 import type { Recommendation } from '../../backend/types/recommendation';
+import QuoteWidget from '../components/QuoteWidget';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
@@ -362,6 +363,10 @@ export default function HomePage() {
                 )}
             </div>
 
+            {/* === GÜNÜN SÖZÜ WİDGET === */}
+            <div className="mt-8 mb-12">
+                <QuoteWidget />
+            </div>
 
             {/* === FAVORİLER BÖLÜMÜ === */}
             <div className="mt-16">

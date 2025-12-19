@@ -180,28 +180,50 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               </span>
             </span>
           </div>
+          {/* Rating - Her zaman sağ üstte */}
           <div className="absolute right-3 top-3 flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-amber-100/90 text-amber-700 dark:bg-amber-900/80 dark:text-amber-200 shadow-sm backdrop-blur-md">
               <FaStar /> {item.rating}
             </span>
 
-            {/* Kalp İkonu (Favori Toggle) */}
+            {/* Kalp İkonu - Modal dışındayken sağ üstte */}
+            {!isModal && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFavoriteToggle();
+                }}
+                disabled={isTogglingFavorite || readOnly}
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50"
+                style={{
+                  backgroundColor: localIsFavorite ? 'rgba(239, 68, 68, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                  color: localIsFavorite ? 'white' : '#ef4444'
+                }}
+                title={localIsFavorite ? t('actions.removeFavorite') : t('actions.addFavorite')}
+              >
+                {localIsFavorite ? <FaHeart size={12} /> : <FaRegHeart size={12} />}
+              </button>
+            )}
+          </div>
+
+          {/* Kalp İkonu - Modal içindeyken sol altta (kapatma butonu ile çakışmasın) */}
+          {isModal && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleFavoriteToggle();
               }}
               disabled={isTogglingFavorite || readOnly}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50"
+              className="absolute left-3 bottom-3 inline-flex items-center justify-center w-9 h-9 rounded-full shadow-lg backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50 z-10"
               style={{
                 backgroundColor: localIsFavorite ? 'rgba(239, 68, 68, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                 color: localIsFavorite ? 'white' : '#ef4444'
               }}
               title={localIsFavorite ? t('actions.removeFavorite') : t('actions.addFavorite')}
             >
-              {localIsFavorite ? <FaHeart size={12} /> : <FaRegHeart size={12} />}
+              {localIsFavorite ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
             </button>
-          </div>
+          )}
         </div>
 
         <div className="p-4 flex flex-col gap-2 flex-1">

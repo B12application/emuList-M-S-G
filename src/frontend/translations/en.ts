@@ -472,4 +472,22 @@ export const translationsEN = {
         genreDistribution: 'Most Watched Genres',
         ratingDistribution: 'Rating Distribution',
     },
+
+    // Bulk Actions
+    bulk: {
+        select: 'Select',
+        cancel: 'Cancel',
+        selectMode: 'Selection Mode',
+        cancelSelect: 'Cancel Selection',
+        selected: 'selected',
+        selectAll: 'Select All',
+        markWatched: 'Mark Watched',
+        markUnwatched: 'Mark Unwatched',
+        delete: 'Delete',
+        deleteConfirm: 'items? Are you sure you want to delete',
+        deleted: 'items deleted',
+        markedAs: 'items marked as',
+        exportPdf: 'Export as PDF',
+        pdfExported: 'List exported as PDF',
+    },
 };

@@ -1,9 +1,28 @@
 // src/frontend/components/ui/SkeletonLoader.tsx
 
-// Generic Skeleton Component
+// Shimmer animation styles - gradient kayarak parlama efekti
+const shimmerStyle = {
+    backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s infinite',
+};
+
+// Generic Skeleton Component with Shimmer
 export function Skeleton({ className = "" }: { className?: string }) {
     return (
-        <div className={`animate-pulse bg-gray-200 dark:bg-gray-700 rounded ${className}`} />
+        <div className={`relative overflow-hidden bg-gray-200 dark:bg-gray-700 rounded ${className}`}>
+            <div
+                className="absolute inset-0 animate-pulse"
+                style={shimmerStyle}
+            />
+            {/* Shimmer animation keyframes eklendi via CSS-in-JS */}
+            <style>{`
+                @keyframes shimmer {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+            `}</style>
+        </div>
     );
 }
 

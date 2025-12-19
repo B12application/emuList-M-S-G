@@ -1,12 +1,17 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
 import DetailModal from '../components/DetailModal';
 import EmptyState from '../components/ui/EmptyState';
 import SkeletonCard from '../components/ui/SkeletonCard';
+import { exportToPDF } from '../utils/pdfExport';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../backend/config/firebaseConfig';
+import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useLanguage } from '../context/LanguageContext';
 
@@ -23,6 +28,11 @@ export default function MediaListPage() {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Bulk Actions state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
   const isSearchActive = searchQuery.trim().length > 0;
   const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive, sortOption === 'date' ? 'createdAt' : 'rating');
 
@@ -36,15 +46,8 @@ export default function MediaListPage() {
       result = result.filter(item => item.title.toLowerCase().includes(lowerQuery));
     }
 
-    // Çoklu sıralama: Önce izlenmemiş (watched:false), sonra izlenmiş (watched:true)
-    // Her iki grup içinde seçilen sıralama kriterine göre sırala
+    // Sadece seçilen kritere göre sırala (izlendi/izlenmedi karışık)
     result.sort((a, b) => {
-      // 1. Öncelik: İzlenme durumu (izlenmemiş önce)
-      if (a.watched !== b.watched) {
-        return a.watched ? 1 : -1; // watched=false önce gelsin
-      }
-
-      // 2. Öncelik: Seçilen sıralama kriteri
       if (sortOption === 'rating') {
         return Number(b.rating) - Number(a.rating);
       } else if (sortOption === 'title') {
@@ -72,6 +75,70 @@ export default function MediaListPage() {
 
   const handleFilterChange = (newFilter: FilterStatus) => {
     refetch(); setSearchParams(prev => { prev.set('filter', newFilter); return prev; }, { replace: true });
+  };
+
+  // Bulk Actions handlers
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredItems.map(i => i.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+  };
+
+  const handleBulkWatched = async (watched: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkProcessing(true);
+    try {
+      const promises = Array.from(selectedIds).map(id =>
+        updateDoc(doc(db, 'mediaItems', id), { watched })
+      );
+      await Promise.all(promises);
+      toast.success(`${selectedIds.size} ${t('bulk.markedAs')} ${watched ? t('media.watched') : t('media.notWatched')}`);
+      clearSelection();
+      refetch();
+    } catch (error) {
+      toast.error(t('toast.updateError'));
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`${selectedIds.size} ${t('bulk.deleteConfirm')}`)) return;
+
+    setBulkProcessing(true);
+    try {
+      const promises = Array.from(selectedIds).map(id =>
+        deleteDoc(doc(db, 'mediaItems', id))
+      );
+      await Promise.all(promises);
+      toast.success(`${selectedIds.size} ${t('bulk.deleted')}`);
+      clearSelection();
+      refetch();
+    } catch (error) {
+      toast.error(t('toast.deleteError'));
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    const typeName = type === 'all' ? 'Tum-Koleksiyonum' : type === 'movie' ? 'Filmlerim' : type === 'series' ? 'Dizilerim' : type === 'game' ? 'Oyunlarim' : 'Kitaplarim';
+    exportToPDF(filteredItems, typeName);
+    toast.success(t('bulk.pdfExported'));
   };
 
   return (
@@ -107,12 +174,11 @@ export default function MediaListPage() {
             {/* Dikey Ayraç */}
             <div className="hidden lg:block w-px bg-gray-200 dark:bg-gray-700" />
 
-            {/* Sağ: Filtreler ve Kontroller */}
-            <div className="flex-1 flex flex-wrap items-center gap-2">
+            {/* Sağ: Filtreler ve Kontroller - TEK SATIR */}
+            <div className="flex items-center gap-2 overflow-x-auto">
 
               {/* Durum Filtresi */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('list.status')}:</span>
+              <div className="flex items-center gap-1.5 shrink-0">
                 <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
                   <button title={t('list.all')} className={`px-3 py-2 text-sm transition ${getActiveFilter("all")}`} onClick={() => handleFilterChange('all')}>
                     <FaGlobeAmericas />
@@ -127,8 +193,7 @@ export default function MediaListPage() {
               </div>
 
               {/* Sıralama */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('list.sortBy')}:</span>
+              <div className="flex items-center gap-1.5 shrink-0">
                 <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
                   <button title={t('list.byRating')} className={`px-3 py-2 text-sm transition ${getActiveSort('rating')}`} onClick={() => setSortOption('rating')}>
                     <FaStar />
@@ -143,8 +208,7 @@ export default function MediaListPage() {
               </div>
 
               {/* Görünüm */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('list.view')}:</span>
+              <div className="flex items-center gap-1.5 shrink-0">
                 <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
                   <button title={t('list.grid')} className={`px-3 py-2 text-sm transition ${viewMode === 'grid' ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setViewMode('grid')}>
                     <FaTh />
@@ -155,22 +219,99 @@ export default function MediaListPage() {
                 </div>
               </div>
 
-              {/* Arama */}
-              <div className="relative flex-1 min-w-[150px]">
+              {/* Arama - Daha Kompakt */}
+              <div className="relative shrink-0 w-32 lg:w-36">
                 <input
                   type="text"
                   placeholder={t('list.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
+                  className="w-full px-2 py-2 pl-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
                 />
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
               </div>
+
+              {/* Seçim Modu Toggle */}
+              <button
+                onClick={() => {
+                  if (selectionMode) {
+                    clearSelection();
+                  } else {
+                    setSelectionMode(true);
+                  }
+                }}
+                className={`p-2 rounded-lg transition shrink-0 ${selectionMode
+                  ? 'bg-sky-500 text-white'
+                  : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                title={selectionMode ? t('bulk.cancelSelect') : t('bulk.selectMode')}
+              >
+                {selectionMode ? <FaTimes /> : <FaCheckSquare />}
+              </button>
+
+              {/* PDF Export */}
+              <button
+                onClick={handleExportPDF}
+                disabled={filteredItems.length === 0}
+                className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('bulk.exportPdf')}
+              >
+                <FaFilePdf />
+              </button>
 
             </div>
           </div>
         </div>
       </div>
+
+      {/* Floating Bulk Actions Toolbar */}
+      <AnimatePresence>
+        {selectionMode && selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4"
+          >
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {selectedIds.size} {t('bulk.selected')}
+            </span>
+
+            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
+
+            <button
+              onClick={selectAll}
+              className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center gap-2"
+            >
+              <FaRegSquare /> {t('bulk.selectAll')}
+            </button>
+
+            <button
+              onClick={() => handleBulkWatched(true)}
+              disabled={bulkProcessing}
+              className="px-3 py-1.5 text-sm bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition flex items-center gap-2 disabled:opacity-50"
+            >
+              <FaEye /> {t('bulk.markWatched')}
+            </button>
+
+            <button
+              onClick={() => handleBulkWatched(false)}
+              disabled={bulkProcessing}
+              className="px-3 py-1.5 text-sm bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition flex items-center gap-2 disabled:opacity-50"
+            >
+              <FaEyeSlash /> {t('bulk.markUnwatched')}
+            </button>
+
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkProcessing}
+              className="px-3 py-1.5 text-sm bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition flex items-center gap-2 disabled:opacity-50"
+            >
+              <FaTrash /> {t('bulk.delete')}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ... (Yükleniyor ve Liste) ... */}
       {loading ? (
@@ -183,7 +324,22 @@ export default function MediaListPage() {
           {viewMode === 'grid' && (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredItems.map(item => (
-                <div key={item.id} onClick={() => setSelectedItem(item)} className="cursor-pointer h-full">
+                <div
+                  key={item.id}
+                  onClick={() => selectionMode ? toggleSelection(item.id) : setSelectedItem(item)}
+                  className={`cursor-pointer h-full relative ${selectionMode && selectedIds.has(item.id) ? 'ring-2 ring-sky-500 rounded-2xl' : ''}`}
+                >
+                  {/* Seçim Checkbox */}
+                  {selectionMode && (
+                    <div className="absolute top-3 left-3 z-20">
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${selectedIds.has(item.id)
+                        ? 'bg-sky-500 text-white'
+                        : 'bg-white/90 dark:bg-gray-800/90 border-2 border-gray-300 dark:border-gray-600'
+                        }`}>
+                        {selectedIds.has(item.id) && <FaCheckSquare />}
+                      </div>
+                    </div>
+                  )}
                   <MediaCard item={item} refetch={refetch} />
                 </div>
               ))}

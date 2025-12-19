@@ -471,4 +471,22 @@ export const translationsTR = {
         genreDistribution: 'En Çok İzlenen Türler',
         ratingDistribution: 'Puan Dağılımı',
     },
+
+    // Bulk Actions
+    bulk: {
+        select: 'Seç',
+        cancel: 'İptal',
+        selectMode: 'Çoklu Seçim Modu',
+        cancelSelect: 'Seçimi İptal Et',
+        selected: 'seçili',
+        selectAll: 'Tümünü Seç',
+        markWatched: 'İzlendi Yap',
+        markUnwatched: 'İzlenmedi Yap',
+        delete: 'Sil',
+        deleteConfirm: 'öğeyi silmek istediğinize emin misiniz?',
+        deleted: 'öğe silindi',
+        markedAs: 'öğe olarak işaretlendi',
+        exportPdf: 'PDF olarak indir',
+        pdfExported: 'Liste PDF olarak indirildi',
+    },
 };

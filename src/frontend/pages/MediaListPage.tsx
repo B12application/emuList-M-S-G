@@ -1,5 +1,4 @@
-// src/pages/MediaListPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
@@ -20,7 +19,6 @@ export default function MediaListPage() {
   const filter: FilterStatus = (searchParams.get('filter') as FilterStatus) || 'all';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState<MediaItem[]>([]);
   const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date'>('rating');
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -28,8 +26,11 @@ export default function MediaListPage() {
   const isSearchActive = searchQuery.trim().length > 0;
   const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive, sortOption === 'date' ? 'createdAt' : 'rating');
 
-  useEffect(() => {
+  // useMemo kullanarak sıralama - sonsuz döngü önlenir
+  const filteredItems = useMemo(() => {
     let result = [...items];
+
+    // Arama filtresi
     if (isSearchActive) {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(item => item.title.toLowerCase().includes(lowerQuery));
@@ -54,16 +55,16 @@ export default function MediaListPage() {
       return 0;
     });
 
-    setFilteredItems(result);
+    return result;
   }, [items, searchQuery, sortOption, isSearchActive]);
 
-  // === 1. YENİ: SENKRONİZASYON (Modal açıkken veri güncellenirse) ===
+  // Modal senkronizasyonu
   useEffect(() => {
     if (selectedItem) {
       const updated = items.find(i => i.id === selectedItem.id);
       if (updated) setSelectedItem(updated);
     }
-  }, [items]);
+  }, [items, selectedItem]);
 
   const getActiveTab = (t: FilterType) => type === t ? "text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
   const getActiveFilter = (f: FilterStatus) => filter === f ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";

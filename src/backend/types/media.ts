@@ -23,4 +23,5 @@ export interface MediaItem {
   tags?: string[];
   isFavorite?: boolean; // Bu hafta izlenecekler/favoriler için
   author?: string; // Kitaplar için yazar bilgisi
+  genre?: string; // Tür bilgisi (Film: "Action, Drama", Oyun: "RPG, Action", Kitap: "Fiction")
 }

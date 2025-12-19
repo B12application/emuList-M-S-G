@@ -216,6 +216,34 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
             </p>
           )}
 
+          {/* Tür/Genre bilgisi */}
+          {item.genre && (
+            <div className="flex flex-wrap gap-1 -mt-0.5">
+              {item.genre.split(', ').slice(0, 3).map((g, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
+                >
+                  {g.trim()}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Etiketler/Tags */}
+          {item.tags && item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 -mt-0.5">
+              {item.tags.slice(0, 3).map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           {item.createdAt && (
             <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-1">
               <FaCalendarAlt />

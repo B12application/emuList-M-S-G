@@ -14,6 +14,7 @@ export interface HistoryItem {
     watched: boolean;
     createdAt: any; // Timestamp
     isFavorite?: boolean;
+    genre?: string;
 }
 
 export default function useMediaHistory() {
@@ -45,7 +46,8 @@ export default function useMediaHistory() {
                         rating: d.rating,
                         watched: d.watched,
                         createdAt: d.createdAt, // Keep as Timestamp for now, convert in component
-                        isFavorite: d.isFavorite
+                        isFavorite: d.isFavorite,
+                        genre: d.genre
                     } as HistoryItem;
                 });
 

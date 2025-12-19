@@ -75,6 +75,40 @@ export default function StatsPage() {
             .filter(item => item.watched)
             .slice(0, 5);
 
+        // NEW: Genre Distribution
+        const genreCounts: Record<string, number> = {};
+        history.forEach(item => {
+            if (item.genre) {
+                const genres = item.genre.split(', ');
+                genres.forEach((g: string) => {
+                    const trimmed = g.trim();
+                    if (trimmed) {
+                        genreCounts[trimmed] = (genreCounts[trimmed] || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        const genreData = Object.entries(genreCounts)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 8); // Top 8 genres
+
+        // NEW: Rating Distribution (Histogram)
+        const ratingBuckets: Record<string, number> = {
+            '0-2': 0, '2-4': 0, '4-6': 0, '6-8': 0, '8-10': 0
+        };
+        history.forEach(item => {
+            const rating = parseFloat(item.rating) || 0;
+            if (rating < 2) ratingBuckets['0-2']++;
+            else if (rating < 4) ratingBuckets['2-4']++;
+            else if (rating < 6) ratingBuckets['4-6']++;
+            else if (rating < 8) ratingBuckets['6-8']++;
+            else ratingBuckets['8-10']++;
+        });
+
+        const ratingData = Object.entries(ratingBuckets).map(([name, count]) => ({ name, count }));
+
         // 4. Badges
         const badges = [
             {
@@ -114,8 +148,10 @@ export default function StatsPage() {
             pieData,
             monthlyData,
             badges,
-            thisWeekAddedItems, // Updated
-            recentlyWatched
+            thisWeekAddedItems,
+            recentlyWatched,
+            genreData,
+            ratingData
         };
     }, [history, loading, t]);
 
@@ -270,6 +306,53 @@ export default function StatsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* GENRE & RATING CHARTS */}
+            {stats.genreData.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* GENRE DISTRIBUTION CHART */}
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                            🎭 {t('statsCharts.genreDistribution')}
+                        </h3>
+                        <div className="h-64 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats.genreData} layout="vertical">
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                    <XAxis type="number" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis type="category" dataKey="name" stroke="#a8a29e" fontSize={11} tickLine={false} axisLine={false} width={100} />
+                                    <RechartsTooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                        cursor={{ fill: 'transparent' }}
+                                    />
+                                    <Bar dataKey="value" fill="#8b5cf6" radius={[0, 6, 6, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* RATING DISTRIBUTION CHART */}
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                            ⭐ {t('statsCharts.ratingDistribution')}
+                        </h3>
+                        <div className="h-64 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats.ratingData}>
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                    <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                    <RechartsTooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                        cursor={{ fill: 'transparent' }}
+                                    />
+                                    <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* GAMIFICATION BADGES */}
             <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-white/5">

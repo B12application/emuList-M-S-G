@@ -102,6 +102,35 @@ export const translationsTR = {
         removeFavorite: 'Favorilerden çıkar',
     },
 
+    // CreatePage
+    create: {
+        title: 'Yeni İçerik Ekle',
+        selectType: 'Tür Seç',
+        searchLabel: 'Ara',
+        detailsLabel: 'Detaylar',
+        genresAndTags: 'Türler ve Etiketler',
+        titleLabel: 'Başlık',
+        imageLabel: 'Görsel URL',
+        descriptionLabel: 'Açıklama',
+        authorLabel: 'Yazar',
+        ratingLabel: 'Puan',
+        statusLabel: 'Durum',
+        addButton: 'Ekle',
+        preview: 'Önizleme',
+        loaded: 'Bilgiler yüklendi!',
+        addSuccess: 'Başarıyla eklendi!',
+        errorAdding: 'Eklenirken hata oluştu',
+        loginRequired: 'Giriş yapmanız gerekiyor',
+        requiredFields: 'Başlık ve tür zorunludur',
+        alreadyExists: 'Bu içerik zaten mevcut',
+        typeRequired: 'zorunlu',
+        titlePlaceholder: 'İçerik adı...',
+        searchPlaceholderMovie: 'Film ara...',
+        searchPlaceholderSeries: 'Dizi ara...',
+        searchPlaceholderBook: 'Kitap ara...',
+        searchPlaceholderGame: 'Oyun ara...',
+    },
+
     // HomePage
     home: {
         welcome: 'Hoş geldin',
@@ -186,6 +215,14 @@ export const translationsTR = {
         collapseRecs: 'Önerileri Gizle',
         add: 'Ekle',
         collectionRecommendations: 'Koleksiyonundaki Öneriler',
+        customGenrePlaceholder: 'Özel tür ekle...',
+        searchLabel: 'Ara',
+        detailsLabel: 'Detaylar',
+        genresAndTags: 'Türler ve Etiketler',
+        searchPlaceholderMovie: 'Film ara...',
+        searchPlaceholderSeries: 'Dizi ara...',
+        searchPlaceholderBook: 'Kitap ara...',
+        searchPlaceholderGame: 'Oyun ara...',
     },
 
     // Profile Page
@@ -308,33 +345,6 @@ export const translationsTR = {
         changeImage: 'Görsel URL\'sini Değiştir',
     },
 
-    // CreatePage
-    create: {
-        title: 'Arşive Yeni Kayıt Ekle',
-        selectType: 'Türü Seçin',
-        typeRequired: '(Seçim Zorunlu)',
-        searchOMDb: 'OMDb\'den Ara (Film/Dizi Adı)',
-        searchRAWG: 'RAWG\'den Ara (Oyun Adı)',
-        searchGoogleBooks: 'Google Books\'tan Ara',
-        searchPlaceholder: 'adı girin...',
-        bookSearchPlaceholder: 'kitap adı veya yazar girin...',
-        titleLabel: 'Başlık',
-        imageLabel: 'Görsel URL',
-        descriptionLabel: 'Açıklama',
-        ratingLabel: 'Puan',
-        statusLabel: 'Durum',
-        preview: 'Ön İzleme',
-        saving: 'Kaydediliyor...',
-        noResults: 'Sonuç bulunamadı',
-        tryDifferent: 'için sonuç bulunamadı. Farklı bir arama terimi deneyin.',
-        loaded: 'Film bilgileri yüklendi',
-        alreadyExists: 'zaten listenizde mevcut! (Aynı isimle tekrar eklenemez)',
-        successAdded: 'Kayıt başarıyla eklendi',
-        errorAdding: 'Kayıt sırasında bir hata oluştu.',
-        loginRequired: 'Kayıt eklemek için giriş yapmalısınız.',
-        requiredFields: 'Başlık ve Tür alanları zorunludur.',
-    },
-
     // MediaCard
     card: {
         watched: 'Watched',
@@ -431,5 +441,34 @@ export const translationsTR = {
         rights: 'Tüm Hakları Saklıdır.',
         prefix: 'Türkiye\'de',
         suffix: 'ile yapıldı',
+    },
+
+    // Tags
+    tags: {
+        label: 'Etiketler',
+        add: 'Ekle',
+        addPlaceholder: 'Etiket ekle (Enter ile)',
+    },
+
+    // Wrapped
+    wrapped: {
+        yearSummary: 'Yılı Özeti',
+        itemsAdded: 'içerik ekledin',
+        whatDidYouWatch: 'En Çok Ne İzledin?',
+        favoriteGenre: 'Favori Türün',
+        items: 'içerik',
+        highestRating: 'En Yüksek Puanın',
+        mostActiveMonth: 'En Aktif Ayın',
+        itemsAddedMonth: 'içerik eklendi',
+        noData: 'için veri bulunamadı',
+        noContent: 'Bu yıl henüz içerik eklenmemiş.',
+        prev: 'Önceki',
+        next: 'Sonraki',
+    },
+
+    // Stats Charts
+    statsCharts: {
+        genreDistribution: 'En Çok İzlenen Türler',
+        ratingDistribution: 'Puan Dağılımı',
     },
 };

@@ -22,6 +22,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
   const [editDesc, setEditDesc] = useState(item.description || '');
   const [editImage, setEditImage] = useState(item.image || '');
   const [editRating, setEditRating] = useState(item.rating || '0');
+  const [editGenre, setEditGenre] = useState(item.genre || '');
   const [isLoading, setIsLoading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
 
@@ -30,6 +31,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
     setEditDesc(item.description || '');
     setEditImage(item.image || '');
     setEditRating(item.rating || '0');
+    setEditGenre(item.genre || '');
     setShowUrlInput(false);
   }, [item, isOpen]);
 
@@ -41,7 +43,8 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
         title: editTitle,
         description: editDesc,
         image: editImage,
-        rating: editRating
+        rating: editRating,
+        genre: editGenre || null
       });
       refetch();
       onClose();
@@ -143,6 +146,18 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                         railStyle={{ backgroundColor: '#4b5563', height: 6 }}
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="editGenre" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      {t('create.genreLabel')}
+                    </label>
+                    <input
+                      type="text" id="editGenre" value={editGenre}
+                      onChange={(e) => setEditGenre(e.target.value)}
+                      placeholder={t('create.genrePlaceholder')}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                    />
                   </div>
 
                   <div>

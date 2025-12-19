@@ -102,6 +102,35 @@ export const translationsEN = {
         removeFavorite: 'Remove from favorites',
     },
 
+    // CreatePage
+    create: {
+        title: 'Add New Content',
+        selectType: 'Select Type',
+        searchLabel: 'Search',
+        detailsLabel: 'Details',
+        genresAndTags: 'Genres & Tags',
+        titleLabel: 'Title',
+        imageLabel: 'Image URL',
+        descriptionLabel: 'Description',
+        authorLabel: 'Author',
+        ratingLabel: 'Rating',
+        statusLabel: 'Status',
+        addButton: 'Add',
+        preview: 'Preview',
+        loaded: 'Info loaded!',
+        addSuccess: 'Added successfully!',
+        errorAdding: 'Error while adding',
+        loginRequired: 'You need to login',
+        requiredFields: 'Title and type are required',
+        alreadyExists: 'This content already exists',
+        typeRequired: 'required',
+        titlePlaceholder: 'Content name...',
+        searchPlaceholderMovie: 'Search movies...',
+        searchPlaceholderSeries: 'Search series...',
+        searchPlaceholderBook: 'Search books...',
+        searchPlaceholderGame: 'Search games...',
+    },
+
     // HomePage
     home: {
         welcome: 'Welcome',
@@ -186,6 +215,14 @@ export const translationsEN = {
         collapseRecs: 'Hide Recommendations',
         add: 'Add',
         collectionRecommendations: 'Recommendations from Collection',
+        customGenrePlaceholder: 'Add custom genre...',
+        searchLabel: 'Search',
+        detailsLabel: 'Details',
+        genresAndTags: 'Genres & Tags',
+        searchPlaceholderMovie: 'Search movies...',
+        searchPlaceholderSeries: 'Search series...',
+        searchPlaceholderBook: 'Search books...',
+        searchPlaceholderGame: 'Search games...',
     },
 
     // Profile Page
@@ -308,33 +345,6 @@ export const translationsEN = {
         changeImage: 'Change Image URL',
     },
 
-    // CreatePage
-    create: {
-        title: 'Add New Item to Archive',
-        selectType: 'Select Type',
-        typeRequired: '(Required)',
-        searchOMDb: 'Search OMDb (Movie/Series Name)',
-        searchRAWG: 'Search RAWG (Game Name)',
-        searchGoogleBooks: 'Search Google Books',
-        searchPlaceholder: 'Enter name...',
-        bookSearchPlaceholder: 'enter book name or author...',
-        titleLabel: 'Title',
-        imageLabel: 'Image URL',
-        descriptionLabel: 'Description',
-        ratingLabel: 'Rating',
-        statusLabel: 'Status',
-        preview: 'Preview',
-        saving: 'Saving...',
-        noResults: 'No results found',
-        tryDifferent: 'No results found for. Try a different search term.',
-        loaded: 'Movie details loaded',
-        alreadyExists: 'already exists in your list! (Cannot add with same name)',
-        successAdded: 'Item added successfully',
-        errorAdding: 'An error occurred while adding.',
-        loginRequired: 'You must login to add items.',
-        requiredFields: 'Title and Type fields are required.',
-    },
-
     // MediaCard
     card: {
         watched: 'Watched',
@@ -432,5 +442,34 @@ export const translationsEN = {
         rights: 'All Rights Reserved.',
         prefix: 'Made with',
         suffix: 'in Turkey',
+    },
+
+    // Tags
+    tags: {
+        label: 'Tags',
+        add: 'Add',
+        addPlaceholder: 'Add tag (press Enter)',
+    },
+
+    // Wrapped
+    wrapped: {
+        yearSummary: 'Year Summary',
+        itemsAdded: 'items added',
+        whatDidYouWatch: 'What Did You Watch Most?',
+        favoriteGenre: 'Your Favorite Genre',
+        items: 'items',
+        highestRating: 'Your Highest Rating',
+        mostActiveMonth: 'Your Most Active Month',
+        itemsAddedMonth: 'items added',
+        noData: 'has no data',
+        noContent: 'You haven\'t added any content this year.',
+        prev: 'Previous',
+        next: 'Next',
+    },
+
+    // Stats Charts
+    statsCharts: {
+        genreDistribution: 'Most Watched Genres',
+        ratingDistribution: 'Rating Distribution',
     },
 };

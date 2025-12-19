@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import StatsPage from './pages/StatsPage';
+import WrappedPage from './pages/WrappedPage';
 import VisitedMapPage from './pages/VisitedMapPage';
 import FeedPage from './pages/FeedPage';
 import { LanguageProvider } from './context/LanguageContext';
@@ -43,7 +44,8 @@ const router = createBrowserRouter([
       { path: 'profile', element: <ProfilePage /> },
       { path: 'user/:userId', element: <PublicProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },
-      { path: 'stats', element: <StatsPage /> }, // New Stats Route
+      { path: 'stats', element: <StatsPage /> },
+      { path: 'wrapped', element: <WrappedPage /> },
     ]
   },
 

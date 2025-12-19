@@ -1,5 +1,6 @@
 // src/hooks/useMedia.ts
-import { useState, useEffect } from 'react';
+// Refactored with React Query + Infinite Scroll for pagination
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { db, auth } from '../../backend/config/firebaseConfig';
 import {
   collection,
@@ -7,15 +8,64 @@ import {
   where,
   orderBy,
   getDocs,
-  Query,
   limit,
-  startAfter,
-  QueryDocumentSnapshot
+  startAfter
 } from 'firebase/firestore';
-import type { DocumentData } from 'firebase/firestore';
+import type { Query, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 
 const PAGE_SIZE = 20;
+
+// Sayfa tipi - cursor pagination için
+interface MediaPage {
+  items: MediaItem[];
+  lastDoc: QueryDocumentSnapshot | null;
+  hasMore: boolean;
+}
+
+// Firebase sorgu fonksiyonu - cursor-based pagination
+async function fetchMediaPage(
+  userId: string,
+  type: FilterType,
+  filter: FilterStatus,
+  sortBy: 'rating' | 'createdAt',
+  isSearchActive: boolean,
+  pageParam: QueryDocumentSnapshot | null
+): Promise<MediaPage> {
+  let q: Query<DocumentData> = collection(db, "mediaItems");
+
+  q = query(q, where("userId", "==", userId));
+  if (type !== 'all') q = query(q, where("type", "==", type));
+  if (filter === 'watched') q = query(q, where("watched", "==", true));
+  else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
+
+  q = query(q, orderBy(sortBy, "desc"));
+
+  // isSearchActive true ise limit koyma (tüm veriyi çek - HomePage için)
+  if (!isSearchActive) {
+    q = query(q, limit(PAGE_SIZE));
+
+    // Cursor varsa startAfter ekle
+    if (pageParam) {
+      q = query(q, startAfter(pageParam));
+    }
+  }
+
+  const documentSnapshots = await getDocs(q);
+
+  const items = documentSnapshots.docs.map(doc => ({
+    ...doc.data() as Omit<MediaItem, 'id'>,
+    id: doc.id
+  }));
+
+  const lastDoc = documentSnapshots.docs.length > 0
+    ? documentSnapshots.docs[documentSnapshots.docs.length - 1]
+    : null;
+
+  const hasMore = !isSearchActive && documentSnapshots.docs.length >= PAGE_SIZE;
+
+  return { items, lastDoc, hasMore };
+}
 
 export default function useMedia(
   type: FilterType,
@@ -23,119 +73,71 @@ export default function useMedia(
   isSearchActive: boolean,
   sortBy: 'rating' | 'createdAt' = 'rating'
 ) {
-  const [items, setItems] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [key, setKey] = useState(0);
+  const queryClient = useQueryClient();
+  const currentUserId = auth.currentUser?.uid;
 
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [lastVisibleDoc, setLastVisibleDoc] = useState<QueryDocumentSnapshot | null>(null);
-  const [hasMoreItems, setHasMoreItems] = useState(true);
+  // Query key - bu key'e göre cache yapılır
+  const queryKey = ['media', currentUserId, type, filter, sortBy, isSearchActive];
 
-  const refetch = () => {
-    setKey(prevKey => prevKey + 1);
-    setItems([]);
-    setLastVisibleDoc(null);
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam }) => fetchMediaPage(
+      currentUserId!,
+      type,
+      filter,
+      sortBy,
+      isSearchActive,
+      pageParam
+    ),
+    initialPageParam: null as QueryDocumentSnapshot | null,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.lastDoc : undefined,
+    enabled: !!currentUserId,
+    staleTime: 1000 * 60 * 5, // 5 dakika
+  });
+
+  // Tüm sayfaların itemlerini birleştir
+  const items = data?.pages.flatMap(page => page.items) || [];
+  const loading = isLoading;
+
+  // Manual refetch - aynı zamanda ilgili cache'leri de invalidate eder
+  const invalidateAndRefetch = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['media', currentUserId] });
+    await queryClient.invalidateQueries({ queryKey: ['mediaStats', currentUserId] });
+    await queryClient.invalidateQueries({ queryKey: ['mediaHistory', currentUserId] });
   };
 
-  useEffect(() => {
-    const currentUserId = auth.currentUser?.uid;
-
-    // === 1. DÜZELTME: Değişiklik olduğu an eski listeyi SİL ===
-    setItems([]);
-    setLoading(true);
-    setHasMoreItems(true);
-    setLastVisibleDoc(null);
-
-    const fetchMedia = async () => {
-      if (!currentUserId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        let q: Query<DocumentData> = collection(db, "mediaItems");
-
-        q = query(q, where("userId", "==", currentUserId));
-        if (type !== 'all') q = query(q, where("type", "==", type));
-        if (filter === 'watched') q = query(q, where("watched", "==", true));
-        else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
-
-        q = query(q, orderBy(sortBy, "desc"));
-
-        if (!isSearchActive) {
-          q = query(q, limit(PAGE_SIZE));
-        }
-
-        const documentSnapshots = await getDocs(q);
-
-        const mediaList = documentSnapshots.docs.map(doc => ({
-          ...doc.data() as Omit<MediaItem, 'id'>,
-          id: doc.id
-        }));
-
-        setItems(mediaList);
-
-        if (!isSearchActive && documentSnapshots.docs.length > 0) {
-          const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-          setLastVisibleDoc(lastDoc);
-
-          if (documentSnapshots.docs.length < PAGE_SIZE) {
-            setHasMoreItems(false);
-          }
-        } else {
-          setHasMoreItems(false);
-        }
-
-      } catch (e) {
-        console.error("Veri çekilemedi: ", e);
-        // Hata durumunda da listeyi boş bırak (Eski veri görünmesin)
-        setItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMedia();
-  }, [type, filter, key, isSearchActive, sortBy]);
-
+  // loadMore - sonraki sayfayı yükle
   const loadMore = async () => {
-    const currentUserId = auth.currentUser?.uid;
-    if (!lastVisibleDoc || loadingMore || !currentUserId || isSearchActive) return;
-
-    setLoadingMore(true);
-    try {
-      let q: Query<DocumentData> = collection(db, "mediaItems");
-      q = query(q, where("userId", "==", currentUserId));
-
-      if (type !== 'all') q = query(q, where("type", "==", type));
-      if (filter === 'watched') q = query(q, where("watched", "==", true));
-      else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
-      q = query(q, orderBy(sortBy, "desc"));
-
-      const nextQuery = query(q, startAfter(lastVisibleDoc), limit(PAGE_SIZE));
-
-      const documentSnapshots = await getDocs(nextQuery);
-
-      const newItems = documentSnapshots.docs.map(doc => ({
-        ...doc.data() as Omit<MediaItem, 'id'>,
-        id: doc.id
-      }));
-
-      setItems(prevItems => [...prevItems, ...newItems]);
-
-      const lastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-      setLastVisibleDoc(lastDoc);
-
-      if (documentSnapshots.docs.length < PAGE_SIZE) {
-        setHasMoreItems(false);
-      }
-
-    } catch (e) {
-      console.error("Daha fazla veri çekilemedi: ", e);
-    } finally {
-      setLoadingMore(false);
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
     }
   };
 
-  return { items, loading, refetch, loadMore, loadingMore, hasMoreItems };
+  return {
+    items,
+    loading,
+    refetch: invalidateAndRefetch,
+    loadMore,
+    loadingMore: isFetchingNextPage,
+    hasMoreItems: !!hasNextPage
+  };
+}
+
+// === YARDIMCI: Medya cache'ini invalidate etmek için ===
+export function useInvalidateMediaCache() {
+  const queryClient = useQueryClient();
+  const currentUserId = auth.currentUser?.uid;
+
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: ['media', currentUserId] });
+    await queryClient.invalidateQueries({ queryKey: ['mediaStats', currentUserId] });
+    await queryClient.invalidateQueries({ queryKey: ['mediaHistory', currentUserId] });
+  };
 }

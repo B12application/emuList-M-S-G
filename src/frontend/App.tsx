@@ -1,6 +1,8 @@
 // src/App.tsx
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import Layout from './components/Layout';
 import MediaListPage from './pages/MediaListPage';
 import CreatePage from './pages/CreatePage';
@@ -63,8 +65,10 @@ function App() {
   return (
     <LanguageProvider>
       <NotificationProvider>
-        <RouterProvider router={router} />
-        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <Toaster />
+        </QueryClientProvider>
       </NotificationProvider>
     </LanguageProvider>
   );

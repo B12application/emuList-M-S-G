@@ -58,17 +58,19 @@ export default function HomePage() {
 
     const { stats, loading: statsLoading } = useMediaStats();
 
-    // Öneriler için veri çekme (Değişmedi)
-    const { items: movieRecs, loading: movieLoading, refetch: movieRefetch } = useMedia('movie', 'not-watched', false);
-    const { items: seriesRecs, loading: seriesLoading, refetch: seriesRefetch } = useMedia('series', 'not-watched', false);
-    const { items: gameRecs, loading: gameLoading, refetch: gameRefetch } = useMedia('game', 'not-watched', false);
-    const { items: bookRecs, loading: bookLoading, refetch: bookRefetch } = useMedia('book', 'not-watched', false);
+    // ⚡ OPTİMİZASYON: 4 ayrı Firebase sorgusu KALDIRILDI
+    // Artık tek sorgudan (allItems) client-side filtreleme yapıyoruz
+    // Bu, 5 sorguyu 1'e düşürür ve React Query cache'i sayesinde anlık yükleme sağlar
+    const movieRecs = allItems.filter(item => item.type === 'movie' && !item.watched);
+    const seriesRecs = allItems.filter(item => item.type === 'series' && !item.watched);
+    const gameRecs = allItems.filter(item => item.type === 'game' && !item.watched);
+    const bookRecs = allItems.filter(item => item.type === 'book' && !item.watched);
 
     const movieRecommendation = movieRecs[0];
     const seriesRecommendation = seriesRecs[0];
     const gameRecommendation = gameRecs[0];
     const bookRecommendation = bookRecs[0];
-    const recommendationsLoading = movieLoading || seriesLoading || gameLoading || bookLoading;
+    const recommendationsLoading = allLoading;
 
     // 3. YENİ: VERİ İŞLEME (Günlük ve Tozlu Raflar)
 
@@ -1104,10 +1106,10 @@ export default function HomePage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <RecommendationCard item={movieRecommendation} typeLabel="Film" refetch={movieRefetch} />
-                                    <RecommendationCard item={seriesRecommendation} typeLabel="Dizi" refetch={seriesRefetch} />
-                                    <RecommendationCard item={gameRecommendation} typeLabel="Oyun" refetch={gameRefetch} />
-                                    <RecommendationCard item={bookRecommendation} typeLabel="Kitap" refetch={bookRefetch} />
+                                    <RecommendationCard item={movieRecommendation} typeLabel="Film" refetch={allRefetch} />
+                                    <RecommendationCard item={seriesRecommendation} typeLabel="Dizi" refetch={allRefetch} />
+                                    <RecommendationCard item={gameRecommendation} typeLabel="Oyun" refetch={allRefetch} />
+                                    <RecommendationCard item={bookRecommendation} typeLabel="Kitap" refetch={allRefetch} />
                                 </div>
                             )}
                         </>

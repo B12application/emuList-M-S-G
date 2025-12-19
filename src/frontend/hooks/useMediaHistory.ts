@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+// src/hooks/useMediaHistory.ts
+// Refactored with React Query for caching
+import { useQuery } from '@tanstack/react-query';
 import { db, auth } from '../../backend/config/firebaseConfig';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-// Imports removed
-
-// Optimize by only selecting needed fields if possible, but Firestore client doesn't support 'select' fields easily without admin SDK or specialized indexes. 
-// We will fetch full docs but it's okay for per-user data volume (usually < 1000 items).
 
 export interface HistoryItem {
     id: string;
@@ -17,50 +15,42 @@ export interface HistoryItem {
     genre?: string;
 }
 
+// Firebase'den history çeken fonksiyon
+async function fetchMediaHistory(userId: string): Promise<HistoryItem[]> {
+    const q = query(
+        collection(db, "mediaItems"),
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const d = doc.data();
+        return {
+            id: doc.id,
+            type: d.type,
+            title: d.title,
+            rating: d.rating,
+            watched: d.watched,
+            createdAt: d.createdAt,
+            isFavorite: d.isFavorite,
+            genre: d.genre
+        } as HistoryItem;
+    });
+}
+
 export default function useMediaHistory() {
-    const [history, setHistory] = useState<HistoryItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const currentUserId = auth.currentUser?.uid;
 
-    useEffect(() => {
-        const currentUserId = auth.currentUser?.uid;
-        if (!currentUserId) {
-            setLoading(false);
-            return;
-        }
+    const { data, isLoading } = useQuery({
+        queryKey: ['mediaHistory', currentUserId],
+        queryFn: () => fetchMediaHistory(currentUserId!),
+        enabled: !!currentUserId,
+        staleTime: 1000 * 60 * 5, // 5 dakika
+    });
 
-        const fetchHistory = async () => {
-            try {
-                const q = query(
-                    collection(db, "mediaItems"),
-                    where("userId", "==", currentUserId),
-                    orderBy("createdAt", "desc") // Get all items, sorted by date
-                );
-
-                const snapshot = await getDocs(q);
-                const data = snapshot.docs.map(doc => {
-                    const d = doc.data();
-                    return {
-                        id: doc.id,
-                        type: d.type,
-                        title: d.title,
-                        rating: d.rating,
-                        watched: d.watched,
-                        createdAt: d.createdAt, // Keep as Timestamp for now, convert in component
-                        isFavorite: d.isFavorite,
-                        genre: d.genre
-                    } as HistoryItem;
-                });
-
-                setHistory(data);
-            } catch (error) {
-                console.error("Error fetching history:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchHistory();
-    }, []);
-
-    return { history, loading };
+    return {
+        history: data || [],
+        loading: isLoading
+    };
 }

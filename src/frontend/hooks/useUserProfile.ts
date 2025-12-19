@@ -1,5 +1,6 @@
 // src/hooks/useUserProfile.ts
-import { useState, useEffect } from 'react';
+// Refactored with React Query for caching
+import { useQuery } from '@tanstack/react-query';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
@@ -10,33 +11,28 @@ interface UserProfile {
   avatarUrl?: string;
 }
 
+// Firebase'den profil çeken fonksiyon
+async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
+  const docRef = doc(db, 'users', userId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data() as UserProfile;
+  }
+  return null;
+}
+
 export default function useUserProfile() {
-  const { user } = useAuth(); // Mevcut giriş yapan kullanıcıyı al
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+  const { data, isLoading } = useQuery({
+    queryKey: ['userProfile', user?.uid],
+    queryFn: () => fetchUserProfile(user!.uid),
+    enabled: !!user?.uid,
+    staleTime: 1000 * 60 * 10, // 10 dakika - profil daha az değişir
+  });
 
-    const fetchProfile = async () => {
-      try {
-        const docRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
-        }
-      } catch (e) {
-        console.error("Kullanıcı profili çekilemedi:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [user]);
-
-  return { profile, loading };
+  return {
+    profile: data || null,
+    loading: isLoading
+  };
 }

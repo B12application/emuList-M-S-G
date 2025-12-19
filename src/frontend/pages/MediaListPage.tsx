@@ -35,13 +35,24 @@ export default function MediaListPage() {
       result = result.filter(item => item.title.toLowerCase().includes(lowerQuery));
     }
 
-    if (sortOption === 'rating') {
-      result.sort((a, b) => Number(b.rating) - Number(a.rating));
-    } else if (sortOption === 'title') {
-      result.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortOption === 'date') {
-      result.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-    }
+    // Çoklu sıralama: Önce izlenmemiş (watched:false), sonra izlenmiş (watched:true)
+    // Her iki grup içinde seçilen sıralama kriterine göre sırala
+    result.sort((a, b) => {
+      // 1. Öncelik: İzlenme durumu (izlenmemiş önce)
+      if (a.watched !== b.watched) {
+        return a.watched ? 1 : -1; // watched=false önce gelsin
+      }
+
+      // 2. Öncelik: Seçilen sıralama kriteri
+      if (sortOption === 'rating') {
+        return Number(b.rating) - Number(a.rating);
+      } else if (sortOption === 'title') {
+        return a.title.localeCompare(b.title);
+      } else if (sortOption === 'date') {
+        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+      }
+      return 0;
+    });
 
     setFilteredItems(result);
   }, [items, searchQuery, sortOption, isSearchActive]);

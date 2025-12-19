@@ -85,7 +85,7 @@ export default function useMedia(
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    refetch
+
   } = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) => fetchMediaPage(

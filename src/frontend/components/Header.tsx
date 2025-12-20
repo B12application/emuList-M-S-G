@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown } from 'react-icons/fa';
-import EyeTracker from './EyeTracker';
+import B12Logo from './B12Logo';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
@@ -109,12 +109,12 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
             {/* Logo Area */}
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="relative transform transition-transform duration-300 group-hover:scale-110">
+              <div className="relative transform transition-transform duration-300 group-hover:scale-105">
                 <div className="hidden md:block">
-                  <EyeTracker />
+                  <B12Logo size="md" />
                 </div>
-                <div className="md:hidden font-black text-2xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-rose-500 to-orange-500">
-                  B12
+                <div className="md:hidden">
+                  <B12Logo size="sm" />
                 </div>
               </div>
             </Link>

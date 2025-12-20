@@ -1,0 +1,37 @@
+{
+    "name": "B12 - Dijital Hafıza Vitaminin",
+    "short_name": "B12",
+    "description": "Film, dizi, oyun ve kitap koleksiyonunuzu yönetin",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#3b82f6",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "/titlelogo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/titlelogo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/titlelogo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "categories": [
+        "entertainment",
+        "lifestyle"
+    ],
+    "lang": "tr",
+    "dir": "ltr"
+}

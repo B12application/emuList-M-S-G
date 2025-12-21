@@ -69,10 +69,6 @@ export default function MediaListPage() {
     }
   }, [items, selectedItem]);
 
-  const getActiveTab = (t: FilterType) => type === t ? "text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
-  const getActiveFilter = (f: FilterStatus) => filter === f ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
-  const getActiveSort = (s: 'rating' | 'title' | 'date') => sortOption === s ? "text-sky-600 bg-gray-100 dark:bg-gray-800 font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-800";
-
   const handleFilterChange = (newFilter: FilterStatus) => {
     refetch(); setSearchParams(prev => { prev.set('filter', newFilter); return prev; }, { replace: true });
   };
@@ -143,126 +139,307 @@ export default function MediaListPage() {
 
   return (
     <section className="py-6">
-      {/* Yeni Modern Başlık ve Navigasyon */}
-      <div className="mb-8">
+      {/* ✨ Ultra Modern Kontrol Paneli */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8"
+      >
+        {/* Glassmorphism Container with Animated Border */}
+        <div className="relative group">
+          {/* Animated Gradient Border */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-rose-500 via-violet-500 to-cyan-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 animate-gradient-x" />
 
-        {/* Ana Kontrol Paneli - Modern Card Tasarımı */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-5 overflow-hidden">
 
-            {/* Sol: Kategori Tabları */}
-            <div className="flex-shrink-0">
-              <div className="flex flex-wrap gap-2">
-                <Link className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${getActiveTab("movie")} hover:shadow-md`} to="/movie">
-                  <FaFilm /> {t('nav.movies')}
-                </Link>
-                <Link className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${getActiveTab("series")} hover:shadow-md`} to="/series">
-                  <FaTv /> {t('nav.series')}
-                </Link>
-                <Link className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${getActiveTab("game")} hover:shadow-md`} to="/game">
-                  <FaGamepad /> {t('nav.games')}
-                </Link>
-                <Link className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${getActiveTab("book")} hover:shadow-md`} to="/book">
-                  <FaBook /> {t('nav.books')}
-                </Link>
-                <Link className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${getActiveTab("all")} hover:shadow-md`} to="/all">
-                  <FaClone /> {t('nav.all')}
-                </Link>
-              </div>
-            </div>
+            {/* Decorative Background Elements */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-sky-500/10 to-purple-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-rose-500/10 to-amber-500/10 rounded-full blur-3xl" />
 
-            {/* Dikey Ayraç */}
-            <div className="hidden lg:block w-px bg-gray-200 dark:bg-gray-700" />
+            <div className="relative flex flex-col xl:flex-row gap-6">
 
-            {/* Sağ: Filtreler ve Kontroller - TEK SATIR */}
-            <div className="flex items-center gap-2 overflow-x-auto">
+              {/* 🎬 Kategori İkonları - Premium Design */}
+              <div className="flex-shrink-0">
+                <div className="flex items-center gap-1 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('nav.categories') || 'Kategoriler'}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {/* Film */}
+                  <Link
+                    className={`group/icon relative p-4 rounded-2xl transition-all duration-500 transform ${type === 'movie'
+                      ? 'bg-gradient-to-br from-rose-500 via-pink-500 to-rose-600 text-white shadow-xl shadow-rose-500/40 scale-110 -rotate-2'
+                      : 'bg-gray-100/80 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-500'
+                      } hover:shadow-2xl hover:-translate-y-1`}
+                    to="/movie"
+                    title={t('nav.movies')}
+                  >
+                    <FaFilm className={`text-2xl transition-all duration-500 ${type === 'movie' ? 'animate-pulse drop-shadow-lg' : 'group-hover/icon:animate-[wiggle_0.5s_ease-in-out_infinite] group-hover/icon:scale-110'}`} />
+                    {type === 'movie' && (
+                      <>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full" />
+                      </>
+                    )}
+                  </Link>
 
-              {/* Durum Filtresi */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
-                  <button title={t('list.all')} className={`px-3 py-2 text-sm transition ${getActiveFilter("all")}`} onClick={() => handleFilterChange('all')}>
-                    <FaGlobeAmericas />
-                  </button>
-                  <button title={t('list.watched')} className={`px-3 py-2 text-sm transition ${getActiveFilter("watched")}`} onClick={() => handleFilterChange('watched')}>
-                    <FaEye />
-                  </button>
-                  <button title={t('list.notWatched')} className={`px-3 py-2 text-sm transition ${getActiveFilter("not-watched")}`} onClick={() => handleFilterChange('not-watched')}>
-                    <FaEyeSlash />
-                  </button>
+                  {/* Dizi */}
+                  <Link
+                    className={`group/icon relative p-4 rounded-2xl transition-all duration-500 transform ${type === 'series'
+                      ? 'bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-white shadow-xl shadow-indigo-500/40 scale-110 rotate-2'
+                      : 'bg-gray-100/80 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:text-indigo-500'
+                      } hover:shadow-2xl hover:-translate-y-1`}
+                    to="/series"
+                    title={t('nav.series')}
+                  >
+                    <FaTv className={`text-2xl transition-all duration-500 ${type === 'series' ? 'animate-pulse drop-shadow-lg' : 'group-hover/icon:animate-[bounce_0.6s_ease-in-out_infinite] group-hover/icon:scale-110'}`} />
+                    {type === 'series' && (
+                      <>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full" />
+                      </>
+                    )}
+                  </Link>
+
+                  {/* Oyun */}
+                  <Link
+                    className={`group/icon relative p-4 rounded-2xl transition-all duration-500 transform ${type === 'game'
+                      ? 'bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 text-white shadow-xl shadow-emerald-500/40 scale-110 -rotate-2'
+                      : 'bg-gray-100/80 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:text-emerald-500'
+                      } hover:shadow-2xl hover:-translate-y-1`}
+                    to="/game"
+                    title={t('nav.games')}
+                  >
+                    <FaGamepad className={`text-2xl transition-all duration-500 ${type === 'game' ? 'animate-pulse drop-shadow-lg' : 'group-hover/icon:animate-[shake_0.4s_ease-in-out_infinite] group-hover/icon:scale-110'}`} />
+                    {type === 'game' && (
+                      <>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full" />
+                      </>
+                    )}
+                  </Link>
+
+                  {/* Kitap */}
+                  <Link
+                    className={`group/icon relative p-4 rounded-2xl transition-all duration-500 transform ${type === 'book'
+                      ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white shadow-xl shadow-amber-500/40 scale-110 rotate-2'
+                      : 'bg-gray-100/80 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-500'
+                      } hover:shadow-2xl hover:-translate-y-1`}
+                    to="/book"
+                    title={t('nav.books')}
+                  >
+                    <FaBook className={`text-2xl transition-all duration-500 ${type === 'book' ? 'animate-pulse drop-shadow-lg' : 'group-hover/icon:animate-[flip_0.6s_ease-in-out_infinite] group-hover/icon:scale-110'}`} />
+                    {type === 'book' && (
+                      <>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full" />
+                      </>
+                    )}
+                  </Link>
+
+                  {/* Hepsi */}
+                  <Link
+                    className={`group/icon relative p-4 rounded-2xl transition-all duration-500 transform ${type === 'all'
+                      ? 'bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-600 text-white shadow-xl shadow-sky-500/40 scale-110'
+                      : 'bg-gray-100/80 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 hover:text-sky-500'
+                      } hover:shadow-2xl hover:-translate-y-1`}
+                    to="/all"
+                    title={t('nav.all')}
+                  >
+                    <FaClone className={`text-2xl transition-all duration-500 ${type === 'all' ? 'animate-pulse drop-shadow-lg' : 'group-hover/icon:animate-spin group-hover/icon:scale-110'}`} />
+                    {type === 'all' && (
+                      <>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full" />
+                      </>
+                    )}
+                  </Link>
                 </div>
               </div>
 
-              {/* Sıralama */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
-                  <button title={t('list.byRating')} className={`px-3 py-2 text-sm transition ${getActiveSort('rating')}`} onClick={() => setSortOption('rating')}>
-                    <FaStar />
-                  </button>
-                  <button title={t('list.byTitle')} className={`px-3 py-2 text-sm transition ${getActiveSort('title')}`} onClick={() => setSortOption('title')}>
-                    <FaSortAlphaDown />
-                  </button>
-                  <button title={t('list.byDate')} className={`px-3 py-2 text-sm transition ${getActiveSort('date')}`} onClick={() => setSortOption('date')}>
-                    <FaCalendarAlt />
-                  </button>
+              {/* ✦ Dikey Gradient Ayraç */}
+              <div className="hidden xl:flex items-center">
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
+              </div>
+
+              {/* 🎛️ Kontroller Grid */}
+              <div className="flex-1 flex flex-wrap items-center gap-4">
+
+                {/* 👁️ Durum Filtresi */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                    <FaEye className="text-[8px]" /> {t('list.status') || 'Durum'}
+                  </span>
+                  <div className="flex rounded-2xl bg-gray-100/80 dark:bg-gray-800/60 p-1 gap-1">
+                    <button
+                      title={t('list.all')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${filter === 'all'
+                        ? 'bg-white dark:bg-gray-700 text-sky-600 shadow-lg shadow-sky-500/20'
+                        : 'text-gray-500 hover:text-sky-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => handleFilterChange('all')}
+                    >
+                      <FaGlobeAmericas className={`text-lg transition-transform ${filter === 'all' ? 'scale-110' : 'group-hover/btn:scale-110 group-hover/btn:rotate-12'}`} />
+                    </button>
+                    <button
+                      title={t('list.watched')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${filter === 'watched'
+                        ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-lg shadow-emerald-500/20'
+                        : 'text-gray-500 hover:text-emerald-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => handleFilterChange('watched')}
+                    >
+                      <FaEye className={`text-lg transition-transform ${filter === 'watched' ? 'scale-110' : 'group-hover/btn:scale-125'}`} />
+                    </button>
+                    <button
+                      title={t('list.notWatched')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${filter === 'not-watched'
+                        ? 'bg-white dark:bg-gray-700 text-rose-600 shadow-lg shadow-rose-500/20'
+                        : 'text-gray-500 hover:text-rose-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => handleFilterChange('not-watched')}
+                    >
+                      <FaEyeSlash className={`text-lg transition-transform ${filter === 'not-watched' ? 'scale-110' : 'group-hover/btn:scale-110'}`} />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Görünüm */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900/50">
-                  <button title={t('list.grid')} className={`px-3 py-2 text-sm transition ${viewMode === 'grid' ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setViewMode('grid')}>
-                    <FaTh />
-                  </button>
-                  <button title={t('list.listView')} className={`px-3 py-2 text-sm transition ${viewMode === 'list' ? 'text-sky-600 bg-sky-50 dark:bg-sky-900/30 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setViewMode('list')}>
-                    <FaList />
-                  </button>
+                {/* ⭐ Sıralama */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                    <FaStar className="text-[8px]" /> {t('list.sort') || 'Sırala'}
+                  </span>
+                  <div className="flex rounded-2xl bg-gray-100/80 dark:bg-gray-800/60 p-1 gap-1">
+                    <button
+                      title={t('list.byRating')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${sortOption === 'rating'
+                        ? 'bg-white dark:bg-gray-700 text-amber-500 shadow-lg shadow-amber-500/20'
+                        : 'text-gray-500 hover:text-amber-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => setSortOption('rating')}
+                    >
+                      <FaStar className={`text-lg transition-all ${sortOption === 'rating' ? 'scale-110 animate-pulse' : 'group-hover/btn:scale-125 group-hover/btn:rotate-[20deg]'}`} />
+                    </button>
+                    <button
+                      title={t('list.byTitle')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${sortOption === 'title'
+                        ? 'bg-white dark:bg-gray-700 text-violet-600 shadow-lg shadow-violet-500/20'
+                        : 'text-gray-500 hover:text-violet-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => setSortOption('title')}
+                    >
+                      <FaSortAlphaDown className={`text-lg transition-transform ${sortOption === 'title' ? 'scale-110' : 'group-hover/btn:scale-110'}`} />
+                    </button>
+                    <button
+                      title={t('list.byDate')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${sortOption === 'date'
+                        ? 'bg-white dark:bg-gray-700 text-teal-600 shadow-lg shadow-teal-500/20'
+                        : 'text-gray-500 hover:text-teal-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => setSortOption('date')}
+                    >
+                      <FaCalendarAlt className={`text-lg transition-transform ${sortOption === 'date' ? 'scale-110' : 'group-hover/btn:scale-110 group-hover/btn:-rotate-6'}`} />
+                    </button>
+                  </div>
                 </div>
+
+                {/* 📐 Görünüm */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                    <FaTh className="text-[8px]" /> {t('list.view') || 'Görünüm'}
+                  </span>
+                  <div className="flex rounded-2xl bg-gray-100/80 dark:bg-gray-800/60 p-1 gap-1">
+                    <button
+                      title={t('list.grid')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${viewMode === 'grid'
+                        ? 'bg-white dark:bg-gray-700 text-sky-600 shadow-lg shadow-sky-500/20'
+                        : 'text-gray-500 hover:text-sky-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => setViewMode('grid')}
+                    >
+                      <FaTh className={`text-lg transition-transform ${viewMode === 'grid' ? 'scale-110' : 'group-hover/btn:scale-110'}`} />
+                    </button>
+                    <button
+                      title={t('list.listView')}
+                      className={`group/btn p-2.5 rounded-xl transition-all duration-300 ${viewMode === 'list'
+                        ? 'bg-white dark:bg-gray-700 text-sky-600 shadow-lg shadow-sky-500/20'
+                        : 'text-gray-500 hover:text-sky-500 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        }`}
+                      onClick={() => setViewMode('list')}
+                    >
+                      <FaList className={`text-lg transition-transform ${viewMode === 'list' ? 'scale-110' : 'group-hover/btn:scale-110'}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 🔍 Arama */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                    <FaSearch className="text-[8px]" /> {t('list.search') || 'Ara'}
+                  </span>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={t('list.searchPlaceholder')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-36 lg:w-44 px-3 py-2.5 pl-9 rounded-2xl border-0 bg-gray-100/80 dark:bg-gray-800/60 text-sm focus:ring-2 focus:ring-sky-500/50 focus:bg-white dark:focus:bg-gray-700 focus:outline-none transition-all duration-300 placeholder:text-gray-400"
+                    />
+                    <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                      >
+                        <FaTimes className="h-3 w-3 text-gray-400" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 🛠️ Araçlar */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('list.tools') || 'Araçlar'}</span>
+                  <div className="flex gap-2">
+                    {/* Seçim Modu */}
+                    <button
+                      onClick={() => {
+                        if (selectionMode) {
+                          clearSelection();
+                        } else {
+                          setSelectionMode(true);
+                        }
+                      }}
+                      className={`group/btn p-2.5 rounded-2xl transition-all duration-300 ${selectionMode
+                        ? 'bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/40'
+                        : 'bg-gray-100/80 dark:bg-gray-800/60 text-gray-500 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-950/30'
+                        }`}
+                      title={selectionMode ? t('bulk.cancelSelect') : t('bulk.selectMode')}
+                    >
+                      {selectionMode
+                        ? <FaTimes className="text-lg animate-spin" />
+                        : <FaCheckSquare className="text-lg group-hover/btn:scale-110 transition-transform" />
+                      }
+                    </button>
+
+                    {/* PDF Export */}
+                    <button
+                      onClick={handleExportPDF}
+                      disabled={filteredItems.length === 0}
+                      className="group/btn p-2.5 rounded-2xl bg-gray-100/80 dark:bg-gray-800/60 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100/80"
+                      title={t('bulk.exportPdf')}
+                    >
+                      <FaFilePdf className="text-lg group-hover/btn:scale-110 group-hover/btn:-rotate-6 transition-transform" />
+                    </button>
+                  </div>
+                </div>
+
               </div>
-
-              {/* Arama - Daha Kompakt */}
-              <div className="relative shrink-0 w-32 lg:w-36">
-                <input
-                  type="text"
-                  placeholder={t('list.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-2 py-2 pl-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
-                />
-                <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
-              </div>
-
-              {/* Seçim Modu Toggle */}
-              <button
-                onClick={() => {
-                  if (selectionMode) {
-                    clearSelection();
-                  } else {
-                    setSelectionMode(true);
-                  }
-                }}
-                className={`p-2 rounded-lg transition shrink-0 ${selectionMode
-                  ? 'bg-sky-500 text-white'
-                  : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                title={selectionMode ? t('bulk.cancelSelect') : t('bulk.selectMode')}
-              >
-                {selectionMode ? <FaTimes /> : <FaCheckSquare />}
-              </button>
-
-              {/* PDF Export */}
-              <button
-                onClick={handleExportPDF}
-                disabled={filteredItems.length === 0}
-                className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                title={t('bulk.exportPdf')}
-              >
-                <FaFilePdf />
-              </button>
-
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Floating Bulk Actions Toolbar */}
       <AnimatePresence>

@@ -45,17 +45,20 @@ export default function CreatePage() {
   const [genres, setGenres] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [totalSeasons, setTotalSeasons] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true); // Accordion state
 
   // Handle search result selection
-  const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[] }) => {
+  const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[]; totalSeasons?: number }) => {
     setTitle(details.title);
     setImage(details.image);
     setDescription(details.description);
     setRating(details.rating);
     if (details.author) setAuthor(details.author);
     if (details.genres.length) setGenres(details.genres);
+    // Diziler için toplam sezon sayısını kaydet
+    if (details.totalSeasons) setTotalSeasons(details.totalSeasons);
   };
 
   // Toggle genre
@@ -127,6 +130,11 @@ export default function CreatePage() {
       if (author && type === 'book') newItem.author = author;
       if (genres.length) newItem.genre = genres.join(', ');
       if (tags.length) newItem.tags = tags;
+      // Diziler için sezon bilgisini ekle
+      if (type === 'series' && totalSeasons) {
+        newItem.totalSeasons = totalSeasons;
+        newItem.watchedSeasons = [];
+      }
 
       const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
 

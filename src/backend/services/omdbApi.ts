@@ -50,6 +50,7 @@ export interface OMDbMovieDetails {
   Website: string;
   Response: 'True' | 'False';
   Error?: string;
+  totalSeasons?: string; // Diziler için toplam sezon sayısı
 }
 
 /**
@@ -195,11 +196,11 @@ export function normalizeRating(imdbRating: string): string {
   if (!match) return '0';
 
   const rating = parseFloat(match[1]);
-  
+
   // 0-10 arası olmalı, 9.9'a sınırla
   if (rating > 9.9) return '9.9';
   if (rating < 0) return '0';
-  
+
   return rating.toFixed(1);
 }
 

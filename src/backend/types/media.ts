@@ -24,4 +24,6 @@ export interface MediaItem {
   isFavorite?: boolean; // Bu hafta izlenecekler/favoriler için
   author?: string; // Kitaplar için yazar bilgisi
   genre?: string; // Tür bilgisi (Film: "Action, Drama", Oyun: "RPG, Action", Kitap: "Fiction")
+  totalSeasons?: number; // Diziler için toplam sezon sayısı
+  watchedSeasons?: number[]; // Kullanıcının izlediği sezon numaraları [1, 2, 3]
 }

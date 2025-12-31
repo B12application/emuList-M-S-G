@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaSync } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -12,11 +12,14 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { migrateSeriesSeasons } from '../../backend/services/seasonMigrationService';
 
 import { useLanguage } from '../context/LanguageContext';
 
 export default function MediaListPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
@@ -135,6 +138,38 @@ export default function MediaListPage() {
     const typeName = type === 'all' ? 'Tum-Koleksiyonum' : type === 'movie' ? 'Filmlerim' : type === 'series' ? 'Dizilerim' : type === 'game' ? 'Oyunlarim' : 'Kitaplarim';
     exportToPDF(filteredItems, typeName);
     toast.success(t('bulk.pdfExported'));
+  };
+
+  // Bulk Season Update for series
+  const [isBulkUpdatingSeasons, setIsBulkUpdatingSeasons] = useState(false);
+  const [seasonUpdateProgress, setSeasonUpdateProgress] = useState('');
+
+  const handleBulkSeasonUpdate = async () => {
+    if (!user) return;
+
+    setIsBulkUpdatingSeasons(true);
+    setSeasonUpdateProgress(t('seasons.updating'));
+
+    try {
+      const result = await migrateSeriesSeasons(user.uid, (current, total, title) => {
+        setSeasonUpdateProgress(`${current}/${total}: ${title}`);
+      });
+
+      if (result.updated > 0) {
+        toast.success(t('seasons.updateComplete').replace('{updated}', String(result.updated)));
+        refetch();
+      } else if (result.total === 0) {
+        toast.error(t('seasons.noSeriesFound'));
+      } else {
+        toast.success(`${result.skipped} dizi zaten güncel.`);
+      }
+    } catch (error) {
+      console.error('Sezon güncelleme hatası:', error);
+      toast.error('Güncelleme sırasında hata oluştu');
+    } finally {
+      setIsBulkUpdatingSeasons(false);
+      setSeasonUpdateProgress('');
+    }
   };
 
   return (
@@ -343,6 +378,20 @@ export default function MediaListPage() {
 
             {/* Araçlar */}
             <div className="flex items-center gap-1">
+              {/* Sezon Güncelle - Sadece diziler sayfasında */}
+              {type === 'series' && (
+                <button
+                  onClick={handleBulkSeasonUpdate}
+                  disabled={isBulkUpdatingSeasons || filteredItems.length === 0}
+                  className={`p-2 rounded-lg transition-all duration-200 ${isBulkUpdatingSeasons
+                    ? 'bg-purple-500 text-white'
+                    : 'text-gray-400 hover:text-purple-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    } disabled:opacity-30 disabled:cursor-not-allowed`}
+                  title={isBulkUpdatingSeasons ? seasonUpdateProgress : t('seasons.bulkUpdate')}
+                >
+                  <FaSync className={`text-sm ${isBulkUpdatingSeasons ? 'animate-spin' : ''}`} />
+                </button>
+              )}
               <button
                 onClick={() => {
                   if (selectionMode) {

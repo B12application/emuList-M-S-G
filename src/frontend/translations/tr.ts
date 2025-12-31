@@ -489,4 +489,24 @@ export const translationsTR = {
         exportPdf: 'PDF olarak indir',
         pdfExported: 'Liste PDF olarak indirildi',
     },
+
+    // Seasons (Dizi Sezonları)
+    seasons: {
+        title: 'Sezonlar',
+        season: 'Sezon',
+        seasons: 'Sezon',
+        watched: 'İzlendi',
+        notWatched: 'İzlenmedi',
+        selectAll: 'Tümünü İzle',
+        clearAll: 'Temizle',
+        progress: '{watched}/{total} Sezon',
+        completed: 'Tamamlandı',
+        totalSeasons: 'Toplam Sezon',
+        fetchFromOmdb: 'OMDB\'den Çek',
+        bulkUpdate: 'Sezonları Güncelle',
+        bulkUpdateDesc: 'Tüm dizilerin sezon bilgilerini OMDB\'den çek',
+        updating: 'Güncelleniyor...',
+        updateComplete: 'Güncelleme tamamlandı! {updated} dizi güncellendi.',
+        noSeriesFound: 'Güncellenecek dizi bulunamadı.',
+    },
 };

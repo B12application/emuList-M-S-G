@@ -4,10 +4,13 @@ import type { MediaItem } from '../../backend/types/media';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Dialog, Transition } from '@headlessui/react';
-import { FaSave, FaLink, FaSpinner, FaTimes } from 'react-icons/fa';
+import { FaSave, FaLink, FaSpinner, FaTimes, FaTv, FaDownload } from 'react-icons/fa';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useLanguage } from '../context/LanguageContext';
+import SeasonSelector from './SeasonSelector';
+import { fetchAndUpdateSeriesSeasons } from '../../backend/services/seasonMigrationService';
+import toast from 'react-hot-toast';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -23,8 +26,13 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
   const [editImage, setEditImage] = useState(item.image || '');
   const [editRating, setEditRating] = useState(item.rating || '0');
   const [editGenre, setEditGenre] = useState(item.genre || '');
+  const [editTotalSeasons, setEditTotalSeasons] = useState(item.totalSeasons || 0);
+  const [editWatchedSeasons, setEditWatchedSeasons] = useState<number[]>(item.watchedSeasons || []);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingSeasons, setIsFetchingSeasons] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+
+  const isSeries = item.type === 'series';
 
   useEffect(() => {
     setEditTitle(item.title);
@@ -32,6 +40,8 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
     setEditImage(item.image || '');
     setEditRating(item.rating || '0');
     setEditGenre(item.genre || '');
+    setEditTotalSeasons(item.totalSeasons || 0);
+    setEditWatchedSeasons(item.watchedSeasons || []);
     setShowUrlInput(false);
   }, [item, isOpen]);
 
@@ -44,7 +54,13 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
         description: editDesc,
         image: editImage,
         rating: editRating,
-        genre: editGenre || null
+        genre: editGenre || null,
+        // Dizi için sezon bilgilerini kaydet
+        ...(isSeries && {
+          totalSeasons: editTotalSeasons || null,
+          watchedSeasons: editWatchedSeasons,
+          watched: editWatchedSeasons.length === editTotalSeasons && editTotalSeasons > 0
+        })
       });
       refetch();
       onClose();
@@ -159,6 +175,67 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                       className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
                     />
                   </div>
+
+                  {/* Sezon Düzenleme - Sadece diziler için */}
+                  {isSeries && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <div className="mb-3">
+                        <label htmlFor="editTotalSeasons" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                          <FaTv className="text-purple-500" />
+                          {t('seasons.totalSeasons')}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            id="editTotalSeasons"
+                            value={editTotalSeasons || ''}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10) || 0;
+                              setEditTotalSeasons(val);
+                              // Sezon sayısı azaldıysa, izlenen sezonları filtrele
+                              setEditWatchedSeasons(prev => prev.filter(s => s <= val));
+                            }}
+                            min={0}
+                            max={50}
+                            className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                          />
+                          {/* OMDB'den Çek Butonu */}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              setIsFetchingSeasons(true);
+                              try {
+                                const result = await fetchAndUpdateSeriesSeasons(item.id, editTitle);
+                                if (result.success && result.totalSeasons) {
+                                  setEditTotalSeasons(result.totalSeasons);
+                                  toast.success(`${result.totalSeasons} sezon bulundu!`);
+                                } else {
+                                  toast.error('Sezon bilgisi bulunamadı');
+                                }
+                              } catch (error) {
+                                toast.error('OMDB hatası');
+                              } finally {
+                                setIsFetchingSeasons(false);
+                              }
+                            }}
+                            disabled={isFetchingSeasons}
+                            className="px-3 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                            title="OMDB'den sezon bilgisi çek"
+                          >
+                            {isFetchingSeasons ? <FaSpinner className="animate-spin" /> : <FaDownload />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {editTotalSeasons > 0 && (
+                        <SeasonSelector
+                          totalSeasons={editTotalSeasons}
+                          watchedSeasons={editWatchedSeasons}
+                          onChange={setEditWatchedSeasons}
+                        />
+                      )}
+                    </div>
+                  )}
 
                   <div>
                     {!showUrlInput ? (

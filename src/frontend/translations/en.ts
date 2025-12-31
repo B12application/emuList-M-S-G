@@ -490,4 +490,24 @@ export const translationsEN = {
         exportPdf: 'Export as PDF',
         pdfExported: 'List exported as PDF',
     },
+
+    // Seasons (TV Series Seasons)
+    seasons: {
+        title: 'Seasons',
+        season: 'Season',
+        seasons: 'Seasons',
+        watched: 'Watched',
+        notWatched: 'Not Watched',
+        selectAll: 'Watch All',
+        clearAll: 'Clear',
+        progress: '{watched}/{total} Seasons',
+        completed: 'Completed',
+        totalSeasons: 'Total Seasons',
+        fetchFromOmdb: 'Fetch from OMDB',
+        bulkUpdate: 'Update Seasons',
+        bulkUpdateDesc: 'Fetch season info for all series from OMDB',
+        updating: 'Updating...',
+        updateComplete: 'Update complete! {updated} series updated.',
+        noSeriesFound: 'No series found to update.',
+    },
 };

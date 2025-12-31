@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -182,6 +182,20 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
           </div>
           {/* Rating - Her zaman sağ üstte */}
           <div className="absolute right-3 top-3 flex items-center gap-2">
+            {/* Sezon Badge - Diziler için */}
+            {item.type === 'series' && item.totalSeasons && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                  ? 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200'
+                  : 'bg-purple-100/90 text-purple-700 dark:bg-purple-900/80 dark:text-purple-200'
+                }`}>
+                <FaTv size={10} />
+                {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
+                  <><FaCheck size={8} /> {item.totalSeasons}</>
+                ) : (
+                  `S${item.watchedSeasons?.length || 0}/${item.totalSeasons}`
+                )}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-amber-100/90 text-amber-700 dark:bg-amber-900/80 dark:text-amber-200 shadow-sm backdrop-blur-md">
               <FaStar /> {item.rating}
             </span>

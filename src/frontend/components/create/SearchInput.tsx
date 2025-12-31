@@ -27,6 +27,7 @@ interface MediaDetails {
     rating: string;
     author?: string;
     genres: string[];
+    totalSeasons?: number; // Diziler için toplam sezon sayısı
 }
 
 interface SearchInputProps {
@@ -126,7 +127,9 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     image: data.Poster !== 'N/A' ? data.Poster : '',
                     description: data.Plot || '',
                     rating: data.imdbRating && data.imdbRating !== 'N/A' ? normalizeRating(data.imdbRating) : '0',
-                    genres: data.Genre && data.Genre !== 'N/A' ? data.Genre.split(', ').map((g: string) => g.trim()) : []
+                    genres: data.Genre && data.Genre !== 'N/A' ? data.Genre.split(', ').map((g: string) => g.trim()) : [],
+                    // Diziler için toplam sezon sayısını ekle
+                    totalSeasons: type === 'series' && data.totalSeasons ? parseInt(data.totalSeasons, 10) : undefined
                 };
             } else if (type === 'book') {
                 const data = await getBookById(result.id);

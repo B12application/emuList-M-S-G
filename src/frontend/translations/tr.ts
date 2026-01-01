@@ -82,6 +82,7 @@ export const translationsTR = {
         notWatchedByUser: 'İzlemedi',
         notReadByUser: 'Okumadı',
         notPlayedByUser: 'Oynamadı',
+        inProgress: 'Yarıda Kaldı',
     },
 
     // Actions
@@ -310,6 +311,7 @@ export const translationsTR = {
         all: 'Tümü',
         watched: 'İzlenenler',
         notWatched: 'İzlenmeyenler',
+        inProgress: 'Yarıda Kalanlar',
         byRating: 'Puana Göre',
         byTitle: 'İsme Göre',
         byDate: 'Tarihe Göre',

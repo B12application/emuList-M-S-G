@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaClock } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -74,7 +74,20 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
 
     setIsToggling(true);
     try {
-      await updateDoc(doc(db, "mediaItems", item.id), { watched: newValue });
+      // Diziler için: tüm sezonları da güncelle
+      const updateData: Record<string, unknown> = { watched: newValue };
+
+      if (item.type === 'series' && item.totalSeasons) {
+        if (newValue) {
+          // İzlendi olarak işaretlenince tüm sezonları doldur
+          updateData.watchedSeasons = Array.from({ length: item.totalSeasons }, (_, i) => i + 1);
+        } else {
+          // İzlenmedi olarak işaretlenince sezonları temizle
+          updateData.watchedSeasons = [];
+        }
+      }
+
+      await updateDoc(doc(db, "mediaItems", item.id), updateData);
 
       // Create activity only when marking as watched
       if (newValue && user) {
@@ -165,28 +178,56 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
           />
 
           <div className="absolute left-3 top-3">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${localWatched
-                ? "bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200"
-                : "bg-rose-100/90 text-rose-700 dark:bg-rose-900/80 dark:text-rose-200"
-                }`}
-            >
-              {localWatched ? <FaEye /> : <FaEyeSlash />}
-              <span className="hidden md:inline">
-                {localWatched
-                  ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
-                  : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
-                }
+            {/* Diziler için 3 aşamalı durum: İzlendi / Yarıda Kaldı / İzlenmedi */}
+            {item.type === 'series' && item.totalSeasons ? (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                  ? "bg-emerald-500 text-white border-emerald-400/50"
+                  : item.watchedSeasons && item.watchedSeasons.length > 0
+                    ? "bg-amber-500 text-white border-amber-400/50"
+                    : "bg-rose-500 text-white border-rose-400/50"
+                  }`}
+              >
+                {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
+                  <FaCheck className="text-[10px]" />
+                ) : item.watchedSeasons && item.watchedSeasons.length > 0 ? (
+                  <FaClock className="text-[10px]" />
+                ) : (
+                  <FaTimes className="text-[10px]" />
+                )}
+                <span className="hidden md:inline">
+                  {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                    ? t('media.watched')
+                    : item.watchedSeasons && item.watchedSeasons.length > 0
+                      ? t('media.inProgress')
+                      : t('media.notWatched')
+                  }
+                </span>
               </span>
-            </span>
+            ) : (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${localWatched
+                  ? "bg-emerald-500 text-white border-emerald-400/50"
+                  : "bg-rose-500 text-white border-rose-400/50"
+                  }`}
+              >
+                {localWatched ? <FaCheck className="text-[10px]" /> : <FaTimes className="text-[10px]" />}
+                <span className="hidden md:inline">
+                  {localWatched
+                    ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
+                    : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
+                  }
+                </span>
+              </span>
+            )}
           </div>
           {/* Rating - Her zaman sağ üstte */}
           <div className="absolute right-3 top-3 flex items-center gap-2">
             {/* Sezon Badge - Diziler için */}
             {item.type === 'series' && item.totalSeasons && (
               <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                  ? 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200'
-                  : 'bg-purple-100/90 text-purple-700 dark:bg-purple-900/80 dark:text-purple-200'
+                ? 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200'
+                : 'bg-purple-100/90 text-purple-700 dark:bg-purple-900/80 dark:text-purple-200'
                 }`}>
                 <FaTv size={10} />
                 {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (

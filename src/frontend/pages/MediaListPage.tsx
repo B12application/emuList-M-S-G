@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaSync } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaSync, FaCheck, FaClock } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -49,6 +49,17 @@ export default function MediaListPage() {
       result = result.filter(item => item.title.toLowerCase().includes(lowerQuery));
     }
 
+    // Yarıda Kalanlar filtresi - istemci tarafında (Firebase desteklemediği için)
+    if (filter === 'in-progress') {
+      result = result.filter(item =>
+        item.type === 'series' &&
+        item.totalSeasons &&
+        item.watchedSeasons &&
+        item.watchedSeasons.length > 0 &&
+        item.watchedSeasons.length < item.totalSeasons
+      );
+    }
+
     // Sadece seçilen kritere göre sırala (izlendi/izlenmedi karışık)
     result.sort((a, b) => {
       if (sortOption === 'rating') {
@@ -62,7 +73,7 @@ export default function MediaListPage() {
     });
 
     return result;
-  }, [items, searchQuery, sortOption, isSearchActive]);
+  }, [items, searchQuery, sortOption, isSearchActive, filter]);
 
   // Modal senkronizasyonu
   useEffect(() => {
@@ -274,6 +285,19 @@ export default function MediaListPage() {
               >
                 <FaEye className="text-sm" />
               </button>
+              {/* Yarıda Kalanlar - Sadece diziler için */}
+              {type === 'series' && (
+                <button
+                  title={t('list.inProgress')}
+                  className={`p-2 rounded-md transition-all duration-200 ${filter === 'in-progress'
+                    ? 'bg-white dark:bg-gray-700 text-amber-600 shadow-sm'
+                    : 'text-gray-400 hover:text-amber-500'
+                    }`}
+                  onClick={() => handleFilterChange('in-progress')}
+                >
+                  <FaTv className="text-sm" />
+                </button>
+              )}
               <button
                 title={t('list.notWatched')}
                 className={`p-2 rounded-md transition-all duration-200 ${filter === 'not-watched'
@@ -558,21 +582,53 @@ export default function MediaListPage() {
 
                   {/* Durum - Sabit Genişlik */}
                   <div className="shrink-0 w-24 flex items-center justify-center">
-                    {/* Mobil: Sadece İkon */}
-                    <div className="sm:hidden">
-                      {item.watched ? (
-                        <FaEye className="text-emerald-600 dark:text-emerald-400" size={18} title="İzlendi" />
-                      ) : (
-                        <FaEyeSlash className="text-rose-600 dark:text-rose-400" size={18} title="İzlenmedi" />
-                      )}
-                    </div>
-                    {/* Desktop: Badge */}
-                    <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watched
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                      : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
-                      }`}>
-                      {item.watched ? t('card.watched') : t('card.notWatched')}
-                    </span>
+                    {/* Diziler için 3 aşamalı durum */}
+                    {item.type === 'series' && item.totalSeasons ? (
+                      <>
+                        {/* Mobil: Sadece İkon */}
+                        <div className="sm:hidden">
+                          {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
+                            <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
+                          ) : item.watchedSeasons && item.watchedSeasons.length > 0 ? (
+                            <FaClock className="text-amber-500" size={16} title={t('media.inProgress')} />
+                          ) : (
+                            <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
+                          )}
+                        </div>
+                        {/* Desktop: Badge */}
+                        <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                          : item.watchedSeasons && item.watchedSeasons.length > 0
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                            : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
+                          }`}>
+                          {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                            ? t('media.watched')
+                            : item.watchedSeasons && item.watchedSeasons.length > 0
+                              ? t('media.inProgress')
+                              : t('media.notWatched')
+                          }
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {/* Mobil: Sadece İkon */}
+                        <div className="sm:hidden">
+                          {item.watched ? (
+                            <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
+                          ) : (
+                            <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
+                          )}
+                        </div>
+                        {/* Desktop: Badge */}
+                        <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watched
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                          : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
+                          }`}>
+                          {item.watched ? t('card.watched') : t('card.notWatched')}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}

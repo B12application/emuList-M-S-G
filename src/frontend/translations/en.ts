@@ -82,6 +82,7 @@ export const translationsEN = {
         notWatchedByUser: 'Not Watched',
         notReadByUser: 'Not Read',
         notPlayedByUser: 'Not Played',
+        inProgress: 'In Progress',
     },
 
     // Actions
@@ -310,6 +311,7 @@ export const translationsEN = {
         all: 'All',
         watched: 'Watched',
         notWatched: 'Not Watched',
+        inProgress: 'In Progress',
         byRating: 'By Rating',
         byTitle: 'By Title',
         byDate: 'By Date',

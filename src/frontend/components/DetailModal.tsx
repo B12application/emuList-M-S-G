@@ -55,10 +55,7 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
         watched: seasons.length === item.totalSeasons
       });
       // Don't call refetch here - will be called on modal close
-
-      if (seasons.length === item.totalSeasons) {
-        toast.success(t('seasons.completed'));
-      }
+      // Not showing toast here to avoid duplicate - MediaCard toggle shows it
     } catch (e) {
       console.error("Sezon güncelleme hatası: ", e);
       toast.error(t('toast.updateError'));

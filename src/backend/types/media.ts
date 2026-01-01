@@ -8,7 +8,7 @@ export type MediaType = 'movie' | 'series' | 'game' | 'book';
 export type FilterType = MediaType | 'all';
 
 // Bu, izlenme durumu filtresi (URL'den gelir)
-export type FilterStatus = 'all' | 'watched' | 'not-watched' | 'favorites';
+export type FilterStatus = 'all' | 'watched' | 'not-watched' | 'in-progress' | 'favorites';
 
 // Veritabanı objemizin arayüzü
 export interface MediaItem {

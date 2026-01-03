@@ -1,7 +1,7 @@
 // src/frontend/pages/PublicProfilePage.tsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaFilm, FaTv, FaGamepad, FaBook, FaSpinner, FaUser, FaStar, FaHeart } from 'react-icons/fa';
+import { FaArrowLeft, FaFilm, FaTv, FaGamepad, FaBook, FaSpinner, FaUser, FaStar, FaHeart, FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaGlobe } from 'react-icons/fa';
 import { getUserProfile, getUserMediaItems, getUserStats, type PublicUserProfile, type UserStats } from '../../backend/services/userProfileService';
 import type { MediaItem, MediaType, FilterStatus } from '../../backend/types/media';
 import { useLanguage } from '../context/LanguageContext';
@@ -120,6 +120,67 @@ export default function PublicProfilePage() {
                             )}
                         </div>
                     </div>
+
+                    {/* Social Links */}
+                    {profile.socialLinks && (profile.socialLinks.github || profile.socialLinks.linkedin || profile.socialLinks.twitter || profile.socialLinks.instagram || profile.socialLinks.website) && (
+                        <div className="flex items-center gap-3 mt-4">
+                            {profile.socialLinks.github && (
+                                <a
+                                    href={profile.socialLinks.github.startsWith('http') ? profile.socialLinks.github : `https://${profile.socialLinks.github}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-800 transition-all hover:scale-110"
+                                    title="GitHub"
+                                >
+                                    <FaGithub size={16} />
+                                </a>
+                            )}
+                            {profile.socialLinks.linkedin && (
+                                <a
+                                    href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://${profile.socialLinks.linkedin}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all hover:scale-110"
+                                    title="LinkedIn"
+                                >
+                                    <FaLinkedin size={16} />
+                                </a>
+                            )}
+                            {profile.socialLinks.twitter && (
+                                <a
+                                    href={profile.socialLinks.twitter.startsWith('http') ? profile.socialLinks.twitter : `https://${profile.socialLinks.twitter}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sky-500 hover:bg-sky-500 hover:text-white transition-all hover:scale-110"
+                                    title="Twitter"
+                                >
+                                    <FaTwitter size={16} />
+                                </a>
+                            )}
+                            {profile.socialLinks.instagram && (
+                                <a
+                                    href={profile.socialLinks.instagram.startsWith('http') ? profile.socialLinks.instagram : `https://${profile.socialLinks.instagram}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-pink-500 hover:bg-gradient-to-br hover:from-pink-500 hover:to-orange-400 hover:text-white transition-all hover:scale-110"
+                                    title="Instagram"
+                                >
+                                    <FaInstagram size={16} />
+                                </a>
+                            )}
+                            {profile.socialLinks.website && (
+                                <a
+                                    href={profile.socialLinks.website.startsWith('http') ? profile.socialLinks.website : `https://${profile.socialLinks.website}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all hover:scale-110"
+                                    title="Website"
+                                >
+                                    <FaGlobe size={16} />
+                                </a>
+                            )}
+                        </div>
+                    )}
 
                     {/* Stats */}
                     {stats && (

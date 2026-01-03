@@ -9,6 +9,14 @@ interface UserProfile {
   gender: 'male' | 'female' | '';
   bio?: string;
   avatarUrl?: string;
+  location?: string;
+  socialLinks?: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
 }
 
 // Firebase'den profil çeken fonksiyon

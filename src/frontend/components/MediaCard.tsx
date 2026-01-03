@@ -8,6 +8,7 @@ import EditModal from './EditModal';
 import ImageWithFallback from './ui/ImageWithFallback';
 import ConfirmDialog from './ui/ConfirmDialog';
 import toast from 'react-hot-toast';
+import { showMarqueeToast } from './MarqueeToast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { createActivity, deleteActivitiesForMedia } from '../../backend/services/activityService';
@@ -104,10 +105,16 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
         }
       }
 
-      toast.success(newValue
+      // Show marquee toast notification
+      const statusMessage = newValue
         ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
-        : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
-      );
+        : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'));
+
+      showMarqueeToast({
+        message: `${item.title} • ${statusMessage}`,
+        type: newValue ? 'watched' : 'not-watched',
+        mediaType: item.type as 'movie' | 'series' | 'book' | 'game'
+      });
       refetch();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);

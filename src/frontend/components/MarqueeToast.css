@@ -1,0 +1,269 @@
+/* src/frontend/components/MarqueeToast.css */
+
+.marquee-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.marquee-toast {
+    position: relative;
+    min-width: 260px;
+    max-width: 380px;
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.marquee-toast.visible {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.marquee-toast.hidden {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+}
+
+/* Watched Theme - Subtle dark with green accent */
+.marquee-toast.watched {
+    background: rgba(24, 24, 27, 0.95);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Not Watched Theme - Subtle dark with red accent */
+.marquee-toast.not-watched {
+    background: rgba(24, 24, 27, 0.95);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Glow effect - subtle */
+.marquee-toast-glow {
+    display: none;
+}
+
+/* Content container */
+.marquee-toast-content {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+}
+
+/* Icon wrapper with status indicator */
+.marquee-toast-icon-wrapper {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: iconPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.marquee-toast.watched .marquee-toast-icon-wrapper {
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.marquee-toast.not-watched .marquee-toast-icon-wrapper {
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+@keyframes iconPop {
+    0% {
+        transform: scale(0) rotate(-20deg);
+    }
+
+    60% {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.marquee-toast-check {
+    font-size: 14px;
+    color: #4ade80;
+}
+
+.marquee-toast-x {
+    font-size: 14px;
+    color: #f87171;
+}
+
+/* Scrolling text container */
+.marquee-toast-text-container {
+    flex: 1;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg,
+            transparent 0%,
+            black 8%,
+            black 92%,
+            transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg,
+            transparent 0%,
+            black 8%,
+            black 92%,
+            transparent 100%);
+}
+
+.marquee-toast-text {
+    display: flex;
+    white-space: nowrap;
+}
+
+.marquee-text-scroll {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    animation: marqueeScroll 10s linear infinite;
+    padding-right: 28px;
+}
+
+@keyframes marqueeScroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-33.33%);
+    }
+}
+
+.marquee-toast-icon {
+    font-size: 12px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.marquee-toast.watched .marquee-toast-icon {
+    color: #4ade80;
+}
+
+.marquee-toast.not-watched .marquee-toast-icon {
+    color: #f87171;
+}
+
+.marquee-message {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.3px;
+}
+
+.marquee-divider {
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 8px;
+}
+
+/* Animated border - subtle shimmer */
+.marquee-toast-border {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    padding: 1px;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.marquee-toast-border::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.08),
+            transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 200%;
+    }
+}
+
+/* Hover effect */
+.marquee-toast:hover .marquee-text-scroll {
+    animation-play-state: paused;
+}
+
+.marquee-toast:hover {
+    transform: translateX(-4px);
+}
+
+.marquee-toast.watched:hover {
+    border-color: rgba(74, 222, 128, 0.5);
+}
+
+.marquee-toast.not-watched:hover {
+    border-color: rgba(248, 113, 113, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .marquee-toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .marquee-toast {
+        min-width: auto;
+        max-width: none;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    .marquee-toast.visible {
+        transform: translateY(0) scale(1);
+    }
+
+    .marquee-toast.hidden {
+        transform: translateY(20px) scale(0.95);
+    }
+
+    .marquee-toast-content {
+        padding: 10px 14px;
+    }
+
+    .marquee-toast-icon-wrapper {
+        width: 28px;
+        height: 28px;
+    }
+
+    .marquee-toast-check,
+    .marquee-toast-x {
+        font-size: 12px;
+    }
+
+    .marquee-message {
+        font-size: 12px;
+    }
+}

@@ -22,6 +22,8 @@ export interface PublicUserProfile {
     location?: string;
     gender?: 'male' | 'female';
     socialLinks?: {
+        github?: string;
+        linkedin?: string;
         twitter?: string;
         instagram?: string;
         website?: string;
@@ -56,6 +58,10 @@ export async function getUserProfile(userId: string): Promise<PublicUserProfile 
                 photoURL: data.photoURL,
                 email: data.email,
                 createdAt: data.createdAt,
+                bio: data.bio,
+                location: data.location,
+                gender: data.gender,
+                socialLinks: data.socialLinks,
             };
         }
 

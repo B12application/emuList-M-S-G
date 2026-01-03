@@ -17,6 +17,8 @@ import StatsPage from './pages/StatsPage';
 import WrappedPage from './pages/WrappedPage';
 import VisitedMapPage from './pages/VisitedMapPage';
 import FeedPage from './pages/FeedPage';
+import ListsPage from './pages/ListsPage';
+import ListDetailPage from './pages/ListDetailPage';
 import { LanguageProvider } from './context/LanguageContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -47,6 +49,8 @@ const router = createBrowserRouter([
       { path: 'settings', element: <SettingsPage /> },
       { path: 'stats', element: <StatsPage /> },
       { path: 'wrapped', element: <WrappedPage /> },
+      { path: 'lists', element: <ListsPage /> },
+      { path: 'lists/:id', element: <ListDetailPage /> },
     ]
   },
 

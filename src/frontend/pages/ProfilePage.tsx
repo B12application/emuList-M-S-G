@@ -214,43 +214,55 @@ export default function ProfilePage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div className="flex items-center gap-2">
                                         <FaGithub className="text-gray-700 dark:text-gray-300 text-lg flex-shrink-0" />
-                                        <input
-                                            type="text"
-                                            value={socialLinks.github || ''}
-                                            onChange={(e) => setSocialLinks(prev => ({ ...prev, github: e.target.value }))}
-                                            className="flex-1 text-sm bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                                            placeholder="github.com/username"
-                                        />
+                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-gray-400 pl-3">github.com/</span>
+                                            <input
+                                                type="text"
+                                                value={socialLinks.github || ''}
+                                                onChange={(e) => setSocialLinks(prev => ({ ...prev, github: e.target.value.replace(/^@/, '') }))}
+                                                className="flex-1 text-sm bg-transparent px-1 py-2 focus:outline-none"
+                                                placeholder="username"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaLinkedin className="text-blue-600 text-lg flex-shrink-0" />
-                                        <input
-                                            type="text"
-                                            value={socialLinks.linkedin || ''}
-                                            onChange={(e) => setSocialLinks(prev => ({ ...prev, linkedin: e.target.value }))}
-                                            className="flex-1 text-sm bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                                            placeholder="linkedin.com/in/username"
-                                        />
+                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-gray-400 pl-3">linkedin.com/in/</span>
+                                            <input
+                                                type="text"
+                                                value={socialLinks.linkedin || ''}
+                                                onChange={(e) => setSocialLinks(prev => ({ ...prev, linkedin: e.target.value.replace(/^@/, '') }))}
+                                                className="flex-1 text-sm bg-transparent px-1 py-2 focus:outline-none"
+                                                placeholder="username"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaTwitter className="text-sky-500 text-lg flex-shrink-0" />
-                                        <input
-                                            type="text"
-                                            value={socialLinks.twitter || ''}
-                                            onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value }))}
-                                            className="flex-1 text-sm bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                                            placeholder="twitter.com/username"
-                                        />
+                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-gray-400 pl-3">x.com/</span>
+                                            <input
+                                                type="text"
+                                                value={socialLinks.twitter || ''}
+                                                onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value.replace(/^@/, '') }))}
+                                                className="flex-1 text-sm bg-transparent px-1 py-2 focus:outline-none"
+                                                placeholder="username"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaInstagram className="text-pink-500 text-lg flex-shrink-0" />
-                                        <input
-                                            type="text"
-                                            value={socialLinks.instagram || ''}
-                                            onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value }))}
-                                            className="flex-1 text-sm bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                                            placeholder="instagram.com/username"
-                                        />
+                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-gray-400 pl-3">instagram.com/</span>
+                                            <input
+                                                type="text"
+                                                value={socialLinks.instagram || ''}
+                                                onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value.replace(/^@/, '') }))}
+                                                className="flex-1 text-sm bg-transparent px-1 py-2 focus:outline-none"
+                                                placeholder="username"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2 md:col-span-2">
                                         <FaGlobe className="text-emerald-500 text-lg flex-shrink-0" />
@@ -297,7 +309,7 @@ export default function ProfilePage() {
                                 <div className="flex items-center justify-center gap-4 mt-6">
                                     {socialLinks.github && (
                                         <a
-                                            href={socialLinks.github.startsWith('http') ? socialLinks.github : `https://${socialLinks.github}`}
+                                            href={`https://github.com/${socialLinks.github}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-800 transition-all hover:scale-110"
@@ -308,7 +320,7 @@ export default function ProfilePage() {
                                     )}
                                     {socialLinks.linkedin && (
                                         <a
-                                            href={socialLinks.linkedin.startsWith('http') ? socialLinks.linkedin : `https://${socialLinks.linkedin}`}
+                                            href={`https://linkedin.com/in/${socialLinks.linkedin}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all hover:scale-110"
@@ -319,7 +331,7 @@ export default function ProfilePage() {
                                     )}
                                     {socialLinks.twitter && (
                                         <a
-                                            href={socialLinks.twitter.startsWith('http') ? socialLinks.twitter : `https://${socialLinks.twitter}`}
+                                            href={`https://x.com/${socialLinks.twitter}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-sky-500 hover:bg-sky-500 hover:text-white transition-all hover:scale-110"
@@ -330,7 +342,7 @@ export default function ProfilePage() {
                                     )}
                                     {socialLinks.instagram && (
                                         <a
-                                            href={socialLinks.instagram.startsWith('http') ? socialLinks.instagram : `https://${socialLinks.instagram}`}
+                                            href={`https://instagram.com/${socialLinks.instagram}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-pink-500 hover:bg-gradient-to-br hover:from-pink-500 hover:to-orange-400 hover:text-white transition-all hover:scale-110"

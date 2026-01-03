@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown } from 'react-icons/fa';
+import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown, FaListUl } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
@@ -205,13 +205,27 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                       to="/profile"
                       className="group relative flex items-center justify-center p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all"
                     >
-                      <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm z-10 relative">
+                      {/* Colored ring indicator based on current page */}
+                      <div className={`w-9 h-9 rounded-full overflow-hidden shadow-sm z-10 relative ring-2 transition-all ${location.pathname === '/profile' ? 'ring-rose-500' :
+                          location.pathname === '/stats' ? 'ring-amber-500' :
+                            location.pathname.startsWith('/lists') ? 'ring-violet-500' :
+                              location.pathname === '/settings' ? 'ring-gray-400' :
+                                'ring-gray-200 dark:ring-gray-700'
+                        }`}>
                         <img
                           src={getAvatar()}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       </div>
+                      {/* Active indicator dot */}
+                      {['/profile', '/stats', '/settings'].includes(location.pathname) || location.pathname.startsWith('/lists') ? (
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${location.pathname === '/profile' ? 'bg-rose-500' :
+                            location.pathname === '/stats' ? 'bg-amber-500' :
+                              location.pathname.startsWith('/lists') ? 'bg-violet-500' :
+                                'bg-gray-400'
+                          }`} />
+                      ) : null}
                     </Link>
 
                     {/* User Hover Menu */}
@@ -228,26 +242,50 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
 
                       <Link
                         to="/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/profile'
+                          ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'
+                          }`}
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                        <div className={`w-2 h-2 rounded-full bg-rose-500 ${location.pathname === '/profile' ? 'ring-2 ring-rose-300 dark:ring-rose-600' : ''}`}></div>
                         Profilim
+                        {location.pathname === '/profile' && <span className="ml-auto text-xs">●</span>}
                       </Link>
 
                       <Link
                         to="/stats"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/stats'
+                          ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'
+                          }`}
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                        <div className={`w-2 h-2 rounded-full bg-amber-500 ${location.pathname === '/stats' ? 'ring-2 ring-amber-300 dark:ring-amber-600' : ''}`}></div>
                         {t('home.stats')}
+                        {location.pathname === '/stats' && <span className="ml-auto text-xs">●</span>}
+                      </Link>
+
+                      <Link
+                        to="/lists"
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname.startsWith('/lists')
+                          ? 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'
+                          }`}
+                      >
+                        <div className={`w-2 h-2 rounded-full bg-violet-500 ${location.pathname.startsWith('/lists') ? 'ring-2 ring-violet-300 dark:ring-violet-600' : ''}`}></div>
+                        {t('lists.title') || 'Listelerim'}
+                        {location.pathname.startsWith('/lists') && <span className="ml-auto text-xs">●</span>}
                       </Link>
 
                       <Link
                         to="/settings"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/settings'
+                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'
+                          }`}
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+                        <div className={`w-2 h-2 rounded-full bg-gray-400 ${location.pathname === '/settings' ? 'ring-2 ring-gray-300 dark:ring-gray-600' : ''}`}></div>
                         Ayarlar
+                        {location.pathname === '/settings' && <span className="ml-auto text-xs">●</span>}
                       </Link>
 
                       <button

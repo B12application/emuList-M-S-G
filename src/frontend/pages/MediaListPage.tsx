@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaSync, FaCheck, FaClock } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaSync, FaCheck, FaClock, FaFilter, FaTheaterMasks } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -31,13 +31,33 @@ export default function MediaListPage() {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Advanced Filters
+  const [genreFilter, setGenreFilter] = useState<string>('all');
+  const [ratingRange, setRatingRange] = useState<string>('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
   // Bulk Actions state
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const isSearchActive = searchQuery.trim().length > 0;
-  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive, sortOption === 'date' ? 'createdAt' : 'rating');
+  const isAdvancedFilterActive = genreFilter !== 'all' || ratingRange !== 'all';
+  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive || isAdvancedFilterActive, sortOption === 'date' ? 'createdAt' : 'rating');
+
+  // Compute all available genres from items
+  const allGenres = useMemo(() => {
+    const genres = new Set<string>();
+    items.forEach(item => {
+      if (item.genre) {
+        item.genre.split(', ').forEach(g => {
+          const trimmed = g.trim();
+          if (trimmed) genres.add(trimmed);
+        });
+      }
+    });
+    return Array.from(genres).sort();
+  }, [items]);
 
   // useMemo kullanarak sıralama - sonsuz döngü önlenir
   const filteredItems = useMemo(() => {
@@ -60,6 +80,20 @@ export default function MediaListPage() {
       );
     }
 
+    // Genre filter
+    if (genreFilter !== 'all') {
+      result = result.filter(item => item.genre?.toLowerCase().includes(genreFilter.toLowerCase()));
+    }
+
+    // Rating range filter
+    if (ratingRange !== 'all') {
+      const [min, max] = ratingRange.split('-').map(Number);
+      result = result.filter(item => {
+        const rating = parseFloat(item.rating) || 0;
+        return rating >= min && rating <= max;
+      });
+    }
+
     // Sadece seçilen kritere göre sırala (izlendi/izlenmedi karışık)
     result.sort((a, b) => {
       if (sortOption === 'rating') {
@@ -73,7 +107,7 @@ export default function MediaListPage() {
     });
 
     return result;
-  }, [items, searchQuery, sortOption, isSearchActive, filter]);
+  }, [items, searchQuery, sortOption, isSearchActive, filter, genreFilter, ratingRange]);
 
   // Modal senkronizasyonu
   useEffect(() => {
@@ -400,6 +434,21 @@ export default function MediaListPage() {
             {/* Ayraç */}
             <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
 
+            {/* Gelişmiş Filtre Toggle */}
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`p-2 rounded-lg transition-all duration-200 relative ${showAdvancedFilters || isAdvancedFilterActive
+                ? 'bg-violet-500 text-white'
+                : 'text-gray-400 hover:text-violet-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              title={t('list.advancedFilters') || 'Gelişmiş Filtreler'}
+            >
+              <FaFilter className="text-sm" />
+              {isAdvancedFilterActive && !showAdvancedFilters && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full" />
+              )}
+            </button>
+
             {/* Araçlar */}
             <div className="flex items-center gap-1">
               {/* Sezon Güncelle - Sadece diziler sayfasında */}
@@ -444,6 +493,86 @@ export default function MediaListPage() {
 
           </div>
         </div>
+
+        {/* Gelişmiş Filtreler Paneli */}
+        <AnimatePresence>
+          {showAdvancedFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl border border-violet-200 dark:border-violet-800/50">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Tür Filtresi */}
+                  <div className="flex items-center gap-2">
+                    <FaTheaterMasks className="text-violet-500" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('list.genreFilter') || 'Tür'}:</span>
+                    <select
+                      value={genreFilter}
+                      onChange={(e) => setGenreFilter(e.target.value)}
+                      className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                    >
+                      <option value="all">{t('list.all')}</option>
+                      {allGenres.map(genre => (
+                        <option key={genre} value={genre}>{genre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Puan Aralığı */}
+                  <div className="flex items-center gap-2">
+                    <FaStar className="text-amber-500" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('list.ratingFilter') || 'Puan'}:</span>
+                    <select
+                      value={ratingRange}
+                      onChange={(e) => setRatingRange(e.target.value)}
+                      className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                    >
+                      <option value="all">{t('list.all')}</option>
+                      <option value="9-10">★ 9-10 (Mükemmel)</option>
+                      <option value="7-9">★ 7-9 (Çok İyi)</option>
+                      <option value="5-7">★ 5-7 (İyi)</option>
+                      <option value="3-5">★ 3-5 (Orta)</option>
+                      <option value="0-3">★ 0-3 (Düşük)</option>
+                    </select>
+                  </div>
+
+                  {/* Temizle Butonu */}
+                  {isAdvancedFilterActive && (
+                    <button
+                      onClick={() => {
+                        setGenreFilter('all');
+                        setRatingRange('all');
+                      }}
+                      className="ml-auto px-3 py-1.5 text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
+                    >
+                      <FaTimes size={10} />
+                      {t('list.clearFilters') || 'Filtreleri Temizle'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Aktif Filtre Özeti */}
+                {isAdvancedFilterActive && (
+                  <div className="mt-3 pt-3 border-t border-violet-200 dark:border-violet-700/50 flex items-center gap-2 text-sm text-violet-700 dark:text-violet-300">
+                    <span className="font-medium">{t('list.activeFilters') || 'Aktif Filtreler'}:</span>
+                    {genreFilter !== 'all' && (
+                      <span className="px-2 py-0.5 bg-violet-200 dark:bg-violet-800 rounded-full text-xs">{genreFilter}</span>
+                    )}
+                    {ratingRange !== 'all' && (
+                      <span className="px-2 py-0.5 bg-amber-200 dark:bg-amber-800 rounded-full text-xs">★ {ratingRange}</span>
+                    )}
+                    <span className="ml-auto text-xs text-gray-500">
+                      {filteredItems.length} {t('list.results') || 'sonuç'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Floating Bulk Actions Toolbar */}

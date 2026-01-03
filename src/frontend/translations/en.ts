@@ -301,6 +301,19 @@ export const translationsEN = {
         noRecent: 'No recently watched items.',
         noAddedThisWeek: 'No items added this week.',
         unlocked: 'Unlocked',
+        // New stats
+        weeklyActivity: 'Weekly Activity',
+        mostActiveDay: 'Your most active day',
+        wrappedTitle: 'Your Wrapped',
+        wrappedDesc: 'Discover your year in review!',
+        viewWrapped: 'View Wrapped',
+        // Advanced Charts
+        advancedCharts: 'Advanced Charts',
+        yearlyHeatmap: 'Yearly Activity',
+        typeRadar: 'Type Distribution',
+        cumulativeGrowth: 'Cumulative Growth',
+        less: 'Less',
+        more: 'More',
     },
 
     // MediaListPage
@@ -322,6 +335,13 @@ export const translationsEN = {
         noItems: 'No items found.',
         filterNoItems: 'No items match this filter.',
         endOfList: '~ End of list ~',
+        // Advanced Filters
+        advancedFilters: 'Advanced Filters',
+        genreFilter: 'Genre',
+        ratingFilter: 'Rating',
+        clearFilters: 'Clear Filters',
+        activeFilters: 'Active Filters',
+        results: 'results',
     },
 
     toast: {
@@ -511,5 +531,34 @@ export const translationsEN = {
         updating: 'Updating...',
         updateComplete: 'Update complete! {updated} series updated.',
         noSeriesFound: 'No series found to update.',
+    },
+
+    // Custom Lists
+    lists: {
+        title: 'My Lists',
+        createNew: 'New List',
+        emptyTitle: 'No lists yet',
+        emptyDesc: 'Create custom lists to organize your content. "Marvel Movies", "2024 Watchlist" etc...',
+        createFirst: 'Create Your First List',
+        name: 'List Name',
+        description: 'Description',
+        color: 'Color',
+        makePublic: 'Make Public',
+        publicDesc: 'Other users can view this list',
+        create: 'Create List',
+        public: 'Public',
+        private: 'Private',
+        items: 'items',
+        deleteConfirm: 'Are you sure you want to delete this list?',
+        addToList: 'Add to List',
+        removeFromList: 'Remove from List',
+        selectList: 'Select List',
+        notFound: 'List not found',
+        backToLists: '← Back to Lists',
+        shareLink: 'Share',
+        linkCopied: 'Link copied!',
+        notPublic: 'List is not public',
+        emptyListTitle: 'No items in this list yet',
+        emptyListDesc: 'Use the "Add to List" button on media cards to add content to this list.',
     },
 };

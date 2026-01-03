@@ -301,6 +301,19 @@ export const translationsTR = {
         noRecent: 'Henüz izlenen içerik yok.',
         noAddedThisWeek: 'Bu hafta eklenen içerik yok.',
         unlocked: 'Kazanıldı',
+        // New stats
+        weeklyActivity: 'Haftalık Aktivite',
+        mostActiveDay: 'En aktif günün',
+        wrappedTitle: 'Yıllık Özetin',
+        wrappedDesc: 'Yılın özetini keşfet!',
+        viewWrapped: 'Özete Git',
+        // Advanced Charts
+        advancedCharts: 'Gelişmiş Grafikler',
+        yearlyHeatmap: 'Yıllık Aktivite',
+        typeRadar: 'Tür Dağılımı',
+        cumulativeGrowth: 'Kümülatif Büyüme',
+        less: 'Az',
+        more: 'Çok',
     },
 
     // MediaListPage
@@ -322,6 +335,13 @@ export const translationsTR = {
         noItems: 'Kayıt bulunamadı.',
         filterNoItems: 'Bu filtreye uygun kayıt yok.',
         endOfList: '~ Listenin sonu ~',
+        // Advanced Filters
+        advancedFilters: 'Gelişmiş Filtreler',
+        genreFilter: 'Tür',
+        ratingFilter: 'Puan',
+        clearFilters: 'Filtreleri Temizle',
+        activeFilters: 'Aktif Filtreler',
+        results: 'sonuç',
     },
 
     toast: {
@@ -510,5 +530,34 @@ export const translationsTR = {
         updating: 'Güncelleniyor...',
         updateComplete: 'Güncelleme tamamlandı! {updated} dizi güncellendi.',
         noSeriesFound: 'Güncellenecek dizi bulunamadı.',
+    },
+
+    // Custom Lists
+    lists: {
+        title: 'Listelerim',
+        createNew: 'Yeni Liste',
+        emptyTitle: 'Henüz liste yok',
+        emptyDesc: 'Özel listeler oluşturarak içeriklerini organize et. "Marvel Filmleri", "2024 İzlenecekler" gibi...',
+        createFirst: 'İlk Listeni Oluştur',
+        name: 'Liste Adı',
+        description: 'Açıklama',
+        color: 'Renk',
+        makePublic: 'Herkese Açık Yap',
+        publicDesc: 'Diğer kullanıcılar bu listeyi görebilir',
+        create: 'Liste Oluştur',
+        public: 'Herkese Açık',
+        private: 'Özel',
+        items: 'öğe',
+        deleteConfirm: 'Bu listeyi silmek istediğinize emin misiniz?',
+        addToList: 'Listeye Ekle',
+        removeFromList: 'Listeden Çıkar',
+        selectList: 'Liste Seç',
+        notFound: 'Liste bulunamadı',
+        backToLists: '← Listelere Dön',
+        shareLink: 'Paylaş',
+        linkCopied: 'Link kopyalandı!',
+        notPublic: 'Liste herkese açık değil',
+        emptyListTitle: 'Bu listede henüz içerik yok',
+        emptyListDesc: 'İçerik kartlarındaki "Listeye Ekle" butonunu kullanarak bu listeye içerik ekleyebilirsin.',
     },
 };

@@ -12,6 +12,7 @@ import { showMarqueeToast } from './MarqueeToast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { createActivity, deleteActivitiesForMedia } from '../../backend/services/activityService';
+import AddToListDropdown from './AddToListDropdown';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -265,6 +266,10 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               >
                 {localIsFavorite ? <FaHeart size={12} /> : <FaRegHeart size={12} />}
               </button>
+            )}
+            {/* Listeye Ekle butonu */}
+            {!isModal && !readOnly && (
+              <AddToListDropdown itemId={item.id} />
             )}
           </div>
 

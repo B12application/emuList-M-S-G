@@ -1,6 +1,6 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -126,6 +126,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             </NavLink>
             <NavLink onClick={onClose} to="/stats" className={getNavLinkCls}>
               {({ isActive }) => <><FaChartBar className={isActive ? "text-orange-500" : "text-gray-400"} /> {t('home.stats')}</>}
+            </NavLink>
+            <NavLink onClick={onClose} to="/lists" className={getNavLinkCls}>
+              {({ isActive }) => <><FaListUl className={isActive ? "text-violet-500" : "text-gray-400"} /> {t('lists.title') || 'Listelerim'}</>}
             </NavLink>
           </div>
 

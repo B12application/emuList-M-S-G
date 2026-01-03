@@ -23,7 +23,6 @@ import QuoteWidget from '../components/QuoteWidget';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
-const MUSTAFA_FOTOGRAF_URL = 'https://media.licdn.com/dms/image/v2/D4D03AQFVgcz9aWEWPQ/profile-displayphoto-scale_400_400/B4DZrVBAm4HsAg-/0/1764510406029?e=1766620800&v=beta&t=gombvy-MJsL6YnjW6WtztxL89KG2x1_39u8jP8Nmtak';
 
 export default function HomePage() {
     const { user } = useAuth();
@@ -147,24 +146,21 @@ export default function HomePage() {
         }
     };
 
-    // Profil (Değişmedi)
+    // Profil
     const displayName = user.displayName || user.email?.split('@')[0] || "Kullanıcı";
     const getAvatar = () => {
-        // Special case for Mustafa
-        if (user.uid === 'ZKU7SObBkeNzMicltUKJjo6ybHH2') return MUSTAFA_FOTOGRAF_URL;
-
-        // Only use photoURL if it's a custom one (not our default avatars)
+        // Önce kullanıcının özel fotoğrafını kontrol et (varsayılan avatarlar hariç)
         if (user.photoURL &&
             user.photoURL !== MALE_AVATAR_URL &&
             user.photoURL !== FEMALE_AVATAR_URL) {
             return user.photoURL;
         }
 
-        // Use gender-based avatar
+        // Özel fotoğraf yoksa cinsiyete göre varsayılan avatar kullan
         if (profile?.gender === 'female') return FEMALE_AVATAR_URL;
         if (profile?.gender === 'male') return MALE_AVATAR_URL;
 
-        // Default fallback
+        // Hiçbir şey yoksa erkek avatarı varsayılan
         return MALE_AVATAR_URL;
     };
 

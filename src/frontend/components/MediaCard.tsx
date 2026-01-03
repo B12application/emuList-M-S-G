@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaClock } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -185,41 +185,50 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               }`}
           />
 
-          <div className="absolute left-3 top-3">
-            {/* Diziler için 3 aşamalı durum: İzlendi / Yarıda Kaldı / İzlenmedi */}
+          {/* Sol üst - Durum badge'i */}
+          <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+            {/* Diziler için durum + sezon bilgisi */}
             {item.type === 'series' && item.totalSeasons ? (
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                  ? "bg-emerald-500 text-white border-emerald-400/50"
-                  : item.watchedSeasons && item.watchedSeasons.length > 0
-                    ? "bg-amber-500 text-white border-amber-400/50"
-                    : "bg-rose-500 text-white border-rose-400/50"
-                  }`}
-              >
-                {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
-                  <FaCheck className="text-[10px]" />
-                ) : item.watchedSeasons && item.watchedSeasons.length > 0 ? (
-                  <FaClock className="text-[10px]" />
-                ) : (
-                  <FaTimes className="text-[10px]" />
-                )}
-                <span className="hidden md:inline">
-                  {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                    ? t('media.watched')
+              <>
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                    ? "bg-emerald-500 text-white border-emerald-400/50"
                     : item.watchedSeasons && item.watchedSeasons.length > 0
-                      ? t('media.inProgress')
-                      : t('media.notWatched')
-                  }
+                      ? "bg-amber-500 text-white border-amber-400/50"
+                      : "bg-rose-500 text-white border-rose-400/50"
+                    }`}
+                >
+                  {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
+                    <FaCheck size={10} />
+                  ) : item.watchedSeasons && item.watchedSeasons.length > 0 ? (
+                    <FaTv size={10} />
+                  ) : (
+                    <FaTimes size={10} />
+                  )}
+                  <span className="hidden md:inline">
+                    {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                      ? t('media.watched')
+                      : item.watchedSeasons && item.watchedSeasons.length > 0
+                        ? t('media.inProgress')
+                        : t('media.notWatched')
+                    }
+                  </span>
                 </span>
-              </span>
+                {/* Sezon progress badge */}
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 shadow-sm backdrop-blur-md">
+                  <FaTv size={9} />
+                  <span>{item.watchedSeasons?.length || 0}/{item.totalSeasons}</span>
+                </span>
+              </>
             ) : (
+              /* Film/Kitap/Oyun için durum badge'i */
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${localWatched
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${localWatched
                   ? "bg-emerald-500 text-white border-emerald-400/50"
                   : "bg-rose-500 text-white border-rose-400/50"
                   }`}
               >
-                {localWatched ? <FaCheck className="text-[10px]" /> : <FaTimes className="text-[10px]" />}
+                {localWatched ? <FaCheck size={10} /> : <FaTimes size={10} />}
                 <span className="hidden md:inline">
                   {localWatched
                     ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
@@ -229,27 +238,14 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               </span>
             )}
           </div>
-          {/* Rating - Her zaman sağ üstte */}
-          <div className="absolute right-3 top-3 flex items-center gap-2">
-            {/* Sezon Badge - Diziler için */}
-            {item.type === 'series' && item.totalSeasons && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium shadow-sm backdrop-blur-md ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                ? 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200'
-                : 'bg-purple-100/90 text-purple-700 dark:bg-purple-900/80 dark:text-purple-200'
-                }`}>
-                <FaTv size={10} />
-                {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
-                  <><FaCheck size={8} /> {item.totalSeasons}</>
-                ) : (
-                  `S${item.watchedSeasons?.length || 0}/${item.totalSeasons}`
-                )}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-amber-100/90 text-amber-700 dark:bg-amber-900/80 dark:text-amber-200 shadow-sm backdrop-blur-md">
-              <FaStar /> {item.rating}
+
+          {/* Sağ üst - Rating ve butonlar */}
+          <div className="absolute right-3 top-3 flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium bg-amber-100/90 text-amber-700 dark:bg-amber-900/80 dark:text-amber-200 shadow-sm backdrop-blur-md">
+              <FaStar size={10} /> {item.rating}
             </span>
 
-            {/* Kalp İkonu - Modal dışındayken sağ üstte */}
+            {/* Kalp İkonu - Modal dışındayken */}
             {!isModal && (
               <button
                 onClick={(e) => {
@@ -257,14 +253,14 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                   handleFavoriteToggle();
                 }}
                 disabled={isTogglingFavorite || readOnly}
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50"
                 style={{
                   backgroundColor: localIsFavorite ? 'rgba(239, 68, 68, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                   color: localIsFavorite ? 'white' : '#ef4444'
                 }}
                 title={localIsFavorite ? t('actions.removeFavorite') : t('actions.addFavorite')}
               >
-                {localIsFavorite ? <FaHeart size={12} /> : <FaRegHeart size={12} />}
+                {localIsFavorite ? <FaHeart size={10} /> : <FaRegHeart size={10} />}
               </button>
             )}
             {/* Listeye Ekle butonu */}

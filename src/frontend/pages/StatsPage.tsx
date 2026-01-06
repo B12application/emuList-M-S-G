@@ -231,6 +231,23 @@ export default function StatsPage() {
             },
         ];
 
+        // NEW: Year Distribution based on releaseDate
+        const yearCounts: Record<string, number> = {};
+        history.forEach(item => {
+            if (item.releaseDate) {
+                const match = item.releaseDate.match(/\b(19|20)\d{2}\b/);
+                if (match) {
+                    const year = match[0];
+                    yearCounts[year] = (yearCounts[year] || 0) + 1;
+                }
+            }
+        });
+
+        const yearDistributionData = Object.entries(yearCounts)
+            .map(([year, count]) => ({ year, count }))
+            .sort((a, b) => parseInt(b.year) - parseInt(a.year))
+            .slice(0, 15); // Son 15 yıl
+
         return {
             thisMonthCount: thisMonthItems.length,
             totalCount: history.length,
@@ -246,7 +263,8 @@ export default function StatsPage() {
             mostActiveDay,
             heatmapData,
             radarData,
-            cumulativeData
+            cumulativeData,
+            yearDistributionData
         };
     }, [history, loading, t]);
 
@@ -442,6 +460,35 @@ export default function StatsPage() {
                                         cursor={{ fill: 'transparent' }}
                                     />
                                     <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* YEAR DISTRIBUTION CHART */}
+            {stats.yearDistributionData && stats.yearDistributionData.length > 0 && (
+                <div className="mb-8">
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                            📅 {t('statsCharts.yearDistribution') || 'Yıl Dağılımı'}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-stone-400 mb-4">
+                            {t('statsCharts.yearDistributionDesc') || 'Hangi yılın içeriklerini en çok ekledin?'}
+                        </p>
+                        <div className="h-72 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats.yearDistributionData}>
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                    <XAxis dataKey="year" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                    <RechartsTooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                        cursor={{ fill: 'transparent' }}
+                                        formatter={(value: any) => [`${value} içerik`, 'Toplam']}
+                                    />
+                                    <Bar dataKey="count" fill="#f59e0b" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

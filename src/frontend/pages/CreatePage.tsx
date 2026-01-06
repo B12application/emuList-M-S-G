@@ -46,11 +46,12 @@ export default function CreatePage() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [totalSeasons, setTotalSeasons] = useState<number | undefined>(undefined);
+  const [releaseDate, setReleaseDate] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true); // Accordion state
 
   // Handle search result selection
-  const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[]; totalSeasons?: number }) => {
+  const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[]; totalSeasons?: number; releaseDate?: string }) => {
     setTitle(details.title);
     setImage(details.image);
     setDescription(details.description);
@@ -59,6 +60,8 @@ export default function CreatePage() {
     if (details.genres.length) setGenres(details.genres);
     // Diziler için toplam sezon sayısını kaydet
     if (details.totalSeasons) setTotalSeasons(details.totalSeasons);
+    // Çıkış tarihi bilgisini kaydet
+    if (details.releaseDate) setReleaseDate(details.releaseDate);
   };
 
   // Toggle genre
@@ -99,6 +102,7 @@ export default function CreatePage() {
     author: type === 'book' ? author : undefined,
     genre: genres.join(', ') || undefined,
     tags: tags.length > 0 ? tags : undefined,
+    releaseDate: releaseDate || undefined,
   };
 
   // Submit handler
@@ -135,6 +139,8 @@ export default function CreatePage() {
         newItem.totalSeasons = totalSeasons;
         newItem.watchedSeasons = [];
       }
+      // Çıkış tarihi bilgisini ekle
+      if (releaseDate) newItem.releaseDate = releaseDate;
 
       const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
 

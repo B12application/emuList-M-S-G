@@ -28,6 +28,7 @@ interface MediaDetails {
     author?: string;
     genres: string[];
     totalSeasons?: number; // Diziler için toplam sezon sayısı
+    releaseDate?: string; // Çıkış tarihi
 }
 
 interface SearchInputProps {
@@ -129,7 +130,9 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     rating: data.imdbRating && data.imdbRating !== 'N/A' ? normalizeRating(data.imdbRating) : '0',
                     genres: data.Genre && data.Genre !== 'N/A' ? data.Genre.split(', ').map((g: string) => g.trim()) : [],
                     // Diziler için toplam sezon sayısını ekle
-                    totalSeasons: type === 'series' && data.totalSeasons ? parseInt(data.totalSeasons, 10) : undefined
+                    totalSeasons: type === 'series' && data.totalSeasons ? parseInt(data.totalSeasons, 10) : undefined,
+                    // Çıkış tarihi
+                    releaseDate: data.Released && data.Released !== 'N/A' ? data.Released : undefined
                 };
             } else if (type === 'book') {
                 const data = await getBookById(result.id);
@@ -139,7 +142,9 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     description: data.volumeInfo.description || '',
                     rating: data.volumeInfo.averageRating ? normalizeBookRating(data.volumeInfo.averageRating) : '0',
                     author: formatAuthors(data.volumeInfo.authors),
-                    genres: data.volumeInfo.categories || []
+                    genres: data.volumeInfo.categories || [],
+                    // Kitaplar için yayın tarihi
+                    releaseDate: data.volumeInfo.publishedDate || undefined
                 };
             } else {
                 const data = await getGameById(Number(result.id));
@@ -148,7 +153,9 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     image: data.background_image || '',
                     description: data.description_raw || data.description || '',
                     rating: data.rating ? normalizeGameRating(data.rating) : '0',
-                    genres: data.genres ? data.genres.map((g: any) => g.name) : []
+                    genres: data.genres ? data.genres.map((g: any) => g.name) : [],
+                    // Oyunlar için çıkış tarihi
+                    releaseDate: data.released || undefined
                 };
             }
 

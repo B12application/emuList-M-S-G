@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -329,12 +329,23 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
             </div>
           )}
 
-          {item.createdAt && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-1">
-              <FaCalendarAlt />
-              <span>{t('card.addedOn')}: {formatDate(item.createdAt)}</span>
-            </div>
-          )}
+          {/* Tarih bilgileri */}
+          <div className="flex flex-col gap-0.5 mb-1">
+            {/* Çıkış tarihi */}
+            {item.releaseDate && (
+              <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                <FaFilm size={10} />
+                <span>{t('card.releaseDate')}: {item.releaseDate}</span>
+              </div>
+            )}
+            {/* Eklenme tarihi */}
+            {item.createdAt && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                <FaCalendarAlt size={10} />
+                <span>{t('card.addedOn')}: {formatDate(item.createdAt)}</span>
+              </div>
+            )}
+          </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 h-14 mb-1">
             {item.description || t('card.noDescription')}

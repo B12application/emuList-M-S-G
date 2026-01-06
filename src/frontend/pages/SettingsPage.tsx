@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaSync, FaTags } from 'react-icons/fa';
+import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaSync, FaTags, FaCalendarAlt } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 // import { auth } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { countItemsWithoutGenre, migrateGenresForUser } from '../../backend/services/genreMigrationService';
+import { migrateReleaseDates } from '../../backend/services/releaseDateMigrationService';
 
 export default function SettingsPage() {
     const { user } = useAuth();
@@ -30,12 +31,46 @@ export default function SettingsPage() {
         currentItem: '',
     });
 
+    // Release Date Migration States
+    const [releaseDateLoading, setReleaseDateLoading] = useState(false);
+    const [releaseDateProgress, setReleaseDateProgress] = useState({
+        current: 0,
+        total: 0,
+        title: '',
+    });
+
     // Load count on mount
     useEffect(() => {
         if (user) {
             countItemsWithoutGenre(user.uid).then(setItemsWithoutGenre);
         }
     }, [user]);
+
+    const handleReleaseDateMigration = async () => {
+        if (!user) return;
+
+        const confirmed = window.confirm(
+            'Tüm içerikler için çıkış tarihi bilgisi eklenecek.\n\nBu işlem API çağrısı yapacağı için biraz zaman alabilir.\n\nDevam etmek istiyor musunuz?'
+        );
+
+        if (!confirmed) return;
+
+        setReleaseDateLoading(true);
+        setReleaseDateProgress({ current: 0, total: 0, title: '' });
+
+        try {
+            const result = await migrateReleaseDates(user.uid, (current, total, title) => {
+                setReleaseDateProgress({ current, total, title });
+            });
+
+            toast.success(`✅ Tamamlandı! ${result.updated} içerik güncellendi, ${result.skipped} atlandı.`);
+        } catch (error: any) {
+            console.error('Release date migration error:', error);
+            toast.error('Migration hatası: ' + error.message);
+        } finally {
+            setReleaseDateLoading(false);
+        }
+    };
 
     const reauthenticate = async (password: string) => {
         if (!user || !user.email) throw new Error('User not found');
@@ -175,6 +210,42 @@ export default function SettingsPage() {
                         )}
                     </div>
                 )}
+
+                {/* Release Date Migration Section */}
+                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl shadow-lg p-8 border border-emerald-100 dark:border-emerald-900/30">
+                    <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-4 flex items-center gap-2">
+                        <FaCalendarAlt /> Çıkış Tarihi Ekle
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm leading-relaxed">
+                        Mevcut içeriklerinize çıkış tarihi (release date) bilgisi ekler.
+                        Bu işlem, her kayıt için API'den çıkış tarihini çekip güncelleyecek.
+                    </p>
+
+                    {releaseDateLoading ? (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                <FaSync className="animate-spin" />
+                                <span>İşleniyor: {releaseDateProgress.title || '...'}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div
+                                    className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${releaseDateProgress.total > 0 ? (releaseDateProgress.current / releaseDateProgress.total) * 100 : 0}%` }}
+                                />
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {releaseDateProgress.current} / {releaseDateProgress.total}
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleReleaseDateMigration}
+                            className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-600/20"
+                        >
+                            <FaSync /> Çıkış Tarihlerini Ekle
+                        </button>
+                    )}
+                </div>
 
                 {/* Password Change Section */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">

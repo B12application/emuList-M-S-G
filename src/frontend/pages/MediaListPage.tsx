@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaSync, FaCheck, FaClock, FaFilter, FaTheaterMasks } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaCheck, FaClock, FaFilter, FaTheaterMasks } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -12,14 +12,11 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
-import { migrateSeriesSeasons } from '../../backend/services/seasonMigrationService';
 
 import { useLanguage } from '../context/LanguageContext';
 
 export default function MediaListPage() {
   const { t } = useLanguage();
-  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
@@ -27,13 +24,14 @@ export default function MediaListPage() {
   const filter: FilterStatus = (searchParams.get('filter') as FilterStatus) || 'all';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date'>('rating');
+  const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date' | 'releaseDate'>('rating');
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Advanced Filters
   const [genreFilter, setGenreFilter] = useState<string>('all');
   const [ratingRange, setRatingRange] = useState<string>('all');
+  const [yearFilter, setYearFilter] = useState<string>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Bulk Actions state
@@ -42,7 +40,7 @@ export default function MediaListPage() {
   const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const isSearchActive = searchQuery.trim().length > 0;
-  const isAdvancedFilterActive = genreFilter !== 'all' || ratingRange !== 'all';
+  const isAdvancedFilterActive = genreFilter !== 'all' || ratingRange !== 'all' || yearFilter !== 'all';
   const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive || isAdvancedFilterActive, sortOption === 'date' ? 'createdAt' : 'rating');
 
   // Compute all available genres from items
@@ -57,6 +55,21 @@ export default function MediaListPage() {
       }
     });
     return Array.from(genres).sort();
+  }, [items]);
+
+  // Compute all available years from items (based on releaseDate)
+  const allYears = useMemo(() => {
+    const years = new Set<string>();
+    items.forEach(item => {
+      if (item.releaseDate) {
+        // releaseDate format: "15 Jul 2022" or "2022-07-15" or "2022"
+        const match = item.releaseDate.match(/\b(19|20)\d{2}\b/);
+        if (match) {
+          years.add(match[0]);
+        }
+      }
+    });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a)); // En yeniden eskiye
   }, [items]);
 
   // useMemo kullanarak sıralama - sonsuz döngü önlenir
@@ -94,6 +107,14 @@ export default function MediaListPage() {
       });
     }
 
+    // Year filter (based on releaseDate)
+    if (yearFilter !== 'all') {
+      result = result.filter(item => {
+        if (!item.releaseDate) return false;
+        return item.releaseDate.includes(yearFilter);
+      });
+    }
+
     // Sadece seçilen kritere göre sırala (izlendi/izlenmedi karışık)
     result.sort((a, b) => {
       if (sortOption === 'rating') {
@@ -102,12 +123,20 @@ export default function MediaListPage() {
         return a.title.localeCompare(b.title);
       } else if (sortOption === 'date') {
         return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+      } else if (sortOption === 'releaseDate') {
+        // Çıkış tarihine göre sırala (en yeni önce)
+        const getYear = (dateStr?: string) => {
+          if (!dateStr) return 0;
+          const match = dateStr.match(/\b(19|20)\d{2}\b/);
+          return match ? parseInt(match[0]) : 0;
+        };
+        return getYear(b.releaseDate) - getYear(a.releaseDate);
       }
       return 0;
     });
 
     return result;
-  }, [items, searchQuery, sortOption, isSearchActive, filter, genreFilter, ratingRange]);
+  }, [items, searchQuery, sortOption, isSearchActive, filter, genreFilter, ratingRange, yearFilter]);
 
   // Modal senkronizasyonu
   useEffect(() => {
@@ -183,38 +212,6 @@ export default function MediaListPage() {
     const typeName = type === 'all' ? 'Tum-Koleksiyonum' : type === 'movie' ? 'Filmlerim' : type === 'series' ? 'Dizilerim' : type === 'game' ? 'Oyunlarim' : 'Kitaplarim';
     exportToPDF(filteredItems, typeName);
     toast.success(t('bulk.pdfExported'));
-  };
-
-  // Bulk Season Update for series
-  const [isBulkUpdatingSeasons, setIsBulkUpdatingSeasons] = useState(false);
-  const [seasonUpdateProgress, setSeasonUpdateProgress] = useState('');
-
-  const handleBulkSeasonUpdate = async () => {
-    if (!user) return;
-
-    setIsBulkUpdatingSeasons(true);
-    setSeasonUpdateProgress(t('seasons.updating'));
-
-    try {
-      const result = await migrateSeriesSeasons(user.uid, (current, total, title) => {
-        setSeasonUpdateProgress(`${current}/${total}: ${title}`);
-      });
-
-      if (result.updated > 0) {
-        toast.success(t('seasons.updateComplete').replace('{updated}', String(result.updated)));
-        refetch();
-      } else if (result.total === 0) {
-        toast.error(t('seasons.noSeriesFound'));
-      } else {
-        toast.success(`${result.skipped} dizi zaten güncel.`);
-      }
-    } catch (error) {
-      console.error('Sezon güncelleme hatası:', error);
-      toast.error('Güncelleme sırasında hata oluştu');
-    } finally {
-      setIsBulkUpdatingSeasons(false);
-      setSeasonUpdateProgress('');
-    }
   };
 
   return (
@@ -379,6 +376,16 @@ export default function MediaListPage() {
               >
                 <FaCalendarAlt className="text-sm" />
               </button>
+              <button
+                title={t('list.byReleaseDate') || 'Çıkış Tarihine Göre'}
+                className={`p-2 rounded-md transition-all duration-200 ${sortOption === 'releaseDate'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
+                  : 'text-gray-400 hover:text-emerald-500'
+                  }`}
+                onClick={() => setSortOption('releaseDate')}
+              >
+                <FaFilm className="text-sm" />
+              </button>
             </div>
 
             {/* Ayraç */}
@@ -451,20 +458,6 @@ export default function MediaListPage() {
 
             {/* Araçlar */}
             <div className="flex items-center gap-1">
-              {/* Sezon Güncelle - Sadece diziler sayfasında */}
-              {type === 'series' && (
-                <button
-                  onClick={handleBulkSeasonUpdate}
-                  disabled={isBulkUpdatingSeasons || filteredItems.length === 0}
-                  className={`p-2 rounded-lg transition-all duration-200 ${isBulkUpdatingSeasons
-                    ? 'bg-purple-500 text-white'
-                    : 'text-gray-400 hover:text-purple-500 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    } disabled:opacity-30 disabled:cursor-not-allowed`}
-                  title={isBulkUpdatingSeasons ? seasonUpdateProgress : t('seasons.bulkUpdate')}
-                >
-                  <FaSync className={`text-sm ${isBulkUpdatingSeasons ? 'animate-spin' : ''}`} />
-                </button>
-              )}
               <button
                 onClick={() => {
                   if (selectionMode) {
@@ -539,12 +532,31 @@ export default function MediaListPage() {
                     </select>
                   </div>
 
+                  {/* Yıl Filtresi */}
+                  {allYears.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <FaCalendarAlt className="text-emerald-500" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('list.yearFilter') || 'Yıl'}:</span>
+                      <select
+                        value={yearFilter}
+                        onChange={(e) => setYearFilter(e.target.value)}
+                        className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                      >
+                        <option value="all">{t('list.all')}</option>
+                        {allYears.map(year => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   {/* Temizle Butonu */}
                   {isAdvancedFilterActive && (
                     <button
                       onClick={() => {
                         setGenreFilter('all');
                         setRatingRange('all');
+                        setYearFilter('all');
                       }}
                       className="ml-auto px-3 py-1.5 text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
                     >
@@ -563,6 +575,9 @@ export default function MediaListPage() {
                     )}
                     {ratingRange !== 'all' && (
                       <span className="px-2 py-0.5 bg-amber-200 dark:bg-amber-800 rounded-full text-xs">★ {ratingRange}</span>
+                    )}
+                    {yearFilter !== 'all' && (
+                      <span className="px-2 py-0.5 bg-emerald-200 dark:bg-emerald-800 rounded-full text-xs">📅 {yearFilter}</span>
                     )}
                     <span className="ml-auto text-xs text-gray-500">
                       {filteredItems.length} {t('list.results') || 'sonuç'}
@@ -694,6 +709,14 @@ export default function MediaListPage() {
                       {item.description || t('card.noDescription')}
                     </p>
                   </div>
+
+                  {/* Çıkış Tarihi - Mobilde gizli */}
+                  {item.releaseDate && (
+                    <div className="shrink-0 hidden lg:flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                      <FaFilm size={10} />
+                      <span>{item.releaseDate.match(/\b(19|20)\d{2}\b/)?.[0] || item.releaseDate}</span>
+                    </div>
+                  )}
 
                   {/* Tür Badge - Mobilde gizli */}
                   <div className="shrink-0 hidden md:block">

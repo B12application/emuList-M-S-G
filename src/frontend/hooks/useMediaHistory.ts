@@ -13,6 +13,7 @@ export interface HistoryItem {
     createdAt: any; // Timestamp
     isFavorite?: boolean;
     genre?: string;
+    releaseDate?: string;
 }
 
 // Firebase'den history çeken fonksiyon
@@ -34,7 +35,8 @@ async function fetchMediaHistory(userId: string): Promise<HistoryItem[]> {
             watched: d.watched,
             createdAt: d.createdAt,
             isFavorite: d.isFavorite,
-            genre: d.genre
+            genre: d.genre,
+            releaseDate: d.releaseDate
         } as HistoryItem;
     });
 }

@@ -26,4 +26,5 @@ export interface MediaItem {
   genre?: string; // Tür bilgisi (Film: "Action, Drama", Oyun: "RPG, Action", Kitap: "Fiction")
   totalSeasons?: number; // Diziler için toplam sezon sayısı
   watchedSeasons?: number[]; // Kullanıcının izlediği sezon numaraları [1, 2, 3]
+  releaseDate?: string; // Çıkış tarihi (Film/Dizi: "15 Jul 2022", Oyun: "2022-07-15")
 }

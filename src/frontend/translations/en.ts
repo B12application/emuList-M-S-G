@@ -328,6 +328,7 @@ export const translationsEN = {
         byRating: 'By Rating',
         byTitle: 'By Title',
         byDate: 'By Date',
+        byReleaseDate: 'By Release Date',
         grid: 'Grid View',
         listView: 'List View',
         searchPlaceholder: 'Search...',
@@ -339,6 +340,7 @@ export const translationsEN = {
         advancedFilters: 'Advanced Filters',
         genreFilter: 'Genre',
         ratingFilter: 'Rating',
+        yearFilter: 'Year',
         clearFilters: 'Clear Filters',
         activeFilters: 'Active Filters',
         results: 'results',
@@ -375,6 +377,7 @@ export const translationsEN = {
         edit: 'Edit',
         delete: 'Delete',
         addedOn: 'Added',
+        releaseDate: 'Release Date',
         noDescription: 'No description added for this item.',
         deleteConfirm: 'Delete Item',
         deleteMessage: 'Are you sure you want to delete? This action cannot be undone.',
@@ -493,6 +496,8 @@ export const translationsEN = {
     statsCharts: {
         genreDistribution: 'Most Watched Genres',
         ratingDistribution: 'Rating Distribution',
+        yearDistribution: 'Year Distribution',
+        yearDistributionDesc: 'Which year\'s content did you add the most?',
     },
 
     // Bulk Actions

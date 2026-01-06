@@ -328,6 +328,7 @@ export const translationsTR = {
         byRating: 'Puana Göre',
         byTitle: 'İsme Göre',
         byDate: 'Tarihe Göre',
+        byReleaseDate: 'Çıkış Tarihine Göre',
         grid: 'Kart Görünümü',
         listView: 'Liste Görünümü',
         searchPlaceholder: 'Ara...',
@@ -339,6 +340,7 @@ export const translationsTR = {
         advancedFilters: 'Gelişmiş Filtreler',
         genreFilter: 'Tür',
         ratingFilter: 'Puan',
+        yearFilter: 'Yıl',
         clearFilters: 'Filtreleri Temizle',
         activeFilters: 'Aktif Filtreler',
         results: 'sonuç',
@@ -375,6 +377,7 @@ export const translationsTR = {
         edit: 'Edit',
         delete: 'Delete',
         addedOn: 'Eklendi',
+        releaseDate: 'Çıkış Tarihi',
         noDescription: 'Bu kayıt için açıklama eklenmemiş.',
         deleteConfirm: 'Kaydı Sil',
         deleteMessage: 'kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
@@ -492,6 +495,8 @@ export const translationsTR = {
     statsCharts: {
         genreDistribution: 'En Çok İzlenen Türler',
         ratingDistribution: 'Puan Dağılımı',
+        yearDistribution: 'Yıl Dağılımı',
+        yearDistributionDesc: 'Hangi yılın içeriklerini en çok ekledin?',
     },
 
     // Bulk Actions

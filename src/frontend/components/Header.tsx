@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown, FaListUl } from 'react-icons/fa';
+import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
@@ -207,10 +207,10 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                     >
                       {/* Colored ring indicator based on current page */}
                       <div className={`w-9 h-9 rounded-full overflow-hidden shadow-sm z-10 relative ring-2 transition-all ${location.pathname === '/profile' ? 'ring-rose-500' :
-                          location.pathname === '/stats' ? 'ring-amber-500' :
-                            location.pathname.startsWith('/lists') ? 'ring-violet-500' :
-                              location.pathname === '/settings' ? 'ring-gray-400' :
-                                'ring-gray-200 dark:ring-gray-700'
+                        location.pathname === '/stats' ? 'ring-amber-500' :
+                          location.pathname.startsWith('/lists') ? 'ring-violet-500' :
+                            location.pathname === '/settings' ? 'ring-gray-400' :
+                              'ring-gray-200 dark:ring-gray-700'
                         }`}>
                         <img
                           src={getAvatar()}
@@ -221,9 +221,9 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                       {/* Active indicator dot */}
                       {['/profile', '/stats', '/settings'].includes(location.pathname) || location.pathname.startsWith('/lists') ? (
                         <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${location.pathname === '/profile' ? 'bg-rose-500' :
-                            location.pathname === '/stats' ? 'bg-amber-500' :
-                              location.pathname.startsWith('/lists') ? 'bg-violet-500' :
-                                'bg-gray-400'
+                          location.pathname === '/stats' ? 'bg-amber-500' :
+                            location.pathname.startsWith('/lists') ? 'bg-violet-500' :
+                              'bg-gray-400'
                           }`} />
                       ) : null}
                     </Link>

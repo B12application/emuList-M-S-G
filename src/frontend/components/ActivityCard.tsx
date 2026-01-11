@@ -6,6 +6,7 @@ import type { Activity } from '../../backend/types/activity';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import useActivityReactions from '../hooks/useActivityReactions';
+import useUserProfile from '../hooks/useUserProfile';
 import { getDefaultAvatar } from '../utils/avatarUtils';
 
 interface ActivityCardProps {
@@ -15,6 +16,7 @@ interface ActivityCardProps {
 export default function ActivityCard({ activities }: ActivityCardProps) {
     const { t } = useLanguage();
     const { user } = useAuth();
+    const { profile } = useUserProfile();
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState('');
 
@@ -87,7 +89,10 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
     const onCommentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (commentText.trim() && user) {
-            handleComment(commentText, mainActivity.userId, (user as any).gender);
+            const userGender = profile?.gender as 'male' | 'female' | undefined;
+            // Use profile avatar, then auth photoURL, then default based on gender
+            const userAvatar = profile?.avatarUrl || user.photoURL || getDefaultAvatar(userGender);
+            handleComment(commentText, mainActivity.userId, userGender, userAvatar);
             setCommentText('');
         }
     };
@@ -160,8 +165,8 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                     <button
                         onClick={onLike}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${isLiked
-                                ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'
-                                : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+                            ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                             }`}
                     >
                         {isLiked ? <FaHeart className="text-rose-500" /> : <FaRegHeart />}

@@ -7,6 +7,7 @@ import type { MediaItem, MediaType, FilterStatus } from '../../backend/types/med
 import { useLanguage } from '../context/LanguageContext';
 import DetailModal from '../components/DetailModal';
 import { motion } from 'framer-motion';
+import { getDefaultAvatar } from '../utils/avatarUtils';
 
 export default function PublicProfilePage() {
     const { userId } = useParams<{ userId: string }>();
@@ -105,7 +106,7 @@ export default function PublicProfilePage() {
                 >
                     <div className="flex items-center gap-6">
                         <img
-                            src={profile.photoURL || 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png'}
+                            src={profile.photoURL || getDefaultAvatar(profile.gender)}
                             alt={profile.displayName}
                             className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-700"
                         />

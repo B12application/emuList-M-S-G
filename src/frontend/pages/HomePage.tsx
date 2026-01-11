@@ -23,6 +23,7 @@ import QuoteWidget from '../components/QuoteWidget';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
+const ADMIN_UID = import.meta.env.VITE_ADMIN_UID || 'ZKU7SObBkeNzMicltUKJjo6ybHH2';
 
 export default function HomePage() {
     const { user } = useAuth();
@@ -682,12 +683,14 @@ export default function HomePage() {
                     </h2>
 
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowAdminPanel(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition"
-                        >
-                            <FaCog /> {t('home.adminManage')}
-                        </button>
+                        {user?.uid === ADMIN_UID && (
+                            <button
+                                onClick={() => setShowAdminPanel(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition"
+                            >
+                                <FaCog /> {t('home.adminManage')}
+                            </button>
+                        )}
 
                         <button
                             onClick={() => setRecsExpanded(!recsExpanded)}

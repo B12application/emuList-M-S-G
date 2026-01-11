@@ -85,9 +85,15 @@ export default function ProfilePage() {
                 });
             }
 
-            // Update Firestore user document
+            // Update Firestore user document - include photoURL and displayName for public profile
             const userRef = doc(db, 'users', user.uid);
-            await setDoc(userRef, { bio, socialLinks }, { merge: true });
+            await setDoc(userRef, {
+                bio,
+                socialLinks,
+                displayName,
+                photoURL: finalPhotoURL,
+                gender: profile?.gender // Keep gender synced
+            }, { merge: true });
 
             toast.success(t('profile.saveSuccess') || 'Profil güncellendi!');
             setIsEditing(false);

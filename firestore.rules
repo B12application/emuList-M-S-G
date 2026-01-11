@@ -28,10 +28,14 @@ service cloud.firestore {
     }
     
     // Activities - ALL authenticated users can read (for social feed), users can only create/delete their own
+    // Exception: Any authenticated user can delete activities older than 10 days
     match /activities/{activityId} {
       allow read: if request.auth != null; // Anyone logged in can see all activities
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.userId || 
+        resource.data.timestamp < request.time - duration.value(10, 'd')
+      );
     }
     
     // Notifications - recipients can read their notifications, anyone can create
@@ -42,17 +46,19 @@ service cloud.firestore {
     }
     
     // Activity Likes - users can like/unlike activities
+    // Exception: Any authenticated user can delete likes on activities older than 10 days
     match /activityLikes/{likeId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null;  // Allow deletion for old activity cleanup
     }
     
     // Activity Comments - users can comment on activities
+    // Exception: Any authenticated user can delete comments on activities older than 10 days
     match /activityComments/{commentId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null;  // Allow deletion for old activity cleanup
     }
     
     // Custom Lists - kullanıcılar kendi listelerini oluşturabilir/okuyabilir, herkese açık listeler herkes tarafından okunabilir

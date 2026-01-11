@@ -7,7 +7,8 @@ import {
     getDocs,
     deleteDoc,
     doc,
-    Timestamp
+    Timestamp,
+    onSnapshot
 } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import { createNotification } from './notificationService';
@@ -20,7 +21,7 @@ export async function likeActivity(
     activityId: string,
     userId: string,
     activityOwnerId: string,
-    activityOwnerName: string,
+    likerName: string,
     mediaTitle: string
 ): Promise<void> {
     try {
@@ -44,7 +45,7 @@ export async function likeActivity(
                 userId,
                 'like',
                 {
-                    senderName: activityOwnerName, // This should be current user's name
+                    senderName: likerName,
                     mediaTitle
                 },
                 activityId
@@ -193,4 +194,39 @@ export async function deleteComment(commentId: string): Promise<void> {
         console.error('Error deleting comment:', error);
         throw error;
     }
+}
+
+/**
+ * Subscribe to real-time comments for an activity
+ */
+export function subscribeToComments(
+    activityId: string,
+    callback: (comments: ActivityComment[]) => void
+): () => void {
+    // Note: Not using orderBy to avoid requiring a composite index
+    // Sorting is done client-side instead
+    const q = query(
+        collection(db, 'activityComments'),
+        where('activityId', '==', activityId)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const comments = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as ActivityComment));
+
+        // Sort client-side by timestamp
+        comments.sort((a, b) => {
+            const aTime = a.timestamp?.toDate?.() || new Date(0);
+            const bTime = b.timestamp?.toDate?.() || new Date(0);
+            return aTime.getTime() - bTime.getTime();
+        });
+
+        callback(comments);
+    }, (error) => {
+        console.error('Error in comments subscription:', error);
+    });
+
+    return unsubscribe;
 }

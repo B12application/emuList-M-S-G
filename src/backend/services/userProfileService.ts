@@ -55,7 +55,7 @@ export async function getUserProfile(userId: string): Promise<PublicUserProfile 
             return {
                 userId,
                 displayName: data.displayName || data.email?.split('@')[0] || 'User',
-                photoURL: data.photoURL,
+                photoURL: data.photoURL || data.avatarUrl,
                 email: data.email,
                 createdAt: data.createdAt,
                 bio: data.bio,

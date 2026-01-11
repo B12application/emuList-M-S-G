@@ -168,3 +168,66 @@ export async function deleteActivity(activityId: string): Promise<void> {
         throw error;
     }
 }
+
+/**
+ * Deletes activities older than specified days (default: 10 days)
+ * Also deletes related likes and comments
+ */
+export async function cleanupOldActivities(daysOld: number = 10): Promise<number> {
+    try {
+        // Calculate cutoff date
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+        const cutoffTimestamp = Timestamp.fromDate(cutoffDate);
+
+        // Query activities older than cutoff date
+        const q = query(
+            collection(db, 'activities'),
+            where('timestamp', '<', cutoffTimestamp),
+            limit(100) // Process in batches to avoid timeout
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return 0;
+        }
+
+        const deletePromises: Promise<void>[] = [];
+
+        for (const activityDoc of querySnapshot.docs) {
+            const activityId = activityDoc.id;
+
+            // Delete the activity
+            deletePromises.push(deleteDoc(activityDoc.ref));
+
+            // Delete related likes
+            const likesQuery = query(
+                collection(db, 'activityLikes'),
+                where('activityId', '==', activityId)
+            );
+            const likesSnapshot = await getDocs(likesQuery);
+            likesSnapshot.docs.forEach(likeDoc => {
+                deletePromises.push(deleteDoc(likeDoc.ref));
+            });
+
+            // Delete related comments
+            const commentsQuery = query(
+                collection(db, 'activityComments'),
+                where('activityId', '==', activityId)
+            );
+            const commentsSnapshot = await getDocs(commentsQuery);
+            commentsSnapshot.docs.forEach(commentDoc => {
+                deletePromises.push(deleteDoc(commentDoc.ref));
+            });
+        }
+
+        await Promise.all(deletePromises);
+
+        console.log(`Cleaned up ${querySnapshot.size} old activities`);
+        return querySnapshot.size;
+    } catch (error) {
+        console.error('Error cleaning up old activities:', error);
+        return 0;
+    }
+}

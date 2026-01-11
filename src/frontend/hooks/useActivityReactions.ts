@@ -7,7 +7,7 @@ import {
     hasUserLiked,
     getActivityLikes,
     addComment,
-    getActivityComments
+    subscribeToComments
 } from '../../backend/services/activityReactionService';
 import type { ActivityLike, ActivityComment } from '../../backend/types/activityReaction';
 
@@ -21,18 +21,23 @@ export default function useActivityReactions(activityId: string) {
     useEffect(() => {
         if (!activityId) return;
 
+        let unsubscribeComments: (() => void) | null = null;
+
         const loadReactions = async () => {
             setLoading(true);
             try {
-                const [fetchedLikes, fetchedComments, userLiked] = await Promise.all([
+                const [fetchedLikes, userLiked] = await Promise.all([
                     getActivityLikes(activityId),
-                    getActivityComments(activityId),
                     user ? hasUserLiked(activityId, user.uid) : Promise.resolve(false)
                 ]);
 
                 setLikes(fetchedLikes);
-                setComments(fetchedComments);
                 setIsLiked(userLiked);
+
+                // Subscribe to real-time comments
+                unsubscribeComments = subscribeToComments(activityId, (newComments) => {
+                    setComments(newComments);
+                });
             } catch (error) {
                 console.error('Error loading reactions:', error);
             } finally {
@@ -41,6 +46,13 @@ export default function useActivityReactions(activityId: string) {
         };
 
         loadReactions();
+
+        // Cleanup subscription on unmount
+        return () => {
+            if (unsubscribeComments) {
+                unsubscribeComments();
+            }
+        };
     }, [activityId, user]);
 
     const handleLike = async (
@@ -75,7 +87,8 @@ export default function useActivityReactions(activityId: string) {
     const handleComment = async (
         text: string,
         activityOwnerId: string,
-        userGender?: 'male' | 'female'
+        userGender?: 'male' | 'female',
+        userAvatar?: string
     ) => {
         if (!user || !text.trim()) return;
 
@@ -84,24 +97,12 @@ export default function useActivityReactions(activityId: string) {
                 activityId,
                 user.uid,
                 user.displayName || 'User',
-                user.photoURL || undefined,
+                userAvatar || user.photoURL || undefined,
                 text.trim(),
                 activityOwnerId,
                 userGender
             );
-
-            // Optimistic update
-            const newComment: ActivityComment = {
-                id: `temp-${Date.now()}`,
-                activityId,
-                userId: user.uid,
-                userName: user.displayName || 'User',
-                userAvatar: user.photoURL || undefined,
-                userGender,
-                text: text.trim(),
-                timestamp: { toDate: () => new Date() } as any
-            };
-            setComments(prev => [...prev, newComment]);
+            // Real-time subscription will automatically update the comments list
         } catch (error) {
             console.error('Error adding comment:', error);
         }

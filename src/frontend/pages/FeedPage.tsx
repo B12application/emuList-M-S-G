@@ -94,6 +94,14 @@ export default function FeedPage() {
                             ? `${groupedActivities.length} içerik aktivitesi`
                             : t('feed.emptyDesc')}
                     </p>
+
+                    {/* Data retention notice */}
+                    <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl">
+                        <span className="text-amber-600 dark:text-amber-400 text-xs">ℹ️</span>
+                        <p className="text-amber-700 dark:text-amber-300 text-xs font-medium">
+                            Bu sayfada sadece son 10 günlük veriler tutulur
+                        </p>
+                    </div>
                 </motion.div>
 
                 {/* Activities List */}

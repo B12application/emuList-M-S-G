@@ -378,6 +378,7 @@ export const translationsTR = {
         delete: 'Delete',
         addedOn: 'Eklendi',
         releaseDate: 'Çıkış Tarihi',
+        runtime: 'Süre',
         noDescription: 'Bu kayıt için açıklama eklenmemiş.',
         deleteConfirm: 'Kaydı Sil',
         deleteMessage: 'kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',

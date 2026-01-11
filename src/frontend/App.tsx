@@ -19,6 +19,8 @@ import VisitedMapPage from './pages/VisitedMapPage';
 import FeedPage from './pages/FeedPage';
 import ListsPage from './pages/ListsPage';
 import ListDetailPage from './pages/ListDetailPage';
+import MigrationPage from './pages/MigrationPage';
+import AdminPage from './pages/AdminPage';
 import { LanguageProvider } from './context/LanguageContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -51,6 +53,8 @@ const router = createBrowserRouter([
       { path: 'wrapped', element: <WrappedPage /> },
       { path: 'lists', element: <ListsPage /> },
       { path: 'lists/:id', element: <ListDetailPage /> },
+      { path: 'migration', element: <MigrationPage /> },
+      { path: 'admin', element: <AdminPage /> },
     ]
   },
 

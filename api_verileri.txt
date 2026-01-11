@@ -1,0 +1,106 @@
+=============================================================
+          OMDb API - DİZİ/FİLM İÇİN GELEN TÜM VERİLER
+=============================================================
+
+📌 API Kaynağı: https://www.omdbapi.com
+📌 API Dökümanı: https://www.omdbapi.com/#parameters
+
+=============================================================
+                     ARAMA SONUÇLARI
+            (searchMovies fonksiyonu sonrası)
+=============================================================
+
+| Alan Adı  | Açıklama              | Örnek Değer           |
+|-----------|----------------------|------------------------|
+| Title     | Film/Dizi başlığı    | "Breaking Bad"         |
+| Year      | Yayın yılı           | "2008–2013"            |
+| imdbID    | IMDb benzersiz ID    | "tt0903747"            |
+| Type      | İçerik türü          | "series" veya "movie"  |
+| Poster    | Poster resmi URL'i   | "https://m.media..."   |
+
+=============================================================
+                     DETAYLI BİLGİLER
+             (getMovieById fonksiyonu sonrası)
+=============================================================
+
+| Alan Adı       | Açıklama                    | Örnek Değer                    |
+|----------------|-----------------------------|---------------------------------|
+| Title          | Film/Dizi başlığı           | "Breaking Bad"                 |
+| Year           | Yayın yılı                  | "2008–2013"                    |
+| Rated          | Yaş sınırı                  | "TV-MA"                        |
+| Released       | Yayın tarihi                | "20 Jan 2008"                  |
+| Runtime        | Süre                        | "49 min"                       |
+| Genre          | Tür(ler)                    | "Crime, Drama, Thriller"       |
+| Director       | Yönetmen                    | "N/A" (dizi için)              |
+| Writer         | Senarist                    | "Vince Gilligan"               |
+| Actors         | Oyuncular                   | "Bryan Cranston, Aaron Paul..."  |
+| Plot           | Konu özeti                  | "A chemistry teacher..."       |
+| Language       | Dil                         | "English, Spanish"             |
+| Country        | Ülke                        | "United States"                |
+| Awards         | Ödüller                     | "Won 16 Primetime Emmys..."    |
+| Poster         | Poster resmi URL'i          | "https://m.media..."           |
+| Ratings        | Farklı kaynaklardan puanlar | (dizi aşağıda)                 |
+| Metascore      | Metacritic puanı            | "87"                           |
+| imdbRating     | IMDb puanı                  | "9.5"                          |
+| imdbVotes      | IMDb oy sayısı              | "2,147,483"                    |
+| imdbID         | IMDb benzersiz ID           | "tt0903747"                    |
+| Type           | İçerik türü                 | "series"                       |
+| totalSeasons   | Toplam sezon (sadece dizi)  | "5"                            |
+| DVD            | DVD çıkış tarihi            | "N/A"                          |
+| BoxOffice      | Gişe hasılatı               | "$1,500,000" (filmler için)    |
+| Production     | Yapım şirketi               | "N/A"                          |
+| Website        | Resmi website               | "N/A"                          |
+| Response       | API yanıt durumu            | "True" veya "False"            |
+| Error          | Hata mesajı (varsa)         | "Movie not found!"             |
+
+=============================================================
+              RATINGS (PUANLAMA) YAPISI
+=============================================================
+
+Ratings alanı bir dizi içerir, her biri şu yapıda:
+{
+  "Source": "Kaynak adı",
+  "Value": "Puan değeri"
+}
+
+Örnek kaynaklar:
+- "Internet Movie Database" → "9.5/10"
+- "Rotten Tomatoes" → "96%"
+- "Metacritic" → "87/100"
+
+=============================================================
+                 SAYFADAN NEREDEN BAKILIR?
+=============================================================
+
+1. OMDB API Resmi Dökümanı:
+   https://www.omdbapi.com/#parameters
+   
+   Bu sayfada:
+   - "Parameters" bölümü: Hangi parametreleri gönderebilirsiniz
+   - "Examples" bölümü: Örnek API istekleri
+   
+2. Örnek API Çağrısı:
+   https://www.omdbapi.com/?apikey=SIZIN_KEY&i=tt0903747&plot=full
+   
+   (Tarayıcıda açtığınızda JSON formatında tüm alanları görebilirsiniz)
+
+3. IMDb Sayfa Kaynağı:
+   Herhangi bir film/dizi için https://www.imdb.com/title/tt0903747/
+   sayfasına gittiğinizde:
+   - F12 → Network sekmesi → API çağrılarını izleyebilirsiniz
+   - Page Source'da bazı JSON-LD verileri bulunabilir
+
+=============================================================
+      PROJENİZDE KULLANILAN API DOSYASI KONUMU
+=============================================================
+
+📁 src/backend/services/omdbApi.ts
+
+Bu dosyada:
+- OMDbSearchResult interface → Arama sonuçları yapısı
+- OMDbMovieDetails interface → Detaylı bilgi yapısı
+- searchMovies() → Film/dizi arama fonksiyonu
+- getMovieById() → ID ile detay çekme fonksiyonu
+- getMovieByTitle() → Başlık ile detay çekme fonksiyonu
+
+=============================================================

@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaSync, FaTags, FaCalendarAlt } from 'react-icons/fa';
+import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase, FaArrowRight } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-// import { auth } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import { countItemsWithoutGenre, migrateGenresForUser } from '../../backend/services/genreMigrationService';
-import { migrateReleaseDates } from '../../backend/services/releaseDateMigrationService';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function SettingsPage() {
     const { user } = useAuth();
@@ -18,59 +15,6 @@ export default function SettingsPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-
-    // Genre Migration States
-    const [itemsWithoutGenre, setItemsWithoutGenre] = useState<number | null>(null);
-    const [migrationLoading, setMigrationLoading] = useState(false);
-    const [migrationProgress, setMigrationProgress] = useState({
-        total: 0,
-        processed: 0,
-        updated: 0,
-        skipped: 0,
-        failed: 0,
-        currentItem: '',
-    });
-
-    // Release Date Migration States
-    const [releaseDateLoading, setReleaseDateLoading] = useState(false);
-    const [releaseDateProgress, setReleaseDateProgress] = useState({
-        current: 0,
-        total: 0,
-        title: '',
-    });
-
-    // Load count on mount
-    useEffect(() => {
-        if (user) {
-            countItemsWithoutGenre(user.uid).then(setItemsWithoutGenre);
-        }
-    }, [user]);
-
-    const handleReleaseDateMigration = async () => {
-        if (!user) return;
-
-        const confirmed = window.confirm(
-            'Tüm içerikler için çıkış tarihi bilgisi eklenecek.\n\nBu işlem API çağrısı yapacağı için biraz zaman alabilir.\n\nDevam etmek istiyor musunuz?'
-        );
-
-        if (!confirmed) return;
-
-        setReleaseDateLoading(true);
-        setReleaseDateProgress({ current: 0, total: 0, title: '' });
-
-        try {
-            const result = await migrateReleaseDates(user.uid, (current, total, title) => {
-                setReleaseDateProgress({ current, total, title });
-            });
-
-            toast.success(`✅ Tamamlandı! ${result.updated} içerik güncellendi, ${result.skipped} atlandı.`);
-        } catch (error: any) {
-            console.error('Release date migration error:', error);
-            toast.error('Migration hatası: ' + error.message);
-        } finally {
-            setReleaseDateLoading(false);
-        }
-    };
 
     const reauthenticate = async (password: string) => {
         if (!user || !user.email) throw new Error('User not found');
@@ -91,7 +35,6 @@ export default function SettingsPage() {
 
         setLoading(true);
         try {
-            // Re-auth is often required for sensitive operations
             await reauthenticate(currentPassword);
             if (user) {
                 await updatePassword(user, newPassword);
@@ -103,7 +46,7 @@ export default function SettingsPage() {
         } catch (error: any) {
             console.error('Password update error:', error);
             if (error.code === 'auth/wrong-password') {
-                toast.error(t('admin.adminWrongPassword')); // Reuse or add new string
+                toast.error(t('admin.adminWrongPassword'));
             } else if (error.code === 'auth/requires-recent-login') {
                 toast.error(t('settings.reauthRequired'));
             } else {
@@ -117,8 +60,6 @@ export default function SettingsPage() {
     const handleDeleteAccount = async () => {
         if (!window.confirm(t('settings.deleteWarning'))) return;
 
-        // For delete, usually need re-auth too. We can prompt simple prompt here or use the same form logic.
-        // For simplicity in this iteration, assuming recent login or handling error.
         const password = prompt(t('settings.reauthRequired') + '\n' + t('settings.currentPassword'));
         if (!password) return;
 
@@ -138,114 +79,33 @@ export default function SettingsPage() {
         }
     };
 
-    const handleMigrateGenres = async () => {
-        if (!user) return;
-
-        const confirmed = window.confirm(
-            `${itemsWithoutGenre} kayıt için tür bilgisi eklenecek.\n\nBu işlem API çağrısı yapacağı için biraz zaman alabilir.\n\nDevam etmek istiyor musunuz?`
-        );
-
-        if (!confirmed) return;
-
-        setMigrationLoading(true);
-        setMigrationProgress({ total: 0, processed: 0, updated: 0, skipped: 0, failed: 0, currentItem: '' });
-
-        try {
-            const result = await migrateGenresForUser(user.uid, (progress) => {
-                setMigrationProgress(progress);
-            }, false);
-
-            toast.success(`✅ Tamamlandı! ${result.updated} kayıt güncellendi, ${result.skipped} atlandı.`);
-            setItemsWithoutGenre(0);
-        } catch (error: any) {
-            console.error('Migration error:', error);
-            toast.error('Migration hatası: ' + error.message);
-        } finally {
-            setMigrationLoading(false);
-        }
-    };
-
     return (
         <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
                 <FaShieldAlt className="text-rose-500" /> {t('settings.title')}
             </h1>
 
-            <div className="space-y-8">
-                {/* Genre Migration Section */}
-                {itemsWithoutGenre !== null && itemsWithoutGenre > 0 && (
-                    <div className="bg-sky-50 dark:bg-sky-900/10 rounded-2xl shadow-lg p-8 border border-sky-100 dark:border-sky-900/30">
-                        <h2 className="text-xl font-bold text-sky-600 dark:text-sky-400 mb-4 flex items-center gap-2">
-                            <FaTags /> Tür Bilgisi Ekle
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm leading-relaxed">
-                            Mevcut {itemsWithoutGenre} kaydınızda tür (genre) bilgisi eksik.
-                            Bu işlem, her kayıt için API'den tür bilgisini çekip güncelleyecek.
-                        </p>
-
-                        {migrationLoading ? (
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <FaSync className="animate-spin" />
-                                    <span>İşleniyor: {migrationProgress.currentItem || '...'}</span>
-                                </div>
-                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <div
-                                        className="bg-sky-500 h-2 rounded-full transition-all duration-300"
-                                        style={{ width: `${migrationProgress.total > 0 ? (migrationProgress.processed / migrationProgress.total) * 100 : 0}%` }}
-                                    />
-                                </div>
-                                <div className="flex justify-between text-xs text-gray-500">
-                                    <span>{migrationProgress.processed} / {migrationProgress.total}</span>
-                                    <span>✓ {migrationProgress.updated} güncellendi, ⚠ {migrationProgress.skipped} atlandı</span>
-                                </div>
+            <div className="space-y-6">
+                {/* Migration Link */}
+                <Link
+                    to="/migration"
+                    className="block bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg p-6 border border-indigo-400/30 hover:scale-[1.02] transition-all"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-white/20 rounded-xl">
+                                <FaDatabase className="text-2xl text-white" />
                             </div>
-                        ) : (
-                            <button
-                                onClick={handleMigrateGenres}
-                                className="flex items-center gap-2 px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-sky-600/20"
-                            >
-                                <FaSync /> Tür Bilgilerini Ekle ({itemsWithoutGenre} kayıt)
-                            </button>
-                        )}
-                    </div>
-                )}
-
-                {/* Release Date Migration Section */}
-                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl shadow-lg p-8 border border-emerald-100 dark:border-emerald-900/30">
-                    <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-4 flex items-center gap-2">
-                        <FaCalendarAlt /> Çıkış Tarihi Ekle
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm leading-relaxed">
-                        Mevcut içeriklerinize çıkış tarihi (release date) bilgisi ekler.
-                        Bu işlem, her kayıt için API'den çıkış tarihini çekip güncelleyecek.
-                    </p>
-
-                    {releaseDateLoading ? (
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <FaSync className="animate-spin" />
-                                <span>İşleniyor: {releaseDateProgress.title || '...'}</span>
-                            </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div
-                                    className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
-                                    style={{ width: `${releaseDateProgress.total > 0 ? (releaseDateProgress.current / releaseDateProgress.total) * 100 : 0}%` }}
-                                />
-                            </div>
-                            <div className="text-xs text-gray-500">
-                                {releaseDateProgress.current} / {releaseDateProgress.total}
+                            <div>
+                                <h2 className="text-lg font-bold text-white">Veri Migrasyon</h2>
+                                <p className="text-sm text-white/70">
+                                    Eksik bilgileri API'lerden çekerek tamamlayın
+                                </p>
                             </div>
                         </div>
-                    ) : (
-                        <button
-                            onClick={handleReleaseDateMigration}
-                            className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-600/20"
-                        >
-                            <FaSync /> Çıkış Tarihlerini Ekle
-                        </button>
-                    )}
-                </div>
+                        <FaArrowRight className="text-white/70 text-xl" />
+                    </div>
+                </Link>
 
                 {/* Password Change Section */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
@@ -320,4 +180,3 @@ export default function SettingsPage() {
         </div>
     );
 }
-

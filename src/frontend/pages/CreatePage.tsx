@@ -47,11 +47,13 @@ export default function CreatePage() {
   const [tagInput, setTagInput] = useState('');
   const [totalSeasons, setTotalSeasons] = useState<number | undefined>(undefined);
   const [releaseDate, setReleaseDate] = useState<string | undefined>(undefined);
+  const [runtime, setRuntime] = useState<string | undefined>(undefined);
+  const [imdbId, setImdbId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true); // Accordion state
 
   // Handle search result selection
-  const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[]; totalSeasons?: number; releaseDate?: string }) => {
+  const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[]; totalSeasons?: number; releaseDate?: string; runtime?: string; imdbId?: string }) => {
     setTitle(details.title);
     setImage(details.image);
     setDescription(details.description);
@@ -62,6 +64,10 @@ export default function CreatePage() {
     if (details.totalSeasons) setTotalSeasons(details.totalSeasons);
     // Çıkış tarihi bilgisini kaydet
     if (details.releaseDate) setReleaseDate(details.releaseDate);
+    // Süre bilgisini kaydet
+    if (details.runtime) setRuntime(details.runtime);
+    // IMDb ID'yi kaydet
+    if (details.imdbId) setImdbId(details.imdbId);
   };
 
   // Toggle genre
@@ -103,6 +109,8 @@ export default function CreatePage() {
     genre: genres.join(', ') || undefined,
     tags: tags.length > 0 ? tags : undefined,
     releaseDate: releaseDate || undefined,
+    runtime: runtime || undefined,
+    imdbId: imdbId || undefined,
   };
 
   // Submit handler
@@ -141,6 +149,10 @@ export default function CreatePage() {
       }
       // Çıkış tarihi bilgisini ekle
       if (releaseDate) newItem.releaseDate = releaseDate;
+      // Süre bilgisini ekle
+      if (runtime) newItem.runtime = runtime;
+      // IMDb ID'yi ekle
+      if (imdbId) newItem.imdbId = imdbId;
 
       const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
 

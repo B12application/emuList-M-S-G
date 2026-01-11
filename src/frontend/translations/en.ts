@@ -378,6 +378,7 @@ export const translationsEN = {
         delete: 'Delete',
         addedOn: 'Added',
         releaseDate: 'Release Date',
+        runtime: 'Runtime',
         noDescription: 'No description added for this item.',
         deleteConfirm: 'Delete Item',
         deleteMessage: 'Are you sure you want to delete? This action cannot be undone.',

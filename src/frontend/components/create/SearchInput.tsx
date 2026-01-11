@@ -29,6 +29,8 @@ interface MediaDetails {
     genres: string[];
     totalSeasons?: number; // Diziler için toplam sezon sayısı
     releaseDate?: string; // Çıkış tarihi
+    runtime?: string; // Süre (Film: "120 min")
+    imdbId?: string; // IMDb ID
 }
 
 interface SearchInputProps {
@@ -132,7 +134,11 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     // Diziler için toplam sezon sayısını ekle
                     totalSeasons: type === 'series' && data.totalSeasons ? parseInt(data.totalSeasons, 10) : undefined,
                     // Çıkış tarihi
-                    releaseDate: data.Released && data.Released !== 'N/A' ? data.Released : undefined
+                    releaseDate: data.Released && data.Released !== 'N/A' ? data.Released : undefined,
+                    // Süre bilgisi
+                    runtime: data.Runtime && data.Runtime !== 'N/A' ? data.Runtime : undefined,
+                    // IMDb ID
+                    imdbId: data.imdbID
                 };
             } else if (type === 'book') {
                 const data = await getBookById(result.id);

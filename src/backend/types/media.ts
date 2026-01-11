@@ -27,4 +27,6 @@ export interface MediaItem {
   totalSeasons?: number; // Diziler için toplam sezon sayısı
   watchedSeasons?: number[]; // Kullanıcının izlediği sezon numaraları [1, 2, 3]
   releaseDate?: string; // Çıkış tarihi (Film/Dizi: "15 Jul 2022", Oyun: "2022-07-15")
+  runtime?: string; // Süre (Film: "120 min", Dizi bölüm süresi: "45 min")
+  imdbId?: string; // IMDb ID (Film/Dizi için: "tt1234567")
 }

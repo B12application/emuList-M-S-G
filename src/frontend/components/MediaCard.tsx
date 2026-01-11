@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm, FaClock } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -338,6 +338,13 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                 <span>{t('card.releaseDate')}: {item.releaseDate}</span>
               </div>
             )}
+            {/* Süre bilgisi */}
+            {item.runtime && (
+              <div className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400">
+                <FaClock size={10} />
+                <span>{t('card.runtime')}: {item.runtime}</span>
+              </div>
+            )}
             {/* Eklenme tarihi */}
             {item.createdAt && (
               <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
@@ -355,17 +362,41 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
           {!readOnly && (
             <div className="mt-auto flex items-center justify-between pt-2 gap-2">
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggle();
-                }}
-                disabled={isToggling}
-                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50 h-10"
-              >
-                {localWatched ? <FaEye /> : <FaEyeSlash />}
-                <span className="hidden md:inline">{t('actions.toggleStatus')}</span>
-              </button>
+              <div className="flex items-center gap-2 flex-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggle();
+                  }}
+                  disabled={isToggling}
+                  className={`flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-50 h-10 ${localWatched
+                    ? 'border-emerald-300 text-emerald-600 dark:text-emerald-400 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                    : 'border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                >
+                  {localWatched ? <FaEye /> : <FaEyeSlash />}
+                  <span className="hidden md:inline">
+                    {localWatched
+                      ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
+                      : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
+                    }
+                  </span>
+                </button>
+
+                {/* IMDb butonu - küçük */}
+                {item.imdbId && (
+                  <a
+                    href={`https://www.imdb.com/title/${item.imdbId}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-amber-400 hover:bg-amber-500 text-black text-[10px] font-bold transition"
+                    title="IMDb"
+                  >
+                    IMDb
+                  </a>
+                )}
+              </div>
 
               <div className="flex gap-2">
                 <button

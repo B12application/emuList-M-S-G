@@ -48,16 +48,22 @@ export async function createNotification(
 }
 
 /**
- * Get user's notifications
+ * Get user's notifications (last 10 days only)
  */
 export async function getUserNotifications(
     userId: string,
     limitCount: number = 50
 ): Promise<Notification[]> {
     try {
+        // Only fetch notifications from the last 10 days
+        const tenDaysAgo = new Date();
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+        const tenDaysAgoTimestamp = Timestamp.fromDate(tenDaysAgo);
+
         const q = query(
             collection(db, 'notifications'),
             where('recipientId', '==', userId),
+            where('timestamp', '>=', tenDaysAgoTimestamp),
             orderBy('timestamp', 'desc'),
             limit(limitCount)
         );
@@ -133,16 +139,22 @@ export async function getUnreadCount(userId: string): Promise<number> {
 }
 
 /**
- * Subscribe to real-time notifications
+ * Subscribe to real-time notifications (last 10 days only)
  */
 export function subscribeToNotifications(
     userId: string,
     callback: (notifications: Notification[]) => void,
     limitCount: number = 50
 ): () => void {
+    // Only fetch notifications from the last 10 days
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    const tenDaysAgoTimestamp = Timestamp.fromDate(tenDaysAgo);
+
     const q = query(
         collection(db, 'notifications'),
         where('recipientId', '==', userId),
+        where('timestamp', '>=', tenDaysAgoTimestamp),
         orderBy('timestamp', 'desc'),
         limit(limitCount)
     );

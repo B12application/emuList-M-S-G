@@ -554,6 +554,46 @@ export default function StatsPage() {
                         🗓️ {t('stats.yearlyHeatmap') || 'Yıllık Aktivite'}
                     </h3>
                     <div className="overflow-x-auto pb-2">
+                        {/* Month Labels */}
+                        <div className="flex mb-1" style={{ width: 'max-content' }}>
+                            {(() => {
+                                const months: { name: string; weekStart: number }[] = [];
+                                let currentMonth = -1;
+
+                                stats.heatmapData.forEach((day, index) => {
+                                    const date = new Date(day.date);
+                                    const month = date.getMonth();
+                                    const weekIndex = Math.floor(index / 7);
+
+                                    if (month !== currentMonth) {
+                                        currentMonth = month;
+                                        const monthName = date.toLocaleDateString(
+                                            t('lang') === 'tr' ? 'tr-TR' : 'en-US',
+                                            { month: 'short' }
+                                        );
+                                        months.push({ name: monthName, weekStart: weekIndex });
+                                    }
+                                });
+
+                                return months.map((m, i) => {
+                                    const nextMonth = months[i + 1];
+                                    const width = nextMonth
+                                        ? (nextMonth.weekStart - m.weekStart) * 14 // 14px = 12px width + 2px gap
+                                        : (53 - m.weekStart) * 14;
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="text-[10px] text-gray-500 dark:text-stone-400"
+                                            style={{ width: `${width}px`, minWidth: `${width}px` }}
+                                        >
+                                            {m.name}
+                                        </div>
+                                    );
+                                });
+                            })()}
+                        </div>
+
                         <div className="flex flex-wrap gap-0.5" style={{ width: 'max-content' }}>
                             {/* Group by weeks (7 days per column) */}
                             {Array.from({ length: 53 }, (_, weekIndex) => (
@@ -566,11 +606,16 @@ export default function StatsPage() {
                                             'bg-emerald-400 dark:bg-emerald-600',
                                             'bg-emerald-500 dark:bg-emerald-500',
                                         ];
+                                        const dateObj = new Date(day.date);
+                                        const formattedDate = dateObj.toLocaleDateString(
+                                            t('lang') === 'tr' ? 'tr-TR' : 'en-US',
+                                            { day: 'numeric', month: 'short', year: 'numeric' }
+                                        );
                                         return (
                                             <div
                                                 key={dayIndex}
                                                 className={`w-3 h-3 rounded-sm ${bgColors[day.level]} cursor-pointer transition-transform hover:scale-150`}
-                                                title={`${day.date}: ${day.count} içerik`}
+                                                title={`${formattedDate}: ${day.count} içerik`}
                                             />
                                         );
                                     })}

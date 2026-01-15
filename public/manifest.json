@@ -5,7 +5,7 @@
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0f172a",
-    "theme_color": "#3b82f6",
+    "theme_color": "#e11d48",
     "orientation": "portrait-primary",
     "scope": "/",
     "icons": [
@@ -26,6 +26,56 @@
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Filmlerim",
+            "short_name": "Filmler",
+            "description": "Film koleksiyonuna git",
+            "url": "/list/movie",
+            "icons": [
+                {
+                    "src": "/titlelogo.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Dizilerim",
+            "short_name": "Diziler",
+            "description": "Dizi koleksiyonuna git",
+            "url": "/list/series",
+            "icons": [
+                {
+                    "src": "/titlelogo.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Oyunlarım",
+            "short_name": "Oyunlar",
+            "description": "Oyun koleksiyonuna git",
+            "url": "/list/game",
+            "icons": [
+                {
+                    "src": "/titlelogo.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Kitaplarım",
+            "short_name": "Kitaplar",
+            "description": "Kitap koleksiyonuna git",
+            "url": "/list/book",
+            "icons": [
+                {
+                    "src": "/titlelogo.png",
+                    "sizes": "192x192"
+                }
+            ]
         }
     ],
     "categories": [

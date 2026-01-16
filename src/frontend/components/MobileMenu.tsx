@@ -20,19 +20,19 @@ const containerVariants = {
   hidden: { opacity: 0, y: -20, scale: 0.95 },
   visible: {
     opacity: 1, y: 0, scale: 1,
-    transition: { type: 'spring', stiffness: 400, damping: 30, staggerChildren: 0.04, delayChildren: 0.1 }
+    transition: { type: 'spring' as const, stiffness: 400, damping: 30, staggerChildren: 0.04, delayChildren: 0.1 }
   },
   exit: { opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.15 } }
 };
 
 const itemVariants = {
   hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 500, damping: 30 } }
+  visible: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 500, damping: 30 } }
 };
 
 const buttonVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } }
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 25 } }
 };
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {

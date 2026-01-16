@@ -11,6 +11,11 @@ export const translationsEN = {
         map: 'My Map',
         collection: 'My List',
         feed: 'Activity',
+        // Profile dropdown
+        myProfile: 'My Profile',
+        settings: 'Settings',
+        adminPanel: 'Admin Panel',
+        logout: 'Logout',
     },
 
     // Map Page
@@ -252,12 +257,25 @@ export const translationsEN = {
         twitterPlaceholder: 'Twitter username',
         instagramPlaceholder: 'Instagram username',
         websitePlaceholder: 'Website URL',
+        // Settings profile edit
+        name: 'First Name',
+        surname: 'Last Name',
+        gender: 'Gender',
+        male: 'Male',
+        female: 'Female',
     },
 
     // Settings
     settings: {
         title: 'Settings',
         account: 'Account Settings',
+        // Profile info
+        profileInfo: 'Profile Information',
+        saveProfileInfo: 'Save Profile Info',
+        profileUpdated: 'Profile information updated.',
+        confirmPassword: 'Password Verification',
+        confirmPasswordDesc: 'Enter your current password to confirm these changes.',
+        // Password change
         passwordTitle: 'Change Password',
         currentPassword: 'Current Password',
         newPassword: 'New Password',

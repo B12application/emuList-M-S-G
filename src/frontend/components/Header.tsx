@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaLayerGroup, FaChevronDown } from 'react-icons/fa';
+import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,7 @@ import { auth } from '../../backend/config/firebaseConfig';
 import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
+import { isAdmin } from '../../backend/config/adminConfig';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -75,15 +76,6 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
   // URL parsing removed as createLink logic was unused
   // const createLink = '/create';
 
-  /* New logic for active icon */
-  const getActiveIcon = () => {
-    if (location.pathname.startsWith('/movie')) return <FaFilm className="text-blue-500" />;
-    if (location.pathname.startsWith('/series')) return <FaTv className="text-emerald-500" />;
-    if (location.pathname.startsWith('/game')) return <FaGamepad className="text-amber-500" />;
-    if (location.pathname.startsWith('/book')) return <FaBook className="text-purple-500" />;
-    return <FaLayerGroup className="text-gray-400 group-hover:text-rose-500 transition-colors" />;
-  };
-
   const getListTitle = () => {
     if (location.pathname.startsWith('/movie')) return t('nav.movies');
     if (location.pathname.startsWith('/series')) return t('nav.series');
@@ -136,9 +128,14 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                       : "text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10"
                       }`}
                   >
-                    {getActiveIcon()}
                     <span>{getListTitle()}</span>
-                    <FaChevronDown className={`w-3 h-3 transition-transform duration-300 ${showListsDropdown ? 'rotate-180' : ''}`} />
+                    <motion.div
+                      animate={{ rotate: showListsDropdown ? 180 : 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      className={`flex items-center justify-center w-5 h-5 rounded-full ${showListsDropdown ? 'bg-rose-500/20 dark:bg-rose-500/30' : 'bg-gray-200/50 dark:bg-gray-700/50'} transition-colors duration-300`}
+                    >
+                      <FaChevronDown className="w-2.5 h-2.5" />
+                    </motion.div>
                   </button>
 
                   <AnimatePresence>
@@ -248,7 +245,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                           }`}
                       >
                         <div className={`w-2 h-2 rounded-full bg-rose-500 ${location.pathname === '/profile' ? 'ring-2 ring-rose-300 dark:ring-rose-600' : ''}`}></div>
-                        Profilim
+                        {t('nav.myProfile')}
                         {location.pathname === '/profile' && <span className="ml-auto text-xs">●</span>}
                       </Link>
 
@@ -272,7 +269,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                           }`}
                       >
                         <div className={`w-2 h-2 rounded-full bg-violet-500 ${location.pathname.startsWith('/lists') ? 'ring-2 ring-violet-300 dark:ring-violet-600' : ''}`}></div>
-                        {t('lists.title') || 'Listelerim'}
+                        {t('lists.title')}
                         {location.pathname.startsWith('/lists') && <span className="ml-auto text-xs">●</span>}
                       </Link>
 
@@ -284,16 +281,31 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                           }`}
                       >
                         <div className={`w-2 h-2 rounded-full bg-gray-400 ${location.pathname === '/settings' ? 'ring-2 ring-gray-300 dark:ring-gray-600' : ''}`}></div>
-                        Ayarlar
+                        {t('nav.settings')}
                         {location.pathname === '/settings' && <span className="ml-auto text-xs">●</span>}
                       </Link>
+
+                      {/* Admin Panel - Only for admin */}
+                      {isAdmin(user.uid) && (
+                        <Link
+                          to="/admin"
+                          className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/admin'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold'
+                            : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                            }`}
+                        >
+                          <FaUsersCog className="text-xs" />
+                          {t('nav.adminPanel')}
+                          {location.pathname === '/admin' && <span className="ml-auto text-xs">●</span>}
+                        </Link>
+                      )}
 
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
                       >
                         <FaSignOutAlt className="text-xs" />
-                        Çıkış Yap
+                        {t('nav.logout')}
                       </button>
                     </div>
                   </div>

@@ -1,12 +1,13 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaUsersCog } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../backend/config/firebaseConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
+import { isAdmin } from '../../backend/config/adminConfig';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -216,34 +217,49 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             {user && (
               <motion.div
                 variants={buttonVariants}
-                className="p-3 border-t border-gray-100 dark:border-gray-800 flex gap-2"
+                className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-2"
               >
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                  <Link
-                    to="/profile"
-                    onClick={onClose}
-                    className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full"
+                {/* Admin Panel - Only for admin */}
+                {isAdmin(user.uid) && (
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      to="/admin"
+                      onClick={onClose}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors w-full"
+                    >
+                      <FaUsersCog className="text-xs" /> {t('nav.adminPanel')}
+                    </Link>
+                  </motion.div>
+                )}
+
+                <div className="flex gap-2">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                    <Link
+                      to="/profile"
+                      onClick={onClose}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full"
+                    >
+                      <FaUser className="text-rose-500 text-xs" /> {t('nav.myProfile')}
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                    <Link
+                      to="/settings"
+                      onClick={onClose}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full"
+                    >
+                      <FaCog className="text-gray-500 text-xs" /> {t('nav.settings')}
+                    </Link>
+                  </motion.div>
+                  <motion.button
+                    onClick={handleLogout}
+                    className="flex items-center justify-center px-4 py-2.5 bg-red-50 dark:bg-red-900/20 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <FaUser className="text-rose-500 text-xs" /> Profil
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                  <Link
-                    to="/settings"
-                    onClick={onClose}
-                    className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full"
-                  >
-                    <FaCog className="text-gray-500 text-xs" /> Ayarlar
-                  </Link>
-                </motion.div>
-                <motion.button
-                  onClick={handleLogout}
-                  className="flex items-center justify-center px-4 py-2.5 bg-red-50 dark:bg-red-900/20 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaSignOutAlt />
-                </motion.button>
+                    <FaSignOutAlt />
+                  </motion.button>
+                </div>
               </motion.div>
             )}
 

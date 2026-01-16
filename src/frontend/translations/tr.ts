@@ -11,6 +11,11 @@ export const translationsTR = {
         map: 'Haritam',
         collection: 'Listem',
         feed: 'Aktiviteler',
+        // Profile dropdown
+        myProfile: 'Profilim',
+        settings: 'Ayarlar',
+        adminPanel: 'Admin Paneli',
+        logout: 'Çıkış Yap',
     },
 
     // Map Page
@@ -252,12 +257,25 @@ export const translationsTR = {
         twitterPlaceholder: 'Twitter kullanıcı adı',
         instagramPlaceholder: 'Instagram kullanıcı adı',
         websitePlaceholder: 'Web sitesi URL',
+        // Settings profile edit
+        name: 'İsim',
+        surname: 'Soyisim',
+        gender: 'Cinsiyet',
+        male: 'Erkek',
+        female: 'Kadın',
     },
 
     // Settings
     settings: {
         title: 'Ayarlar',
         account: 'Hesap Ayarları',
+        // Profile info
+        profileInfo: 'Profil Bilgileri',
+        saveProfileInfo: 'Bilgileri Kaydet',
+        profileUpdated: 'Profil bilgileri güncellendi.',
+        confirmPassword: 'Şifre Doğrulama',
+        confirmPasswordDesc: 'Bu değişiklikleri yapmak için mevcut şifrenizi girin.',
+        // Password change
         passwordTitle: 'Şifre Değiştir',
         currentPassword: 'Mevcut Şifre',
         newPassword: 'Yeni Şifre',

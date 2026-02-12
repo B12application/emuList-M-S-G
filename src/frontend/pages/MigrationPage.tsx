@@ -3,11 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FaSync, FaTags, FaCalendarAlt, FaClock, FaDatabase } from 'react-icons/fa';
+import { FaSync, FaTags, FaCalendarAlt, FaClock, FaDatabase, FaTv } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { countItemsWithoutGenre, migrateGenresForUser } from '../../backend/services/genreMigrationService';
 import { migrateReleaseDates } from '../../backend/services/releaseDateMigrationService';
 import { migrateRuntimeAndImdb } from '../../backend/services/runtimeImdbMigrationService';
+import { migrateToEpisodeTracking } from '../../backend/services/episodeMigrationService';
 
 export default function MigrationPage() {
     const { user } = useAuth();
@@ -35,6 +36,14 @@ export default function MigrationPage() {
     // Runtime/IMDb Migration States
     const [runtimeImdbLoading, setRuntimeImdbLoading] = useState(false);
     const [runtimeImdbProgress, setRuntimeImdbProgress] = useState({
+        current: 0,
+        total: 0,
+        title: '',
+    });
+
+    // Episode Migration States
+    const [episodeMigrationLoading, setEpisodeMigrationLoading] = useState(false);
+    const [episodeMigrationProgress, setEpisodeMigrationProgress] = useState({
         current: 0,
         total: 0,
         title: '',
@@ -242,6 +251,62 @@ export default function MigrationPage() {
                             className="flex items-center gap-2 px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all"
                         >
                             <FaSync /> Süre ve IMDb Bilgisi Ekle
+                        </button>
+                    )}
+                </div>
+
+                {/* Episode Migration */}
+                <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl shadow-lg p-6 border border-indigo-100 dark:border-indigo-900/30">
+                    <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                        <FaTv /> Bölüm Takibi Migrasyon
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                        Mevcut sezon verilerinizi bölüm bazlı takip formatına dönüştürür. OMDB'den bölüm sayılarını çeker ve izlenmiş sezonları bölüm bazına çevirir.
+                    </p>
+
+                    {episodeMigrationLoading ? (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                <FaSync className="animate-spin" />
+                                <span>İşleniyor: {episodeMigrationProgress.title || '...'}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div
+                                    className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${episodeMigrationProgress.total > 0 ? (episodeMigrationProgress.current / episodeMigrationProgress.total) * 100 : 0}%` }}
+                                />
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {episodeMigrationProgress.current} / {episodeMigrationProgress.total}
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={async () => {
+                                if (!user) return;
+                                const confirmed = window.confirm(
+                                    'Tüm dizileriniz için bölüm bilgisi eklenecek ve mevcut sezon verileri dönüştürülecek.\n\nBu işlem OMDB API çağrısı yapacağı için biraz zaman alabilir.\n\nDevam etmek istiyor musunuz?'
+                                );
+                                if (!confirmed) return;
+
+                                setEpisodeMigrationLoading(true);
+                                setEpisodeMigrationProgress({ current: 0, total: 0, title: '' });
+
+                                try {
+                                    const result = await migrateToEpisodeTracking(user.uid, (progress) => {
+                                        setEpisodeMigrationProgress(progress);
+                                    });
+                                    toast.success(`✅ Tamamlandı! ${result.updated} dizi güncellendi, ${result.skipped} atlandı.`);
+                                } catch (error: any) {
+                                    console.error('Episode migration error:', error);
+                                    toast.error('Migration hatası: ' + error.message);
+                                } finally {
+                                    setEpisodeMigrationLoading(false);
+                                }
+                            }}
+                            className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all"
+                        >
+                            <FaSync /> Bölüm Takibi Verilerini Ekle
                         </button>
                     )}
                 </div>

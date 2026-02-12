@@ -9,6 +9,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useLanguage } from '../context/LanguageContext';
 import SeasonSelector from './SeasonSelector';
+import EpisodeTracker from './EpisodeTracker';
 import { fetchAndUpdateSeriesSeasons } from '../../backend/services/seasonMigrationService';
 import toast from 'react-hot-toast';
 
@@ -116,7 +117,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                 // 2. DÜZELTME: 'onClick={e => e.stopPropagation()}'
                 // Bu, modalın içine yapılan tıklamaların dışarı sızmasını ve diğer şeyleri tetiklemesini engeller.
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all"
+                className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto"
               >
                 <Dialog.Title
                   as="h3"
@@ -233,6 +234,13 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                           watchedSeasons={editWatchedSeasons}
                           onChange={setEditWatchedSeasons}
                         />
+                      )}
+
+                      {/* Bölüm Takibi - EpisodeTracker */}
+                      {editTotalSeasons > 0 && item.imdbId && (
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                          <EpisodeTracker item={item} onUpdate={refetch} />
+                        </div>
                       )}
                     </div>
                   )}

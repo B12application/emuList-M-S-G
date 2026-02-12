@@ -584,4 +584,37 @@ export const translationsTR = {
         emptyListTitle: 'Bu listede henüz içerik yok',
         emptyListDesc: 'İçerik kartlarındaki "Listeye Ekle" butonunu kullanarak bu listeye içerik ekleyebilirsin.',
     },
+
+    // Episodes (Bölüm Takibi)
+    episodes: {
+        title: 'Bölümler',
+        episode: 'Bölüm',
+        markAllSeason: 'Tüm Sezonu İşaretle',
+        progress: 'İlerleme',
+        currentlyAt: 'Kaldığın yer',
+        aired: 'Yayın Tarihi',
+        overallProgress: 'Genel İlerleme',
+        noEpisodes: 'Bu sezon için bölüm bulunamadı.',
+        noImdbId: 'Bölüm takibi için IMDb bilgisi gerekli.',
+        noSeasons: 'Sezon bilgisi bulunamadı.',
+        markNext: 'İzlendi olarak işaretle',
+        showDetails: 'Bölüm detaylarını göster',
+        hideDetails: 'Detayları gizle',
+        continueBtn: 'Devam Et',
+    },
+
+    // My Shows
+    myShows: {
+        title: 'Dizilerim',
+        continueWatching: 'İzlemeye Devam Et',
+        completed: 'Tamamlananlar',
+        notStarted: 'Başlanmamış',
+        allShows: 'Tüm Diziler',
+        noShows: 'Henüz dizi eklenmemiş.',
+        noContinue: 'Devam edecek dizi yok.',
+        noCompleted: 'Tamamlanan dizi yok.',
+        noNotStarted: 'Başlanmamış dizi yok.',
+        episodesWatched: 'bölüm izlendi',
+        addShow: 'Dizi Ekle',
+    },
 };

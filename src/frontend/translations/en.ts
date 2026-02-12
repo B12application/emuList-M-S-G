@@ -585,4 +585,37 @@ export const translationsEN = {
         emptyListTitle: 'No items in this list yet',
         emptyListDesc: 'Use the "Add to List" button on media cards to add content to this list.',
     },
+
+    // Episodes (Episode Tracking)
+    episodes: {
+        title: 'Episodes',
+        episode: 'Episode',
+        markAllSeason: 'Mark All Season',
+        progress: 'Progress',
+        currentlyAt: 'Currently at',
+        aired: 'Aired',
+        overallProgress: 'Overall Progress',
+        noEpisodes: 'No episodes found for this season.',
+        noImdbId: 'IMDb info required for episode tracking.',
+        noSeasons: 'No season info found.',
+        markNext: 'Mark as watched',
+        showDetails: 'Show episode details',
+        hideDetails: 'Hide details',
+        continueBtn: 'Continue',
+    },
+
+    // My Shows
+    myShows: {
+        title: 'My Shows',
+        continueWatching: 'Continue Watching',
+        completed: 'Completed',
+        notStarted: 'Not Started',
+        allShows: 'All Shows',
+        noShows: 'No shows added yet.',
+        noContinue: 'No shows to continue.',
+        noCompleted: 'No completed shows.',
+        noNotStarted: 'No not started shows.',
+        episodesWatched: 'episodes watched',
+        addShow: 'Add Show',
+    },
 };

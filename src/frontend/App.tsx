@@ -21,6 +21,7 @@ import ListsPage from './pages/ListsPage';
 import ListDetailPage from './pages/ListDetailPage';
 import MigrationPage from './pages/MigrationPage';
 import AdminPage from './pages/AdminPage';
+import MyShowsPage from './pages/MyShowsPage';
 import { LanguageProvider } from './context/LanguageContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
       { path: 'lists/:id', element: <ListDetailPage /> },
       { path: 'migration', element: <MigrationPage /> },
       { path: 'admin', element: <AdminPage /> },
+      { path: 'my-shows', element: <MyShowsPage /> },
     ]
   },
 

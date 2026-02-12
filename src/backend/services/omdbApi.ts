@@ -183,6 +183,83 @@ export async function getMovieByTitle(
   }
 }
 
+// OMDb Episode Types
+export interface OMDbEpisode {
+  Title: string;
+  Released: string;
+  Episode: string;
+  imdbRating: string;
+  imdbID: string;
+}
+
+export interface OMDbSeasonResponse {
+  Title: string;
+  Season: string;
+  totalSeasons: string;
+  Episodes: OMDbEpisode[];
+  Response: 'True' | 'False';
+  Error?: string;
+}
+
+/**
+ * Bir sezonun tüm bölümlerini getirir
+ * @param imdbId Dizinin IMDb ID'si
+ * @param season Sezon numarası
+ * @returns Bölüm listesi
+ */
+export async function getSeasonEpisodes(
+  imdbId: string,
+  season: number
+): Promise<OMDbEpisode[]> {
+  if (!API_KEY) {
+    throw new Error('OMDb API key bulunamadı.');
+  }
+
+  const params = new URLSearchParams({
+    apikey: API_KEY,
+    i: imdbId,
+    Season: season.toString(),
+    r: 'json',
+  });
+
+  try {
+    const response = await fetch(`${BASE_URL}/?${params.toString()}`);
+    const data: OMDbSeasonResponse = await response.json();
+
+    if (data.Response === 'False') {
+      console.warn(`Sezon ${season} bölümleri bulunamadı:`, data.Error);
+      return [];
+    }
+
+    return data.Episodes || [];
+  } catch (error) {
+    console.error(`Sezon ${season} bölümleri çekilemedi:`, error);
+    return [];
+  }
+}
+
+/**
+ * Tüm sezonların bölüm sayısını getirir
+ * @param imdbId Dizinin IMDb ID'si
+ * @param totalSeasons Toplam sezon sayısı
+ * @returns Her sezon için bölüm sayısı
+ */
+export async function getAllSeriesEpisodeCounts(
+  imdbId: string,
+  totalSeasons: number
+): Promise<Record<number, number>> {
+  const episodesPerSeason: Record<number, number> = {};
+
+  for (let season = 1; season <= totalSeasons; season++) {
+    const episodes = await getSeasonEpisodes(imdbId, season);
+    episodesPerSeason[season] = episodes.length;
+    // API rate limiting
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+
+  return episodesPerSeason;
+}
+
 /**
  * IMDb rating'ini 0-9.9 arasına normalize eder
  * @param imdbRating IMDb rating (örn: "8.5/10" veya "8.5")

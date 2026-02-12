@@ -71,6 +71,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     // Diğerleri
     { to: '/all', icon: FaClone, label: t('nav.all'), color: 'rose' },
     { to: '/feed', icon: FaHistory, label: t('nav.feed'), color: 'violet' },
+    { to: '/my-shows', icon: FaTv, label: t('myShows.title'), color: 'purple' },
     { to: '/map', icon: FaMap, label: t('nav.map'), color: 'indigo' },
     { to: '/stats', icon: FaChartBar, label: t('home.stats'), color: 'orange' },
     { to: '/lists', icon: FaListUl, label: t('lists.title') || 'Listelerim', color: 'violet' },

@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm, FaClock } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm, FaClock, FaPlay } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -12,6 +12,7 @@ import { showMarqueeToast } from './MarqueeToast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { createActivity, deleteActivitiesForMedia } from '../../backend/services/activityService';
+import { getSeriesProgress, toggleEpisodeWatched, updateCurrentProgress } from '../../backend/services/episodeTrackingService';
 import AddToListDropdown from './AddToListDropdown';
 
 interface MediaCardProps {
@@ -353,6 +354,84 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               </div>
             )}
           </div>
+
+          {/* Dizi bölüm ilerleme bilgisi + "Devam Et" butonu */}
+          {item.type === 'series' && item.episodesPerSeason && Object.keys(item.episodesPerSeason).length > 0 && (() => {
+            const progress = getSeriesProgress(item);
+            const totalSeasons = item.totalSeasons || 0;
+            const watchedEps = item.watchedEpisodes || {};
+            const epsPerSeason = item.episodesPerSeason || {};
+
+            // Sonraki bölümü hesapla
+            let nextSeason: number | null = null;
+            let nextEpisode: number | null = null;
+            for (let s = 1; s <= totalSeasons; s++) {
+              const watched = watchedEps[s] || [];
+              const total = epsPerSeason[s] || 0;
+              if (total === 0) continue;
+              for (let e = 1; e <= total; e++) {
+                if (!watched.includes(e)) {
+                  nextSeason = s;
+                  nextEpisode = e;
+                  break;
+                }
+              }
+              if (nextSeason) break;
+            }
+
+            return (
+              <div className="space-y-1.5 mb-1">
+                {/* İlerleme barı */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <FaTv size={9} />
+                    {progress.totalWatched}/{progress.totalEpisodes}
+                  </span>
+                  <span className={`text-xs font-bold ${progress.percentage === 100 ? 'text-emerald-500' : 'text-purple-500'}`}>
+                    %{progress.percentage}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${progress.percentage}%`,
+                      background: progress.percentage === 100
+                        ? 'linear-gradient(90deg, #10b981, #059669)'
+                        : 'linear-gradient(90deg, #8b5cf6, #6366f1)',
+                    }}
+                  />
+                </div>
+                {/* S3 B4 Devam Et butonu */}
+                {nextSeason && nextEpisode ? (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        await toggleEpisodeWatched(item.id, nextSeason!, nextEpisode!, watchedEps);
+                        await updateCurrentProgress(item.id, nextSeason!, nextEpisode!);
+                        refetch();
+                        toast.success(`S${nextSeason} B${nextEpisode} ✓`);
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <FaPlay size={8} />
+                      S{nextSeason} B{nextEpisode}
+                    </span>
+                    <span>{t('episodes.continueBtn')}</span>
+                  </button>
+                ) : (
+                  <div className="text-center text-[10px] text-emerald-500 font-semibold">
+                    ✓ {t('seasons.completed')}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 h-14 mb-1">
             {item.description || t('card.noDescription')}

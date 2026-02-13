@@ -15,6 +15,8 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createActivity } from '../../backend/services/activityService';
+import { getAllSeriesEpisodeCounts } from '../../backend/services/omdbApi';
+import { saveEpisodesPerSeason } from '../../backend/services/episodeTrackingService';
 
 // Predefined genres for each type
 const GENRES = {
@@ -155,6 +157,18 @@ export default function CreatePage() {
       if (imdbId) newItem.imdbId = imdbId;
 
       const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
+
+      // Dizi ise OMDB'den bölüm sayılarını arka planda çek ve kaydet
+      if (type === 'series' && imdbId && totalSeasons) {
+        getAllSeriesEpisodeCounts(imdbId, totalSeasons)
+          .then(episodesPerSeason => {
+            if (Object.keys(episodesPerSeason).length > 0) {
+              saveEpisodesPerSeason(docRef.id, episodesPerSeason);
+              console.log(`📺 ${title}: ${Object.values(episodesPerSeason).reduce((a, b) => a + b, 0)} bölüm verisi kaydedildi`);
+            }
+          })
+          .catch(err => console.warn('Bölüm verisi çekilemedi:', err));
+      }
 
       // Create activity
       await createActivity(user.uid, user.displayName || 'User', user.photoURL || undefined, 'media_added', {

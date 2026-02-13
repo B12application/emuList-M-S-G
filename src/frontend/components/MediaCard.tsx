@@ -246,6 +246,20 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               <FaStar size={10} /> {item.rating}
             </span>
 
+            {/* Kişisel puan badge'i */}
+            {item.myRating !== undefined && item.myRating > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold bg-rose-100/90 text-rose-600 dark:bg-rose-900/70 dark:text-rose-300 shadow-sm backdrop-blur-md" title={item.myNote || ''}>
+                ⭐ {item.myRating.toFixed(1)}
+              </span>
+            )}
+
+            {/* Kısa not ikonu */}
+            {item.myNote && (
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/90 dark:bg-gray-800/90 text-amber-500 shadow-sm backdrop-blur-md cursor-default" title={item.myNote}>
+                📝
+              </span>
+            )}
+
             {/* Kalp İkonu - Modal dışındayken */}
             {!isModal && (
               <button

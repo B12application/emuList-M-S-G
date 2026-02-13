@@ -605,7 +605,7 @@ export const translationsTR = {
 
     // My Shows
     myShows: {
-        title: 'Dizilerim',
+        title: 'İzleme Listem',
         continueWatching: 'İzlemeye Devam Et',
         completed: 'Tamamlananlar',
         notStarted: 'Başlanmamış',
@@ -616,5 +616,47 @@ export const translationsTR = {
         noNotStarted: 'Başlanmamış dizi yok.',
         episodesWatched: 'bölüm izlendi',
         addShow: 'Dizi Ekle',
+        start: 'Başla',
+        sortQueue: 'Sıram',
+        sortPriority: 'Öncelik Sırası',
+        sortTitle: 'İsme Göre',
+        sortDate: 'Eklenme Tarihi',
+        sortRecent: 'Son İzlenen',
+        sortProgress: 'İlerleme %',
+        filterAll: 'Tümü',
+        continuing: 'Devam Ediyor',
+        agoSuffix: 'önce',
+        daysAgo: 'gün',
+        hoursAgo: 'saat',
+        minutesAgo: 'dk',
+        justNow: 'Az önce',
+        totalWatched: 'İzlenen',
+        totalHours: 'Saat',
+        overallProgress: 'İlerleme',
+        episodes: 'bölüm',
+        selectMode: 'Seç',
+        cancelSelect: 'İptal',
+        markCompleted: 'Tamamlandı İşaretle',
+        selected: 'seçili',
+        noEpisodeData: 'Bölüm verisi yok',
+        addedDate: 'Eklendi',
+        continueWatchingHome: 'Devam Et',
+        viewAll: 'Tümünü Gör',
+    },
+
+    // Personal Rating & Note
+    personal: {
+        myRating: 'Benim Puanım',
+        myNote: 'Kısa Notum',
+        myNotePlaceholder: 'Bu içerik hakkında kısa bir not...',
+        noRating: 'Henüz puanlanmadı',
+    },
+
+    // Global Search
+    globalSearch: {
+        placeholder: 'İçerik veya kullanıcı ara...',
+        myContent: 'İçeriklerim',
+        users: 'Kullanıcılar',
+        noResults: 'Sonuç bulunamadı',
     },
 };

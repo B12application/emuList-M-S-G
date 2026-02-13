@@ -1,7 +1,7 @@
 // src/backend/services/episodeTrackingService.ts
 // Bölüm seviyesinde dizi takip servisi
 
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import type { MediaItem } from '../types/media';
 
@@ -35,6 +35,7 @@ export async function toggleEpisodeWatched(
 
     await updateDoc(doc(db, 'mediaItems', mediaId), {
         watchedEpisodes: newWatchedEpisodes,
+        lastWatchedAt: serverTimestamp(),
     });
 
     return newWatchedEpisodes;
@@ -58,6 +59,7 @@ export async function markAllEpisodesInSeason(
 
     await updateDoc(doc(db, 'mediaItems', mediaId), {
         watchedEpisodes: newWatchedEpisodes,
+        lastWatchedAt: serverTimestamp(),
     });
 
     return newWatchedEpisodes;
@@ -92,6 +94,7 @@ export async function updateCurrentProgress(
     await updateDoc(doc(db, 'mediaItems', mediaId), {
         currentSeason: season,
         currentEpisode: episode,
+        lastWatchedAt: serverTimestamp(),
     });
 }
 

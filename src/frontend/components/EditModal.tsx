@@ -4,7 +4,7 @@ import type { MediaItem } from '../../backend/types/media';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Dialog, Transition } from '@headlessui/react';
-import { FaSave, FaLink, FaSpinner, FaTimes, FaTv, FaDownload } from 'react-icons/fa';
+import { FaSave, FaLink, FaSpinner, FaTimes, FaTv, FaDownload, FaStar, FaRegStar, FaStarHalfAlt, FaStickyNote } from 'react-icons/fa';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useLanguage } from '../context/LanguageContext';
@@ -29,6 +29,8 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
   const [editGenre, setEditGenre] = useState(item.genre || '');
   const [editTotalSeasons, setEditTotalSeasons] = useState(item.totalSeasons || 0);
   const [editWatchedSeasons, setEditWatchedSeasons] = useState<number[]>(item.watchedSeasons || []);
+  const [editMyRating, setEditMyRating] = useState<number | undefined>(item.myRating);
+  const [editMyNote, setEditMyNote] = useState(item.myNote || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingSeasons, setIsFetchingSeasons] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -43,6 +45,8 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
     setEditGenre(item.genre || '');
     setEditTotalSeasons(item.totalSeasons || 0);
     setEditWatchedSeasons(item.watchedSeasons || []);
+    setEditMyRating(item.myRating);
+    setEditMyNote(item.myNote || '');
     setShowUrlInput(false);
   }, [item, isOpen]);
 
@@ -56,6 +60,8 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
         image: editImage,
         rating: editRating,
         genre: editGenre || null,
+        myRating: editMyRating ?? null,
+        myNote: editMyNote.trim() || null,
         // Dizi için sezon bilgilerini kaydet
         ...(isSeries && {
           totalSeasons: editTotalSeasons || null,
@@ -164,6 +170,57 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                       />
                     </div>
                   </div>
+
+                  {/* ── Kişisel Puan & Not (sadece izlenenler için) ── */}
+                  {item.watched && (
+                    <>
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                          ⭐ {t('personal.myRating')}: <span className="font-bold text-amber-500">{editMyRating !== undefined ? editMyRating.toFixed(1) : '—'}</span>
+                        </label>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => {
+                            const val = star;
+                            const filled = editMyRating !== undefined && editMyRating >= val;
+                            const halfFilled = editMyRating !== undefined && editMyRating >= val - 0.5 && editMyRating < val;
+                            return (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setEditMyRating(prev => prev === val ? undefined : val)}
+                                onContextMenu={(e) => { e.preventDefault(); setEditMyRating(val - 0.5); }}
+                                className="text-xl transition-transform hover:scale-125 focus:outline-none"
+                                title={`${val} (sağ tık: ${val - 0.5})`}
+                              >
+                                {filled ? <FaStar className="text-amber-400" /> : halfFilled ? <FaStarHalfAlt className="text-amber-400" /> : <FaRegStar className="text-gray-300 dark:text-gray-600" />}
+                              </button>
+                            );
+                          })}
+                          {editMyRating !== undefined && (
+                            <button type="button" onClick={() => setEditMyRating(undefined)} className="ml-2 text-xs text-gray-400 hover:text-red-400 transition-colors">
+                              <FaTimes />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="editMyNote" className="flex items-center gap-1.5 text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                          <FaStickyNote className="text-amber-500 text-xs" /> {t('personal.myNote')}
+                        </label>
+                        <textarea
+                          id="editMyNote"
+                          rows={2}
+                          maxLength={200}
+                          value={editMyNote}
+                          onChange={(e) => setEditMyNote(e.target.value)}
+                          placeholder={t('personal.myNotePlaceholder')}
+                          className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm resize-none"
+                        />
+                        <p className="text-[10px] text-gray-400 text-right mt-0.5">{editMyNote.length}/200</p>
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label htmlFor="editGenre" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">

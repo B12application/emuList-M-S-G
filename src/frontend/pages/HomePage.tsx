@@ -1,8 +1,8 @@
 // src/pages/HomePage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // 1. YENİ İKONLAR EKLENDİ: FaCalendarCheck, FaHistory, FaArrowRight, FaHourglassHalf, FaStar
-import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog, FaPlay } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';
@@ -20,6 +20,8 @@ import AdminRecommendationsPanel from '../components/AdminRecommendationsPanel';
 import { fetchRecommendations, groupRecommendationsByCategory } from '../../backend/services/recommendationService';
 import type { Recommendation } from '../../backend/types/recommendation';
 import QuoteWidget from '../components/QuoteWidget';
+import { getSeriesProgress, toggleEpisodeWatched, updateCurrentProgress } from '../../backend/services/episodeTrackingService';
+import ImageWithFallback from '../components/ui/ImageWithFallback';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
@@ -85,6 +87,46 @@ export default function HomePage() {
         .filter(item => !item.watched && item.createdAt) // İzlenmemiş ve tarihi olanlar
         .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)) // Eskiden yeniye
         .slice(0, 3);
+
+    // C. Continue Watching (En son izlenen 3 in-progress dizi)
+    const continueWatchingShows = useMemo(() => {
+        return allItems
+            .filter(item => {
+                if (item.type !== 'series') return false;
+                const progress = getSeriesProgress(item);
+                return progress.totalEpisodes > 0 && progress.totalWatched > 0 && progress.percentage < 100;
+            })
+            .sort((a, b) => {
+                const aTime = a.lastWatchedAt ? (a.lastWatchedAt as any).seconds || 0 : 0;
+                const bTime = b.lastWatchedAt ? (b.lastWatchedAt as any).seconds || 0 : 0;
+                return bTime - aTime;
+            })
+            .slice(0, 3);
+    }, [allItems]);
+
+    const getNextEpisode = (show: MediaItem): { season: number; episode: number } | null => {
+        const ts = show.totalSeasons || 0;
+        const we = show.watchedEpisodes || {};
+        const eps = show.episodesPerSeason || {};
+        for (let s = 1; s <= ts; s++) {
+            const w = we[s] || [];
+            const tot = eps[s] || 0;
+            if (!tot) continue;
+            for (let e = 1; e <= tot; e++) { if (!w.includes(e)) return { season: s, episode: e }; }
+        }
+        return null;
+    };
+
+    const handleQuickMarkHome = async (show: MediaItem) => {
+        const next = getNextEpisode(show);
+        if (!next) return;
+        try {
+            await toggleEpisodeWatched(show.id, next.season, next.episode, show.watchedEpisodes || {});
+            await updateCurrentProgress(show.id, next.season, next.episode);
+            toast.success(`S${next.season} E${next.episode} ✓`);
+            allRefetch();
+        } catch (err) { console.error(err); }
+    };
 
     // Tarih Formatlayıcı
     const formatDate = (timestamp: any) => {
@@ -359,6 +401,81 @@ export default function HomePage() {
                     </div>
                 )}
             </div>
+
+            {/* === DEVAM ET (Continue Watching) === */}
+            {continueWatchingShows.length > 0 && (
+                <div className="mt-12 mb-8">
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3 text-gray-900 dark:text-gray-200">
+                            <FaPlay className="text-teal-500" />
+                            {t('myShows.continueWatching')}
+                        </h2>
+                        <Link
+                            to="/my-shows"
+                            className="text-sm font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-1.5 transition-colors"
+                        >
+                            {t('myShows.viewAll')} <FaArrowRight size={11} />
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {continueWatchingShows.map(show => {
+                            const progress = getSeriesProgress(show);
+                            const nextEp = getNextEpisode(show);
+                            return (
+                                <div
+                                    key={show.id}
+                                    className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all"
+                                >
+                                    <div className="flex gap-3 p-3">
+                                        {/* Poster */}
+                                        <div className="w-[56px] h-[80px] rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-black/5 shadow-sm">
+                                            <ImageWithFallback
+                                                src={show.image}
+                                                alt={show.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                                                    {show.title}
+                                                </h4>
+                                                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                                    {progress.totalWatched}/{progress.totalEpisodes} {t('myShows.episodes')}
+                                                </p>
+                                            </div>
+                                            {/* Progress bar */}
+                                            <div className="mt-2">
+                                                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full transition-all duration-500"
+                                                        style={{
+                                                            width: `${progress.percentage}%`,
+                                                            background: 'linear-gradient(90deg, #14b8a6, #0d9488)'
+                                                        }}
+                                                    />
+                                                </div>
+                                                <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 mt-0.5 text-right">{progress.percentage}%</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Quick mark button */}
+                                    {nextEp && (
+                                        <button
+                                            onClick={() => handleQuickMarkHome(show)}
+                                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-[12px] font-bold hover:from-teal-600 hover:to-teal-700 transition-all active:scale-[0.98]"
+                                        >
+                                            <FaPlay size={8} />
+                                            S{nextEp.season}E{nextEp.episode} — {t('myShows.continueWatchingHome')}
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* === GÜNÜN SÖZÜ WİDGET === */}
             <div className="mt-8 mb-12">

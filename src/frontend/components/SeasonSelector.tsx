@@ -1,5 +1,5 @@
 // src/frontend/components/SeasonSelector.tsx
-// Dizi sezonlarını seçmek için interaktif komponent
+// Dizi sezonlarını seçmek için interaktif komponent – teal accent
 
 import { useState, useEffect } from 'react';
 import { FaCheck, FaTv, FaCheckDouble, FaTimes } from 'react-icons/fa';
@@ -10,7 +10,7 @@ interface SeasonSelectorProps {
     watchedSeasons: number[];
     onChange: (seasons: number[]) => void;
     disabled?: boolean;
-    compact?: boolean; // Kart görünümü için kompakt mod
+    compact?: boolean;
 }
 
 export default function SeasonSelector({
@@ -58,7 +58,7 @@ export default function SeasonSelector({
     if (compact) {
         return (
             <div className="flex items-center gap-1.5">
-                <FaTv className="text-purple-500" size={12} />
+                <FaTv className="text-teal-500" size={12} />
                 <span className={`text-xs font-medium ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-400'}`}>
                     {isCompleted ? (
                         <span className="flex items-center gap-1">
@@ -78,7 +78,7 @@ export default function SeasonSelector({
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <FaTv className="text-purple-500" />
+                    <FaTv className="text-teal-500" />
                     {t('seasons.title')}
                 </h4>
                 <span className={`text-xs px-2 py-1 rounded-full ${isCompleted
@@ -102,7 +102,7 @@ export default function SeasonSelector({
                             className={`
                 relative w-10 h-10 rounded-xl font-medium text-sm transition-all duration-200
                 ${isWatched
-                                    ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30 scale-105'
+                                    ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-105'
                                     : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                 }
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}
@@ -128,8 +128,8 @@ export default function SeasonSelector({
                         onClick={selectAll}
                         disabled={isCompleted}
                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
-              bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300
-              hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors
+              bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300
+              hover:bg-teal-200 dark:hover:bg-teal-900/50 transition-colors
               disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <FaCheckDouble size={12} />

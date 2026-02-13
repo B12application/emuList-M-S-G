@@ -25,6 +25,7 @@ export default function MediaListPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date' | 'releaseDate'>('rating');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -117,12 +118,13 @@ export default function MediaListPage() {
 
     // Sadece seçilen kritere göre sırala (izlendi/izlenmedi karışık)
     result.sort((a, b) => {
+      let comparison = 0;
       if (sortOption === 'rating') {
-        return Number(b.rating) - Number(a.rating);
+        comparison = Number(b.rating) - Number(a.rating);
       } else if (sortOption === 'title') {
-        return a.title.localeCompare(b.title);
+        comparison = a.title.localeCompare(b.title);
       } else if (sortOption === 'date') {
-        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        comparison = (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
       } else if (sortOption === 'releaseDate') {
         // Çıkış tarihine göre sırala (en yeni önce)
         const getYear = (dateStr?: string) => {
@@ -130,13 +132,13 @@ export default function MediaListPage() {
           const match = dateStr.match(/\b(19|20)\d{2}\b/);
           return match ? parseInt(match[0]) : 0;
         };
-        return getYear(b.releaseDate) - getYear(a.releaseDate);
+        comparison = getYear(b.releaseDate) - getYear(a.releaseDate);
       }
-      return 0;
+      return sortDirection === 'asc' ? -comparison : comparison;
     });
 
     return result;
-  }, [items, searchQuery, sortOption, isSearchActive, filter, genreFilter, ratingRange, yearFilter]);
+  }, [items, searchQuery, sortOption, sortDirection, isSearchActive, filter, genreFilter, ratingRange, yearFilter]);
 
   // Modal senkronizasyonu
   useEffect(() => {
@@ -148,6 +150,16 @@ export default function MediaListPage() {
 
   const handleFilterChange = (newFilter: FilterStatus) => {
     refetch(); setSearchParams(prev => { prev.set('filter', newFilter); return prev; }, { replace: true });
+  };
+
+  const handleSortChange = (option: typeof sortOption) => {
+    if (sortOption === option) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortOption(option);
+      // Başlık için varsayılan A-Z (asc), diğerleri için Yüksekten-Düşüğe (desc)
+      setSortDirection(option === 'title' ? 'asc' : 'desc');
+    }
   };
 
   // Bulk Actions handlers
@@ -348,43 +360,55 @@ export default function MediaListPage() {
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
               <button
                 title={t('list.byRating')}
-                className={`p-2 rounded-md transition-all duration-200 ${sortOption === 'rating'
+                className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'rating'
                   ? 'bg-white dark:bg-gray-700 text-amber-500 shadow-sm'
                   : 'text-gray-400 hover:text-amber-500'
                   }`}
-                onClick={() => setSortOption('rating')}
+                onClick={() => handleSortChange('rating')}
               >
                 <FaStar className="text-sm" />
+                {sortOption === 'rating' && (
+                  <span className="text-[10px]">{sortDirection === 'desc' ? '▼' : '▲'}</span>
+                )}
               </button>
               <button
                 title={t('list.byTitle')}
-                className={`p-2 rounded-md transition-all duration-200 ${sortOption === 'title'
+                className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'title'
                   ? 'bg-white dark:bg-gray-700 text-violet-600 shadow-sm'
                   : 'text-gray-400 hover:text-violet-500'
                   }`}
-                onClick={() => setSortOption('title')}
+                onClick={() => handleSortChange('title')}
               >
                 <FaSortAlphaDown className="text-sm" />
+                {sortOption === 'title' && (
+                  <span className="text-[10px]">{sortDirection === 'asc' ? '▲' : '▼'}</span>
+                )}
               </button>
               <button
                 title={t('list.byDate')}
-                className={`p-2 rounded-md transition-all duration-200 ${sortOption === 'date'
+                className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'date'
                   ? 'bg-white dark:bg-gray-700 text-teal-600 shadow-sm'
                   : 'text-gray-400 hover:text-teal-500'
                   }`}
-                onClick={() => setSortOption('date')}
+                onClick={() => handleSortChange('date')}
               >
                 <FaCalendarAlt className="text-sm" />
+                {sortOption === 'date' && (
+                  <span className="text-[10px]">{sortDirection === 'desc' ? '▼' : '▲'}</span>
+                )}
               </button>
               <button
                 title={t('list.byReleaseDate') || 'Çıkış Tarihine Göre'}
-                className={`p-2 rounded-md transition-all duration-200 ${sortOption === 'releaseDate'
+                className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'releaseDate'
                   ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
                   : 'text-gray-400 hover:text-emerald-500'
                   }`}
-                onClick={() => setSortOption('releaseDate')}
+                onClick={() => handleSortChange('releaseDate')}
               >
                 <FaFilm className="text-sm" />
+                {sortOption === 'releaseDate' && (
+                  <span className="text-[10px]">{sortDirection === 'desc' ? '▼' : '▲'}</span>
+                )}
               </button>
             </div>
 

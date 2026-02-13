@@ -33,4 +33,8 @@ export interface MediaItem {
   episodesPerSeason?: Record<number, number>; // { sezon: toplam bölüm sayısı } örn: { 1: 10, 2: 12 }
   currentSeason?: number; // Kullanıcının şu an izlediği sezon
   currentEpisode?: number; // Kullanıcının kaldığı son bölüm
+  queueOrder?: number; // Sıralama önceliği (küçük=önce) - dizilerim sayfasında sıralama için
+  lastWatchedAt?: Timestamp; // Son izleme tarihi (bölüm işaretlendiğinde güncellenir)
+  myRating?: number; // Kullanıcının kendi puanı (0-10, 0.5 adım)
+  myNote?: string; // Kullanıcının kısa kişisel notu
 }

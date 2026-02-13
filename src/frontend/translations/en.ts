@@ -606,7 +606,7 @@ export const translationsEN = {
 
     // My Shows
     myShows: {
-        title: 'My Shows',
+        title: 'My Watchlist',
         continueWatching: 'Continue Watching',
         completed: 'Completed',
         notStarted: 'Not Started',
@@ -617,5 +617,47 @@ export const translationsEN = {
         noNotStarted: 'No not started shows.',
         episodesWatched: 'episodes watched',
         addShow: 'Add Show',
+        start: 'Start',
+        sortQueue: 'My Queue',
+        sortPriority: 'Priority Order',
+        sortTitle: 'By Name',
+        sortDate: 'Date Added',
+        sortRecent: 'Last Watched',
+        sortProgress: 'Progress %',
+        filterAll: 'All',
+        continuing: 'Continuing',
+        agoSuffix: 'ago',
+        daysAgo: 'days',
+        hoursAgo: 'hours',
+        minutesAgo: 'min',
+        justNow: 'Just now',
+        totalWatched: 'Watched',
+        totalHours: 'Hours',
+        overallProgress: 'Progress',
+        episodes: 'episodes',
+        selectMode: 'Select',
+        cancelSelect: 'Cancel',
+        markCompleted: 'Mark Completed',
+        selected: 'selected',
+        noEpisodeData: 'No episode data',
+        addedDate: 'Added',
+        continueWatchingHome: 'Continue',
+        viewAll: 'View All',
+    },
+
+    // Personal Rating & Note
+    personal: {
+        myRating: 'My Rating',
+        myNote: 'My Note',
+        myNotePlaceholder: 'A short note about this content...',
+        noRating: 'Not rated yet',
+    },
+
+    // Global Search
+    globalSearch: {
+        placeholder: 'Search content or users...',
+        myContent: 'My Content',
+        users: 'Users',
+        noResults: 'No results found',
     },
 };

@@ -7,7 +7,6 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
 import ImageWithFallback from './ui/ImageWithFallback';
 import ConfirmDialog from './ui/ConfirmDialog';
-import toast from 'react-hot-toast';
 import { showMarqueeToast } from './MarqueeToast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -62,11 +61,11 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
         }
       }
 
-      toast.success(t('toast.deleted'));
+      showMarqueeToast({ message: `${item.title} ${t('toast.deleted')}`, type: 'deleted', mediaType: item.type as any });
       refetch();
     } catch (e) {
       console.error("Silme hatası: ", e);
-      toast.error(t('toast.deleteError'));
+      showMarqueeToast({ message: t('toast.deleteError'), type: 'error' });
       setIsDeleting(false);
     }
   };
@@ -120,7 +119,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
       refetch();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);
-      toast.error(t('toast.updateError'));
+      showMarqueeToast({ message: t('toast.updateError'), type: 'error' });
       setLocalWatched(!newValue);
     } finally {
       setIsToggling(false);
@@ -150,11 +149,11 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
         }
       }
 
-      toast.success(newValue ? t('toast.favoriteAdded') : t('toast.favoriteRemoved'));
+      showMarqueeToast({ message: newValue ? t('toast.favoriteAdded') : t('toast.favoriteRemoved'), type: 'favorite', mediaType: item.type as any });
       refetch();
     } catch (e) {
       console.error("Favori güncelleme hatası: ", e);
-      toast.error(t('toast.favoriteError'));
+      showMarqueeToast({ message: t('toast.favoriteError'), type: 'error' });
       setLocalIsFavorite(!newValue);
     } finally {
       setIsTogglingFavorite(false);
@@ -369,9 +368,10 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
             )}
           </div>
 
-          {/* Dizi bölüm ilerleme bilgisi + "Devam Et" butonu */}
+          {/* Dizi bölüm ilerleme bilgisi + "Devam Et" butonu - Sadece en az 1 bölüm izlenmişse göster */}
           {item.type === 'series' && item.episodesPerSeason && Object.keys(item.episodesPerSeason).length > 0 && (() => {
             const progress = getSeriesProgress(item);
+            if (progress.totalWatched === 0) return null; // Hiç izlenmemişse gösterme
             const totalSeasons = item.totalSeasons || 0;
             const watchedEps = item.watchedEpisodes || {};
             const epsPerSeason = item.episodesPerSeason || {};
@@ -425,7 +425,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                         await toggleEpisodeWatched(item.id, nextSeason!, nextEpisode!, watchedEps);
                         await updateCurrentProgress(item.id, nextSeason!, nextEpisode!);
                         refetch();
-                        toast.success(`S${nextSeason} B${nextEpisode} ✓`);
+                        showMarqueeToast({ message: `S${nextSeason} B${nextEpisode} ✓`, type: 'watched', mediaType: item.type as any });
                       } catch (err) {
                         console.error(err);
                       }

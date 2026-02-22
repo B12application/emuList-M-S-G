@@ -145,6 +145,7 @@ export default function MediaListPage() {
     if (selectedItem) {
       const updated = items.find(i => i.id === selectedItem.id);
       if (updated) setSelectedItem(updated);
+      else setSelectedItem(null); // Öğe silindiyse modalı kapat
     }
   }, [items, selectedItem]);
 

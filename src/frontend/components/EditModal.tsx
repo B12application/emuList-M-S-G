@@ -29,7 +29,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
   const [editGenre, setEditGenre] = useState(item.genre || '');
   const [editTotalSeasons, setEditTotalSeasons] = useState(item.totalSeasons || 0);
   const [editWatchedSeasons, setEditWatchedSeasons] = useState<number[]>(item.watchedSeasons || []);
-  const [editMyRating, setEditMyRating] = useState<number | undefined>(item.myRating);
+  const [editMyRating, setEditMyRating] = useState<number | undefined>(item.myRating ?? undefined);
   const [editMyNote, setEditMyNote] = useState(item.myNote || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingSeasons, setIsFetchingSeasons] = useState(false);
@@ -45,7 +45,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
     setEditGenre(item.genre || '');
     setEditTotalSeasons(item.totalSeasons || 0);
     setEditWatchedSeasons(item.watchedSeasons || []);
-    setEditMyRating(item.myRating);
+    setEditMyRating(item.myRating ?? undefined);
     setEditMyNote(item.myNote || '');
     setShowUrlInput(false);
   }, [item, isOpen]);
@@ -176,7 +176,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                     <>
                       <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                          ⭐ {t('personal.myRating')}: <span className="font-bold text-amber-500">{editMyRating !== undefined ? editMyRating.toFixed(1) : '—'}</span>
+                          ⭐ {t('personal.myRating')}: <span className="font-bold text-amber-500">{editMyRating != null ? editMyRating.toFixed(1) : '—'}</span>
                         </label>
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => {

@@ -27,7 +27,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
     const [watchedEpisodes, setWatchedEpisodes] = useState<Record<number, number[]>>(
         item.watchedEpisodes || {}
     );
-    const [episodesPerSeason, setEpisodesPerSeason] = useState<Record<number, number>>(
+    const [episodesPerSeason] = useState<Record<number, number>>(
         item.episodesPerSeason || {}
     );
 

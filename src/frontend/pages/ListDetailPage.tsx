@@ -16,7 +16,7 @@ export default function ListDetailPage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { lists, loading: listsLoading, deleteList, removeItemFromList } = useCustomLists();
-    const { items: allItems, loading: itemsLoading, refetch } = useMedia('all', 'all', true, 'rating');
+    const { items: allItems, loading: itemsLoading, refetch } = useMedia('all', 'all', true);
 
     const [copied, setCopied] = useState(false);
 

@@ -42,7 +42,7 @@ export default function MediaListPage() {
 
   const isSearchActive = searchQuery.trim().length > 0;
   const isAdvancedFilterActive = genreFilter !== 'all' || ratingRange !== 'all' || yearFilter !== 'all';
-  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive || isAdvancedFilterActive, sortOption === 'date' ? 'createdAt' : 'rating');
+  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive || isAdvancedFilterActive);
 
   // Compute all available genres from items
   const allGenres = useMemo(() => {
@@ -85,14 +85,26 @@ export default function MediaListPage() {
 
     // Yarıda Kalanlar filtresi - istemci tarafında (Firebase desteklemediği için)
     if (filter === 'in-progress') {
-      result = result.filter(item =>
-        item.type === 'series' &&
-        item.totalSeasons &&
-        item.watchedSeasons &&
-        item.watchedSeasons.length > 0 &&
-        item.watchedSeasons.length < item.totalSeasons
-      );
+      result = result.filter(item => {
+        if (item.type !== 'series') return false;
+        // Sezon bazlı takip: en az 1 sezon izlenmiş ama hepsi değil
+        const hasPartialSeasons =
+          item.totalSeasons &&
+          item.watchedSeasons &&
+          item.watchedSeasons.length > 0 &&
+          item.watchedSeasons.length < item.totalSeasons;
+        // Bölüm bazlı takip: en az 1 bölüm izlenmiş ama tümü değil
+        const hasWatchedEpisodes =
+          item.watchedEpisodes &&
+          Object.values(item.watchedEpisodes).some(eps => eps.length > 0);
+        const isFullyWatched = item.watched ||
+          (item.totalSeasons &&
+            item.watchedSeasons &&
+            item.watchedSeasons.length === item.totalSeasons);
+        return (hasPartialSeasons || hasWatchedEpisodes) && !isFullyWatched;
+      });
     }
+
 
     // Genre filter
     if (genreFilter !== 'all') {
@@ -759,37 +771,39 @@ export default function MediaListPage() {
 
                   {/* Durum - Sabit Genişlik */}
                   <div className="shrink-0 w-24 flex items-center justify-center">
-                    {/* Diziler için 3 aşamalı durum */}
-                    {item.type === 'series' && item.totalSeasons ? (
+                    {/* Diziler için 3 aşamalı durum — watchedSeasons + watchedEpisodes */}
+                    {item.type === 'series' && item.totalSeasons && (() => {
+                      const sCompleted = item.watched ||
+                        (item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons);
+                      const sHasEps = item.watchedEpisodes &&
+                        Object.values(item.watchedEpisodes).some(eps => eps.length > 0);
+                      const sInProgress = !sCompleted &&
+                        ((item.watchedSeasons && item.watchedSeasons.length > 0) || sHasEps);
+                      return (
+                        <>
+                          <div className="sm:hidden">
+                            {sCompleted ? (
+                              <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
+                            ) : sInProgress ? (
+                              <FaClock className="text-amber-500" size={16} title={t('media.inProgress')} />
+                            ) : (
+                              <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
+                            )}
+                          </div>
+                          <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${sCompleted
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                            : sInProgress
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                              : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
+                            }`}>
+                            {sCompleted ? t('media.watched') : sInProgress ? t('media.inProgress') : t('media.notWatched')}
+                          </span>
+                        </>
+                      );
+                    })()}
+                    {/* Film/Kitap/Oyun için 2 aşamalı durum */}
+                    {item.type !== 'series' && (
                       <>
-                        {/* Mobil: Sadece İkon */}
-                        <div className="sm:hidden">
-                          {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
-                            <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
-                          ) : item.watchedSeasons && item.watchedSeasons.length > 0 ? (
-                            <FaClock className="text-amber-500" size={16} title={t('media.inProgress')} />
-                          ) : (
-                            <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
-                          )}
-                        </div>
-                        {/* Desktop: Badge */}
-                        <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                          : item.watchedSeasons && item.watchedSeasons.length > 0
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
-                            : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
-                          }`}>
-                          {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                            ? t('media.watched')
-                            : item.watchedSeasons && item.watchedSeasons.length > 0
-                              ? t('media.inProgress')
-                              : t('media.notWatched')
-                          }
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        {/* Mobil: Sadece İkon */}
                         <div className="sm:hidden">
                           {item.watched ? (
                             <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
@@ -797,7 +811,6 @@ export default function MediaListPage() {
                             <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
                           )}
                         </div>
-                        {/* Desktop: Badge */}
                         <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watched
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
                           : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'

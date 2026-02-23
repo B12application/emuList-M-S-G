@@ -41,6 +41,16 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
 
   const isGame = item.type === 'game';
 
+  // Dizi durum hesaplamaları (watchedSeasons + watchedEpisodes birlikte)
+  const seriesIsCompleted = item.type === 'series' &&
+    (item.watched ||
+      (item.watchedSeasons && item.totalSeasons && item.watchedSeasons.length === item.totalSeasons));
+  const seriesHasWatchedEpisodes = item.type === 'series' &&
+    item.watchedEpisodes &&
+    Object.values(item.watchedEpisodes).some(eps => eps.length > 0);
+  const seriesIsInProgress = item.type === 'series' && !seriesIsCompleted &&
+    ((item.watchedSeasons && item.watchedSeasons.length > 0) || seriesHasWatchedEpisodes);
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -191,24 +201,24 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
             {item.type === 'series' && item.totalSeasons ? (
               <>
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
-                    ? "bg-emerald-500 text-white border-emerald-400/50"
-                    : item.watchedSeasons && item.watchedSeasons.length > 0
-                      ? "bg-amber-500 text-white border-amber-400/50"
-                      : "bg-rose-500 text-white border-rose-400/50"
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${seriesIsCompleted
+                      ? "bg-emerald-500 text-white border-emerald-400/50"
+                      : seriesIsInProgress
+                        ? "bg-amber-500 text-white border-amber-400/50"
+                        : "bg-rose-500 text-white border-rose-400/50"
                     }`}
                 >
-                  {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons ? (
+                  {seriesIsCompleted ? (
                     <FaCheck size={10} />
-                  ) : item.watchedSeasons && item.watchedSeasons.length > 0 ? (
+                  ) : seriesIsInProgress ? (
                     <FaTv size={10} />
                   ) : (
                     <FaTimes size={10} />
                   )}
                   <span className="hidden md:inline">
-                    {item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons
+                    {seriesIsCompleted
                       ? t('media.watched')
-                      : item.watchedSeasons && item.watchedSeasons.length > 0
+                      : seriesIsInProgress
                         ? t('media.inProgress')
                         : t('media.notWatched')
                     }
@@ -425,22 +435,26 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                         await toggleEpisodeWatched(item.id, nextSeason!, nextEpisode!, watchedEps);
                         await updateCurrentProgress(item.id, nextSeason!, nextEpisode!);
                         refetch();
-                        showMarqueeToast({ message: `S${nextSeason} B${nextEpisode} ✓`, type: 'watched', mediaType: item.type as any });
+                        showMarqueeToast({
+                          message: `S${nextSeason} B${nextEpisode} ✓`,
+                          type: "watched",
+                          mediaType: item.type as any,
+                        });
                       } catch (err) {
                         console.error(err);
                       }
                     }}
-                    className="w-full flex items-center justify-between px-3 py-2 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/30 border border-gray-200 dark:border-gray-700 hover:border-teal-400/50 text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 text-[11px] font-medium transition-all duration-200 active:scale-[0.98]"
                   >
                     <span className="flex items-center gap-1.5">
-                      <FaPlay size={8} />
-                      S{nextSeason} B{nextEpisode}
+                      <FaPlay size={7} />
+                      <span className="font-semibold">S{nextSeason} B{nextEpisode}</span>
                     </span>
-                    <span>{t('episodes.continueBtn')}</span>
+                    <span className="opacity-70">{t("episodes.continueBtn")}</span>
                   </button>
                 ) : (
-                  <div className="text-center text-[10px] text-emerald-500 font-semibold">
-                    ✓ {t('seasons.completed')}
+                  <div className="w-full text-center text-[10px] font-medium py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-emerald-600 dark:text-emerald-400">
+                    ✓ {t("seasons.completed")}
                   </div>
                 )}
               </div>
@@ -448,7 +462,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
           })()}
 
           <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 h-14 mb-1">
-            {item.description || t('card.noDescription')}
+            {item.description || t("card.noDescription")}
           </p>
 
           {/* Only show action buttons if not in read-only mode */}

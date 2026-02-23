@@ -116,7 +116,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
     return (
         <div className="space-y-3">
             {/* === Next Episode + Progress === */}
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-zinc-200/40 dark:border-zinc-700/25">
+            <div className="bg-white dark:bg-zinc-800/80 rounded-xl p-3 border border-teal-200/60 dark:border-teal-700/30">
                 {/* Progress */}
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
@@ -143,19 +143,20 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                     <button
                         onClick={handleMarkNext}
                         disabled={marking}
-                        className="w-full flex items-center justify-between px-4 py-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl transition-all hover:bg-zinc-800 dark:hover:bg-white disabled:opacity-50 active:scale-[0.98]"
+                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-white font-semibold transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] shadow-sm"
+                        style={{ background: 'linear-gradient(135deg, #0d9488, #0891b2)' }}
                     >
                         <div className="flex items-center gap-2.5">
                             {marking ? <FaSpinner className="animate-spin" size={14} /> : <FaPlay size={12} />}
                             <div className="text-left">
                                 <div className="text-[13px] font-bold">S{nextEp.season} E{nextEp.episode}</div>
-                                <div className="text-[9px] opacity-50 font-medium">{t('episodes.markNext')}</div>
+                                <div className="text-[9px] opacity-70 font-medium">{t('episodes.markNext')}</div>
                             </div>
                         </div>
-                        <FaCheck size={14} className="opacity-40" />
+                        <FaCheck size={14} className="opacity-60" />
                     </button>
                 ) : (
-                    <div className="w-full text-center py-2.5 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 rounded-xl text-[12px] font-semibold border border-emerald-200/20 dark:border-emerald-700/15">
+                    <div className="w-full text-center py-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[12px] font-semibold border border-emerald-300/30 dark:border-emerald-700/20">
                         ✓ {t('seasons.completed')}
                     </div>
                 )}
@@ -199,14 +200,15 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                                     className={`
                                         relative flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all
                                         ${activeSeason === season
-                                            ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                                            ? 'text-white shadow-sm'
                                             : complete
                                                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/15 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-800/20'
                                                 : hasProgress
-                                                    ? 'bg-zinc-100 text-zinc-700 dark:bg-zinc-700/40 dark:text-zinc-300 border border-zinc-200/40 dark:border-zinc-600/30'
+                                                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/15 dark:text-sky-400 border border-sky-200/30 dark:border-sky-800/20'
                                                     : 'bg-zinc-50 text-zinc-400 dark:bg-zinc-800/40 dark:text-zinc-500 border border-zinc-200/30 dark:border-zinc-700/30'
                                         }
                                     `}
+                                    style={activeSeason === season ? { background: 'linear-gradient(135deg, #0d9488, #0891b2)' } : {}}
                                 >
                                     S{season}
                                     {complete && activeSeason !== season && (

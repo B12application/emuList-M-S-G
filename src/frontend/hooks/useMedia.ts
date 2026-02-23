@@ -28,7 +28,6 @@ async function fetchMediaPage(
   userId: string,
   type: FilterType,
   filter: FilterStatus,
-  sortBy: 'rating' | 'createdAt',
   isSearchActive: boolean,
   pageParam: QueryDocumentSnapshot | null
 ): Promise<MediaPage> {
@@ -39,7 +38,9 @@ async function fetchMediaPage(
   if (filter === 'watched') q = query(q, where("watched", "==", true));
   else if (filter === 'not-watched') q = query(q, where("watched", "==", false));
 
-  q = query(q, orderBy(sortBy, "desc"));
+  // Her zaman createdAt ile sırala — rating bazlı sort istemci tarafında yapılıyor.
+  // Firestore'da orderBy('rating') kullanmak, rating alanı olmayan dökümanları sorgudan düşürüyor!
+  q = query(q, orderBy('createdAt', "desc"));
 
   // isSearchActive true ise limit koyma (tüm veriyi çek - HomePage için)
   if (!isSearchActive) {
@@ -70,14 +71,13 @@ async function fetchMediaPage(
 export default function useMedia(
   type: FilterType,
   filter: FilterStatus,
-  isSearchActive: boolean,
-  sortBy: 'rating' | 'createdAt' = 'rating'
+  isSearchActive: boolean
 ) {
   const queryClient = useQueryClient();
   const currentUserId = auth.currentUser?.uid;
 
   // Query key - bu key'e göre cache yapılır
-  const queryKey = ['media', currentUserId, type, filter, sortBy, isSearchActive];
+  const queryKey = ['media', currentUserId, type, filter, isSearchActive];
 
   const {
     data,
@@ -92,7 +92,6 @@ export default function useMedia(
       currentUserId!,
       type,
       filter,
-      sortBy,
       isSearchActive,
       pageParam
     ),

@@ -107,15 +107,20 @@ export default function MyShowsPage() {
 
     const getCategory = (show: MediaItem): ShowCategory => {
         const p = getSeriesProgress(show);
-        const hasWE = show.watchedEpisodes && Object.keys(show.watchedEpisodes).length > 0;
+        // En az bir bölüm izlenmiş mi? (boş array'leri dışla)
+        const hasWE = show.watchedEpisodes &&
+            Object.values(show.watchedEpisodes).some(eps => eps.length > 0);
         const hasWS = show.watchedSeasons && show.watchedSeasons.length > 0;
-        if (p.totalEpisodes > 0) {
-            if (p.percentage === 100) return 'completed';
-            if (p.totalWatched > 0) return 'inProgress';
-            return 'notStarted';
-        }
-        if (show.watched || (hasWS && show.watchedSeasons!.length === show.totalSeasons)) return 'completed';
-        if (hasWS || hasWE) return 'inProgress';
+
+        // 1. Tamamlandı kontrolü
+        if (show.watched) return 'completed';
+        if (hasWS && show.totalSeasons && show.watchedSeasons!.length === show.totalSeasons) return 'completed';
+        if (p.totalEpisodes > 0 && p.percentage === 100) return 'completed';
+
+        // 2. Devam Ediyor: herhangi bir ilerleme varsa
+        if (p.totalWatched > 0 || hasWE || hasWS) return 'inProgress';
+
+        // 3. Başlanmadı
         return 'notStarted';
     };
 

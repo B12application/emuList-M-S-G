@@ -4,6 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import type { MediaItem } from '../../backend/types/media';
 import MediaCard from './MediaCard';
 import SeasonSelector from './SeasonSelector';
+import EpisodeTracker from './EpisodeTracker';
 import { FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
 import { db } from '../../backend/config/firebaseConfig';
@@ -22,11 +23,9 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Local state for watched seasons to prevent modal refresh
   const [localWatchedSeasons, setLocalWatchedSeasons] = useState<number[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Sync local state when item changes
   useEffect(() => {
     if (item) {
       setLocalWatchedSeasons(item.watchedSeasons || []);
@@ -38,39 +37,30 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
 
   const isSeries = item.type === 'series';
   const hasSeasons = isSeries && item.totalSeasons && item.totalSeasons > 0;
+  const hasEpisodeData = isSeries && item.episodesPerSeason && Object.keys(item.episodesPerSeason).length > 0;
 
   const handleSeasonChange = async (seasons: number[]) => {
     if (readOnly || !item.id) return;
-
-    // Update local state immediately (no refresh)
     setLocalWatchedSeasons(seasons);
     setHasChanges(true);
-
     setIsUpdating(true);
     try {
-      const itemRef = doc(db, "mediaItems", item.id);
+      const itemRef = doc(db, 'mediaItems', item.id);
       await updateDoc(itemRef, {
         watchedSeasons: seasons,
-        // Eğer tüm sezonlar izlendiyse, watched'ı true yap
         watched: seasons.length === item.totalSeasons
       });
-      // Don't call refetch here - will be called on modal close
-      // Not showing toast here to avoid duplicate - MediaCard toggle shows it
     } catch (e) {
-      console.error("Sezon güncelleme hatası: ", e);
+      console.error('Sezon güncelleme hatası: ', e);
       toast.error(t('toast.updateError'));
-      // Revert on error
       setLocalWatchedSeasons(item.watchedSeasons || []);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // Handle close with refetch if changes were made
   const handleClose = () => {
-    if (hasChanges) {
-      refetch();
-    }
+    if (hasChanges) refetch();
     onClose();
   };
 
@@ -112,8 +102,18 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
                 {/* MediaCard */}
                 <MediaCard item={item} refetch={refetch} isModal={true} readOnly={readOnly} />
 
-                {/* Season Selector - Only for series with seasons */}
-                {hasSeasons && (
+                {/* Bölüm Takip — episodesPerSeason varsa EpisodeTracker */}
+                {hasEpisodeData && !readOnly && (
+                  <div className="mt-2 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-teal-200 dark:border-teal-800/50">
+                    <EpisodeTracker
+                      item={item}
+                      onUpdate={() => { setHasChanges(true); refetch(); }}
+                    />
+                  </div>
+                )}
+
+                {/* Sezon seçici — episodesPerSeason yoksa basit sezon işaretleme */}
+                {hasSeasons && !hasEpisodeData && (
                   <div className="mt-2 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
                     <SeasonSelector
                       totalSeasons={item.totalSeasons!}
@@ -123,7 +123,6 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
                     />
                   </div>
                 )}
-
               </Dialog.Panel>
             </Transition.Child>
           </div>

@@ -182,16 +182,16 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
   return (
     <>
       <article
-        className={`group relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 ease-in-out flex flex-col h-full ${containerHoverClasses}`}
+        className={`group relative rounded-2xl border border-stone-300 dark:border-zinc-800 overflow-hidden bg-stone-50 dark:bg-zinc-900 shadow-sm transition-all duration-300 ease-in-out flex flex-col h-full ${containerHoverClasses}`}
       >
 
-        <div className="relative w-full bg-gray-50 dark:bg-gray-800">
+        <div className="relative w-full bg-stone-100 dark:bg-zinc-800">
           <ImageWithFallback
             src={item.image}
             alt={item.title}
             className={`w-full transition-transform duration-500 ${imageHoverClasses} ${isGame
               ? 'h-56 object-cover'
-              : 'h-96 object-contain bg-gray-100 dark:bg-gray-800'
+              : 'h-96 object-contain bg-stone-200 dark:bg-zinc-800'
               }`}
           />
 
@@ -202,10 +202,10 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               <>
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg backdrop-blur-md border transition-all ${seriesIsCompleted
-                      ? "bg-emerald-500 text-white border-emerald-400/50"
-                      : seriesIsInProgress
-                        ? "bg-amber-500 text-white border-amber-400/50"
-                        : "bg-rose-500 text-white border-rose-400/50"
+                    ? "bg-emerald-500 text-white border-emerald-400/50"
+                    : seriesIsInProgress
+                      ? "bg-amber-500 text-white border-amber-400/50"
+                      : "bg-rose-500 text-white border-rose-400/50"
                     }`}
                 >
                   {seriesIsCompleted ? (
@@ -225,7 +225,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                   </span>
                 </span>
                 {/* Sezon progress badge */}
-                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 shadow-sm backdrop-blur-md">
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-white/90 dark:bg-zinc-800/90 text-stone-700 dark:text-zinc-200 shadow-sm backdrop-blur-md">
                   <FaTv size={9} />
                   <span>{item.watchedSeasons?.length || 0}/{item.totalSeasons}</span>
                 </span>
@@ -257,14 +257,14 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
 
             {/* Kişisel puan badge'i */}
             {item.myRating !== undefined && item.myRating > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold bg-rose-100/90 text-rose-600 dark:bg-rose-900/70 dark:text-rose-300 shadow-sm backdrop-blur-md" title={item.myNote || ''}>
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold bg-rose-100/90 text-rose-600 dark:bg-amber-900/70 dark:text-rose-300 shadow-sm backdrop-blur-md" title={item.myNote || ''}>
                 ⭐ {item.myRating.toFixed(1)}
               </span>
             )}
 
             {/* Kısa not ikonu */}
             {item.myNote && (
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/90 dark:bg-gray-800/90 text-amber-500 shadow-sm backdrop-blur-md cursor-default" title={item.myNote}>
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/90 dark:bg-zinc-800/90 text-amber-500 shadow-sm backdrop-blur-md cursor-default" title={item.myNote}>
                 📝
               </span>
             )}
@@ -320,7 +320,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
 
           {/* Kitaplar için yazar bilgisi */}
           {item.type === 'book' && item.author && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic -mt-1">
+            <p className="text-sm text-stone-600 dark:text-zinc-400 italic -mt-1">
               {item.author}
             </p>
           )}
@@ -371,7 +371,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
             )}
             {/* Eklenme tarihi */}
             {item.createdAt && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+              <div className="flex items-center gap-1.5 text-xs text-stone-400 dark:text-zinc-500">
                 <FaCalendarAlt size={10} />
                 <span>{t('card.addedOn')}: {formatDate(item.createdAt)}</span>
               </div>
@@ -407,7 +407,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
               <div className="space-y-1.5 mb-1">
                 {/* İlerleme barı */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <span className="text-xs text-stone-500 dark:text-zinc-400 flex items-center gap-1">
                     <FaTv size={9} />
                     {progress.totalWatched}/{progress.totalEpisodes}
                   </span>
@@ -415,7 +415,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                     %{progress.percentage}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-stone-200 dark:bg-zinc-700 rounded-full h-1.5 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -444,7 +444,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                         console.error(err);
                       }
                     }}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/30 border border-gray-200 dark:border-gray-700 hover:border-teal-400/50 text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 text-[11px] font-medium transition-all duration-200 active:scale-[0.98]"
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-stone-200 dark:bg-zinc-800 hover:bg-teal-50 dark:hover:bg-teal-900/30 border border-stone-300 dark:border-zinc-700 hover:border-teal-400/50 text-stone-600 dark:text-zinc-300 hover:text-teal-600 dark:hover:text-teal-400 text-[11px] font-medium transition-all duration-200 active:scale-[0.98]"
                   >
                     <span className="flex items-center gap-1.5">
                       <FaPlay size={7} />
@@ -453,7 +453,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                     <span className="opacity-70">{t("episodes.continueBtn")}</span>
                   </button>
                 ) : (
-                  <div className="w-full text-center text-[10px] font-medium py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-emerald-600 dark:text-emerald-400">
+                  <div className="w-full text-center text-[10px] font-medium py-1.5 rounded-lg bg-stone-200 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-emerald-600 dark:text-emerald-400">
                     ✓ {t("seasons.completed")}
                   </div>
                 )}
@@ -461,7 +461,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
             );
           })()}
 
-          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 h-14 mb-1">
+          <p className="text-sm text-stone-600 dark:text-zinc-300 line-clamp-3 h-14 mb-1">
             {item.description || t("card.noDescription")}
           </p>
 
@@ -478,7 +478,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                   disabled={isToggling}
                   className={`flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-50 h-10 ${localWatched
                     ? 'border-emerald-300 text-emerald-600 dark:text-emerald-400 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
-                    : 'border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'border-stone-300 dark:border-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-800'
                     }`}
                 >
                   {localWatched ? <FaEye /> : <FaEyeSlash />}
@@ -512,7 +512,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                     setIsEditModalOpen(true);
                   }}
                   title={t('actions.edit')}
-                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:text-sky-300 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition"
+                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 dark:text-sky-300 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition"
                 >
                   <FaPen />
                 </button>
@@ -524,7 +524,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                   }}
                   disabled={isDeleting}
                   title={t('actions.delete')}
-                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 text-red-300 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
+                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 text-red-300 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
                 >
                   {isDeleting ? <FaSpinner className="animate-spin" /> : <FaTrash />}
                 </button>

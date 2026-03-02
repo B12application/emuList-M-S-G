@@ -36,13 +36,13 @@ export default function RecommendationCard({ item, typeLabel, refetch }: RecCard
   // Eğer öneri yoksa (boş kutu)
   if (!item) {
     return (
-      <div className="flex flex-col justify-center items-center gap-4 p-8 bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 h-full text-center opacity-60">
-        <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-full text-3xl text-gray-400">
+      <div className="flex flex-col justify-center items-center gap-4 p-8 bg-stone-50 dark:bg-zinc-800 rounded-3xl shadow-lg border border-stone-200 dark:border-zinc-700 h-full text-center opacity-60">
+        <div className="p-4 bg-stone-200 dark:bg-zinc-700 rounded-full text-3xl text-stone-400">
           {getIcon()}
         </div>
         <div>
-          <h4 className="font-bold text-lg text-gray-900 dark:text-white">{getTranslatedTypeLabel()}</h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h4 className="font-bold text-lg text-stone-900 dark:text-white">{getTranslatedTypeLabel()}</h4>
+          <p className="text-sm text-stone-500 dark:text-zinc-400 mt-1">
             {t('home.noRecommendations')}
           </p>
         </div>
@@ -56,10 +56,10 @@ export default function RecommendationCard({ item, typeLabel, refetch }: RecCard
         <>
           <Popover.Button as="div" className="outline-none h-full">
             <div
-              className={`group relative flex flex-col bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 h-full cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl ${open ? 'ring-2 ring-sky-500' : ''}`}
+              className={`group relative flex flex-col bg-stone-50 dark:bg-zinc-800 rounded-3xl shadow-lg border border-stone-200 dark:border-zinc-700 h-full cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl ${open ? 'ring-2 ring-sky-500' : ''}`}
             >
               {/* 1. DÜZELTME: Resim Alanı Sabitlendi */}
-              <div className="relative h-64 w-full overflow-hidden rounded-t-3xl bg-gray-100 dark:bg-gray-900">
+              <div className="relative h-64 w-full overflow-hidden rounded-t-3xl bg-stone-200 dark:bg-zinc-900">
                 <ImageWithFallback
                   src={item.image}
                   alt={item.title}
@@ -91,11 +91,11 @@ export default function RecommendationCard({ item, typeLabel, refetch }: RecCard
 
               {/* Alt Bilgi Alanı */}
               <div className="p-5 flex-1 flex flex-col justify-between">
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 mb-4">
+                <p className="text-sm text-stone-600 dark:text-zinc-300 line-clamp-3 mb-4">
                   {item.description || t('home.noDescription')}
                 </p>
 
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-700 w-full text-center">
+                <div className="pt-4 border-t border-stone-200 dark:border-zinc-700 w-full text-center">
                   <span className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider group-hover:underline">
                     {t('home.viewDetails')}
                   </span>

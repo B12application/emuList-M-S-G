@@ -195,15 +195,15 @@ export default function CreatePage() {
 
   return (
     <section className="py-8 px-4 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('create.title')}</h1>
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-white mb-6">{t('create.title')}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Form */}
         <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
 
           {/* Step 1: Type Selection */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">1. {t('create.selectType')}</h2>
+          <div className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm border border-stone-200 dark:border-zinc-700">
+            <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 mb-3">1. {t('create.selectType')}</h2>
             <div className="grid grid-cols-4 gap-2">
               {(Object.keys(typeConfig) as MediaType[]).map((t) => {
                 const { icon: Icon, color, label } = typeConfig[t];
@@ -215,7 +215,7 @@ export default function CreatePage() {
                     onClick={() => setType(t)}
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${isSelected
                       ? `border-${color}-500 bg-${color}-50 dark:bg-${color}-900/20 text-${color}-600 dark:text-${color}-400`
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-500'
+                      : 'border-stone-300 dark:border-zinc-700 hover:border-gray-300 text-stone-500'
                       }`}
                   >
                     <Icon className="text-xl" />
@@ -228,17 +228,17 @@ export default function CreatePage() {
 
           {/* Step 2: Search - Collapsible */}
           {type && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700">
               <button
                 type="button"
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                className="w-full flex items-center justify-between p-4 hover:bg-stone-100 dark:hover:bg-zinc-700/50 transition"
               >
-                <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 flex items-center gap-2">
                   🔍 2. {t('create.searchLabel')}
-                  <span className="text-xs font-normal text-gray-400">(opsiyonel)</span>
+                  <span className="text-xs font-normal text-stone-400">(opsiyonel)</span>
                 </h2>
-                <span className={`text-gray-400 transition-transform ${searchOpen ? 'rotate-180' : ''}`}>▼</span>
+                <span className={`text-stone-400 transition-transform ${searchOpen ? 'rotate-180' : ''}`}>▼</span>
               </button>
               {searchOpen && (
                 <div className="px-4 pb-4">
@@ -250,60 +250,60 @@ export default function CreatePage() {
 
           {/* Step 3: Details */}
           {type && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
-              <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">3. {t('create.detailsLabel')}</h2>
+            <div className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm border border-stone-200 dark:border-zinc-700 space-y-4">
+              <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 mb-1">3. {t('create.detailsLabel')}</h2>
 
               {/* Title */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">{t('create.titleLabel')} *</label>
+                <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.titleLabel')} *</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
 
               {/* Image URL */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">{t('create.imageLabel')}</label>
+                <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.imageLabel')}</label>
                 <input
                   type="url"
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                   placeholder="https://..."
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm"
+                  className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">{t('create.descriptionLabel')}</label>
+                <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.descriptionLabel')}</label>
                 <textarea
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm resize-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm resize-none"
                 />
               </div>
 
               {/* Author (books only) */}
               {type === 'book' && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">{t('create.authorLabel')}</label>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.authorLabel')}</label>
                   <input
                     type="text"
                     value={author}
                     onChange={(e) => setAuthor(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm"
+                    className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm"
                   />
                 </div>
               )}
 
               {/* Rating */}
               <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2">
+                <label className="flex items-center gap-2 text-xs font-medium text-stone-500 mb-2">
                   <FaStar className="text-yellow-500" /> {t('create.ratingLabel')}: <span className="font-bold" style={{ color: ratingColor }}>{rating}</span>
                 </label>
                 <Slider
@@ -321,11 +321,11 @@ export default function CreatePage() {
                 <button
                   type="button"
                   onClick={() => setWatched(!watched)}
-                  className={`w-12 h-6 rounded-full transition-colors ${watched ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                  className={`w-12 h-6 rounded-full transition-colors ${watched ? 'bg-green-500' : 'bg-gray-300 dark:bg-zinc-600'}`}
                 >
-                  <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${watched ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                  <div className={`w-5 h-5 bg-stone-50 rounded-full shadow transition-transform ${watched ? 'translate-x-6' : 'translate-x-0.5'}`} />
                 </button>
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="text-sm text-stone-600 dark:text-zinc-300">
                   {watched ? <><FaCheck className="inline text-green-500 mr-1" />{t('media.watched')}</> : t('media.notWatched')}
                 </span>
               </div>
@@ -334,12 +334,12 @@ export default function CreatePage() {
 
           {/* Step 4: Genres & Tags */}
           {type && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
-              <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">4. {t('create.genresAndTags')}</h2>
+            <div className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm border border-stone-200 dark:border-zinc-700 space-y-4">
+              <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400">4. {t('create.genresAndTags')}</h2>
 
               {/* Genres */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-2">🎭 {t('genreLabel')}</label>
+                <label className="block text-xs font-medium text-stone-500 mb-2">🎭 {t('genreLabel')}</label>
                 <div className="flex flex-wrap gap-1.5">
                   {GENRES[type].map((g) => (
                     <button
@@ -348,7 +348,7 @@ export default function CreatePage() {
                       onClick={() => toggleGenre(g)}
                       className={`px-2.5 py-1 rounded-full text-xs font-medium border transition ${genres.includes(g)
                         ? 'bg-purple-500 text-white border-purple-500'
-                        : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-purple-400'
+                        : 'bg-gray-50 dark:bg-zinc-700 text-stone-600 dark:text-zinc-300 border-stone-300 dark:border-zinc-600 hover:border-purple-400'
                         }`}
                     >
                       {genres.includes(g) && '✓ '}{g}
@@ -359,7 +359,7 @@ export default function CreatePage() {
 
               {/* Tags */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-2">🏷️ {t('tags.label')}</label>
+                <label className="block text-xs font-medium text-stone-500 mb-2">🏷️ {t('tags.label')}</label>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
@@ -367,13 +367,13 @@ export default function CreatePage() {
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput); setTagInput(''); } }}
                     placeholder={t('tags.addPlaceholder')}
-                    className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm"
+                    className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm"
                   />
                   <button type="button" onClick={() => { addTag(tagInput); setTagInput(''); }} className="shrink-0 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600">+</button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {SUGGESTED_TAGS.filter(t => !tags.includes(t)).map(t => (
-                    <button key={t} type="button" onClick={() => addTag(t)} className="px-2 py-0.5 text-xs rounded-full border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:border-blue-400 hover:text-blue-500">+{t}</button>
+                    <button key={t} type="button" onClick={() => addTag(t)} className="px-2 py-0.5 text-xs rounded-full border border-dashed border-gray-300 dark:border-zinc-600 text-stone-500 hover:border-blue-400 hover:text-blue-500">+{t}</button>
                   ))}
                 </div>
                 {tags.length > 0 && (
@@ -405,7 +405,7 @@ export default function CreatePage() {
         {/* Preview Card */}
         <div className="lg:col-span-2">
           <div className="sticky top-24">
-            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">{t('create.preview')}</h2>
+            <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 mb-3">{t('create.preview')}</h2>
             <MediaCard item={previewItem} refetch={() => { }} readOnly />
           </div>
         </div>

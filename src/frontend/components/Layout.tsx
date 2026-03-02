@@ -10,7 +10,7 @@ export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 antialiased">
+    <div className="min-h-screen bg-stone-100 text-stone-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased">
 
       {/* 3. Header'a "aç" fonksiyonunu gönder */}
       <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />

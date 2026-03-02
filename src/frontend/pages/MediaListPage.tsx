@@ -249,83 +249,83 @@ export default function MediaListPage() {
         className="mb-8"
       >
         {/* Modern Minimal Navbar */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 px-4 py-3">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-stone-300 dark:border-zinc-800 px-4 py-3">
           <div className="flex items-center justify-center flex-wrap gap-3">
 
             {/* Kategori İkonları */}
             <div className="flex items-center gap-1.5">
               <Link
                 className={`group relative p-2.5 rounded-lg transition-all duration-200 ${type === 'movie'
-                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200 dark:hover:bg-zinc-800'
                   }`}
                 to="/movie"
               >
                 <FaFilm className={`text-lg transition-transform ${type !== 'movie' ? 'group-hover:animate-[wiggle_0.5s_ease-in-out_infinite]' : ''}`} />
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-stone-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                   {t('nav.movies')}
                 </span>
               </Link>
               <Link
                 className={`group relative p-2.5 rounded-lg transition-all duration-200 ${type === 'series'
-                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200 dark:hover:bg-zinc-800'
                   }`}
                 to="/series"
               >
                 <FaTv className={`text-lg transition-transform ${type !== 'series' ? 'group-hover:animate-bounce' : ''}`} />
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-stone-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                   {t('nav.series')}
                 </span>
               </Link>
               <Link
                 className={`group relative p-2.5 rounded-lg transition-all duration-200 ${type === 'game'
-                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200 dark:hover:bg-zinc-800'
                   }`}
                 to="/game"
               >
                 <FaGamepad className={`text-lg transition-transform ${type !== 'game' ? 'group-hover:animate-[shake_0.4s_ease-in-out_infinite]' : ''}`} />
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-stone-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                   {t('nav.games')}
                 </span>
               </Link>
               <Link
                 className={`group relative p-2.5 rounded-lg transition-all duration-200 ${type === 'book'
-                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200 dark:hover:bg-zinc-800'
                   }`}
                 to="/book"
               >
                 <FaBook className={`text-lg transition-transform ${type !== 'book' ? 'group-hover:animate-pulse' : ''}`} />
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-stone-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                   {t('nav.books')}
                 </span>
               </Link>
               <Link
                 className={`group relative p-2.5 rounded-lg transition-all duration-200 ${type === 'all'
-                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200 dark:hover:bg-zinc-800'
                   }`}
                 to="/all"
               >
                 <FaClone className={`text-lg transition-transform ${type !== 'all' ? 'group-hover:animate-spin' : ''}`} />
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-stone-800 text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                   {t('nav.all')}
                 </span>
               </Link>
             </div>
 
             {/* Ayraç */}
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
 
             {/* Durum Filtresi */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
+            <div className="flex items-center bg-stone-200 dark:bg-zinc-800 rounded-lg p-0.5 gap-0.5">
               <button
                 title={t('list.all')}
                 className={`p-2 rounded-md transition-all duration-200 ${filter === 'all'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                  : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
                   }`}
                 onClick={() => handleFilterChange('all')}
               >
@@ -334,8 +334,8 @@ export default function MediaListPage() {
               <button
                 title={t('list.watched')}
                 className={`p-2 rounded-md transition-all duration-200 ${filter === 'watched'
-                  ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
-                  : 'text-gray-400 hover:text-emerald-500'
+                  ? 'bg-white dark:bg-zinc-700 text-emerald-600 shadow-sm'
+                  : 'text-stone-400 hover:text-emerald-500'
                   }`}
                 onClick={() => handleFilterChange('watched')}
               >
@@ -346,8 +346,8 @@ export default function MediaListPage() {
                 <button
                   title={t('list.inProgress')}
                   className={`p-2 rounded-md transition-all duration-200 ${filter === 'in-progress'
-                    ? 'bg-white dark:bg-gray-700 text-amber-600 shadow-sm'
-                    : 'text-gray-400 hover:text-amber-500'
+                    ? 'bg-white dark:bg-zinc-700 text-amber-600 shadow-sm'
+                    : 'text-stone-400 hover:text-amber-500'
                     }`}
                   onClick={() => handleFilterChange('in-progress')}
                 >
@@ -357,8 +357,8 @@ export default function MediaListPage() {
               <button
                 title={t('list.notWatched')}
                 className={`p-2 rounded-md transition-all duration-200 ${filter === 'not-watched'
-                  ? 'bg-white dark:bg-gray-700 text-rose-600 shadow-sm'
-                  : 'text-gray-400 hover:text-rose-500'
+                  ? 'bg-white dark:bg-zinc-700 text-rose-600 shadow-sm'
+                  : 'text-stone-400 hover:text-amber-700'
                   }`}
                 onClick={() => handleFilterChange('not-watched')}
               >
@@ -367,15 +367,15 @@ export default function MediaListPage() {
             </div>
 
             {/* Ayraç */}
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
 
             {/* Sıralama */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
+            <div className="flex items-center bg-stone-200 dark:bg-zinc-800 rounded-lg p-0.5 gap-0.5">
               <button
                 title={t('list.byRating')}
                 className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'rating'
-                  ? 'bg-white dark:bg-gray-700 text-amber-500 shadow-sm'
-                  : 'text-gray-400 hover:text-amber-500'
+                  ? 'bg-white dark:bg-zinc-700 text-amber-500 shadow-sm'
+                  : 'text-stone-400 hover:text-amber-500'
                   }`}
                 onClick={() => handleSortChange('rating')}
               >
@@ -387,8 +387,8 @@ export default function MediaListPage() {
               <button
                 title={t('list.byTitle')}
                 className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'title'
-                  ? 'bg-white dark:bg-gray-700 text-violet-600 shadow-sm'
-                  : 'text-gray-400 hover:text-violet-500'
+                  ? 'bg-white dark:bg-zinc-700 text-violet-600 shadow-sm'
+                  : 'text-stone-400 hover:text-violet-500'
                   }`}
                 onClick={() => handleSortChange('title')}
               >
@@ -400,8 +400,8 @@ export default function MediaListPage() {
               <button
                 title={t('list.byDate')}
                 className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'date'
-                  ? 'bg-white dark:bg-gray-700 text-teal-600 shadow-sm'
-                  : 'text-gray-400 hover:text-teal-500'
+                  ? 'bg-white dark:bg-zinc-700 text-teal-600 shadow-sm'
+                  : 'text-stone-400 hover:text-teal-500'
                   }`}
                 onClick={() => handleSortChange('date')}
               >
@@ -413,8 +413,8 @@ export default function MediaListPage() {
               <button
                 title={t('list.byReleaseDate') || 'Çıkış Tarihine Göre'}
                 className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'releaseDate'
-                  ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
-                  : 'text-gray-400 hover:text-emerald-500'
+                  ? 'bg-white dark:bg-zinc-700 text-emerald-600 shadow-sm'
+                  : 'text-stone-400 hover:text-emerald-500'
                   }`}
                 onClick={() => handleSortChange('releaseDate')}
               >
@@ -426,15 +426,15 @@ export default function MediaListPage() {
             </div>
 
             {/* Ayraç */}
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
 
             {/* Görünüm */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
+            <div className="flex items-center bg-stone-200 dark:bg-zinc-800 rounded-lg p-0.5 gap-0.5">
               <button
                 title={t('list.grid')}
                 className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'grid'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                  : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
                   }`}
                 onClick={() => setViewMode('grid')}
               >
@@ -443,8 +443,8 @@ export default function MediaListPage() {
               <button
                 title={t('list.listView')}
                 className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'list'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                  : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
                   }`}
                 onClick={() => setViewMode('list')}
               >
@@ -453,7 +453,7 @@ export default function MediaListPage() {
             </div>
 
             {/* Ayraç */}
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
 
             {/* Arama */}
             <div className="relative">
@@ -462,28 +462,28 @@ export default function MediaListPage() {
                 placeholder={t('list.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-32 lg:w-40 px-3 py-2 pl-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500 focus:border-gray-400 focus:outline-none transition-all placeholder:text-gray-400"
+                className="w-32 lg:w-40 px-3 py-2 pl-8 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-sm focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500 focus:border-gray-400 focus:outline-none transition-all placeholder:text-stone-400"
               />
-              <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+              <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-stone-400" />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-stone-200 dark:hover:bg-zinc-700 transition"
                 >
-                  <FaTimes className="h-2.5 w-2.5 text-gray-400" />
+                  <FaTimes className="h-2.5 w-2.5 text-stone-400" />
                 </button>
               )}
             </div>
 
             {/* Ayraç */}
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
 
             {/* Gelişmiş Filtre Toggle */}
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               className={`p-2 rounded-lg transition-all duration-200 relative ${showAdvancedFilters || isAdvancedFilterActive
                 ? 'bg-violet-500 text-white'
-                : 'text-gray-400 hover:text-violet-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                : 'text-stone-400 hover:text-violet-500 hover:bg-stone-200 dark:hover:bg-zinc-800'
                 }`}
               title={t('list.advancedFilters') || 'Gelişmiş Filtreler'}
             >
@@ -504,8 +504,8 @@ export default function MediaListPage() {
                   }
                 }}
                 className={`p-2 rounded-lg transition-all duration-200 ${selectionMode
-                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-800'
                   }`}
                 title={selectionMode ? t('bulk.cancelSelect') : t('bulk.selectMode')}
               >
@@ -514,7 +514,7 @@ export default function MediaListPage() {
               <button
                 onClick={handleExportPDF}
                 disabled={filteredItems.length === 0}
-                className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg text-stone-400 hover:text-red-500 hover:bg-stone-200 dark:hover:bg-zinc-800 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                 title={t('bulk.exportPdf')}
               >
                 <FaFilePdf className="text-sm" />
@@ -538,11 +538,11 @@ export default function MediaListPage() {
                   {/* Tür Filtresi */}
                   <div className="flex items-center gap-2">
                     <FaTheaterMasks className="text-violet-500" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('list.genreFilter') || 'Tür'}:</span>
+                    <span className="text-sm font-medium text-stone-700 dark:text-zinc-300">{t('list.genreFilter') || 'Tür'}:</span>
                     <select
                       value={genreFilter}
                       onChange={(e) => setGenreFilter(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                      className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-stone-50 dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
                     >
                       <option value="all">{t('list.all')}</option>
                       {allGenres.map(genre => (
@@ -554,11 +554,11 @@ export default function MediaListPage() {
                   {/* Puan Aralığı */}
                   <div className="flex items-center gap-2">
                     <FaStar className="text-amber-500" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('list.ratingFilter') || 'Puan'}:</span>
+                    <span className="text-sm font-medium text-stone-700 dark:text-zinc-300">{t('list.ratingFilter') || 'Puan'}:</span>
                     <select
                       value={ratingRange}
                       onChange={(e) => setRatingRange(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                      className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-stone-50 dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
                     >
                       <option value="all">{t('list.all')}</option>
                       <option value="9-10">★ 9-10 (Mükemmel)</option>
@@ -573,11 +573,11 @@ export default function MediaListPage() {
                   {allYears.length > 0 && (
                     <div className="flex items-center gap-2">
                       <FaCalendarAlt className="text-emerald-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('list.yearFilter') || 'Yıl'}:</span>
+                      <span className="text-sm font-medium text-stone-700 dark:text-zinc-300">{t('list.yearFilter') || 'Yıl'}:</span>
                       <select
                         value={yearFilter}
                         onChange={(e) => setYearFilter(e.target.value)}
-                        className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                        className="px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 bg-stone-50 dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
                       >
                         <option value="all">{t('list.all')}</option>
                         {allYears.map(year => (
@@ -616,7 +616,7 @@ export default function MediaListPage() {
                     {yearFilter !== 'all' && (
                       <span className="px-2 py-0.5 bg-emerald-200 dark:bg-emerald-800 rounded-full text-xs">📅 {yearFilter}</span>
                     )}
-                    <span className="ml-auto text-xs text-gray-500">
+                    <span className="ml-auto text-xs text-stone-500">
                       {filteredItems.length} {t('list.results') || 'sonuç'}
                     </span>
                   </div>
@@ -634,17 +634,17 @@ export default function MediaListPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-50 dark:bg-zinc-800 rounded-2xl shadow-2xl border border-stone-300 dark:border-zinc-700 px-6 py-4 flex items-center gap-4"
           >
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-semibold text-stone-700 dark:text-zinc-300">
               {selectedIds.size} {t('bulk.selected')}
             </span>
 
-            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
+            <div className="h-6 w-px bg-stone-200 dark:bg-zinc-700" />
 
             <button
               onClick={selectAll}
-              className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center gap-2"
+              className="px-3 py-1.5 text-sm bg-stone-200 dark:bg-zinc-700 rounded-lg hover:bg-stone-200 dark:hover:bg-gray-600 transition flex items-center gap-2"
             >
               <FaRegSquare /> {t('bulk.selectAll')}
             </button>
@@ -697,7 +697,7 @@ export default function MediaListPage() {
                     <div className="absolute top-3 left-3 z-20">
                       <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${selectedIds.has(item.id)
                         ? 'bg-sky-500 text-white'
-                        : 'bg-white/90 dark:bg-gray-800/90 border-2 border-gray-300 dark:border-gray-600'
+                        : 'bg-white/90 dark:bg-zinc-800/90 border-2 border-gray-300 dark:border-zinc-600'
                         }`}>
                         {selectedIds.has(item.id) && <FaCheckSquare />}
                       </div>
@@ -711,16 +711,16 @@ export default function MediaListPage() {
 
           {/* Liste Görünümü - Satır Satır */}
           {viewMode === 'list' && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-700 overflow-hidden">
               {filteredItems.map((item, idx) => (
                 <div
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${idx !== filteredItems.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
+                  className={`flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700/50 ${idx !== filteredItems.length - 1 ? 'border-b border-stone-200 dark:border-zinc-700' : ''
                     }`}
                 >
                   {/* Küçük Resim */}
-                  <div className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  <div className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-stone-200 dark:bg-zinc-700 rounded-lg overflow-hidden">
                     {item.image ? (
                       <img
                         src={item.image}
@@ -728,7 +728,7 @@ export default function MediaListPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-stone-400">
                         {item.type === 'movie' && <FaFilm size={24} />}
                         {item.type === 'series' && <FaTv size={24} />}
                         {item.type === 'game' && <FaGamepad size={24} />}
@@ -739,10 +739,10 @@ export default function MediaListPage() {
 
                   {/* Başlık ve Açıklama */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 dark:text-white truncate mb-1 text-sm sm:text-base">
+                    <h3 className="font-bold text-stone-900 dark:text-white truncate mb-1 text-sm sm:text-base">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
+                    <p className="text-xs text-stone-500 dark:text-zinc-400 truncate hidden sm:block">
                       {item.description || t('card.noDescription')}
                     </p>
                   </div>
@@ -787,14 +787,14 @@ export default function MediaListPage() {
                             ) : sInProgress ? (
                               <FaClock className="text-amber-500" size={16} title={t('media.inProgress')} />
                             ) : (
-                              <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
+                              <FaTimes className="text-amber-700" size={16} title={t('media.notWatched')} />
                             )}
                           </div>
                           <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${sCompleted
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
                             : sInProgress
                               ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
-                              : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
+                              : 'bg-rose-100 text-rose-700 dark:bg-amber-900/50 dark:text-rose-300'
                             }`}>
                             {sCompleted ? t('media.watched') : sInProgress ? t('media.inProgress') : t('media.notWatched')}
                           </span>
@@ -808,12 +808,12 @@ export default function MediaListPage() {
                           {item.watched ? (
                             <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
                           ) : (
-                            <FaTimes className="text-rose-500" size={16} title={t('media.notWatched')} />
+                            <FaTimes className="text-amber-700" size={16} title={t('media.notWatched')} />
                           )}
                         </div>
                         <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watched
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                          : 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300'
+                          : 'bg-rose-100 text-rose-700 dark:bg-amber-900/50 dark:text-rose-300'
                           }`}>
                           {item.watched ? t('card.watched') : t('card.notWatched')}
                         </span>
@@ -827,14 +827,14 @@ export default function MediaListPage() {
 
           {!isSearchActive && hasMoreItems && (
             <div className="flex justify-center py-8">
-              <button onClick={loadMore} disabled={loadingMore} className="group flex items-center gap-3 px-8 py-3 rounded-full bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-200 dark:hover:border-sky-800 transition-all transform hover:-translate-y-1">
+              <button onClick={loadMore} disabled={loadingMore} className="group flex items-center gap-3 px-8 py-3 rounded-full bg-stone-50 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 font-semibold shadow-md border border-stone-300 dark:border-zinc-700 hover:shadow-lg hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-200 dark:hover:border-sky-800 transition-all transform hover:-translate-y-1">
                 {loadingMore ? <FaSpinner className="animate-spin h-5 w-5" /> : <><span>{t('actions.loadMore')}</span><FaArrowDown className="group-hover:animate-bounce" /></>}
               </button>
             </div>
           )}
 
           {!isSearchActive && !hasMoreItems && items.length > 0 && (
-            <div className="py-4 text-center text-sm text-gray-400 dark:text-gray-600">{t('list.endOfList')}</div>
+            <div className="py-4 text-center text-sm text-stone-400 dark:text-stone-600">{t('list.endOfList')}</div>
           )}
 
           {filteredItems.length === 0 && !loading && (

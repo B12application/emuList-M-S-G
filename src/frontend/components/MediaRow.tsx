@@ -47,7 +47,7 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+    <div className="flex items-center gap-4 p-4 bg-stone-50 dark:bg-zinc-800 rounded-2xl shadow-lg border border-stone-300 dark:border-zinc-700">
       {/* Resim */}
       <ImageWithFallback
         src={item.image}
@@ -67,7 +67,7 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
         title={item.watched ? "Watched" : "Not Watched"}
         className={`inline-flex items-center justify-center p-2 rounded-full text-xs font-medium ${item.watched
           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-          : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+          : "bg-rose-100 text-rose-700 dark:bg-amber-900/40 dark:text-rose-200"
           }`}
       >
         {item.watched ? <FaEye /> : <FaEyeSlash />}
@@ -79,7 +79,7 @@ export default function MediaRow({ item, refetch }: MediaRowProps) {
           onClick={handleToggle}
           disabled={isToggling}
           title="Toggle Watched"
-          className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50"
+          className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 dark:border-zinc-700 hover:bg-stone-200 dark:hover:bg-zinc-700 transition disabled:opacity-50"
         >
           {item.watched ? <FaEye /> : <FaEyeSlash />}
         </button>

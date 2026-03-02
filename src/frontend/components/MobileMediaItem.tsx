@@ -38,7 +38,7 @@ export default function MobileMediaItem({ item, refetch, onClick }: MobileMediaI
       {/* Kartın Kendisi (Tıklanabilir) */}
       <div
         onClick={onClick}
-        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 active:scale-95 transition-transform cursor-pointer"
+        className="flex items-center gap-3 p-3 bg-stone-50 dark:bg-zinc-800 rounded-xl shadow-sm border border-stone-300 dark:border-zinc-700 active:scale-95 transition-transform cursor-pointer"
       >
         {/* Sol: Fotoğraf */}
         <ImageWithFallback
@@ -49,10 +49,10 @@ export default function MobileMediaItem({ item, refetch, onClick }: MobileMediaI
 
         {/* Orta: Başlık ve Yazılar */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-gray-900 dark:text-white truncate text-base">
+          <h4 className="font-semibold text-stone-900 dark:text-white truncate text-base">
             {item.title}
           </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+          <p className="text-xs text-stone-500 dark:text-zinc-400 line-clamp-2 mt-1">
             {item.description || "Açıklama yok."}
           </p>
           <div className="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">

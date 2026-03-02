@@ -74,7 +74,7 @@ export default function MediaRowSlider({ items, refetch }: MediaRowSliderProps) 
             <div
               key={i}
               // Aktif çizgi rengi 'sky' yapıldı
-              className={`h-1 w-6 rounded-full transition-colors ${i === slideIndex ? 'bg-sky-500' : 'bg-gray-300 dark:bg-gray-700'}`}
+              className={`h-1 w-6 rounded-full transition-colors ${i === slideIndex ? 'bg-sky-500' : 'bg-gray-300 dark:bg-zinc-700'}`}
             />
           ))}
         </div>

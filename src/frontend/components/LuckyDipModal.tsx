@@ -48,7 +48,7 @@ export default function LuckyDipModal({
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-3xl bg-white dark:bg-gray-900 p-0 text-left align-middle shadow-2xl transition-all border border-gray-200 dark:border-gray-800 relative">
+                            <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-3xl bg-stone-50 dark:bg-zinc-900 p-0 text-left align-middle shadow-2xl transition-all border border-stone-300 dark:border-zinc-800 relative">
 
                                 {/* Close Button */}
                                 <button
@@ -65,12 +65,12 @@ export default function LuckyDipModal({
 
                                     <div className="flex flex-col items-center pt-8 pb-8 px-6">
 
-                                        <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-wider">
+                                        <h3 className="text-2xl font-black text-stone-900 dark:text-white mb-6 uppercase tracking-wider">
                                             {t('home.luckyDipTitle') || 'Şansına Bu Çıktı!'}
                                         </h3>
 
                                         {/* Image Card */}
-                                        <div className="relative w-48 h-72 rounded-xl shadow-2xl overflow-hidden mb-6 transform hover:scale-105 transition-transform duration-500 border-4 border-white dark:border-gray-800 ring-4 ring-purple-500/30">
+                                        <div className="relative w-48 h-72 rounded-xl shadow-2xl overflow-hidden mb-6 transform hover:scale-105 transition-transform duration-500 border-4 border-white dark:border-zinc-800 ring-4 ring-purple-500/30">
                                             <ImageWithFallback
                                                 src={item.image}
                                                 alt={item.title}
@@ -87,12 +87,12 @@ export default function LuckyDipModal({
                                             </div>
                                         </div>
 
-                                        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2 leading-tight">
+                                        <h2 className="text-3xl font-bold text-center text-stone-900 dark:text-white mb-2 leading-tight">
                                             {item.title}
                                         </h2>
 
                                         {item.description && (
-                                            <p className="text-center text-gray-600 dark:text-gray-400 text-sm mb-8 line-clamp-3 max-w-md">
+                                            <p className="text-center text-stone-600 dark:text-zinc-400 text-sm mb-8 line-clamp-3 max-w-md">
                                                 {item.description}
                                             </p>
                                         )}
@@ -100,7 +100,7 @@ export default function LuckyDipModal({
                                         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                                             <button
                                                 onClick={onSpinAgain}
-                                                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-200 font-bold hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
                                             >
                                                 <FaRedo />
                                                 {t('home.spinAgain') || 'Tekrar Dene'}

@@ -104,7 +104,7 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
 
                 {/* Bölüm Takip — episodesPerSeason varsa EpisodeTracker */}
                 {hasEpisodeData && !readOnly && (
-                  <div className="mt-2 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-teal-200 dark:border-teal-800/50">
+                  <div className="mt-2 p-4 bg-stone-50 dark:bg-zinc-900 rounded-2xl border border-teal-200 dark:border-teal-800/50">
                     <EpisodeTracker
                       item={item}
                       onUpdate={() => { setHasChanges(true); refetch(); }}
@@ -114,7 +114,7 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
 
                 {/* Sezon seçici — episodesPerSeason yoksa basit sezon işaretleme */}
                 {hasSeasons && !hasEpisodeData && (
-                  <div className="mt-2 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
+                  <div className="mt-2 p-4 bg-stone-50 dark:bg-zinc-900 rounded-2xl border border-stone-300 dark:border-zinc-800">
                     <SeasonSelector
                       totalSeasons={item.totalSeasons!}
                       watchedSeasons={localWatchedSeasons}

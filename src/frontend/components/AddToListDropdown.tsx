@@ -63,11 +63,11 @@ export default function AddToListDropdown({ itemId, className = '' }: AddToListD
                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 overflow-hidden z-50"
+                        className="absolute right-0 top-full mt-2 w-56 bg-stone-50 dark:bg-zinc-900 rounded-xl shadow-xl border border-stone-300 dark:border-zinc-800 overflow-hidden z-50"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="p-2 border-b border-gray-100 dark:border-gray-800">
-                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase px-2">
+                        <div className="p-2 border-b border-stone-200 dark:border-zinc-800">
+                            <span className="text-xs font-semibold text-stone-500 dark:text-zinc-400 uppercase px-2">
                                 {t('lists.selectList') || 'Liste Seç'}
                             </span>
                         </div>
@@ -86,7 +86,7 @@ export default function AddToListDropdown({ itemId, className = '' }: AddToListD
                                             onClick={(e) => handleToggleList(e, list.id)}
                                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left ${inList
                                                     ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300'
-                                                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                                    : 'hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300'
                                                 }`}
                                         >
                                             <div
@@ -97,7 +97,7 @@ export default function AddToListDropdown({ itemId, className = '' }: AddToListD
                                             {inList ? (
                                                 <FaCheck className="text-violet-500 flex-shrink-0" size={12} />
                                             ) : (
-                                                <FaPlus className="text-gray-400 flex-shrink-0" size={12} />
+                                                <FaPlus className="text-stone-400 flex-shrink-0" size={12} />
                                             )}
                                         </button>
                                     );

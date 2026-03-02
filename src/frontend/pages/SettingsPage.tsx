@@ -194,8 +194,8 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
-                <FaShieldAlt className="text-rose-500" /> {t('settings.title')}
+            <h1 className="text-3xl font-bold text-stone-900 dark:text-white mb-8 flex items-center gap-3">
+                <FaShieldAlt className="text-amber-700" /> {t('settings.title')}
             </h1>
 
             <div className="space-y-6">
@@ -221,8 +221,8 @@ export default function SettingsPage() {
                 </Link>
 
                 {/* Profile Info Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-8 border border-stone-200 dark:border-zinc-700">
+                    <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
                         <FaUser className="text-amber-500" /> {t('settings.profileInfo') || 'Profil Bilgileri'}
                     </h2>
 
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                         <form onSubmit={handleSaveProfileInfo} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">
                                         {t('profile.name') || 'İsim'}
                                     </label>
                                     <input
@@ -242,19 +242,19 @@ export default function SettingsPage() {
                                         required
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                                        className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                                         placeholder="John"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">
                                         {t('profile.surname') || 'Soyisim'}
                                     </label>
                                     <input
                                         type="text"
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                                        className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                                         placeholder="Doe"
                                     />
                                 </div>
@@ -262,11 +262,11 @@ export default function SettingsPage() {
 
                             {/* Gender Selection */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
                                     {t('profile.gender') || 'Cinsiyet'}
                                 </label>
                                 <div className="flex gap-4">
-                                    <label className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${gender === 'male' ? 'bg-amber-500 border-amber-500 text-white font-bold shadow-lg shadow-amber-500/30' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-500 hover:border-amber-300'}`}>
+                                    <label className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${gender === 'male' ? 'bg-amber-500 border-amber-500 text-white font-bold shadow-lg shadow-amber-500/30' : 'bg-gray-50 dark:bg-zinc-900 border-stone-300 dark:border-zinc-700 text-stone-500 hover:border-amber-300'}`}>
                                         <input
                                             type="radio"
                                             name="gender"
@@ -278,7 +278,7 @@ export default function SettingsPage() {
                                         {gender === 'male' && <FaCheck className="text-sm" />}
                                         <span className="font-medium text-sm">{t('profile.male') || 'Erkek'}</span>
                                     </label>
-                                    <label className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${gender === 'female' ? 'bg-amber-500 border-amber-500 text-white font-bold shadow-lg shadow-amber-500/30' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-500 hover:border-amber-300'}`}>
+                                    <label className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${gender === 'female' ? 'bg-amber-500 border-amber-500 text-white font-bold shadow-lg shadow-amber-500/30' : 'bg-gray-50 dark:bg-zinc-900 border-stone-300 dark:border-zinc-700 text-stone-500 hover:border-amber-300'}`}>
                                         <input
                                             type="radio"
                                             name="gender"
@@ -306,42 +306,42 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Password Change Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-8 border border-stone-200 dark:border-zinc-700">
+                    <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
                         <FaLock className="text-blue-500" /> {t('settings.passwordTitle')}
                     </h2>
 
                     <form onSubmit={handleUpdatePassword} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('settings.currentPassword')}</label>
+                            <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">{t('settings.currentPassword')}</label>
                             <input
                                 type="password"
                                 required
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                                className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('settings.newPassword')}</label>
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">{t('settings.newPassword')}</label>
                                 <input
                                     type="password"
                                     required
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                                    className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('settings.confirmNewPassword')}</label>
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">{t('settings.confirmNewPassword')}</label>
                                 <input
                                     type="password"
                                     required
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                                    className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
                                 />
                             </div>
                         </div>
@@ -363,7 +363,7 @@ export default function SettingsPage() {
                     <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
                         <FaUserSlash /> {t('settings.deleteAccount')}
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+                    <p className="text-stone-600 dark:text-zinc-400 mb-6 text-sm leading-relaxed">
                         {t('settings.deleteAccountDesc')}
                     </p>
 
@@ -379,9 +379,9 @@ export default function SettingsPage() {
             {/* Password Confirmation Modal */}
             {showPasswordModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-stone-300 dark:border-zinc-700">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
                                 <FaLock className="text-amber-500" />
                                 {t('settings.confirmPassword') || 'Şifre Doğrulama'}
                             </h3>
@@ -391,13 +391,13 @@ export default function SettingsPage() {
                                     setConfirmPasswordInput('');
                                     setPendingProfileUpdate(null);
                                 }}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                className="text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300"
                             >
                                 <FaTimes />
                             </button>
                         </div>
 
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <p className="text-sm text-stone-600 dark:text-zinc-400 mb-4">
                             {t('settings.confirmPasswordDesc') || 'Bu değişiklikleri yapmak için mevcut şifrenizi girin.'}
                         </p>
 
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                             value={confirmPasswordInput}
                             onChange={(e) => setConfirmPasswordInput(e.target.value)}
                             placeholder={t('settings.currentPassword') || 'Mevcut Şifre'}
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-hidden mb-4"
+                            className="w-full px-4 py-3 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-amber-500 focus:outline-hidden mb-4"
                             autoFocus
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
@@ -422,7 +422,7 @@ export default function SettingsPage() {
                                     setConfirmPasswordInput('');
                                     setPendingProfileUpdate(null);
                                 }}
-                                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                                className="flex-1 px-4 py-2 bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-300 font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
                             >
                                 {t('actions.cancel') || 'İptal'}
                             </button>

@@ -141,14 +141,14 @@ export default function ProfilePage() {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => setIsEditing(true)}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-amber-500 text-gray-700 dark:text-gray-200 font-semibold rounded-2xl shadow-xs transition-all"
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 hover:border-amber-500 text-stone-700 dark:text-zinc-200 font-semibold rounded-2xl shadow-xs transition-all"
                                 >
                                     <FaUserEdit /> {t('profile.editProfile')}
                                 </motion.button>
                                 <Link
                                     to="/settings"
                                     title={t('settings.title')}
-                                    className="flex items-center justify-center w-11 h-11 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-amber-500 hover:text-amber-500 text-gray-700 dark:text-gray-200 rounded-2xl shadow-xs transition-all"
+                                    className="flex items-center justify-center w-11 h-11 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 hover:border-amber-500 hover:text-amber-500 text-stone-700 dark:text-zinc-200 rounded-2xl shadow-xs transition-all"
                                 >
                                     <FaCog />
                                 </Link>
@@ -172,7 +172,7 @@ export default function ProfilePage() {
                             <img
                                 src={avatarUrl || getDefaultAvatar()}
                                 alt="Profile"
-                                className="w-full h-full object-cover rounded-full bg-gray-100 dark:bg-gray-900 border-4 border-white dark:border-stone-800"
+                                className="w-full h-full object-cover rounded-full bg-stone-200 dark:bg-zinc-900 border-4 border-white dark:border-stone-800"
                             />
                         </div>
                         {isEditing && (
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                                 type="text"
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
-                                className="w-full text-center text-2xl font-black bg-gray-50 dark:bg-stone-950/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-stone-500 focus:outline-hidden"
+                                className="w-full text-center text-2xl font-black bg-stone-100 dark:bg-stone-950/50 border border-stone-300 dark:border-zinc-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-stone-500 focus:outline-hidden"
                                 placeholder="İsim"
                             />
                             <div className="space-y-2">
@@ -197,31 +197,31 @@ export default function ProfilePage() {
                                     type="text"
                                     value={avatarUrl}
                                     onChange={(e) => setAvatarUrl(e.target.value)}
-                                    className="w-full text-center text-xs bg-gray-50 dark:bg-stone-950/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-gray-500 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                                    className="w-full text-center text-xs bg-stone-100 dark:bg-stone-950/50 border border-stone-300 dark:border-zinc-700 rounded-xl px-4 py-2 text-stone-500 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                                     placeholder="https://example.com/photo.jpg"
                                 />
-                                <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+                                <p className="text-[10px] text-stone-400 dark:text-zinc-500 text-center">
                                     💡 Özel fotoğraf URL'si girin veya boş bırakın ({profile?.gender === 'female' ? 'kadın' : 'erkek'} avatar kullanılır)
                                 </p>
                             </div>
                             <textarea
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
-                                className="w-full h-32 bg-gray-50 dark:bg-stone-950/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-stone-500 focus:outline-hidden resize-none text-center"
+                                className="w-full h-32 bg-stone-100 dark:bg-stone-950/50 border border-stone-300 dark:border-zinc-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-stone-500 focus:outline-hidden resize-none text-center"
                                 placeholder={t('profile.bioPlaceholder')}
                             />
 
                             {/* Social Links Edit Section */}
-                            <div className="mt-6 p-4 bg-gray-50 dark:bg-stone-950/50 rounded-2xl border border-gray-200 dark:border-gray-700">
-                                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                            <div className="mt-6 p-4 bg-stone-100 dark:bg-stone-950/50 rounded-2xl border border-stone-300 dark:border-zinc-700">
+                                <h3 className="text-sm font-bold text-stone-700 dark:text-zinc-300 mb-4 flex items-center gap-2">
                                     <FaLink className="text-amber-500" />
                                     {t('profile.socialLinks')}
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div className="flex items-center gap-2">
-                                        <FaGithub className="text-gray-700 dark:text-gray-300 text-lg flex-shrink-0" />
-                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
-                                            <span className="text-xs text-gray-400 pl-3">github.com/</span>
+                                        <FaGithub className="text-stone-700 dark:text-zinc-300 text-lg flex-shrink-0" />
+                                        <div className="flex-1 flex items-center bg-stone-50 dark:bg-stone-900 border border-stone-300 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-stone-400 pl-3">github.com/</span>
                                             <input
                                                 type="text"
                                                 value={socialLinks.github || ''}
@@ -233,8 +233,8 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaLinkedin className="text-blue-600 text-lg flex-shrink-0" />
-                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
-                                            <span className="text-xs text-gray-400 pl-3">linkedin.com/in/</span>
+                                        <div className="flex-1 flex items-center bg-stone-50 dark:bg-stone-900 border border-stone-300 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-stone-400 pl-3">linkedin.com/in/</span>
                                             <input
                                                 type="text"
                                                 value={socialLinks.linkedin || ''}
@@ -246,8 +246,8 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaTwitter className="text-sky-500 text-lg flex-shrink-0" />
-                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
-                                            <span className="text-xs text-gray-400 pl-3">x.com/</span>
+                                        <div className="flex-1 flex items-center bg-stone-50 dark:bg-stone-900 border border-stone-300 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-stone-400 pl-3">x.com/</span>
                                             <input
                                                 type="text"
                                                 value={socialLinks.twitter || ''}
@@ -259,8 +259,8 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaInstagram className="text-pink-500 text-lg flex-shrink-0" />
-                                        <div className="flex-1 flex items-center bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
-                                            <span className="text-xs text-gray-400 pl-3">instagram.com/</span>
+                                        <div className="flex-1 flex items-center bg-stone-50 dark:bg-stone-900 border border-stone-300 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500">
+                                            <span className="text-xs text-stone-400 pl-3">instagram.com/</span>
                                             <input
                                                 type="text"
                                                 value={socialLinks.instagram || ''}
@@ -276,7 +276,7 @@ export default function ProfilePage() {
                                             type="text"
                                             value={socialLinks.website || ''}
                                             onChange={(e) => setSocialLinks(prev => ({ ...prev, website: e.target.value }))}
-                                            className="flex-1 text-sm bg-white dark:bg-stone-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                                            className="flex-1 text-sm bg-stone-50 dark:bg-stone-900 border border-stone-300 dark:border-zinc-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                                             placeholder="https://yourwebsite.com"
                                         />
                                     </div>
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                         </div>
                     ) : (
                         <div className="relative z-10">
-                            <h1 className="text-4xl font-black text-gray-900 dark:text-stone-100 tracking-tight mb-3">
+                            <h1 className="text-4xl font-black text-stone-900 dark:text-stone-100 tracking-tight mb-3">
                                 {displayName}
                             </h1>
 
@@ -301,12 +301,12 @@ export default function ProfilePage() {
                             {/* BIO as centered text */}
                             <div className="max-w-2xl mx-auto">
                                 {bio ? (
-                                    <p className="text-gray-600 dark:text-stone-300 text-base leading-relaxed text-center italic relative">
+                                    <p className="text-stone-600 dark:text-stone-300 text-base leading-relaxed text-center italic relative">
                                         <FaQuoteLeft className="inline-block text-amber-500/20 text-xl absolute -top-2 -left-4 transform -translate-x-full" />
                                         {bio}
                                     </p>
                                 ) : (
-                                    <p className="text-gray-400 dark:text-gray-600 text-sm italic">{t('profile.bioPlaceholder')}</p>
+                                    <p className="text-stone-400 dark:text-stone-600 text-sm italic">{t('profile.bioPlaceholder')}</p>
                                 )}
                             </div>
 
@@ -318,7 +318,7 @@ export default function ProfilePage() {
                                             href={`https://github.com/${socialLinks.github}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-800 transition-all hover:scale-110"
+                                            className="w-10 h-10 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-stone-700 dark:text-zinc-300 hover:bg-gray-800 hover:text-white dark:hover:bg-stone-200 dark:hover:text-stone-800 transition-all hover:scale-110"
                                             title="GitHub"
                                         >
                                             <FaGithub size={18} />
@@ -329,7 +329,7 @@ export default function ProfilePage() {
                                             href={`https://linkedin.com/in/${socialLinks.linkedin}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all hover:scale-110"
+                                            className="w-10 h-10 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all hover:scale-110"
                                             title="LinkedIn"
                                         >
                                             <FaLinkedin size={18} />
@@ -340,7 +340,7 @@ export default function ProfilePage() {
                                             href={`https://x.com/${socialLinks.twitter}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-sky-500 hover:bg-sky-500 hover:text-white transition-all hover:scale-110"
+                                            className="w-10 h-10 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-sky-500 hover:bg-sky-500 hover:text-white transition-all hover:scale-110"
                                             title="Twitter"
                                         >
                                             <FaTwitter size={18} />
@@ -351,7 +351,7 @@ export default function ProfilePage() {
                                             href={`https://instagram.com/${socialLinks.instagram}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-pink-500 hover:bg-gradient-to-br hover:from-pink-500 hover:to-orange-400 hover:text-white transition-all hover:scale-110"
+                                            className="w-10 h-10 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-pink-500 hover:bg-gradient-to-br hover:from-pink-500 hover:to-orange-400 hover:text-white transition-all hover:scale-110"
                                             title="Instagram"
                                         >
                                             <FaInstagram size={18} />
@@ -362,7 +362,7 @@ export default function ProfilePage() {
                                             href={socialLinks.website.startsWith('http') ? socialLinks.website : `https://${socialLinks.website}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-stone-800 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all hover:scale-110"
+                                            className="w-10 h-10 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all hover:scale-110"
                                             title="Website"
                                         >
                                             <FaGlobe size={18} />
@@ -380,7 +380,7 @@ export default function ProfilePage() {
                         { title: t('home.movieCount'), count: stats.movieCount, icon: <FaFilm />, color: 'text-blue-500', from: 'from-blue-500/10', to: 'to-blue-500/5', border: 'hover:border-blue-500/50' },
                         { title: t('home.seriesCount'), count: stats.seriesCount, icon: <FaTv />, color: 'text-emerald-500', from: 'from-emerald-500/10', to: 'to-emerald-500/5', border: 'hover:border-emerald-500/50' },
                         { title: t('home.gameCount'), count: stats.gameCount, icon: <FaGamepad />, color: 'text-amber-500', from: 'from-amber-500/10', to: 'to-amber-500/5', border: 'hover:border-amber-500/50' },
-                        { title: t('home.bookCount'), count: stats.bookCount, icon: <FaBook />, color: 'text-rose-500', from: 'from-rose-500/10', to: 'to-rose-500/5', border: 'hover:border-rose-500/50' },
+                        { title: t('home.bookCount'), count: stats.bookCount, icon: <FaBook />, color: 'text-amber-700', from: 'from-rose-500/10', to: 'to-rose-500/5', border: 'hover:border-amber-700/50' },
                     ].map((item, idx) => (
                         <motion.div
                             key={idx}
@@ -388,8 +388,8 @@ export default function ProfilePage() {
                             className={`bg-gradient-to-br ${item.from} ${item.to} dark:bg-stone-900/40 p-5 rounded-3xl border border-white/10 dark:border-white/5 ${item.border} transition-all relative overflow-hidden group`}
                         >
                             <div className={`text-2xl mb-3 ${item.color} group-hover:scale-110 transition-transform`}>{item.icon}</div>
-                            <div className="text-3xl font-black text-gray-900 dark:text-stone-100 mb-1">{statsLoading ? '-' : item.count}</div>
-                            <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{item.title}</div>
+                            <div className="text-3xl font-black text-stone-900 dark:text-stone-100 mb-1">{statsLoading ? '-' : item.count}</div>
+                            <div className="text-[10px] font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-widest">{item.title}</div>
                         </motion.div>
                     ))}
                 </div>
@@ -398,17 +398,17 @@ export default function ProfilePage() {
                 <div className="space-y-12">
 
                     {/* FAVORITES */}
-                    <div className="bg-white dark:bg-stone-900/30 rounded-[2.5rem] p-8 md:p-10 border border-gray-100 dark:border-white/5 shadow-2xl shadow-stone-900/5 relative overflow-hidden">
+                    <div className="bg-white dark:bg-stone-900/30 rounded-[2.5rem] p-8 md:p-10 border border-stone-200 dark:border-white/5 shadow-2xl shadow-stone-900/5 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
                         <div className="flex items-center justify-between mb-8 relative z-10">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-stone-100 flex items-center gap-3">
+                            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-3">
                                 <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-xl text-amber-600 dark:text-amber-500">
                                     <FaHeart />
                                 </div>
                                 {t('profile.favorites')}
                             </h2>
-                            <Link to="/all" className="px-4 py-2 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-all border border-transparent hover:border-amber-200 dark:hover:border-amber-700/30">
+                            <Link to="/all" className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-sm font-medium text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-all border border-transparent hover:border-amber-200 dark:hover:border-amber-700/30">
                                 {t('home.viewCollection') || 'Tümünü Gör'}
                             </Link>
                         </div>
@@ -434,7 +434,7 @@ export default function ProfilePage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="h-48 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+                            <div className="h-48 flex flex-col items-center justify-center text-stone-400 dark:text-zinc-500 bg-stone-100 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-stone-300 dark:border-zinc-800">
                                 <FaHeart className="text-4xl mb-3 opacity-20" />
                                 <p className="text-sm font-medium">{t('profile.noFavorites')}</p>
                             </div>
@@ -442,11 +442,11 @@ export default function ProfilePage() {
                     </div>
 
                     {/* RECENTLY WATCHED */}
-                    <div className="bg-white dark:bg-stone-900/30 rounded-[2.5rem] p-8 md:p-10 border border-gray-100 dark:border-white/5 shadow-2xl shadow-stone-900/5 relative overflow-hidden">
+                    <div className="bg-white dark:bg-stone-900/30 rounded-[2.5rem] p-8 md:p-10 border border-stone-200 dark:border-white/5 shadow-2xl shadow-stone-900/5 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -ml-32 -mt-32 pointer-events-none"></div>
 
                         <div className="mb-8 relative z-10">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-stone-100 flex items-center gap-3">
+                            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-3">
                                 <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-xl text-blue-600 dark:text-blue-500">
                                     <FaHistory />
                                 </div>
@@ -458,12 +458,12 @@ export default function ProfilePage() {
                             <div className="space-y-3">
                                 {recentlyWatched.map((item) => (
                                     <Link to={`/${item.type}`} key={item.id} className="block group">
-                                        <div className="flex items-center gap-5 p-4 rounded-3xl hover:bg-white dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-white/5 hover:shadow-lg dark:hover:shadow-black/20">
+                                        <div className="flex items-center gap-5 p-4 rounded-3xl hover:bg-white dark:hover:bg-white/5 transition-colors border border-transparent hover:border-stone-200 dark:hover:border-white/5 hover:shadow-lg dark:hover:shadow-black/20">
                                             {/* Icon Box */}
                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 ${item.type === 'movie' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
                                                 item.type === 'series' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
                                                     item.type === 'game' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
-                                                        'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                                                        'bg-amber-50 text-rose-600 dark:bg-amber-900/20 dark:text-amber-700'
                                                 }`}>
                                                 {item.type === 'movie' ? <FaFilm /> :
                                                     item.type === 'series' ? <FaTv /> :
@@ -472,11 +472,11 @@ export default function ProfilePage() {
 
                                             {/* Content */}
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="text-lg font-bold text-gray-900 dark:text-stone-100 truncate group-hover:text-amber-700 dark:group-hover:text-amber-500 transition-colors">
+                                                <h4 className="text-lg font-bold text-stone-900 dark:text-stone-100 truncate group-hover:text-amber-700 dark:group-hover:text-amber-500 transition-colors">
                                                     {item.title}
                                                 </h4>
                                                 <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-xs font-bold text-gray-500 dark:text-stone-400 uppercase tracking-wider">
+                                                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                                                         {t(`nav.${item.type}s`)}
                                                     </span>
                                                     {item.rating && (
@@ -496,7 +496,7 @@ export default function ProfilePage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12 text-gray-400 dark:text-stone-500 bg-gray-50 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+                            <div className="text-center py-12 text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-stone-300 dark:border-zinc-800">
                                 <FaHistory className="text-5xl mx-auto mb-4 opacity-20" />
                                 <p className="text-base font-medium">{t('stats.noRecent')}</p>
                             </div>
@@ -519,7 +519,7 @@ export default function ProfilePage() {
                     <div className="h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
 
                     {/* Glassmorphism bar */}
-                    <div className="bg-white/80 dark:bg-gray-900/90 backdrop-blur-xl border-t border-white/20 dark:border-gray-700/50 shadow-[0_-10px_40px_rgba(0,0,0,0.15)]">
+                    <div className="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-white/20 dark:border-zinc-700/50 shadow-[0_-10px_40px_rgba(0,0,0,0.15)]">
                         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                             <div className="flex items-center justify-between gap-4">
                                 {/* Left side - info text */}
@@ -528,8 +528,8 @@ export default function ProfilePage() {
                                         <FaUserEdit className="text-amber-600 dark:text-amber-400" />
                                     </div>
                                     <div className="hidden sm:block">
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Profil Düzenleniyor</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Değişikliklerinizi kaydetmeyi unutmayın</p>
+                                        <p className="text-sm font-semibold text-stone-900 dark:text-white">Profil Düzenleniyor</p>
+                                        <p className="text-xs text-stone-500 dark:text-zinc-400">Değişikliklerinizi kaydetmeyi unutmayın</p>
                                     </div>
                                 </div>
 
@@ -537,7 +537,7 @@ export default function ProfilePage() {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => setIsEditing(false)}
-                                        className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-stone-200 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-stone-700 dark:text-zinc-300 font-semibold rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
                                     >
                                         <FaTimes className="text-sm" />
                                         <span className="hidden sm:inline">{t('profile.cancel')}</span>

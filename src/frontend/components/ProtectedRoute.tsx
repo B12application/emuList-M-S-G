@@ -14,7 +14,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   // AuthContext'in sonucu dönene kadar bekle, hiçbir şey gösterme
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex justify-center items-center min-h-screen bg-stone-100 dark:bg-zinc-900">
         <FaSpinner className="animate-spin h-10 w-10 text-sky-500" />
       </div>
     );

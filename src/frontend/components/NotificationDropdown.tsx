@@ -21,7 +21,7 @@ export default function NotificationDropdown() {
             case 'comment':
                 return <FaComment className="text-emerald-500" />;
             default:
-                return <FaBell className="text-gray-500" />;
+                return <FaBell className="text-stone-500" />;
         }
     };
 
@@ -74,7 +74,7 @@ export default function NotificationDropdown() {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative w-9 h-9 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                className="relative w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 title={t('notifications.title')}
             >
                 <FaBell className="w-4 h-4" />
@@ -100,17 +100,17 @@ export default function NotificationDropdown() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
-                            className="fixed sm:absolute top-20 sm:top-full left-4 right-4 sm:left-auto sm:right-0 sm:mt-2 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl z-50 overflow-hidden"
+                            className="fixed sm:absolute top-20 sm:top-full left-4 right-4 sm:left-auto sm:right-0 sm:mt-2 sm:w-80 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 rounded-2xl shadow-xl z-50 overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                                <h3 className="font-bold text-gray-900 dark:text-white">
+                            <div className="p-4 border-b border-stone-300 dark:border-zinc-700 flex items-center justify-between">
+                                <h3 className="font-bold text-stone-900 dark:text-white">
                                     {t('notifications.title')}
                                 </h3>
                                 {unreadCount > 0 && (
                                     <button
                                         onClick={markAllNotificationsAsRead}
-                                        className="text-xs text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                                        className="text-xs text-rose-600 dark:text-amber-400 hover:underline cursor-pointer"
                                     >
                                         {t('notifications.markAllRead')}
                                     </button>
@@ -124,13 +124,13 @@ export default function NotificationDropdown() {
                                         <button
                                             key={notification.id}
                                             onClick={() => handleNotificationClick(notification)}
-                                            className={`w-full p-4 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${!notification.isRead ? 'bg-rose-50 dark:bg-rose-900/10' : ''
+                                            className={`w-full p-4 flex items-start gap-3 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer ${!notification.isRead ? 'bg-amber-50 dark:bg-amber-900/10' : ''
                                                 }`}
                                         >
                                             <img
                                                 src={notification.metadata.senderAvatar || 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png'}
                                                 alt=""
-                                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                                className="w-10 h-10 rounded-full object-cover border-2 border-stone-300 dark:border-zinc-600"
                                             />
                                             <div className="flex-1 text-left">
                                                 <div className="flex items-center gap-2 mb-1">
@@ -139,17 +139,17 @@ export default function NotificationDropdown() {
                                                         <span className="w-2 h-2 bg-rose-500 rounded-full" />
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-gray-900 dark:text-white">
+                                                <p className="text-sm text-stone-900 dark:text-white">
                                                     {getNotificationText(notification)}
                                                 </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1">
                                                     {getTimeAgo(notification.timestamp)}
                                                 </p>
                                             </div>
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                    <div className="p-8 text-center text-stone-500 dark:text-zinc-400">
                                         <FaBell className="w-12 h-12 mx-auto mb-3 opacity-30" />
                                         <p className="text-sm">{t('notifications.empty')}</p>
                                     </div>

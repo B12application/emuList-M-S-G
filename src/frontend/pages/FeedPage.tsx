@@ -51,7 +51,7 @@ export default function FeedPage() {
                             <div className="p-3 bg-gradient-to-br from-rose-500 to-orange-500 rounded-2xl text-white shadow-lg">
                                 <FaHistory className="text-2xl" />
                             </div>
-                            <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+                            <h1 className="text-3xl font-black text-stone-900 dark:text-white">
                                 {t('feed.title')}
                             </h1>
                         </div>
@@ -76,10 +76,10 @@ export default function FeedPage() {
                     className="mb-8"
                 >
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-gradient-to-br from-rose-500 to-orange-500 rounded-2xl text-white shadow-lg shadow-rose-500/30">
+                        <div className="p-3 bg-gradient-to-br from-rose-500 to-orange-500 rounded-2xl text-white shadow-lg shadow-amber-700/30">
                             <FaHistory className="text-2xl" />
                         </div>
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+                        <h1 className="text-3xl font-black text-stone-900 dark:text-white">
                             {t('feed.title')}
                         </h1>
                     </div>
@@ -89,7 +89,7 @@ export default function FeedPage() {
                         <SearchBar />
                     </div>
 
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    <p className="text-stone-500 dark:text-zinc-400 text-sm">
                         {groupedActivities.length > 0
                             ? `${groupedActivities.length} içerik aktivitesi`
                             : t('feed.emptyDesc')}
@@ -118,15 +118,15 @@ export default function FeedPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex flex-col items-center justify-center py-20 px-6"
                     >
-                        <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                            <FaInbox className="text-4xl text-gray-400 dark:text-gray-600" />
+                        <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                            <FaInbox className="text-4xl text-stone-400 dark:text-stone-600" />
                         </div>
 
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h3 className="text-xl font-bold text-stone-900 dark:text-white mb-2">
                             {t('feed.empty')}
                         </h3>
 
-                        <p className="text-gray-500 dark:text-gray-400 text-center max-w-md text-sm leading-relaxed">
+                        <p className="text-stone-500 dark:text-zinc-400 text-center max-w-md text-sm leading-relaxed">
                             {t('feed.emptyDesc')}
                         </p>
 

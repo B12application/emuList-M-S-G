@@ -137,10 +137,10 @@ export default function MigrationPage() {
 
     return (
         <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-stone-900 dark:text-white mb-2 flex items-center gap-3">
                 <FaDatabase className="text-indigo-500" /> Veri Migrasyon
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">
+            <p className="text-stone-500 dark:text-zinc-400 mb-8">
                 Mevcut içeriklerinizdeki eksik bilgileri API'lerden çekerek tamamlayın.
             </p>
 
@@ -150,7 +150,7 @@ export default function MigrationPage() {
                     <h2 className="text-lg font-bold text-sky-600 dark:text-sky-400 mb-3 flex items-center gap-2">
                         <FaTags /> Tür Bilgisi Ekle
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    <p className="text-stone-600 dark:text-zinc-400 mb-4 text-sm">
                         {itemsWithoutGenre !== null && itemsWithoutGenre > 0
                             ? `${itemsWithoutGenre} kaydınızda tür (genre) bilgisi eksik.`
                             : 'Tüm kayıtlarınızda tür bilgisi mevcut ✓'
@@ -159,17 +159,17 @@ export default function MigrationPage() {
 
                     {migrationLoading ? (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-zinc-400">
                                 <FaSync className="animate-spin" />
                                 <span>İşleniyor: {migrationProgress.currentItem || '...'}</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div className="w-full bg-stone-200 dark:bg-zinc-700 rounded-full h-2">
                                 <div
                                     className="bg-sky-500 h-2 rounded-full transition-all duration-300"
                                     style={{ width: `${migrationProgress.total > 0 ? (migrationProgress.processed / migrationProgress.total) * 100 : 0}%` }}
                                 />
                             </div>
-                            <div className="flex justify-between text-xs text-gray-500">
+                            <div className="flex justify-between text-xs text-stone-500">
                                 <span>{migrationProgress.processed} / {migrationProgress.total}</span>
                                 <span>✓ {migrationProgress.updated} güncellendi</span>
                             </div>
@@ -190,23 +190,23 @@ export default function MigrationPage() {
                     <h2 className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
                         <FaCalendarAlt /> Çıkış Tarihi Ekle
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    <p className="text-stone-600 dark:text-zinc-400 mb-4 text-sm">
                         Mevcut içeriklerinize çıkış tarihi (release date) bilgisi ekler.
                     </p>
 
                     {releaseDateLoading ? (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-zinc-400">
                                 <FaSync className="animate-spin" />
                                 <span>İşleniyor: {releaseDateProgress.title || '...'}</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div className="w-full bg-stone-200 dark:bg-zinc-700 rounded-full h-2">
                                 <div
                                     className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
                                     style={{ width: `${releaseDateProgress.total > 0 ? (releaseDateProgress.current / releaseDateProgress.total) * 100 : 0}%` }}
                                 />
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-stone-500">
                                 {releaseDateProgress.current} / {releaseDateProgress.total}
                             </div>
                         </div>
@@ -225,23 +225,23 @@ export default function MigrationPage() {
                     <h2 className="text-lg font-bold text-purple-600 dark:text-purple-400 mb-3 flex items-center gap-2">
                         <FaClock /> Süre ve IMDb Ekle
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    <p className="text-stone-600 dark:text-zinc-400 mb-4 text-sm">
                         Film ve dizilerinize süre (runtime) ve IMDb ID bilgisi ekler.
                     </p>
 
                     {runtimeImdbLoading ? (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-zinc-400">
                                 <FaSync className="animate-spin" />
                                 <span>İşleniyor: {runtimeImdbProgress.title || '...'}</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div className="w-full bg-stone-200 dark:bg-zinc-700 rounded-full h-2">
                                 <div
                                     className="bg-purple-500 h-2 rounded-full transition-all duration-300"
                                     style={{ width: `${runtimeImdbProgress.total > 0 ? (runtimeImdbProgress.current / runtimeImdbProgress.total) * 100 : 0}%` }}
                                 />
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-stone-500">
                                 {runtimeImdbProgress.current} / {runtimeImdbProgress.total}
                             </div>
                         </div>
@@ -260,23 +260,23 @@ export default function MigrationPage() {
                     <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
                         <FaTv /> Bölüm Takibi Migrasyon
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    <p className="text-stone-600 dark:text-zinc-400 mb-4 text-sm">
                         Mevcut sezon verilerinizi bölüm bazlı takip formatına dönüştürür. OMDB'den bölüm sayılarını çeker ve izlenmiş sezonları bölüm bazına çevirir.
                     </p>
 
                     {episodeMigrationLoading ? (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-zinc-400">
                                 <FaSync className="animate-spin" />
                                 <span>İşleniyor: {episodeMigrationProgress.title || '...'}</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div className="w-full bg-stone-200 dark:bg-zinc-700 rounded-full h-2">
                                 <div
                                     className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
                                     style={{ width: `${episodeMigrationProgress.total > 0 ? (episodeMigrationProgress.current / episodeMigrationProgress.total) * 100 : 0}%` }}
                                 />
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-stone-500">
                                 {episodeMigrationProgress.current} / {episodeMigrationProgress.total}
                             </div>
                         </div>

@@ -67,7 +67,7 @@ export default function ListDetailPage() {
     if (!currentList) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-stone-100 mb-4">
+                <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-4">
                     {t('lists.notFound') || 'Liste bulunamadı'}
                 </h1>
                 <Link to="/lists" className="text-violet-500 hover:underline">
@@ -83,7 +83,7 @@ export default function ListDetailPage() {
             <div className="mb-8">
                 <Link
                     to="/lists"
-                    className="inline-flex items-center gap-2 text-gray-500 dark:text-stone-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors mb-4"
+                    className="inline-flex items-center gap-2 text-stone-500 dark:text-stone-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors mb-4"
                 >
                     <FaArrowLeft /> {t('lists.backToLists') || 'Listelere Dön'}
                 </Link>
@@ -99,11 +99,11 @@ export default function ListDetailPage() {
                         </div>
 
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-stone-100">
+                            <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100">
                                 {currentList.name}
                             </h1>
                             {currentList.description && (
-                                <p className="text-gray-500 dark:text-stone-400 mt-1">
+                                <p className="text-stone-500 dark:text-stone-400 mt-1">
                                     {currentList.description}
                                 </p>
                             )}
@@ -114,7 +114,7 @@ export default function ListDetailPage() {
                         {/* Privacy badge */}
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${currentList.isPublic
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                            : 'bg-gray-100 text-gray-600 dark:bg-stone-800 dark:text-stone-400'
+                            : 'bg-gray-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
                             }`}>
                             {currentList.isPublic ? <FaGlobe /> : <FaLock />}
                             {currentList.isPublic ? (t('lists.public') || 'Herkese Açık') : (t('lists.private') || 'Özel')}
@@ -147,8 +147,8 @@ export default function ListDetailPage() {
                 </div>
 
                 {/* Stats bar */}
-                <div className="mt-6 flex items-center gap-6 text-sm text-gray-500 dark:text-stone-400">
-                    <span className="font-semibold text-gray-900 dark:text-stone-100">
+                <div className="mt-6 flex items-center gap-6 text-sm text-stone-500 dark:text-stone-400">
+                    <span className="font-semibold text-stone-900 dark:text-stone-100">
                         {listItems.length} {t('lists.items') || 'öğe'}
                     </span>
                 </div>

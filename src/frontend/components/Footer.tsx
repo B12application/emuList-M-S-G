@@ -17,7 +17,7 @@ export default function Footer() {
                         <span className="text-xl font-black bg-gradient-to-r from-stone-700 to-amber-700 dark:from-stone-200 dark:to-amber-500 bg-clip-text text-transparent tracking-tight">
                             B12 Mustafa Ulusoy
                         </span>
-                        <p className="text-[10px] text-gray-500 dark:text-stone-500 font-medium tracking-widest uppercase">
+                        <p className="text-[10px] text-stone-500 dark:text-stone-500 font-medium tracking-widest uppercase">
                             {t('footer.subtitle')}
                         </p>
                     </div>
@@ -33,7 +33,7 @@ export default function Footer() {
                             <a
                                 key={idx}
                                 href={social.href}
-                                className="w-9 h-9 flex items-center justify-center rounded-full bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-gray-200 dark:border-white/5 hover:scale-110 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 hover:border-amber-500 transition-all duration-300 shadow-sm"
+                                className="w-9 h-9 flex items-center justify-center rounded-full bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-stone-300 dark:border-white/5 hover:scale-110 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 hover:border-amber-500 transition-all duration-300 shadow-sm"
                             >
                                 {social.icon}
                             </a>
@@ -42,10 +42,10 @@ export default function Footer() {
 
                     {/* Copyright & Info */}
                     <div className="text-center md:text-right space-y-1">
-                        <p className="text-xs text-gray-500 dark:text-stone-500">
+                        <p className="text-xs text-stone-500 dark:text-stone-500">
                             &copy; {new Date().getFullYear()} {t('footer.rights')}
                         </p>
-                        <div className="flex items-center justify-center md:justify-end gap-1.5 text-[10px] text-gray-400 dark:text-stone-600">
+                        <div className="flex items-center justify-center md:justify-end gap-1.5 text-[10px] text-stone-400 dark:text-stone-600">
                             {t('footer.prefix')} <FaHeart className="text-rose-500 animate-pulse" /> {t('footer.suffix')}
                         </div>
                     </div>

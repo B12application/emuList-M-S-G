@@ -80,37 +80,37 @@ export default function VisitedMapPage() {
 
   return (
     <section className="py-2 md:py-6 relative h-[calc(100dvh-80px)] md:h-[calc(100vh-100px)] flex flex-col px-2 md:px-0">
-      <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-2 md:mb-4 px-2">
+      <h1 className="text-xl md:text-3xl font-bold tracking-tight text-stone-900 dark:text-white mb-2 md:mb-4 px-2">
         {t('mapPage.title')}
       </h1>
 
       <div className="mb-2 md:mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 md:gap-3 px-2">
         {/* Hide instructions on small screens to save space */}
-        <p className="hidden md:block text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+        <p className="hidden md:block text-stone-600 dark:text-zinc-400 text-sm sm:text-base">
           {t('mapPage.instructions')}
         </p>
 
         {/* Mobile Instructions - Simplified */}
-        <p className="md:hidden text-xs text-gray-500 dark:text-gray-400">
+        <p className="md:hidden text-xs text-stone-500 dark:text-zinc-400">
           Yakınlaştırmak için parmaklarını kullan. Seçmek için dokun.
         </p>
 
         {/* City Counter */}
-        <div className="flex items-center gap-4 md:gap-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 md:px-6 md:py-3 rounded-xl shadow-sm w-full md:w-auto justify-between md:justify-start">
+        <div className="flex items-center gap-4 md:gap-6 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm px-4 py-2 md:px-6 md:py-3 rounded-xl shadow-sm w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-baseline gap-2">
-            <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+            <div className="text-2xl md:text-3xl font-bold text-stone-900 dark:text-white">
               {visitedProvinces.length}
             </div>
-            <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">/ 81 {t('mapPage.cities')}</div>
+            <div className="text-xs md:text-sm text-stone-500 dark:text-zinc-400">/ 81 {t('mapPage.cities')}</div>
           </div>
-          <div className="text-xs md:text-sm text-gray-600 dark:text-gray-300 font-medium">
+          <div className="text-xs md:text-sm text-stone-600 dark:text-zinc-300 font-medium">
             {t('mapPage.visited')}
           </div>
         </div>
       </div>
 
       {/* Map Container - Full View Fix */}
-      <div className="flex-1 w-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 relative z-0 shadow-inner">
+      <div className="flex-1 w-full border border-gray-300 dark:border-zinc-700 rounded-lg overflow-hidden bg-stone-50 dark:bg-zinc-800 relative z-0 shadow-inner">
         <TransformWrapper
           ref={transformRef}
           initialScale={1}
@@ -127,12 +127,12 @@ export default function VisitedMapPage() {
               {/* Control Panel */}
               <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-3 pointer-events-none">
                 {/* Pan Controls - D-Pad style hidden on mobile */}
-                <div className="hidden md:block pointer-events-auto bg-white/90 dark:bg-gray-900/90 p-2.5 rounded-xl shadow-lg backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50">
+                <div className="hidden md:block pointer-events-auto bg-white/90 dark:bg-zinc-900/90 p-2.5 rounded-xl shadow-lg backdrop-blur-md border border-stone-300/50 dark:border-zinc-700/50">
                   <div className="grid grid-cols-3 grid-rows-3 gap-1.5">
                     <div></div>
                     <button
                       onClick={() => setTransform(transformState.positionX, transformState.positionY - 50, transformState.scale)}
-                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      className="p-2.5 bg-stone-200 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-gray-600 text-stone-700 dark:text-zinc-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
                       title={t('mapPage.controls.up')}
                     >
                       <FaArrowUp className="text-sm" />
@@ -140,17 +140,17 @@ export default function VisitedMapPage() {
                     <div></div>
                     <button
                       onClick={() => setTransform(transformState.positionX - 50, transformState.positionY, transformState.scale)}
-                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      className="p-2.5 bg-stone-200 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-gray-600 text-stone-700 dark:text-zinc-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
                       title={t('mapPage.controls.left')}
                     >
                       <FaArrowLeft className="text-sm" />
                     </button>
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg flex items-center justify-center border border-stone-300 dark:border-zinc-700">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></div>
                     </div>
                     <button
                       onClick={() => setTransform(transformState.positionX + 50, transformState.positionY, transformState.scale)}
-                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      className="p-2.5 bg-stone-200 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-gray-600 text-stone-700 dark:text-zinc-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
                       title={t('mapPage.controls.right')}
                     >
                       <FaArrowRight className="text-sm" />
@@ -158,7 +158,7 @@ export default function VisitedMapPage() {
                     <div></div>
                     <button
                       onClick={() => setTransform(transformState.positionX, transformState.positionY + 50, transformState.scale)}
-                      className="p-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
+                      className="p-2.5 bg-stone-200 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-gray-600 text-stone-700 dark:text-zinc-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95"
                       title={t('mapPage.controls.down')}
                     >
                       <FaArrowDown className="text-sm" />
@@ -168,7 +168,7 @@ export default function VisitedMapPage() {
                 </div>
 
                 {/* Zoom Controls */}
-                <div className="pointer-events-auto flex flex-col gap-2 bg-white/90 dark:bg-gray-900/90 p-2 rounded-xl shadow-lg backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50">
+                <div className="pointer-events-auto flex flex-col gap-2 bg-white/90 dark:bg-zinc-900/90 p-2 rounded-xl shadow-lg backdrop-blur-md border border-stone-300/50 dark:border-zinc-700/50">
                   <button
                     onClick={() => zoomIn()}
                     className="p-3 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-500 text-white rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95 touch-manipulation"
@@ -178,14 +178,14 @@ export default function VisitedMapPage() {
                   </button>
                   <button
                     onClick={() => zoomOut()}
-                    className="p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95 touch-manipulation"
+                    className="p-3 bg-stone-200 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-gray-600 text-stone-700 dark:text-zinc-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95 touch-manipulation"
                     title={t('mapPage.controls.zoomOut')}
                   >
                     <FaMinus className="text-sm" />
                   </button>
                   <button
                     onClick={() => resetTransform()}
-                    className="p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95 touch-manipulation"
+                    className="p-3 bg-stone-200 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-gray-600 text-stone-700 dark:text-zinc-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md active:scale-95 touch-manipulation"
                     title={t('mapPage.controls.reset')}
                   >
                     <FaExpand className="text-sm" />

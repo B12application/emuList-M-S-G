@@ -259,15 +259,15 @@ export default function WrappedPage() {
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center text-gray-500">{t('common.loading')}</div>;
+        return <div className="min-h-screen flex items-center justify-center text-stone-500">{t('common.loading')}</div>;
     }
 
     if (!yearStats || slides.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center text-gray-500 px-4">
+            <div className="min-h-screen flex flex-col items-center justify-center text-stone-500 px-4">
                 <FaCalendarAlt className="text-6xl text-gray-300 mb-4" />
                 <h2 className="text-2xl font-bold mb-2">{selectedYear} {language === 'tr' ? 'için veri bulunamadı' : 'has no data'}</h2>
-                <p className="text-gray-400 mb-6">{language === 'tr' ? 'Bu yıl henüz içerik eklememişsiniz.' : 'You haven\'t added any content this year.'}</p>
+                <p className="text-stone-400 mb-6">{language === 'tr' ? 'Bu yıl henüz içerik eklememişsiniz.' : 'You haven\'t added any content this year.'}</p>
                 {availableYears.length > 0 && (
                     <div className="flex gap-2">
                         {availableYears.slice(0, 5).map(year => (
@@ -276,7 +276,7 @@ export default function WrappedPage() {
                                 onClick={() => setSelectedYear(year)}
                                 className={`px-4 py-2 rounded-xl font-semibold transition ${year === selectedYear
                                         ? 'bg-purple-600 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                        : 'bg-gray-100 dark:bg-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
                                 {year}
@@ -297,7 +297,7 @@ export default function WrappedPage() {
                         key={year}
                         onClick={() => { setSelectedYear(year); setCurrentSlide(0); }}
                         className={`px-5 py-2 rounded-full font-bold text-sm transition-all ${year === selectedYear
-                                ? 'bg-white text-gray-900 shadow-lg scale-110'
+                                ? 'bg-white text-stone-900 shadow-lg scale-110'
                                 : 'bg-white/20 text-white/70 hover:bg-white/30'
                             }`}
                     >
@@ -343,13 +343,13 @@ export default function WrappedPage() {
                 <div className="flex justify-between mt-6">
                     <button
                         onClick={prevSlide}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                        className="flex items-center gap-2 px-4 py-2 bg-stone-200 dark:bg-zinc-800 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition"
                     >
                         <FaChevronLeft /> {language === 'tr' ? 'Önceki' : 'Previous'}
                     </button>
                     <button
                         onClick={nextSlide}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                        className="flex items-center gap-2 px-4 py-2 bg-stone-200 dark:bg-zinc-800 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition"
                     >
                         {language === 'tr' ? 'Sonraki' : 'Next'} <FaChevronRight />
                     </button>

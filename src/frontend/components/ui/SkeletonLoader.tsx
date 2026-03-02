@@ -10,7 +10,7 @@ const shimmerStyle = {
 // Generic Skeleton Component with Shimmer
 export function Skeleton({ className = "" }: { className?: string }) {
     return (
-        <div className={`relative overflow-hidden bg-gray-200 dark:bg-gray-700 rounded ${className}`}>
+        <div className={`relative overflow-hidden bg-stone-200 dark:bg-zinc-700 rounded ${className}`}>
             <div
                 className="absolute inset-0 animate-pulse"
                 style={shimmerStyle}
@@ -29,7 +29,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 // Media Card Skeleton
 export function MediaCardSkeleton() {
     return (
-        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden">
+        <div className="bg-gray-50 dark:bg-zinc-700/50 rounded-xl overflow-hidden">
             <Skeleton className="aspect-[2/3] w-full" />
             <div className="p-3 space-y-2">
                 <Skeleton className="h-4 w-3/4" />
@@ -45,7 +45,7 @@ export function MediaCardSkeleton() {
 // Activity Card Skeleton
 export function ActivityCardSkeleton() {
     return (
-        <div className="flex items-start gap-4 p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
+        <div className="flex items-start gap-4 p-4 rounded-2xl border border-stone-200 dark:border-zinc-800">
             <Skeleton className="w-20 h-28 rounded-lg flex-shrink-0" />
             <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export function ActivityCardSkeleton() {
 // Profile Skeleton
 export function ProfileSkeleton() {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
+        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-700 p-8">
             <div className="flex items-center gap-6">
                 <Skeleton className="w-24 h-24 rounded-full" />
                 <div className="flex-1 space-y-3">
@@ -75,7 +75,7 @@ export function ProfileSkeleton() {
             </div>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                    <div key={i} className="text-center p-3 bg-stone-100 dark:bg-zinc-700/50 rounded-xl">
                         <Skeleton className="h-8 w-16 mx-auto mb-2" />
                         <Skeleton className="h-3 w-20 mx-auto" />
                     </div>
@@ -88,7 +88,7 @@ export function ProfileSkeleton() {
 // Stats Card Skeleton  
 export function StatsCardSkeleton() {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 border border-stone-200 dark:border-zinc-700">
             <Skeleton className="h-6 w-32 mb-4" />
             <div className="space-y-3">
                 <Skeleton className="h-12 w-full" />

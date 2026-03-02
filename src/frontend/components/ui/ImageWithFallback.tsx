@@ -67,10 +67,10 @@ export default function ImageWithFallback({
   if (shouldShowFallback) {
     return (
       <div
-        className={`flex items-center justify-center bg-gray-200 dark:bg-gray-700 ${className} ${fallbackClassName}`}
+        className={`flex items-center justify-center bg-stone-200 dark:bg-zinc-700 ${className} ${fallbackClassName}`}
       >
         {fallbackIcon || (
-          <FaImage className="text-gray-400 dark:text-gray-500 text-2xl" />
+          <FaImage className="text-stone-400 dark:text-zinc-500 text-2xl" />
         )}
       </div>
     );
@@ -80,10 +80,10 @@ export default function ImageWithFallback({
     <div className={`relative ${wrapperClassName}`}>
       {isLoading && (
         <div
-          className={`absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700 animate-pulse ${className}`}
+          className={`absolute inset-0 flex items-center justify-center bg-stone-200 dark:bg-zinc-700 animate-pulse ${className}`}
         >
           {fallbackIcon || (
-            <FaImage className="text-gray-400 dark:text-gray-500 text-2xl" />
+            <FaImage className="text-stone-400 dark:text-zinc-500 text-2xl" />
           )}
         </div>
       )}

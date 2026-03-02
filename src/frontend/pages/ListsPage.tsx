@@ -45,7 +45,7 @@ export default function ListsPage() {
         <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-stone-100 flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-3">
                     <FaListUl className="text-violet-500" /> {t('lists.title') || 'Listelerim'}
                 </h1>
 
@@ -72,10 +72,10 @@ export default function ListsPage() {
                     <div className="w-24 h-24 mx-auto mb-6 bg-violet-100 dark:bg-violet-900/20 rounded-full flex items-center justify-center">
                         <FaListUl className="text-4xl text-violet-500" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-stone-100 mb-2">
+                    <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2">
                         {t('lists.emptyTitle') || 'Henüz liste yok'}
                     </h2>
-                    <p className="text-gray-500 dark:text-stone-400 mb-6 max-w-md mx-auto">
+                    <p className="text-stone-500 dark:text-stone-400 mb-6 max-w-md mx-auto">
                         {t('lists.emptyDesc') || 'Özel listeler oluşturarak içeriklerini organize et. "Marvel Filmleri", "2024 İzlenecekler" gibi...'}
                     </p>
                     <button
@@ -95,7 +95,7 @@ export default function ListsPage() {
                             key={list.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="group relative bg-white dark:bg-stone-900/50 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-white/5 hover:shadow-xl transition-all"
+                            className="group relative bg-stone-50 dark:bg-stone-900/50 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-white/5 hover:shadow-xl transition-all"
                         >
                             {/* Color Accent */}
                             <div
@@ -110,7 +110,7 @@ export default function ListsPage() {
                                         <FaGlobe size={10} /> {t('lists.public') || 'Herkese Açık'}
                                     </span>
                                 ) : (
-                                    <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-stone-400 bg-gray-100 dark:bg-stone-800 px-2 py-1 rounded-full">
+                                    <span className="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400 bg-stone-200 dark:bg-stone-800 px-2 py-1 rounded-full">
                                         <FaLock size={10} /> {t('lists.private') || 'Özel'}
                                     </span>
                                 )}
@@ -118,11 +118,11 @@ export default function ListsPage() {
 
                             {/* Content */}
                             <Link to={`/lists/${list.id}`} className="block">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-stone-100 mb-2 pr-20 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 mb-2 pr-20 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                                     {list.name}
                                 </h3>
                                 {list.description && (
-                                    <p className="text-sm text-gray-500 dark:text-stone-400 line-clamp-2 mb-4">
+                                    <p className="text-sm text-stone-500 dark:text-stone-400 line-clamp-2 mb-4">
                                         {list.description}
                                     </p>
                                 )}
@@ -165,16 +165,16 @@ export default function ListsPage() {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-md bg-white dark:bg-stone-900 rounded-3xl p-8 shadow-2xl"
+                            className="w-full max-w-md bg-stone-50 dark:bg-stone-900 rounded-3xl p-8 shadow-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-stone-100">
+                                <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100">
                                     {t('lists.createNew') || 'Yeni Liste'}
                                 </h2>
                                 <button
                                     onClick={() => setShowCreateModal(false)}
-                                    className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-stone-300 hover:bg-gray-100 dark:hover:bg-stone-800 transition-colors"
+                                    className="p-2 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
                                 >
                                     <FaTimes />
                                 </button>
@@ -183,7 +183,7 @@ export default function ListsPage() {
                             <div className="space-y-4">
                                 {/* Name */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                                    <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
                                         {t('lists.name') || 'Liste Adı'} *
                                     </label>
                                     <input
@@ -191,13 +191,13 @@ export default function ListsPage() {
                                         value={newListName}
                                         onChange={(e) => setNewListName(e.target.value)}
                                         placeholder="Marvel Filmleri, 2024 İzlenecekler..."
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-stone-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all"
                                     />
                                 </div>
 
                                 {/* Description */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                                    <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
                                         {t('lists.description') || 'Açıklama'}
                                     </label>
                                     <textarea
@@ -205,13 +205,13 @@ export default function ListsPage() {
                                         onChange={(e) => setNewListDesc(e.target.value)}
                                         placeholder="Bu liste hakkında kısa bir açıklama..."
                                         rows={3}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-stone-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none"
                                     />
                                 </div>
 
                                 {/* Color */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                                    <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
                                         {t('lists.color') || 'Renk'}
                                     </label>
                                     <div className="flex flex-wrap gap-2">
@@ -230,12 +230,12 @@ export default function ListsPage() {
                                 </div>
 
                                 {/* Privacy */}
-                                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-stone-800/50 rounded-xl">
+                                <div className="flex items-center justify-between p-4 bg-stone-100 dark:bg-stone-800/50 rounded-xl">
                                     <div>
-                                        <div className="font-medium text-gray-900 dark:text-stone-100">
+                                        <div className="font-medium text-stone-900 dark:text-stone-100">
                                             {t('lists.makePublic') || 'Herkese Açık Yap'}
                                         </div>
-                                        <div className="text-xs text-gray-500 dark:text-stone-400">
+                                        <div className="text-xs text-stone-500 dark:text-stone-400">
                                             {t('lists.publicDesc') || 'Diğer kullanıcılar bu listeyi görebilir'}
                                         </div>
                                     </div>
@@ -244,7 +244,7 @@ export default function ListsPage() {
                                         className={`w-12 h-7 rounded-full transition-colors ${newListPublic ? 'bg-violet-500' : 'bg-gray-300 dark:bg-stone-600'
                                             }`}
                                     >
-                                        <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${newListPublic ? 'translate-x-6' : 'translate-x-1'
+                                        <div className={`w-5 h-5 bg-stone-50 rounded-full shadow-sm transition-transform ${newListPublic ? 'translate-x-6' : 'translate-x-1'
                                             }`} />
                                     </button>
                                 </div>

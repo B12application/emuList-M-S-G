@@ -224,7 +224,7 @@ export default function StatsPage() {
             },
             {
                 id: 'bookworm',
-                icon: <FaBook className="text-rose-500" />,
+                icon: <FaBook className="text-amber-700" />,
                 title: t('stats.badge_bookworm'),
                 desc: t('stats.badge_bookworm_desc'),
                 unlocked: typeCounts.book >= 10
@@ -268,33 +268,33 @@ export default function StatsPage() {
         };
     }, [history, loading, t]);
 
-    if (loading) return <div className="min-h-screen text-center text-gray-500 pt-32">{t('common.loading')}</div>;
-    if (!stats) return <div className="min-h-screen text-center text-gray-500 pt-32">{t('stats.emptyHistory')}</div>;
+    if (loading) return <div className="min-h-screen text-center text-stone-500 pt-32">{t('common.loading')}</div>;
+    if (!stats) return <div className="min-h-screen text-center text-stone-500 pt-32">{t('stats.emptyHistory')}</div>;
 
     return (
         <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-stone-100 mb-8 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8 flex items-center gap-3">
                 <FaChartPie className="text-amber-600" /> {t('stats.title')}
             </h1>
 
             {/* KEY METRICS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5 relative overflow-hidden group">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-amber-500/20 transition-all"></div>
-                    <div className="text-gray-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.thisMonth')}</div>
+                    <div className="text-stone-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.thisMonth')}</div>
                     <div className="text-4xl font-black text-amber-600 dark:text-amber-500 mt-2">+{stats.thisMonthCount}</div>
-                    <div className="text-xs text-gray-400 mt-1">{t('stats.newItem')}</div>
+                    <div className="text-xs text-stone-400 mt-1">{t('stats.newItem')}</div>
                 </div>
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5 relative overflow-hidden group">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-stone-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-stone-500/20 transition-all"></div>
-                    <div className="text-gray-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.totalItems')}</div>
-                    <div className="text-4xl font-black text-gray-900 dark:text-stone-100 mt-2">{stats.totalCount}</div>
+                    <div className="text-stone-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.totalItems')}</div>
+                    <div className="text-4xl font-black text-stone-900 dark:text-stone-100 mt-2">{stats.totalCount}</div>
                 </div>
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5 relative overflow-hidden group">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-all"></div>
-                    <div className="text-gray-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.completionRate')}</div>
+                    <div className="text-stone-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.completionRate')}</div>
                     <div className="text-4xl font-black text-emerald-600 dark:text-emerald-500 mt-2">%{stats.completionRate}</div>
-                    <div className="text-xs text-gray-400 mt-1">{t('stats.watched')} / {t('stats.read')}</div>
+                    <div className="text-xs text-stone-400 mt-1">{t('stats.watched')} / {t('stats.read')}</div>
                 </div>
             </div>
 
@@ -314,7 +314,7 @@ export default function StatsPage() {
                                     <div key={item.id} className="flex items-center gap-3 bg-white/10 p-2.5 rounded-xl border border-white/5 backdrop-blur-sm hover:bg-white/20 transition-colors">
                                         <div className={`p-2 rounded-lg ${item.type === 'movie' ? 'bg-blue-500/20 text-blue-200' :
                                             item.type === 'series' ? 'bg-emerald-500/20 text-emerald-200' :
-                                                item.type === 'game' ? 'bg-amber-500/20 text-amber-200' : 'bg-rose-500/20 text-rose-200'
+                                                item.type === 'game' ? 'bg-amber-500/20 text-amber-200' : 'bg-amber-700/20 text-rose-200'
                                             }`}>
                                             {item.type === 'movie' ? <FaFilm /> :
                                                 item.type === 'series' ? <FaTv /> :
@@ -341,28 +341,28 @@ export default function StatsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
                         <FaClock className="text-amber-600" /> {t('stats.recentWatched')}
                     </h3>
                     {stats.recentlyWatched.length > 0 ? (
                         <div className="space-y-4">
                             {stats.recentlyWatched.map(item => (
-                                <Link to={`/${item.type}`} key={item.id} className="flex items-center gap-4 group cursor-pointer hover:bg-gray-50 dark:hover:bg-stone-800/50 p-2 rounded-xl transition-colors">
+                                <Link to={`/${item.type}`} key={item.id} className="flex items-center gap-4 group cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-800/50 p-2 rounded-xl transition-colors">
                                     <div className={`w-2 h-10 rounded-full ${item.type === 'movie' ? 'bg-blue-500' :
                                         item.type === 'series' ? 'bg-emerald-500' :
-                                            item.type === 'game' ? 'bg-amber-500' : 'bg-rose-500'
+                                            item.type === 'game' ? 'bg-amber-500' : 'bg-amber-700'
                                         }`}></div>
                                     <div className="flex-1">
-                                        <div className="font-bold text-gray-900 dark:text-stone-100 group-hover:text-amber-600 transition-colors">{item.title}</div>
-                                        <div className="text-xs text-gray-400 capitalize">{t(`nav.${item.type}s`)}</div>
+                                        <div className="font-bold text-stone-900 dark:text-stone-100 group-hover:text-amber-600 transition-colors">{item.title}</div>
+                                        <div className="text-xs text-stone-400 capitalize">{t(`nav.${item.type}s`)}</div>
                                     </div>
                                     {item.rating && <div className="text-amber-500 font-bold text-sm">★ {item.rating}</div>}
                                 </Link>
                             ))}
                         </div>
                     ) : (
-                        <div className="h-40 flex flex-col items-center justify-center text-gray-400 border border-dashed border-gray-200 dark:border-stone-800 rounded-2xl">
+                        <div className="h-40 flex flex-col items-center justify-center text-stone-400 border border-dashed border-stone-300 dark:border-stone-800 rounded-2xl">
                             <p>{t('stats.noRecent')}</p>
                         </div>
                     )}
@@ -371,8 +371,8 @@ export default function StatsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* MONTHLY ACTIVITY CHART */}
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
                         <FaChartBar className="text-stone-500" /> {t('stats.monthlyActivity')}
                     </h3>
                     <div className="h-64 w-full">
@@ -392,8 +392,8 @@ export default function StatsPage() {
                 </div>
 
                 {/* TYPE DISTRIBUTION CHART */}
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
                         <FaChartPie className="text-stone-500" /> {t('stats.typeDistribution')}
                     </h3>
                     <div className="h-64 w-full flex items-center justify-center">
@@ -424,8 +424,8 @@ export default function StatsPage() {
             {stats.genreData.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     {/* GENRE DISTRIBUTION CHART */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
                             🎭 {t('statsCharts.genreDistribution')}
                         </h3>
                         <div className="h-64 w-full">
@@ -445,8 +445,8 @@ export default function StatsPage() {
                     </div>
 
                     {/* RATING DISTRIBUTION CHART */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
                             ⭐ {t('statsCharts.ratingDistribution')}
                         </h3>
                         <div className="h-64 w-full">
@@ -470,11 +470,11 @@ export default function StatsPage() {
             {/* YEAR DISTRIBUTION CHART */}
             {stats.yearDistributionData && stats.yearDistributionData.length > 0 && (
                 <div className="mb-8">
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
                             📅 {t('statsCharts.yearDistribution') || 'Yıl Dağılımı'}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-stone-400 mb-4">
+                        <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
                             {t('statsCharts.yearDistributionDesc') || 'Hangi yılın içeriklerini en çok ekledin?'}
                         </p>
                         <div className="h-72 w-full">
@@ -499,8 +499,8 @@ export default function StatsPage() {
             {/* WEEKLY DAY ACTIVITY & WRAPPED LINK */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 {/* Weekly Day Activity Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-6 flex items-center gap-2">
+                <div className="lg:col-span-2 bg-stone-50 dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
                         <FaCalendarDay className="text-indigo-500" /> {t('stats.weeklyActivity') || 'Haftalık Aktivite'}
                     </h3>
                     <div className="h-48 w-full">
@@ -518,8 +518,8 @@ export default function StatsPage() {
                         </ResponsiveContainer>
                     </div>
                     {stats.mostActiveDay && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-stone-800 text-center">
-                            <span className="text-sm text-gray-500 dark:text-stone-400">{t('stats.mostActiveDay') || 'En aktif günün'}: </span>
+                        <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-800 text-center">
+                            <span className="text-sm text-stone-500 dark:text-stone-400">{t('stats.mostActiveDay') || 'En aktif günün'}: </span>
                             <span className="font-bold text-indigo-600 dark:text-indigo-400">{stats.mostActiveDay}</span>
                         </div>
                     )}
@@ -544,13 +544,13 @@ export default function StatsPage() {
 
             {/* NEW VISUALIZATIONS SECTION */}
             <div className="mb-8">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-stone-100 mb-6 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-6 flex items-center gap-2">
                     📊 {t('stats.advancedCharts') || 'Gelişmiş Grafikler'}
                 </h2>
 
                 {/* GitHub-style Heatmap */}
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5 mb-6">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 mb-6">
+                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
                         🗓️ {t('stats.yearlyHeatmap') || 'Yıllık Aktivite'}
                     </h3>
                     <div className="overflow-x-auto pb-2">
@@ -584,7 +584,7 @@ export default function StatsPage() {
                                     return (
                                         <div
                                             key={i}
-                                            className="text-[10px] text-gray-500 dark:text-stone-400"
+                                            className="text-[10px] text-stone-500 dark:text-stone-400"
                                             style={{ width: `${width}px`, minWidth: `${width}px` }}
                                         >
                                             {m.name}
@@ -623,9 +623,9 @@ export default function StatsPage() {
                             ))}
                         </div>
                     </div>
-                    <div className="flex items-center justify-end gap-2 mt-4 text-xs text-gray-500 dark:text-stone-400">
+                    <div className="flex items-center justify-end gap-2 mt-4 text-xs text-stone-500 dark:text-stone-400">
                         <span>{t('stats.less') || 'Az'}</span>
-                        <div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-stone-800" />
+                        <div className="w-3 h-3 rounded-sm bg-stone-200 dark:bg-stone-800" />
                         <div className="w-3 h-3 rounded-sm bg-emerald-200 dark:bg-emerald-900" />
                         <div className="w-3 h-3 rounded-sm bg-emerald-300 dark:bg-emerald-700" />
                         <div className="w-3 h-3 rounded-sm bg-emerald-400 dark:bg-emerald-600" />
@@ -637,8 +637,8 @@ export default function StatsPage() {
                 {/* Radar Chart + Area Chart Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Radar Chart */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
                             🎯 {t('stats.typeRadar') || 'Tür Dağılımı'}
                         </h3>
                         <div className="h-64">
@@ -660,8 +660,8 @@ export default function StatsPage() {
                     </div>
 
                     {/* Cumulative Growth Area Chart */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-stone-200 mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
                             📈 {t('stats.cumulativeGrowth') || 'Kümülatif Büyüme'}
                         </h3>
                         <div className="h-64">
@@ -695,8 +695,8 @@ export default function StatsPage() {
             </div>
 
             {/* GAMIFICATION BADGES */}
-            <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-white/5">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-stone-100 mb-6 flex items-center gap-2">
+            <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-stone-200 dark:border-white/5">
+                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-6 flex items-center gap-2">
                     <FaTrophy className="text-amber-500" /> {t('stats.badges')}
                 </h2>
 
@@ -707,14 +707,14 @@ export default function StatsPage() {
                             whileHover={{ y: -5 }}
                             className={`p-6 rounded-2xl border-2 text-center transition-all ${badge.unlocked
                                 ? 'border-amber-500/50 bg-amber-50 dark:bg-amber-900/10'
-                                : 'border-gray-100 dark:border-stone-800 bg-gray-50 dark:bg-stone-950/50 grayscale opacity-60'
+                                : 'border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950/50 grayscale opacity-60'
                                 }`}
                         >
                             <div className="text-4xl mb-3 flex justify-center">
-                                {badge.unlocked ? badge.icon : <FaLock className="text-gray-400 dark:text-stone-700" />}
+                                {badge.unlocked ? badge.icon : <FaLock className="text-stone-400 dark:text-stone-700" />}
                             </div>
-                            <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-1">{badge.title}</h3>
-                            <p className="text-xs text-gray-500 dark:text-stone-400">{badge.desc}</p>
+                            <h3 className="font-bold text-stone-900 dark:text-stone-100 mb-1">{badge.title}</h3>
+                            <p className="text-xs text-stone-500 dark:text-stone-400">{badge.desc}</p>
                             {badge.unlocked && <div className="mt-3 inline-block px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase">{t('stats.unlocked')}</div>}
                         </motion.div>
                     ))}

@@ -59,7 +59,7 @@ export default function SeasonSelector({
         return (
             <div className="flex items-center gap-1.5">
                 <FaTv className="text-teal-500" size={12} />
-                <span className={`text-xs font-medium ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                <span className={`text-xs font-medium ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-600 dark:text-zinc-400'}`}>
                     {isCompleted ? (
                         <span className="flex items-center gap-1">
                             <FaCheck size={10} />
@@ -77,13 +77,13 @@ export default function SeasonSelector({
         <div className="space-y-3">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-stone-700 dark:text-zinc-300 flex items-center gap-2">
                     <FaTv className="text-teal-500" />
                     {t('seasons.title')}
                 </h4>
                 <span className={`text-xs px-2 py-1 rounded-full ${isCompleted
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    : 'bg-gray-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400'
                     }`}>
                     {isCompleted ? t('seasons.completed') : progress}
                 </span>
@@ -103,7 +103,7 @@ export default function SeasonSelector({
                 relative w-10 h-10 rounded-xl font-medium text-sm transition-all duration-200
                 ${isWatched
                                     ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-105'
-                                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                    : 'bg-gray-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
                                 }
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}
               `}
@@ -140,8 +140,8 @@ export default function SeasonSelector({
                         onClick={clearAll}
                         disabled={selected.length === 0}
                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
-              bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400
-              hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors
+              bg-stone-200 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400
+              hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors
               disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <FaTimes size={12} />

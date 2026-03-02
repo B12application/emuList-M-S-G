@@ -56,10 +56,10 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
             icons.push({ icon: <FaCheck />, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', label: t('feed.mediaWatched') });
         }
         if (types.has('favorite_added')) {
-            icons.push({ icon: <FaHeart />, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20', label: t('feed.favoriteAdded') });
+            icons.push({ icon: <FaHeart />, color: 'text-amber-700', bg: 'bg-amber-50 dark:bg-amber-900/20', label: t('feed.favoriteAdded') });
         }
         if (types.has('favorite_removed')) {
-            icons.push({ icon: <FaHeartBroken />, color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-900/20', label: t('feed.favoriteRemoved') });
+            icons.push({ icon: <FaHeartBroken />, color: 'text-stone-500', bg: 'bg-gray-50 dark:bg-zinc-900/20', label: t('feed.favoriteRemoved') });
         }
 
         return icons;
@@ -104,7 +104,7 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
             transition={{ duration: 0.3 }}
             className="group"
         >
-            <div className="flex flex-col gap-3 p-4 rounded-2xl bg-white dark:bg-white/5 transition-all border border-gray-100 dark:border-white/5 hover:shadow-lg dark:hover:shadow-black/20">
+            <div className="flex flex-col gap-3 p-4 rounded-2xl bg-stone-50 dark:bg-white/5 transition-all border border-stone-200 dark:border-white/5 hover:shadow-lg dark:hover:shadow-black/20">
 
                 <div className="flex items-start gap-4 cursor-pointer" onClick={() => window.location.href = `/user/${mainActivity.userId}`}>
                     {mediaItem.image && (
@@ -124,11 +124,11 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
 
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                            <span className="text-sm font-bold text-stone-900 dark:text-white">
                                 {mainActivity.userName}
                             </span>
-                            <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-stone-400 dark:text-zinc-500">•</span>
+                            <span className="text-xs text-stone-500 dark:text-zinc-400">
                                 {getTimeAgo(mainActivity.timestamp)}
                             </span>
                         </div>
@@ -137,7 +137,7 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                             <div className="text-xl">
                                 {getMediaIcon()}
                             </div>
-                            <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                            <h4 className="text-base font-semibold text-stone-900 dark:text-white truncate">
                                 {mediaItem.title}
                             </h4>
                         </div>
@@ -152,7 +152,7 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                                     <span className={`${iconData.color} text-sm`}>
                                         {iconData.icon}
                                     </span>
-                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                    <span className="text-xs font-medium text-stone-700 dark:text-zinc-300">
                                         {iconData.label}
                                     </span>
                                 </div>
@@ -161,21 +161,21 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-4 pt-2 border-t border-stone-200 dark:border-zinc-700">
                     <button
                         onClick={onLike}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${isLiked
-                            ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+                            ? 'bg-amber-50 dark:bg-amber-900/20 text-rose-600 dark:text-amber-700'
+                            : 'hover:bg-stone-100 dark:hover:bg-zinc-700 text-stone-600 dark:text-zinc-400'
                             }`}
                     >
-                        {isLiked ? <FaHeart className="text-rose-500" /> : <FaRegHeart />}
+                        {isLiked ? <FaHeart className="text-amber-700" /> : <FaRegHeart />}
                         <span className="text-sm font-medium">{likeCount > 0 ? likeCount : t('reactions.like')}</span>
                     </button>
 
                     <button
                         onClick={() => setShowComments(!showComments)}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-700 text-stone-600 dark:text-zinc-400 transition-all"
                     >
                         <FaComment />
                         <span className="text-sm font-medium">{commentCount > 0 ? commentCount : t('reactions.comment')}</span>
@@ -188,7 +188,7 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="border-t border-gray-100 dark:border-gray-700 pt-3"
+                            className="border-t border-stone-200 dark:border-zinc-700 pt-3"
                         >
                             <form onSubmit={onCommentSubmit} className="flex gap-2 mb-3">
                                 <input
@@ -196,7 +196,7 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                                     value={commentText}
                                     onChange={(e) => setCommentText(e.target.value)}
                                     placeholder={t('reactions.writeComment')}
-                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-700"
                                 />
                                 <button
                                     type="submit"
@@ -216,14 +216,14 @@ export default function ActivityCard({ activities }: ActivityCardProps) {
                                                 alt={comment.userName}
                                                 className="w-8 h-8 rounded-full"
                                             />
-                                            <div className="flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                                                <p className="font-semibold text-gray-900 dark:text-white">{comment.userName}</p>
-                                                <p className="text-gray-700 dark:text-gray-300">{comment.text}</p>
+                                            <div className="flex-1 bg-stone-100 dark:bg-zinc-700 rounded-lg p-2">
+                                                <p className="font-semibold text-stone-900 dark:text-white">{comment.userName}</p>
+                                                <p className="text-stone-700 dark:text-zinc-300">{comment.text}</p>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                                    <p className="text-sm text-stone-500 dark:text-zinc-400 text-center py-4">
                                         {t('reactions.noComments')}
                                     </p>
                                 )}

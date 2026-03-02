@@ -353,7 +353,7 @@ export default function MyShowsPage() {
                                             initial={{ opacity: 0, y: -4 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -4 }}
-                                            className="absolute right-0 top-full mt-1 bg-white dark:bg-zinc-800 rounded-xl shadow-xl border border-zinc-200/50 dark:border-zinc-700/50 py-1 min-w-[140px] z-50"
+                                            className="absolute right-0 top-full mt-1 bg-stone-50 dark:bg-zinc-800 rounded-xl shadow-xl border border-zinc-200/50 dark:border-zinc-700/50 py-1 min-w-[140px] z-50"
                                         >
                                             {sortOptions.map(opt => (
                                                 <button

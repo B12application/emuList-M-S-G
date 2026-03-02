@@ -123,40 +123,40 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                 // 2. DÜZELTME: 'onClick={e => e.stopPropagation()}'
                 // Bu, modalın içine yapılan tıklamaların dışarı sızmasını ve diğer şeyleri tetiklemesini engeller.
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto"
+                className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-stone-50 dark:bg-zinc-800 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto"
               >
                 <Dialog.Title
                   as="h3"
-                  className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
+                  className="text-lg font-medium leading-6 text-stone-900 dark:text-white"
                 >
                   {t('modal.editTitle').replace('{title}', item.title)}
                 </Dialog.Title>
 
                 <div className="mt-4 flex flex-col gap-4">
                   <div>
-                    <label htmlFor="editTitle" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                    <label htmlFor="editTitle" className="block text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
                       {t('create.titleLabel')}
                     </label>
                     <input
                       type="text" id="editTitle" value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="editDesc" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                    <label htmlFor="editDesc" className="block text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
                       {t('create.descriptionLabel')}
                     </label>
                     <textarea
                       id="editDesc" rows={3} value={editDesc}
                       onChange={(e) => setEditDesc(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                    <label className="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
                       {t('create.ratingLabel')}: <span className="font-bold">{editRating}</span>
                     </label>
                     <div className="px-1">
@@ -174,8 +174,8 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                   {/* ── Kişisel Puan & Not (sadece izlenenler için) ── */}
                   {item.watched && (
                     <>
-                      <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      <div className="border-t border-stone-300 dark:border-zinc-700 pt-3">
+                        <label className="block text-sm font-medium mb-2 text-stone-700 dark:text-zinc-300">
                           ⭐ {t('personal.myRating')}: <span className="font-bold text-amber-500">{editMyRating != null ? editMyRating.toFixed(1) : '—'}</span>
                         </label>
                         <div className="flex items-center gap-1">
@@ -192,12 +192,12 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                                 className="text-xl transition-transform hover:scale-125 focus:outline-none"
                                 title={`${val} (sağ tık: ${val - 0.5})`}
                               >
-                                {filled ? <FaStar className="text-amber-400" /> : halfFilled ? <FaStarHalfAlt className="text-amber-400" /> : <FaRegStar className="text-gray-300 dark:text-gray-600" />}
+                                {filled ? <FaStar className="text-amber-400" /> : halfFilled ? <FaStarHalfAlt className="text-amber-400" /> : <FaRegStar className="text-gray-300 dark:text-stone-600" />}
                               </button>
                             );
                           })}
                           {editMyRating !== undefined && (
-                            <button type="button" onClick={() => setEditMyRating(undefined)} className="ml-2 text-xs text-gray-400 hover:text-red-400 transition-colors">
+                            <button type="button" onClick={() => setEditMyRating(undefined)} className="ml-2 text-xs text-stone-400 hover:text-red-400 transition-colors">
                               <FaTimes />
                             </button>
                           )}
@@ -205,7 +205,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                       </div>
 
                       <div>
-                        <label htmlFor="editMyNote" className="flex items-center gap-1.5 text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                        <label htmlFor="editMyNote" className="flex items-center gap-1.5 text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
                           <FaStickyNote className="text-amber-500 text-xs" /> {t('personal.myNote')}
                         </label>
                         <textarea
@@ -215,30 +215,30 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                           value={editMyNote}
                           onChange={(e) => setEditMyNote(e.target.value)}
                           placeholder={t('personal.myNotePlaceholder')}
-                          className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm resize-none"
+                          className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900 text-sm resize-none"
                         />
-                        <p className="text-[10px] text-gray-400 text-right mt-0.5">{editMyNote.length}/200</p>
+                        <p className="text-[10px] text-stone-400 text-right mt-0.5">{editMyNote.length}/200</p>
                       </div>
                     </>
                   )}
 
                   <div>
-                    <label htmlFor="editGenre" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                    <label htmlFor="editGenre" className="block text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
                       {t('create.genreLabel')}
                     </label>
                     <input
                       type="text" id="editGenre" value={editGenre}
                       onChange={(e) => setEditGenre(e.target.value)}
                       placeholder={t('create.genrePlaceholder')}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900"
                     />
                   </div>
 
                   {/* Sezon Düzenleme - Sadece diziler için */}
                   {isSeries && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="border-t border-stone-300 dark:border-zinc-700 pt-4">
                       <div className="mb-3">
-                        <label htmlFor="editTotalSeasons" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                        <label htmlFor="editTotalSeasons" className="block text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300 flex items-center gap-2">
                           <FaTv className="text-purple-500" />
                           {t('seasons.totalSeasons')}
                         </label>
@@ -255,7 +255,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                             }}
                             min={0}
                             max={50}
-                            className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                            className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900"
                           />
                           {/* OMDB'den Çek Butonu */}
                           <button
@@ -295,7 +295,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
 
                       {/* Bölüm Takibi - EpisodeTracker */}
                       {editTotalSeasons > 0 && item.imdbId && (
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                        <div className="border-t border-stone-300 dark:border-zinc-700 pt-4 mt-4">
                           <EpisodeTracker item={item} onUpdate={refetch} />
                         </div>
                       )}
@@ -321,14 +321,14 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                             value={editImage}
                             onChange={(e) => setEditImage(e.target.value)}
                             placeholder="https://..."
-                            className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+                            className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900 text-sm"
                             autoFocus
                           />
                         </div>
                         <button
                           type="button"
                           onClick={() => setShowUrlInput(false)}
-                          className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                          className="p-2 rounded-full text-stone-500 hover:bg-stone-200 dark:hover:bg-zinc-700 transition"
                           title={t('common.close') || 'Kapat'}
                         >
                           <FaTimes />
@@ -342,7 +342,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                 <div className="mt-6 flex justify-end gap-3">
                   <button
                     type="button"
-                    className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600"
+                    className="px-4 py-2 rounded-lg bg-stone-200 dark:bg-zinc-700 text-stone-900 dark:text-white text-sm font-medium hover:bg-stone-200 dark:hover:bg-gray-600"
                     onClick={onClose}
                   >
                     {t('actions.cancel')}

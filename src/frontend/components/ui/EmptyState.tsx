@@ -40,7 +40,7 @@ export default function EmptyState({
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="relative mb-6"
         >
-          <div className="relative z-10 text-6xl text-gray-400 dark:text-gray-500 bg-white/50 dark:bg-gray-800/50 p-6 rounded-full shadow-lg backdrop-blur-sm">
+          <div className="relative z-10 text-6xl text-stone-400 dark:text-zinc-500 bg-white/50 dark:bg-zinc-800/50 p-6 rounded-full shadow-lg backdrop-blur-sm">
             {icon}
           </div>
           {/* Glow efekti */}
@@ -52,7 +52,7 @@ export default function EmptyState({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="relative z-10 text-xl font-bold text-gray-900 dark:text-white mb-3"
+        className="relative z-10 text-xl font-bold text-stone-900 dark:text-white mb-3"
       >
         {title}
       </motion.h3>
@@ -62,7 +62,7 @@ export default function EmptyState({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="relative z-10 text-sm text-gray-600 dark:text-gray-400 max-w-md mb-6 leading-relaxed"
+          className="relative z-10 text-sm text-stone-600 dark:text-zinc-400 max-w-md mb-6 leading-relaxed"
         >
           {description}
         </motion.p>

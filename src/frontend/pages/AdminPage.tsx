@@ -181,8 +181,8 @@ export default function AdminPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <FaExclamationTriangle className="text-6xl text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Erişim Reddedildi</h1>
-                    <p className="text-gray-500 dark:text-gray-400">Bu sayfaya erişim yetkiniz bulunmamaktadır.</p>
+                    <h1 className="text-2xl font-bold text-stone-900 dark:text-white mb-2">Erişim Reddedildi</h1>
+                    <p className="text-stone-500 dark:text-zinc-400">Bu sayfaya erişim yetkiniz bulunmamaktadır.</p>
                 </div>
             </div>
         );
@@ -192,10 +192,10 @@ export default function AdminPage() {
         <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-stone-900 dark:text-white flex items-center gap-3">
                     <FaShieldAlt className="text-red-500" /> Admin Paneli
                 </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-stone-500 dark:text-zinc-400 mt-1">
                     Sistem yönetimi ve moderasyon işlemleri
                 </p>
             </div>
@@ -228,7 +228,7 @@ export default function AdminPage() {
                     onClick={() => setActiveTab('users')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${activeTab === 'users'
                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            : 'bg-gray-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
                         }`}
                 >
                     <FaUsers /> Kullanıcılar
@@ -237,7 +237,7 @@ export default function AdminPage() {
                     onClick={() => setActiveTab('comments')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${activeTab === 'comments'
                             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            : 'bg-gray-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
                         }`}
                 >
                     <FaComments /> Yorumlar
@@ -246,30 +246,30 @@ export default function AdminPage() {
 
             {/* Content */}
             {activeTab === 'users' && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-700 overflow-hidden">
                     {/* Search */}
-                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div className="px-6 py-4 border-b border-stone-200 dark:border-zinc-700">
                         <div className="flex items-center gap-3">
                             <div className="relative flex-1">
-                                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                                 <input
                                     type="text"
                                     placeholder="Kullanıcı ara..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 />
                             </div>
-                            <span className="text-sm text-gray-500">{filteredUsers.length} kullanıcı</span>
+                            <span className="text-sm text-stone-500">{filteredUsers.length} kullanıcı</span>
                         </div>
                     </div>
 
                     {usersLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <FaSpinner className="animate-spin text-3xl text-gray-400" />
+                            <FaSpinner className="animate-spin text-3xl text-stone-400" />
                         </div>
                     ) : filteredUsers.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-12 text-stone-500 dark:text-zinc-400">
                             Kullanıcı bulunamadı.
                         </div>
                     ) : (
@@ -277,7 +277,7 @@ export default function AdminPage() {
                             {filteredUsers.map(u => (
                                 <div
                                     key={u.id}
-                                    className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                                    className="px-6 py-4 hover:bg-stone-100 dark:hover:bg-zinc-700/50 transition"
                                 >
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-4 min-w-0">
@@ -294,7 +294,7 @@ export default function AdminPage() {
                                                 <div className="flex items-center gap-2">
                                                     <Link
                                                         to={`/user/${u.id}`}
-                                                        className="font-semibold text-gray-900 dark:text-white hover:text-blue-500 transition truncate"
+                                                        className="font-semibold text-stone-900 dark:text-white hover:text-blue-500 transition truncate"
                                                     >
                                                         {u.displayName || 'İsimsiz'}
                                                     </Link>
@@ -304,7 +304,7 @@ export default function AdminPage() {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                                                <div className="flex items-center gap-3 text-sm text-stone-500 dark:text-zinc-400 mt-0.5">
                                                     <span className="flex items-center gap-1 truncate">
                                                         <FaEnvelope size={10} /> {u.email}
                                                     </span>
@@ -315,7 +315,7 @@ export default function AdminPage() {
                                                     )}
                                                 </div>
                                                 {u.createdAt && (
-                                                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                                                    <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
                                                         <FaClock size={10} /> Kayıt: {formatDate(u.createdAt)}
                                                     </p>
                                                 )}
@@ -354,19 +354,19 @@ export default function AdminPage() {
             )}
 
             {activeTab === 'comments' && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-700 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-stone-200 dark:border-zinc-700">
+                        <h2 className="text-lg font-semibold text-stone-900 dark:text-white flex items-center gap-2">
                             <FaComments className="text-indigo-500" /> Son Yorumlar
                         </h2>
                     </div>
 
                     {commentsLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <FaSpinner className="animate-spin text-3xl text-gray-400" />
+                            <FaSpinner className="animate-spin text-3xl text-stone-400" />
                         </div>
                     ) : comments.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-12 text-stone-500 dark:text-zinc-400">
                             Henüz yorum bulunmuyor.
                         </div>
                     ) : (
@@ -374,7 +374,7 @@ export default function AdminPage() {
                             {comments.map(comment => (
                                 <div
                                     key={comment.id}
-                                    className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                                    className="px-6 py-4 hover:bg-stone-100 dark:hover:bg-zinc-700/50 transition"
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
@@ -382,18 +382,18 @@ export default function AdminPage() {
                                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
                                                     {comment.userName?.charAt(0)?.toUpperCase() || <FaUser size={12} />}
                                                 </div>
-                                                <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                                                <span className="font-semibold text-stone-900 dark:text-white text-sm">
                                                     {comment.userName || 'Anonim'}
                                                 </span>
-                                                <span className="text-xs text-gray-400 flex items-center gap-1">
+                                                <span className="text-xs text-stone-400 flex items-center gap-1">
                                                     <FaClock size={10} />
                                                     {formatDate(comment.timestamp)}
                                                 </span>
                                             </div>
-                                            <p className="text-gray-700 dark:text-gray-300 text-sm pl-10">
+                                            <p className="text-stone-700 dark:text-zinc-300 text-sm pl-10">
                                                 {comment.text}
                                             </p>
-                                            <p className="text-xs text-gray-400 pl-10 mt-1">
+                                            <p className="text-xs text-stone-400 pl-10 mt-1">
                                                 Activity ID: {comment.activityId?.substring(0, 8)}...
                                             </p>
                                         </div>
@@ -420,14 +420,14 @@ export default function AdminPage() {
             {/* Edit User Modal */}
             {editingUser && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-stone-300 dark:border-zinc-700">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
                                 <FaEdit className="text-blue-500" /> Kullanıcıyı Düzenle
                             </h3>
                             <button
                                 onClick={() => setEditingUser(null)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                className="text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300"
                             >
                                 <FaTimes />
                             </button>
@@ -435,23 +435,23 @@ export default function AdminPage() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">
                                     İsim
                                 </label>
                                 <input
                                     type="text"
                                     value={editForm.displayName}
                                     onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">
                                     Cinsiyet
                                 </label>
                                 <div className="flex gap-3">
-                                    <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 cursor-pointer transition-all ${editForm.gender === 'male' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700'}`}>
+                                    <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 cursor-pointer transition-all ${editForm.gender === 'male' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-gray-50 dark:bg-zinc-900 border-stone-300 dark:border-zinc-700'}`}>
                                         <input
                                             type="radio"
                                             checked={editForm.gender === 'male'}
@@ -460,7 +460,7 @@ export default function AdminPage() {
                                         />
                                         Erkek
                                     </label>
-                                    <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 cursor-pointer transition-all ${editForm.gender === 'female' ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700'}`}>
+                                    <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 cursor-pointer transition-all ${editForm.gender === 'female' ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 dark:bg-zinc-900 border-stone-300 dark:border-zinc-700'}`}>
                                         <input
                                             type="radio"
                                             checked={editForm.gender === 'female'}
@@ -473,27 +473,27 @@ export default function AdminPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">
                                     Konum
                                 </label>
                                 <input
                                     type="text"
                                     value={editForm.location}
                                     onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     placeholder="Şehir, Ülke"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-1">
                                     Biyografi
                                 </label>
                                 <textarea
                                     value={editForm.bio}
                                     onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                                     rows={3}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+                                    className="w-full px-4 py-2 rounded-xl bg-stone-100 dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
                                     placeholder="Kullanıcı hakkında..."
                                 />
                             </div>
@@ -502,7 +502,7 @@ export default function AdminPage() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setEditingUser(null)}
-                                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                                className="flex-1 px-4 py-2 bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-300 font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
                             >
                                 İptal
                             </button>

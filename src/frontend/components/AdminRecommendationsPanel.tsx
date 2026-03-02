@@ -146,7 +146,7 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
 
             <div className="fixed inset-0 flex items-center justify-center p-4">
-                <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+                <Dialog.Panel className="bg-white dark:bg-zinc-800 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
 
                     {!isAdmin ? (
                         // Permission Denied
@@ -155,10 +155,10 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                                 <FaLock className="h-10 w-10 text-red-500" />
                             </div>
 
-                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                            <h2 className="text-3xl font-bold text-stone-900 dark:text-white mb-2">
                                 Yetkiniz Yok
                             </h2>
-                            <p className="text-gray-500 dark:text-gray-400 mb-8 text-center">
+                            <p className="text-stone-500 dark:text-zinc-400 mb-8 text-center">
                                 Sadece yönetici bu panele erişebilir.
                             </p>
 
@@ -173,13 +173,13 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                         // Admin Panel
                         <>
                             {/* Header */}
-                            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            <div className="p-6 border-b border-stone-300 dark:border-zinc-700 flex items-center justify-between">
+                                <h2 className="text-2xl font-bold text-stone-900 dark:text-white">
                                     {t('home.adminManage')}
                                 </h2>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                                    className="p-2 hover:bg-stone-200 dark:hover:bg-zinc-700 rounded-lg transition"
                                 >
                                     <FaTimes className="h-5 w-5" />
                                 </button>
@@ -189,20 +189,20 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
                                 {/* Search & Add Section */}
-                                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-2xl p-6 space-y-4">
+                                    <h3 className="text-lg font-semibold text-stone-900 dark:text-white flex items-center gap-2">
                                         <FaPlus /> {t('home.adminAddRec')}
                                     </h3>
 
                                     {/* Category Selector */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
                                             {t('home.adminCategory')}
                                         </label>
                                         <select
                                             value={selectedCategory}
                                             onChange={(e) => setSelectedCategory(e.target.value as RecommendationCategory)}
-                                            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none"
+                                            className="w-full px-4 py-2 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none"
                                         >
                                             <option value="most-watched-2025">{t('home.adminCategoryMostWatched')}</option>
                                             <option value="best-movies">{t('home.adminCategoryBestMovies')}</option>
@@ -221,9 +221,9 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                                                 placeholder={t('home.adminSearchMovie')}
-                                                className="w-full px-4 py-2 pl-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none"
+                                                className="w-full px-4 py-2 pl-10 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none"
                                             />
-                                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                                         </div>
                                         <button
                                             onClick={handleSearch}
@@ -241,9 +241,9 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                                             {searchResults.map((result) => (
                                                 <div
                                                     key={result.imdbID}
-                                                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                                                    className="bg-white dark:bg-zinc-800 rounded-lg border border-stone-300 dark:border-zinc-700 overflow-hidden"
                                                 >
-                                                    <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
+                                                    <div className="relative h-48 bg-stone-200 dark:bg-zinc-700">
                                                         {result.Poster !== 'N/A' && (
                                                             <img src={result.Poster} alt={result.Title} className="w-full h-full object-cover" />
                                                         )}
@@ -252,10 +252,10 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                                                         </div>
                                                     </div>
                                                     <div className="p-3">
-                                                        <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate mb-1">
+                                                        <h4 className="font-bold text-sm text-stone-900 dark:text-white truncate mb-1">
                                                             {result.Title}
                                                         </h4>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{result.Year}</p>
+                                                        <p className="text-xs text-stone-500 dark:text-zinc-400 mb-2">{result.Year}</p>
                                                         <button
                                                             onClick={() => handleAddRecommendation(result)}
                                                             className="w-full px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition"
@@ -271,7 +271,7 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
 
                                 {/* Existing Recommendations */}
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    <h3 className="text-lg font-semibold text-stone-900 dark:text-white">
                                         Mevcut Öneriler
                                     </h3>
 
@@ -283,22 +283,22 @@ export default function AdminRecommendationsPanel({ isOpen, onClose, onUpdate }:
                                         Object.entries(groupedRecs).map(([category, recs]) => (
                                             recs.length > 0 && (
                                                 <div key={category} className="space-y-2">
-                                                    <h4 className="font-semibold text-gray-700 dark:text-gray-300 capitalize">
+                                                    <h4 className="font-semibold text-stone-700 dark:text-zinc-300 capitalize">
                                                         {category.replace(/-/g, ' ')} ({recs.length})
                                                     </h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                                         {recs.map((rec) => (
                                                             <div
                                                                 key={rec.id}
-                                                                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative group"
+                                                                className="bg-white dark:bg-zinc-800 rounded-lg border border-stone-300 dark:border-zinc-700 overflow-hidden relative group"
                                                             >
-                                                                <div className="relative h-32 bg-gray-200 dark:bg-gray-700">
+                                                                <div className="relative h-32 bg-stone-200 dark:bg-zinc-700">
                                                                     {rec.image && (
                                                                         <img src={rec.image} alt={rec.title} className="w-full h-full object-cover" />
                                                                     )}
                                                                 </div>
                                                                 <div className="p-2">
-                                                                    <h5 className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                                                                    <h5 className="text-xs font-bold text-stone-900 dark:text-white truncate">
                                                                         {rec.title}
                                                                     </h5>
                                                                 </div>

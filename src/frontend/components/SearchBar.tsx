@@ -105,19 +105,19 @@ export default function SearchBar() {
     return (
         <div ref={searchRef} className="relative w-full max-w-md">
             <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                 <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => searchTerm.trim().length >= 2 && setShowResults(true)}
                     placeholder={t('globalSearch.placeholder')}
-                    className="w-full pl-10 pr-10 py-2.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-10 py-2.5 bg-stone-200 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                 />
                 {searchTerm && (
                     <button
                         onClick={handleClear}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300"
                     >
                         <FaTimes />
                     </button>
@@ -131,15 +131,15 @@ export default function SearchBar() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-96 overflow-hidden z-50"
+                        className="absolute top-full left-0 right-0 mt-2 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 rounded-xl shadow-xl max-h-96 overflow-hidden z-50"
                     >
                         {/* Tab Buttons */}
-                        <div className="flex border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex border-b border-stone-300 dark:border-zinc-700">
                             <button
                                 onClick={() => setActiveTab('content')}
                                 className={`flex-1 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === 'content'
-                                    ? 'text-rose-600 dark:text-rose-400 border-b-2 border-rose-500'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    ? 'text-rose-600 dark:text-amber-400 border-b-2 border-amber-700'
+                                    : 'text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200'
                                     }`}
                             >
                                 {t('globalSearch.myContent')} ({mediaResults.length})
@@ -147,8 +147,8 @@ export default function SearchBar() {
                             <button
                                 onClick={() => setActiveTab('users')}
                                 className={`flex-1 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === 'users'
-                                    ? 'text-rose-600 dark:text-rose-400 border-b-2 border-rose-500'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    ? 'text-rose-600 dark:text-amber-400 border-b-2 border-amber-700'
+                                    : 'text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200'
                                     }`}
                             >
                                 {t('globalSearch.users')} ({userResults.length})
@@ -167,7 +167,7 @@ export default function SearchBar() {
                                                 <button
                                                     key={item.id}
                                                     onClick={() => handleMediaClick(item)}
-                                                    className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                                    className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                                                 >
                                                     {/* Poster */}
                                                     {item.image ? (
@@ -177,21 +177,21 @@ export default function SearchBar() {
                                                             className="w-8 h-12 object-cover rounded-md shadow-sm flex-shrink-0"
                                                         />
                                                     ) : (
-                                                        <div className="w-8 h-12 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-12 bg-stone-200 dark:bg-zinc-700 rounded-md flex items-center justify-center flex-shrink-0">
                                                             <Icon className={`${config.color}`} />
                                                         </div>
                                                     )}
                                                     <div className="flex-1 text-left min-w-0">
-                                                        <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                                                        <p className="font-semibold text-sm text-stone-900 dark:text-white truncate">
                                                             {item.title}
                                                         </p>
-                                                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                        <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-zinc-400">
                                                             <span className={`flex items-center gap-1 ${config.color}`}>
                                                                 <Icon size={10} />{' '}
                                                                 {item.type === 'movie' ? 'Film' : item.type === 'series' ? 'Dizi' : item.type === 'game' ? 'Oyun' : 'Kitap'}
                                                             </span>
                                                             {item.rating && <span>⭐ {item.rating}</span>}
-                                                            {item.myRating !== undefined && <span className="text-rose-500">🌟 {item.myRating.toFixed(1)}</span>}
+                                                            {item.myRating !== undefined && <span className="text-amber-700">🌟 {item.myRating.toFixed(1)}</span>}
                                                         </div>
                                                     </div>
                                                 </button>
@@ -199,14 +199,14 @@ export default function SearchBar() {
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                    <div className="p-4 text-center text-stone-500 dark:text-zinc-400 text-sm">
                                         {isLoading ? `${t('common.loading')}...` : t('globalSearch.noResults')}
                                     </div>
                                 )
                             ) : (
                                 /* Users Tab */
                                 isLoading ? (
-                                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                    <div className="p-4 text-center text-stone-500 dark:text-zinc-400 text-sm">
                                         {t('common.loading')}...
                                     </div>
                                 ) : userResults.length > 0 ? (
@@ -215,29 +215,29 @@ export default function SearchBar() {
                                             <button
                                                 key={user.userId}
                                                 onClick={() => handleUserClick(user.userId)}
-                                                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                                             >
                                                 <img
                                                     src={user.photoURL || 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png'}
                                                     alt={user.displayName}
-                                                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                                    className="w-10 h-10 rounded-full object-cover border-2 border-stone-300 dark:border-zinc-600"
                                                 />
                                                 <div className="flex-1 text-left">
-                                                    <p className="font-semibold text-gray-900 dark:text-white">
+                                                    <p className="font-semibold text-stone-900 dark:text-white">
                                                         {user.displayName}
                                                     </p>
                                                     {user.email && (
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        <p className="text-xs text-stone-500 dark:text-zinc-400">
                                                             {user.email}
                                                         </p>
                                                     )}
                                                 </div>
-                                                <FaUser className="text-gray-400" />
+                                                <FaUser className="text-stone-400" />
                                             </button>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                    <div className="p-4 text-center text-stone-500 dark:text-zinc-400 text-sm">
                                         {t('globalSearch.noResults')}
                                     </div>
                                 )
@@ -246,7 +246,7 @@ export default function SearchBar() {
 
                         {/* Total count footer */}
                         {totalResults > 0 && (
-                            <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-[10px] text-gray-400 text-center">
+                            <div className="px-4 py-2 border-t border-stone-300 dark:border-zinc-700 text-[10px] text-stone-400 text-center">
                                 {totalResults} sonuç bulundu
                             </div>
                         )}

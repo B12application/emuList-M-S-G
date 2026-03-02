@@ -79,7 +79,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   const getActiveStyles = (color: string) => {
     const styles: Record<string, string> = {
-      rose: 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400',
+      rose: 'bg-amber-50 dark:bg-amber-900/20 text-rose-600 dark:text-amber-700',
       blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
       emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
       amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
@@ -93,11 +93,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   const getIconColor = (color: string) => {
     const colors: Record<string, string> = {
-      rose: 'text-rose-500', blue: 'text-blue-500', emerald: 'text-emerald-500',
+      rose: 'text-amber-700', blue: 'text-blue-500', emerald: 'text-emerald-500',
       amber: 'text-amber-500', purple: 'text-purple-500', violet: 'text-violet-500',
       indigo: 'text-indigo-500', orange: 'text-orange-500',
     };
-    return colors[color] || 'text-rose-500';
+    return colors[color] || 'text-amber-700';
   };
 
   return (
@@ -120,12 +120,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute top-4 left-4 right-4 backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border border-white/20 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden"
+            className="absolute top-4 left-4 right-4 backdrop-blur-xl bg-white/90 dark:bg-zinc-900/95 border border-white/20 dark:border-zinc-700/30 rounded-2xl shadow-xl overflow-hidden"
           >
             {/* Header */}
             <motion.div
               variants={itemVariants}
-              className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800"
+              className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800"
             >
               {user ? (
                 <motion.div
@@ -135,28 +135,28 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   transition={{ delay: 0.1, type: 'spring', stiffness: 300 }}
                 >
                   <motion.div
-                    className="w-10 h-10 rounded-full ring-2 ring-rose-500/50 overflow-hidden"
+                    className="w-10 h-10 rounded-full ring-2 ring-amber-700/50 overflow-hidden"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <img src={getAvatar()} alt="" className="w-full h-full object-cover" />
                   </motion.div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    <p className="font-semibold text-stone-900 dark:text-white text-sm">
                       {user.displayName || 'Kullanıcı'}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                    <p className="text-xs text-stone-500 dark:text-zinc-400 truncate max-w-[150px]">
                       {user.email}
                     </p>
                   </div>
                 </motion.div>
               ) : (
-                <span className="font-semibold text-gray-900 dark:text-white">Menü</span>
+                <span className="font-semibold text-stone-900 dark:text-white">Menü</span>
               )}
 
               <motion.button
                 onClick={onClose}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400 transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-amber-900/30 dark:hover:text-rose-400 transition-colors"
                 whileHover={{ rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
                 initial={{ opacity: 0, rotate: -90 }}
@@ -185,7 +185,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                           ? getActiveStyles(item.color)
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60'
                         }`
                       }
                     >
@@ -195,7 +195,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                             animate={isActive ? { rotate: [0, -10, 10, 0] } : {}}
                             transition={{ duration: 0.4 }}
                           >
-                            <Icon className={isActive ? getIconColor(item.color) : 'text-gray-400'} />
+                            <Icon className={isActive ? getIconColor(item.color) : 'text-zinc-400'} />
                           </motion.div>
                           <span>{item.label}</span>
                           {isActive && (
@@ -218,7 +218,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             {user && (
               <motion.div
                 variants={buttonVariants}
-                className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-2"
+                className="p-3 border-t border-stone-200 dark:border-zinc-800 space-y-2"
               >
                 {/* Admin Panel - Only for admin */}
                 {isAdmin(user.uid) && (
@@ -238,7 +238,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <Link
                       to="/profile"
                       onClick={onClose}
-                      className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full"
+                      className="flex items-center justify-center gap-2 py-2.5 bg-stone-200 dark:bg-zinc-800 rounded-xl text-sm font-medium text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors w-full"
                     >
                       <FaUser className="text-rose-500 text-xs" /> {t('nav.myProfile')}
                     </Link>
@@ -247,9 +247,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <Link
                       to="/settings"
                       onClick={onClose}
-                      className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full"
+                      className="flex items-center justify-center gap-2 py-2.5 bg-stone-200 dark:bg-zinc-800 rounded-xl text-sm font-medium text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors w-full"
                     >
-                      <FaCog className="text-gray-500 text-xs" /> {t('nav.settings')}
+                      <FaCog className="text-stone-500 text-xs" /> {t('nav.settings')}
                     </Link>
                   </motion.div>
                   <motion.button
@@ -268,19 +268,19 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             {!user && (
               <motion.div
                 variants={buttonVariants}
-                className="p-3 border-t border-gray-100 dark:border-gray-800 flex gap-2"
+                className="p-3 border-t border-stone-200 dark:border-zinc-800 flex gap-2"
               >
                 <Link
                   to="/login"
                   onClick={onClose}
-                  className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 text-center"
+                  className="flex-1 py-2.5 bg-stone-200 dark:bg-zinc-800 rounded-xl text-sm font-medium text-stone-700 dark:text-zinc-300 text-center"
                 >
                   Giriş Yap
                 </Link>
                 <Link
                   to="/signup"
                   onClick={onClose}
-                  className="flex-1 py-2.5 bg-rose-600 rounded-xl text-sm font-medium text-white text-center shadow-lg shadow-rose-600/20"
+                  className="flex-1 py-2.5 bg-rose-600 rounded-xl text-sm font-medium text-white text-center shadow-lg shadow-amber-800/20"
                 >
                   Kayıt Ol
                 </Link>
@@ -293,7 +293,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 <Link
                   to={createLink}
                   onClick={onClose}
-                  className="relative flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-rose-600 to-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-rose-600/20 overflow-hidden group"
+                  className="relative flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-rose-600 to-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-800/20 overflow-hidden group"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"

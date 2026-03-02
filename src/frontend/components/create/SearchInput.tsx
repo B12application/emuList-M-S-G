@@ -190,20 +190,20 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
     return (
         <div ref={containerRef} className="relative">
             <div className="relative">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
                 <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => results.length > 0 && setShowResults(true)}
                     placeholder={getPlaceholder()}
-                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
                 {query && !isSearching && (
                     <button
                         type="button"
                         onClick={() => { setQuery(''); setResults([]); setShowResults(false); }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
                     >
                         <FaTimes />
                     </button>
@@ -215,13 +215,13 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
 
             {/* Results Dropdown */}
             {showResults && results.length > 0 && (
-                <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-80 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-2 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 rounded-xl shadow-xl max-h-80 overflow-y-auto">
                     {results.map((result) => (
                         <button
                             key={result.id}
                             type="button"
                             onClick={() => handleSelect(result)}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                            className="w-full flex items-center gap-3 p-3 hover:bg-stone-100 dark:hover:bg-zinc-700 transition text-left border-b border-stone-200 dark:border-zinc-700 last:border-b-0"
                         >
                             <ImageWithFallback
                                 src={result.image}
@@ -229,12 +229,12 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                                 className="w-10 h-14 object-cover rounded-lg shrink-0"
                             />
                             <div className="min-w-0 flex-1">
-                                <h4 className="font-medium text-gray-900 dark:text-white truncate">{result.title}</h4>
+                                <h4 className="font-medium text-stone-900 dark:text-white truncate">{result.title}</h4>
                                 {result.subtitle && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{result.subtitle}</p>
+                                    <p className="text-sm text-stone-500 dark:text-zinc-400 truncate">{result.subtitle}</p>
                                 )}
                                 {result.year && (
-                                    <p className="text-xs text-gray-400">{result.year}</p>
+                                    <p className="text-xs text-stone-400">{result.year}</p>
                                 )}
                             </div>
                         </button>
@@ -242,7 +242,7 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                 </div>
             )}
 
-            {error && <p className="mt-2 text-sm text-rose-500">{error}</p>}
+            {error && <p className="mt-2 text-sm text-amber-700">{error}</p>}
         </div>
     );
 }

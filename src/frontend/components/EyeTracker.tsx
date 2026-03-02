@@ -7,13 +7,13 @@ interface EyeProps {
 function Eye({ pupilPosition }: EyeProps) {
     return (
         <div
-            className="relative w-10 h-10 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 overflow-hidden shadow-md"
+            className="relative w-10 h-10 rounded-full bg-stone-50 dark:bg-zinc-800 border-2 border-stone-300 dark:border-zinc-700 overflow-hidden shadow-md"
             style={{
                 boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
             }}
         >
             {/* Eye white */}
-            <div className="absolute inset-0 bg-white dark:bg-gray-100" />
+            <div className="absolute inset-0 bg-stone-50 dark:bg-gray-100" />
 
             {/* Iris */}
             <div
@@ -30,7 +30,7 @@ function Eye({ pupilPosition }: EyeProps) {
                     }}
                 >
                     {/* Light reflection */}
-                    <div className="absolute top-0.5 left-0.5 w-1 h-1 rounded-full bg-white opacity-80" />
+                    <div className="absolute top-0.5 left-0.5 w-1 h-1 rounded-full bg-stone-50 opacity-80" />
                 </div>
 
                 {/* Iris detail ring */}

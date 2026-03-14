@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { createActivity, deleteActivitiesForMedia } from '../../backend/services/activityService';
 import { getSeriesProgress, toggleEpisodeWatched, updateCurrentProgress } from '../../backend/services/episodeTrackingService';
 import AddToListDropdown from './AddToListDropdown';
+import { useAppSound } from '../context/SoundContext';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -26,6 +27,7 @@ interface MediaCardProps {
 export default function MediaCard({ item, refetch, isModal = false, readOnly = false }: MediaCardProps) {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { playPop, playSuccess } = useAppSound();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -42,14 +44,16 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
   const isGame = item.type === 'game';
 
   // Dizi durum hesaplamaları (watchedSeasons + watchedEpisodes birlikte)
+  const progress = item.type === 'series' ? getSeriesProgress(item) : { percentage: 0 };
   const seriesIsCompleted = item.type === 'series' &&
     (item.watched ||
-      (item.watchedSeasons && item.totalSeasons && item.watchedSeasons.length === item.totalSeasons));
+      (item.watchedSeasons && item.totalSeasons && item.watchedSeasons.length === item.totalSeasons) ||
+      progress.percentage === 100);
   const seriesHasWatchedEpisodes = item.type === 'series' &&
     item.watchedEpisodes &&
     Object.values(item.watchedEpisodes).some(eps => eps.length > 0);
   const seriesIsInProgress = item.type === 'series' && !seriesIsCompleted &&
-    ((item.watchedSeasons && item.watchedSeasons.length > 0) || seriesHasWatchedEpisodes);
+    ((item.watchedSeasons && item.watchedSeasons.length > 0) || seriesHasWatchedEpisodes || ('totalWatched' in progress && progress.totalWatched > 0));
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
@@ -126,6 +130,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
         type: newValue ? 'watched' : 'not-watched',
         mediaType: item.type as 'movie' | 'series' | 'book' | 'game'
       });
+      if (newValue) playSuccess();
       refetch();
     } catch (e) {
       console.error("Güncelleme hatası: ", e);
@@ -160,6 +165,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
       }
 
       showMarqueeToast({ message: newValue ? t('toast.favoriteAdded') : t('toast.favoriteRemoved'), type: 'favorite', mediaType: item.type as any });
+      if (newValue) playPop();
       refetch();
     } catch (e) {
       console.error("Favori güncelleme hatası: ", e);

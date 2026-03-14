@@ -70,13 +70,17 @@ const router = createBrowserRouter([
   },
 ]);
 
+import { SoundProvider } from './context/SoundContext';
+
 function App() {
   return (
     <LanguageProvider>
       <NotificationProvider>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-        </QueryClientProvider>
+        <SoundProvider>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </SoundProvider>
       </NotificationProvider>
     </LanguageProvider>
   );

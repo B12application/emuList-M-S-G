@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase, FaArrowRight, FaUser, FaTimes } from 'react-icons/fa';
+import { useAppSound } from '../context/SoundContext';
+import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase, FaArrowRight, FaUser, FaTimes, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
@@ -14,6 +15,7 @@ export default function SettingsPage() {
     const { t } = useLanguage();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { soundEnabled, toggleSound } = useAppSound();
 
     // Profile info states
     const [firstName, setFirstName] = useState('');
@@ -303,6 +305,35 @@ export default function SettingsPage() {
                             </div>
                         </form>
                     )}
+                </div>
+
+                {/* Sound Settings Section */}
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-8 border border-stone-200 dark:border-zinc-700">
+                    <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
+                        {soundEnabled ? <FaVolumeUp className="text-emerald-500" /> : <FaVolumeMute className="text-stone-500" />} 
+                        {t('settings.soundTitle') || 'Ses Ayarları'}
+                    </h2>
+                    
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-stone-900 dark:text-white">{t('settings.soundEffects') || 'Arayüz Ses Efektleri'}</p>
+                            <p className="text-sm text-stone-500 dark:text-zinc-400">
+                                {t('settings.soundEffectsDesc') || 'Tıklama ve işlemlerde kısa sesler çalınsın.'}
+                            </p>
+                        </div>
+                        <button
+                            onClick={toggleSound}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                soundEnabled ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-zinc-600'
+                            }`}
+                        >
+                            <span 
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    soundEnabled ? 'translate-x-6' : 'translate-x-1'
+                                }`} 
+                            />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Password Change Section */}

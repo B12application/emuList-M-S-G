@@ -12,6 +12,7 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getSeriesProgress } from '../../backend/services/episodeTrackingService';
 
 import { useLanguage } from '../context/LanguageContext';
 
@@ -42,7 +43,9 @@ export default function MediaListPage() {
 
   const isSearchActive = searchQuery.trim().length > 0;
   const isAdvancedFilterActive = genreFilter !== 'all' || ratingRange !== 'all' || yearFilter !== 'all';
-  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, filter, isSearchActive || isAdvancedFilterActive);
+  // We fetch 'all' items if the filter is 'watched' so we can locally include series with 100% progress
+  const fetchFilter = filter === 'watched' ? 'all' : filter;
+  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, fetchFilter, isSearchActive || isAdvancedFilterActive || filter === 'watched');
 
   // Compute all available genres from items
   const allGenres = useMemo(() => {
@@ -77,6 +80,14 @@ export default function MediaListPage() {
   const filteredItems = useMemo(() => {
     let result = [...items];
 
+    // Local 'watched' filter evaluation for series completion
+    if (filter === 'watched') {
+      result = result.filter(item => {
+        const progress = getSeriesProgress(item);
+        return item.watched || progress.percentage === 100;
+      });
+    }
+
     // Arama filtresi
     if (isSearchActive) {
       const lowerQuery = searchQuery.toLowerCase();
@@ -87,6 +98,10 @@ export default function MediaListPage() {
     if (filter === 'in-progress') {
       result = result.filter(item => {
         if (item.type !== 'series') return false;
+        
+        const progress = getSeriesProgress(item);
+        const isFullyWatched = item.watched || progress.percentage === 100;
+
         // Sezon bazlı takip: en az 1 sezon izlenmiş ama hepsi değil
         const hasPartialSeasons =
           item.totalSeasons &&
@@ -97,11 +112,8 @@ export default function MediaListPage() {
         const hasWatchedEpisodes =
           item.watchedEpisodes &&
           Object.values(item.watchedEpisodes).some(eps => eps.length > 0);
-        const isFullyWatched = item.watched ||
-          (item.totalSeasons &&
-            item.watchedSeasons &&
-            item.watchedSeasons.length === item.totalSeasons);
-        return (hasPartialSeasons || hasWatchedEpisodes) && !isFullyWatched;
+          
+        return (hasPartialSeasons || hasWatchedEpisodes || progress.totalWatched > 0) && !isFullyWatched;
       });
     }
 

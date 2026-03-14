@@ -3,7 +3,9 @@
 
 import { useState } from 'react';
 import { FaTv, FaPlay, FaCheck, FaCheckDouble, FaUndo, FaChevronDown, FaChevronUp, FaSpinner } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
+import { useAppSound } from '../context/SoundContext';
 import {
     toggleEpisodeWatched,
     markAllEpisodesInSeason,
@@ -21,6 +23,7 @@ interface EpisodeTrackerProps {
 
 export default function EpisodeTracker({ item, onUpdate, compact = false }: EpisodeTrackerProps) {
     const { t } = useLanguage();
+    const { playClick, playSuccess } = useAppSound();
     const [activeSeason, setActiveSeason] = useState(item.currentSeason || 1);
     const [marking, setMarking] = useState(false);
     const [showGrid, setShowGrid] = useState(false);
@@ -55,6 +58,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
             const newWatched = await toggleEpisodeWatched(item.id, nextEp.season, nextEp.episode, watchedEpisodes);
             setWatchedEpisodes(newWatched);
             await updateCurrentProgress(item.id, nextEp.season, nextEp.episode);
+            playClick();
             onUpdate();
         } catch (error) {
             console.error('Bölüm işaretleme hatası:', error);
@@ -69,6 +73,8 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
             setWatchedEpisodes(newWatched);
             const sEps = newWatched[season] || [];
             if (sEps.length > 0) await updateCurrentProgress(item.id, season, Math.max(...sEps));
+            // Play click if marked watched, or pop if unmarked (can just use click for both)
+            playClick();
             onUpdate();
         } catch (error) {
             console.error('Bölüm toggle hatası:', error);
@@ -82,6 +88,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
             const newWatched = await markAllEpisodesInSeason(item.id, activeSeason, totalEps, watchedEpisodes);
             setWatchedEpisodes(newWatched);
             await updateCurrentProgress(item.id, activeSeason, totalEps);
+            playSuccess();
             onUpdate();
         } catch (error) {
             console.error('Sezon işaretleme hatası:', error);
@@ -116,13 +123,13 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
     return (
         <div className="space-y-3">
             {/* === Next Episode + Progress === */}
-            <div className="bg-white dark:bg-zinc-800/80 rounded-xl p-3 border border-teal-200/60 dark:border-teal-700/30">
+            <div className="bg-white dark:bg-zinc-800/80 rounded-xl p-3 border border-red-200/60 dark:border-red-700/30">
                 {/* Progress */}
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                         {progress.totalWatched}/{progress.totalEpisodes} {t('episodes.episode')}
                     </span>
-                    <span className={`text-[11px] font-bold ${progress.percentage === 100 ? 'text-emerald-500' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                    <span className={`text-[11px] font-bold ${progress.percentage === 100 ? 'text-red-500' : 'text-zinc-600 dark:text-zinc-300'}`}>
                         {progress.percentage}%
                     </span>
                 </div>
@@ -132,8 +139,8 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                         style={{
                             width: `${progress.percentage}%`,
                             background: progress.percentage === 100
-                                ? 'linear-gradient(90deg, #10b981, #14b8a6)'
-                                : 'linear-gradient(90deg, #10b981, #2dd4bf)',
+                                ? 'linear-gradient(90deg, #b91c1c, #991b1b)'
+                                : 'linear-gradient(90deg, #dc2626, #b91c1c)',
                         }}
                     />
                 </div>
@@ -144,7 +151,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                         onClick={handleMarkNext}
                         disabled={marking}
                         className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-white font-semibold transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] shadow-sm"
-                        style={{ background: 'linear-gradient(135deg, #0d9488, #0891b2)' }}
+                        style={{ background: 'linear-gradient(135deg, #b91c1c, #7f1d1d)' }}
                     >
                         <div className="flex items-center gap-2.5">
                             {marking ? <FaSpinner className="animate-spin" size={14} /> : <FaPlay size={12} />}
@@ -156,7 +163,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                         <FaCheck size={14} className="opacity-60" />
                     </button>
                 ) : (
-                    <div className="w-full text-center py-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[12px] font-semibold border border-emerald-300/30 dark:border-emerald-700/20">
+                    <div className="w-full text-center py-2.5 bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-[12px] font-semibold border border-red-300/30 dark:border-red-700/20">
                         ✓ {t('seasons.completed')}
                     </div>
                 )}
@@ -202,17 +209,17 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                                         ${activeSeason === season
                                             ? 'text-white shadow-sm'
                                             : complete
-                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/15 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-800/20'
+                                                ? 'bg-red-50 text-red-700 dark:bg-red-900/15 dark:text-red-400 border border-red-200/30 dark:border-red-800/20'
                                                 : hasProgress
-                                                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/15 dark:text-sky-400 border border-sky-200/30 dark:border-sky-800/20'
+                                                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/15 dark:text-amber-400 border border-amber-200/30 dark:border-amber-800/20'
                                                     : 'bg-zinc-50 text-zinc-400 dark:bg-zinc-800/40 dark:text-zinc-500 border border-zinc-200/30 dark:border-zinc-700/30'
                                         }
                                     `}
-                                    style={activeSeason === season ? { background: 'linear-gradient(135deg, #0d9488, #0891b2)' } : {}}
+                                    style={activeSeason === season ? { background: 'linear-gradient(135deg, #b91c1c, #7f1d1d)' } : {}}
                                 >
                                     S{season}
                                     {complete && activeSeason !== season && (
-                                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full flex items-center justify-center">
+                                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                                             <FaCheck size={5} className="text-white" />
                                         </span>
                                     )}
@@ -255,20 +262,22 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                                     const isWatched = seasonEps.includes(epNum);
 
                                     return (
-                                        <button
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.8 }}
                                             key={epNum}
                                             onClick={() => handleToggleEpisode(activeSeason, epNum)}
                                             className={`
-                                                aspect-square rounded-lg flex items-center justify-center text-[12px] font-bold transition-all duration-100 active:scale-90
+                                                aspect-square rounded-lg flex items-center justify-center text-[12px] font-bold transition-all duration-100
                                                 ${isWatched
-                                                    ? 'bg-emerald-500 text-white shadow-sm'
-                                                    : 'bg-zinc-100 dark:bg-zinc-700/40 text-zinc-500 dark:text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:text-emerald-600 dark:hover:text-emerald-400 border border-zinc-200/50 dark:border-zinc-600/30'
+                                                    ? 'bg-red-600 text-white shadow-sm'
+                                                    : 'bg-zinc-100 dark:bg-zinc-700/40 text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 dark:hover:text-red-400 border border-zinc-200/50 dark:border-zinc-600/30'
                                                 }
                                             `}
                                             title={`E${epNum}`}
                                         >
                                             {isWatched ? <FaCheck size={10} /> : epNum}
-                                        </button>
+                                        </motion.button>
                                     );
                                 })}
                             </div>

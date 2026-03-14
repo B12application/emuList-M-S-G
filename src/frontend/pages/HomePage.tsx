@@ -16,6 +16,7 @@ import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
 
 import DetailModal from '../components/DetailModal';
+import { useAppSound } from '../context/SoundContext';
 import AdminRecommendationsPanel from '../components/AdminRecommendationsPanel';
 import { fetchRecommendations, groupRecommendationsByCategory } from '../../backend/services/recommendationService';
 import type { Recommendation } from '../../backend/types/recommendation';
@@ -60,6 +61,7 @@ export default function HomePage() {
     }
 
     const { stats, loading: statsLoading } = useMediaStats();
+    const { playClick } = useAppSound();
 
     // ⚡ OPTİMİZASYON: 4 ayrı Firebase sorgusu KALDIRILDI
     // Artık tek sorgudan (allItems) client-side filtreleme yapıyoruz
@@ -124,6 +126,7 @@ export default function HomePage() {
             await toggleEpisodeWatched(show.id, next.season, next.episode, show.watchedEpisodes || {});
             await updateCurrentProgress(show.id, next.season, next.episode);
             toast.success(`S${next.season} E${next.episode} ✓`);
+            playClick();
             allRefetch();
         } catch (err) { console.error(err); }
     };
@@ -407,12 +410,12 @@ export default function HomePage() {
                 <div className="mt-12 mb-8">
                     <div className="flex items-center justify-between mb-5">
                         <h2 className="text-2xl font-semibold flex items-center gap-3 text-stone-900 dark:text-zinc-200">
-                            <FaPlay className="text-teal-500" />
+                            <FaPlay className="text-red-500" />
                             {t('myShows.continueWatching')}
                         </h2>
                         <Link
                             to="/my-shows"
-                            className="text-sm font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-1.5 transition-colors"
+                            className="text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-1.5 transition-colors"
                         >
                             {t('myShows.viewAll')} <FaArrowRight size={11} />
                         </Link>
@@ -438,7 +441,7 @@ export default function HomePage() {
                                         {/* Info */}
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                                             <div>
-                                                <h4 className="text-sm font-bold text-stone-900 dark:text-white truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                                                <h4 className="text-sm font-bold text-stone-900 dark:text-white truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
                                                     {show.title}
                                                 </h4>
                                                 <p className="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5">
@@ -452,11 +455,11 @@ export default function HomePage() {
                                                         className="h-full rounded-full transition-all duration-500"
                                                         style={{
                                                             width: `${progress.percentage}%`,
-                                                            background: 'linear-gradient(90deg, #14b8a6, #0d9488)'
+                                                            background: 'linear-gradient(90deg, #b91c1c, #991b1b)'
                                                         }}
                                                     />
                                                 </div>
-                                                <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 mt-0.5 text-right">{progress.percentage}%</p>
+                                                <p className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-0.5 text-right">{progress.percentage}%</p>
                                             </div>
                                         </div>
                                     </div>
@@ -464,7 +467,7 @@ export default function HomePage() {
                                     {nextEp && (
                                         <button
                                             onClick={() => handleQuickMarkHome(show)}
-                                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-[12px] font-bold hover:from-teal-600 hover:to-teal-700 transition-all active:scale-[0.98]"
+                                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-[12px] font-bold hover:from-red-600 hover:to-red-700 transition-all active:scale-[0.98]"
                                         >
                                             <FaPlay size={8} />
                                             S{nextEp.season}E{nextEp.episode} — {t('myShows.continueWatchingHome')}
@@ -558,7 +561,7 @@ export default function HomePage() {
                                                 </span>
 
                                                 <span className={`text-xs px-2 py-0.5 rounded-full ${item.watched
-                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
                                                     : 'bg-rose-100 text-rose-700 dark:bg-amber-900/50 dark:text-rose-300'
                                                     }`}>
                                                     {item.watched
@@ -736,18 +739,18 @@ export default function HomePage() {
 
                 {/* DİZİ KARTI */}
                 <Link to="/series" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
-                    <div className="absolute inset-0 bg-linear-to-br from-emerald-400 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-linear-to-br from-red-400 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute inset-0 bg-stone-50 dark:bg-zinc-800 group-hover:opacity-0 transition-opacity duration-300" />
 
                     <div className="relative z-10">
-                        <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-emerald-600 dark:text-emerald-400 transition-colors">
+                        <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mb-6 group-hover:bg-white/20 group-hover:text-white text-red-600 dark:text-red-400 transition-colors">
                             <FaTv size={28} />
                         </div>
                         <h3 className="text-2xl font-bold text-stone-900 dark:text-white mb-2 group-hover:text-white">{t('nav.series')}</h3>
-                        <p className="text-stone-500 dark:text-zinc-400 text-sm group-hover:text-emerald-100">{t('home.seriesDesc')}</p>
+                        <p className="text-stone-500 dark:text-zinc-400 text-sm group-hover:text-red-100">{t('home.seriesDesc')}</p>
                     </div>
                     <div className="relative z-10 mt-6 pt-6 border-t border-stone-200 dark:border-zinc-700 group-hover:border-white/20">
-                        <span className="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 group-hover:text-white group-hover:translate-x-2 transition-all">
+                        <span className="inline-flex items-center gap-2 text-sm font-bold text-red-600 group-hover:text-white group-hover:translate-x-2 transition-all">
                             {t('home.goToList')} <FaArrowRight />
                         </span>
                     </div>
@@ -934,13 +937,13 @@ export default function HomePage() {
                                                 {allSeries.length > 0 && (
                                                     <div className="space-y-4">
                                                         <div className="flex items-center gap-2 mb-4">
-                                                            <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-md">
+                                                            <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-md">
                                                                 <FaTv className="text-white" size={18} />
                                                             </div>
                                                             <h4 className="text-xl font-bold text-stone-800 dark:text-zinc-200">
                                                                 {t('nav.series')}
                                                             </h4>
-                                                            <span className="ml-auto bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full text-sm font-semibold">
+                                                            <span className="ml-auto bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-semibold">
                                                                 {allSeries.length}
                                                             </span>
                                                         </div>
@@ -951,7 +954,7 @@ export default function HomePage() {
                                                                     onClick={() => handleAddToCollection(rec)}
                                                                     className="group cursor-pointer"
                                                                 >
-                                                                    <div className="relative bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-gray-850 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-stone-300/50 dark:border-zinc-700/50 overflow-hidden hover:scale-[1.02] hover:border-emerald-400 dark:hover:border-emerald-500">
+                                                                    <div className="relative bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-gray-850 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-stone-300/50 dark:border-zinc-700/50 overflow-hidden hover:scale-[1.02] hover:border-red-400 dark:hover:border-red-500">
                                                                         <div className="flex">
                                                                             <div className="relative w-24 h-32 flex-shrink-0 overflow-hidden">
                                                                                 {rec.image && (
@@ -963,14 +966,14 @@ export default function HomePage() {
                                                                                 )}
                                                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                                                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                                                                    <div className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs transform scale-90 group-hover:scale-100 transition-transform">
+                                                                                    <div className="bg-red-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs transform scale-90 group-hover:scale-100 transition-transform">
                                                                                         + {t('home.add')}
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex-1 p-3 flex flex-col justify-between">
                                                                                 <div>
-                                                                                    <h5 className="font-bold text-sm text-stone-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-1">
+                                                                                    <h5 className="font-bold text-sm text-stone-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2 mb-1">
                                                                                         {rec.title}
                                                                                     </h5>
                                                                                     {rec.description && (
@@ -996,7 +999,7 @@ export default function HomePage() {
                                                                 <button
                                                                     onClick={() => setRecSeriesPage(p => Math.max(1, p - 1))}
                                                                     disabled={recSeriesPage === 1}
-                                                                    className="p-2 rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                                    className="p-2 rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                                                 >
                                                                     <FaChevronUp className="-rotate-90" />
                                                                 </button>
@@ -1006,7 +1009,7 @@ export default function HomePage() {
                                                                 <button
                                                                     onClick={() => setRecSeriesPage(p => Math.min(totalSeriesPages, p + 1))}
                                                                     disabled={recSeriesPage === totalSeriesPages}
-                                                                    className="p-2 rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                                    className="p-2 rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                                                 >
                                                                     <FaChevronDown className="-rotate-90" />
                                                                 </button>
@@ -1112,7 +1115,7 @@ export default function HomePage() {
                                                         <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-stone-200 dark:border-zinc-700">
                                                             <div className="relative h-64 bg-stone-200 dark:bg-zinc-700 overflow-hidden">
                                                                 {rec.image && <img src={rec.image} alt={rec.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />}
-                                                                <div className="absolute top-2 right-2 bg-emerald-500 text-white px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                                                                <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
                                                                     <FaStar size={12} /> <span className="text-sm font-bold">{rec.rating}</span>
                                                                 </div>
                                                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1122,7 +1125,7 @@ export default function HomePage() {
                                                                 </div>
                                                             </div>
                                                             <div className="p-3">
-                                                                <h4 className="font-bold text-sm text-stone-900 dark:text-white truncate group-hover:text-emerald-500 transition-colors">{rec.title}</h4>
+                                                                <h4 className="font-bold text-sm text-stone-900 dark:text-white truncate group-hover:text-red-500 transition-colors">{rec.title}</h4>
                                                             </div>
                                                         </div>
                                                     </div>

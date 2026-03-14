@@ -331,7 +331,7 @@ export default function MyShowsPage() {
                             <button
                                 onClick={() => { setSelectMode(!selectMode); setSelectedShows(new Set()); }}
                                 className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${selectMode
-                                    ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400'
+                                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                     : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                                     }`}
                             >
@@ -360,7 +360,7 @@ export default function MyShowsPage() {
                                                     key={opt.key}
                                                     onClick={() => { setSortBy(opt.key); setShowSortMenu(false); }}
                                                     className={`w-full text-left px-3 py-2 text-[11px] font-medium transition-colors ${sortBy === opt.key
-                                                        ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20'
+                                                        ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
                                                         : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50'
                                                         }`}
                                                 >
@@ -413,7 +413,7 @@ export default function MyShowsPage() {
                             key={genre}
                             onClick={() => setSelectedGenre(selectedGenre === genre ? null : genre)}
                             className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all ${selectedGenre === genre
-                                ? 'bg-teal-600 text-white'
+                                ? 'bg-red-600 text-white'
                                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                                 }`}
                         >
@@ -425,9 +425,9 @@ export default function MyShowsPage() {
 
             {/* ══════════════ MINI STATS STRIP ══════════════ */}
             <div className="grid grid-cols-3 gap-2 mt-2 mb-4">
-                <div className="bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-900/15 dark:to-emerald-900/10 rounded-xl p-2.5 text-center border border-teal-100/50 dark:border-teal-800/20">
-                    <p className="text-[18px] font-black text-teal-700 dark:text-teal-400 tabular-nums">{stats.completedCount}/{stats.totalShows}</p>
-                    <p className="text-[9px] font-semibold text-teal-600/60 dark:text-teal-400/50 uppercase tracking-wider">{t('myShows.completed')}</p>
+                <div className="bg-gradient-to-br from-red-50 to-red-50 dark:from-red-900/15 dark:to-red-900/10 rounded-xl p-2.5 text-center border border-red-100/50 dark:border-red-800/20">
+                    <p className="text-[18px] font-black text-red-700 dark:text-red-400 tabular-nums">{stats.completedCount}/{stats.totalShows}</p>
+                    <p className="text-[9px] font-semibold text-red-600/60 dark:text-red-400/50 uppercase tracking-wider">{t('myShows.completed')}</p>
                 </div>
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/15 dark:to-indigo-900/10 rounded-xl p-2.5 text-center border border-blue-100/50 dark:border-blue-800/20">
                     <p className="text-[18px] font-black text-blue-700 dark:text-blue-400 tabular-nums">~{stats.hours}</p>
@@ -444,14 +444,14 @@ export default function MyShowsPage() {
                 <div className="mt-2 mb-4">
                     {/* Label */}
                     <div className="flex items-center gap-2 mb-2.5 px-0.5">
-                        <FaCheck className="text-emerald-500/40" size={8} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600/40 dark:text-emerald-400/30">
+                        <FaCheck className="text-red-500/40" size={8} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-red-600/40 dark:text-red-400/30">
                             {t('myShows.completed')}
                         </span>
-                        <span className="text-[10px] text-emerald-500/25 font-medium">
+                        <span className="text-[10px] text-red-500/25 font-medium">
                             {completedShows.length}
                         </span>
-                        <div className="flex-1 h-px bg-emerald-500/10" />
+                        <div className="flex-1 h-px bg-red-500/10" />
                     </div>
 
                     {/* Horizontal scroll */}
@@ -471,23 +471,23 @@ export default function MyShowsPage() {
                                     onClick={() => setExpandedShow(expandedShow === show.id ? null : show.id)}
                                 >
                                     {/* Poster card */}
-                                    <div className="relative w-[80px] h-[112px] rounded-xl overflow-hidden ring-1 ring-emerald-400/15 shadow-sm">
+                                    <div className="relative w-[80px] h-[112px] rounded-xl overflow-hidden ring-1 ring-red-400/15 shadow-sm">
                                         <ImageWithFallback
                                             src={show.image}
                                             alt={show.title}
                                             className="w-full h-full object-cover brightness-[0.5] saturate-[0.2]"
                                         />
                                         {/* Green frost overlay */}
-                                        <div className="absolute inset-0 bg-emerald-600/20 backdrop-blur-[0.3px]" />
+                                        <div className="absolute inset-0 bg-red-600/20 backdrop-blur-[0.3px]" />
                                         {/* Check icon */}
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-7 h-7 rounded-full bg-emerald-500/25 backdrop-blur-sm flex items-center justify-center">
-                                                <FaCheck className="text-emerald-100/90" size={10} />
+                                            <div className="w-7 h-7 rounded-full bg-red-500/25 backdrop-blur-sm flex items-center justify-center">
+                                                <FaCheck className="text-red-100/90" size={10} />
                                             </div>
                                         </div>
                                         {/* Date badge */}
                                         <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
-                                            <span className="px-1.5 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-[8px] font-bold text-emerald-200/70 whitespace-nowrap">
+                                            <span className="px-1.5 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-[8px] font-bold text-red-200/70 whitespace-nowrap">
                                                 {hasEpData ? `${totalEps} ep` : formatDate(show.createdAt)}
                                             </span>
                                         </div>
@@ -511,7 +511,7 @@ export default function MyShowsPage() {
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden mt-2"
                             >
-                                <div className="rounded-xl border border-emerald-200/15 dark:border-emerald-700/15 bg-white/50 dark:bg-zinc-800/50 backdrop-blur-sm p-3">
+                                <div className="rounded-xl border border-red-200/15 dark:border-red-700/15 bg-white/50 dark:bg-zinc-800/50 backdrop-blur-sm p-3">
                                     <div className="flex items-center justify-between mb-2">
                                         <h4 className="text-[12px] font-semibold text-zinc-700 dark:text-zinc-300">
                                             {completedShows.find(s => s.id === expandedShow)?.title}
@@ -567,7 +567,7 @@ export default function MyShowsPage() {
                                             ? 'bg-white dark:bg-zinc-800 border border-zinc-300/60 dark:border-zinc-600/50 shadow-lg shadow-black/5 dark:shadow-black/20'
                                             : 'bg-white dark:bg-zinc-800/70 border border-zinc-200/60 dark:border-zinc-700/40 shadow-sm hover:shadow-md hover:border-zinc-300/70 dark:hover:border-zinc-600/50'
                                         }
-                                        ${isSelected ? 'ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-zinc-900' : ''}`}
+                                        ${isSelected ? 'ring-2 ring-red-500 ring-offset-1 dark:ring-offset-zinc-900' : ''}`}
                                 >
                                     <div className="flex items-center gap-3 p-3">
                                         {/* Select checkbox or reorder */}
@@ -575,8 +575,8 @@ export default function MyShowsPage() {
                                             <button
                                                 onClick={() => toggleSelect(show.id)}
                                                 className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all border ${isSelected
-                                                    ? 'bg-teal-500 border-teal-500 text-white'
-                                                    : 'border-zinc-300 dark:border-zinc-600 hover:border-teal-400'
+                                                    ? 'bg-red-500 border-red-500 text-white'
+                                                    : 'border-zinc-300 dark:border-zinc-600 hover:border-red-400'
                                                     }`}
                                             >
                                                 {isSelected && <FaCheck size={8} />}
@@ -601,7 +601,7 @@ export default function MyShowsPage() {
                                             <ImageWithFallback src={show.image} alt={show.title} className="w-full h-full object-cover" />
                                             {/* "Devam Ediyor" badge */}
                                             <div className="absolute top-0 left-0 right-0">
-                                                <div className="bg-teal-500/90 text-[6px] font-bold text-white text-center py-0.5 tracking-wider uppercase">
+                                                <div className="bg-red-500/90 text-[6px] font-bold text-white text-center py-0.5 tracking-wider uppercase">
                                                     {t('myShows.continuing')}
                                                 </div>
                                             </div>
@@ -615,7 +615,7 @@ export default function MyShowsPage() {
                                                         className="absolute -bottom-1 left-[56px] w-[200px] bg-zinc-900 dark:bg-zinc-700 rounded-lg p-2.5 shadow-xl z-50 pointer-events-none"
                                                     >
                                                         {show.genre && (
-                                                            <p className="text-[9px] text-teal-400 font-semibold mb-1">{show.genre}</p>
+                                                            <p className="text-[9px] text-red-400 font-semibold mb-1">{show.genre}</p>
                                                         )}
                                                         {show.description && (
                                                             <p className="text-[10px] text-zinc-300 leading-relaxed line-clamp-3">{show.description}</p>
@@ -640,7 +640,7 @@ export default function MyShowsPage() {
                                                 {show.totalSeasons && `${show.totalSeasons} ${t('seasons.seasons')}`}
                                                 {hasEpData && ` · ${totalEps} ${t('episodes.episode')}`}
                                                 {hasEpData && remaining > 0 && (
-                                                    <span className="text-teal-600 dark:text-teal-400 font-semibold"> · {remaining} kaldı</span>
+                                                    <span className="text-red-600 dark:text-red-400 font-semibold"> · {remaining} kaldı</span>
                                                 )}
                                             </p>
                                             {/* Relative time */}
@@ -657,7 +657,7 @@ export default function MyShowsPage() {
                                                         <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
                                                             {progress.totalWatched}/{progress.totalEpisodes}
                                                         </span>
-                                                        <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
+                                                        <span className="text-[10px] font-bold text-red-600 dark:text-red-400">
                                                             {progress.percentage}%
                                                         </span>
                                                     </div>
@@ -667,7 +667,7 @@ export default function MyShowsPage() {
                                                             animate={{ width: `${progress.percentage}%` }}
                                                             transition={{ duration: 0.6, ease: 'easeOut' }}
                                                             className="h-full rounded-full"
-                                                            style={{ background: 'linear-gradient(90deg, #14b8a6, #0d9488)' }}
+                                                            style={{ background: 'linear-gradient(90deg, #b91c1c, #991b1b)' }}
                                                         />
                                                     </div>
                                                 </div>
@@ -681,8 +681,8 @@ export default function MyShowsPage() {
                                                     onClick={(e) => { e.stopPropagation(); handleQuickMark(show); }}
                                                     whileHover={{ scale: 1.04 }}
                                                     whileTap={{ scale: 0.94 }}
-                                                    className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold text-white shadow-lg shadow-teal-500/25 overflow-hidden"
-                                                    style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488, #0f766e)' }}
+                                                    className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold text-white shadow-lg shadow-red-500/25 overflow-hidden"
+                                                    style={{ background: 'linear-gradient(135deg, #b91c1c, #991b1b, #7f1d1d)' }}
                                                 >
                                                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                                                     <FaPlay size={7} />
@@ -729,10 +729,10 @@ export default function MyShowsPage() {
                                 onClick={() => !selectMode && show.imdbId && setExpandedShow(isExpanded ? null : show.id)}
                                 className={`group rounded-xl overflow-hidden transition-all duration-200 cursor-pointer
                                     ${isExpanded
-                                        ? 'bg-white dark:bg-zinc-800 border border-teal-400/30 dark:border-teal-500/20 shadow-md shadow-teal-500/5'
-                                        : 'bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/30 dark:border-zinc-700/25 border-dashed hover:border-solid hover:border-teal-300/40 dark:hover:border-teal-600/30 hover:bg-white dark:hover:bg-zinc-800/60'
+                                        ? 'bg-white dark:bg-zinc-800 border border-red-400/30 dark:border-red-500/20 shadow-md shadow-red-500/5'
+                                        : 'bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/30 dark:border-zinc-700/25 border-dashed hover:border-solid hover:border-red-300/40 dark:hover:border-red-600/30 hover:bg-white dark:hover:bg-zinc-800/60'
                                     }
-                                    ${isSelected ? 'ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-zinc-900' : ''}`}
+                                    ${isSelected ? 'ring-2 ring-red-500 ring-offset-1 dark:ring-offset-zinc-900' : ''}`}
                             >
                                 <div className="flex items-center gap-3 p-2.5">
                                     {/* Select checkbox or reorder */}
@@ -740,8 +740,8 @@ export default function MyShowsPage() {
                                         <button
                                             onClick={(e) => { e.stopPropagation(); toggleSelect(show.id); }}
                                             className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all border ${isSelected
-                                                ? 'bg-teal-500 border-teal-500 text-white'
-                                                : 'border-zinc-300 dark:border-zinc-600 hover:border-teal-400'
+                                                ? 'bg-red-500 border-red-500 text-white'
+                                                : 'border-zinc-300 dark:border-zinc-600 hover:border-red-400'
                                                 }`}
                                         >
                                             {isSelected && <FaCheck size={8} />}
@@ -779,8 +779,8 @@ export default function MyShowsPage() {
                                             animate={{ rotate: isExpanded ? 180 : 0 }}
                                             transition={{ duration: 0.2 }}
                                             className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${isExpanded
-                                                ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
-                                                : 'text-zinc-300 dark:text-zinc-600 group-hover:text-teal-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/15'
+                                                ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                                                : 'text-zinc-300 dark:text-zinc-600 group-hover:text-red-500 group-hover:bg-red-50 dark:group-hover:bg-red-900/15'
                                                 }`}
                                         >
                                             <FaChevronDown size={8} />
@@ -791,7 +791,7 @@ export default function MyShowsPage() {
                                 <AnimatePresence>
                                     {isExpanded && (
                                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: 'easeInOut' }} className="overflow-hidden">
-                                            <div className="px-2.5 pb-2.5 border-t border-teal-200/20 dark:border-teal-700/15 pt-2.5" onClick={e => e.stopPropagation()}>
+                                            <div className="px-2.5 pb-2.5 border-t border-red-200/20 dark:border-red-700/15 pt-2.5" onClick={e => e.stopPropagation()}>
                                                 <EpisodeTracker item={show} onUpdate={fetchShows} />
                                             </div>
                                         </motion.div>
@@ -819,7 +819,7 @@ export default function MyShowsPage() {
                             <div className="w-px h-5 bg-white/20 dark:bg-zinc-300" />
                             <button
                                 onClick={handleBulkMarkCompleted}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold hover:bg-red-600 transition-colors"
                             >
                                 <FaCheck size={9} />
                                 {t('myShows.markCompleted')}

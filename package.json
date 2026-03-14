@@ -16,6 +16,7 @@
     "csv-parser": "^3.2.0",
     "firebase": "^12.5.0",
     "framer-motion": "^12.23.25",
+    "howler": "^2.2.4",
     "jspdf": "^3.0.4",
     "rc-slider": "^11.1.9",
     "react": "^19.1.1",
@@ -26,7 +27,8 @@
     "react-tooltip": "^5.30.0",
     "react-zoom-pan-pinch": "^3.7.0",
     "recharts": "^3.6.0",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.1.17",
+    "use-sound": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

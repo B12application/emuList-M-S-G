@@ -1,4 +1,4 @@
-import { FaTrash, FaCheck } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaEdit, FaSyncAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 
@@ -6,16 +6,17 @@ interface TodoCardProps {
   todo: PlannerMeeting;
   onToggle: (id: string, currentStatus: boolean) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (todo: PlannerMeeting) => void;
 }
 
-export default function TodoCard({ todo, onToggle, onDelete }: TodoCardProps) {
+export default function TodoCard({ todo, onToggle, onDelete, onEdit }: TodoCardProps) {
   const isCompleted = !!todo.isCompleted;
 
   return (
     <div 
       className={`bg-white dark:bg-zinc-900 border ${
         isCompleted ? 'border-emerald-200 dark:border-emerald-900/50 opacity-60' : 'border-stone-200 dark:border-zinc-800'
-      } rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-md group cursor-pointer`}
+      } rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-md group cursor-pointer relative`}
       onClick={() => todo.id && onToggle(todo.id, isCompleted)}
     >
       
@@ -37,7 +38,7 @@ export default function TodoCard({ todo, onToggle, onDelete }: TodoCardProps) {
       {/* Details */}
       <div className="flex-1 min-w-0 pr-2">
         <div className="flex items-center justify-between gap-2">
-          <div className="relative">
+          <div className="relative flex items-center gap-2 min-w-0">
             <h4 className={`font-semibold transition-all ${
               isCompleted 
                 ? 'text-stone-400 dark:text-zinc-500' 
@@ -45,6 +46,9 @@ export default function TodoCard({ todo, onToggle, onDelete }: TodoCardProps) {
             } truncate`}>
               {todo.title}
             </h4>
+            {todo.isRecurring && (
+              <FaSyncAlt size={10} className="text-stone-400 dark:text-zinc-600 animate-spin-slow" title="Tekrarlayan Seri" />
+            )}
             {/* Strikethrough line animation */}
             {isCompleted && (
               <motion.div 
@@ -56,6 +60,19 @@ export default function TodoCard({ todo, onToggle, onDelete }: TodoCardProps) {
           </div>
           
           <div className="flex gap-2 items-center flex-shrink-0">
+            {onEdit && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(todo);
+                }}
+                className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all"
+                title="Düzenle"
+              >
+                <FaEdit size={12} />
+              </button>
+            )}
+
             {onDelete && (
               <button 
                 onClick={(e) => {
@@ -70,6 +87,12 @@ export default function TodoCard({ todo, onToggle, onDelete }: TodoCardProps) {
             )}
           </div>
         </div>
+        
+        {todo.notes && (
+          <p className="text-xs text-stone-500 dark:text-zinc-500 mt-1 line-clamp-2">
+            {todo.notes}
+          </p>
+        )}
       </div>
     </div>
   );

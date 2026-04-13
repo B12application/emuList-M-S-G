@@ -11,7 +11,7 @@ import QuickAddModal from '../components/planner/QuickAddModal';
 import MonthlyView from '../components/planner/MonthlyView';
 import WeeklyView from '../components/planner/WeeklyView';
 import { useAuth } from '../context/AuthContext';
-import { getUserMeetings, deleteMeeting, toggleTodoStatus } from '../../backend/services/plannerService';
+import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
 import type { PlannerMeeting } from '../../backend/types/planner';
 import { showMarqueeToast } from '../components/MarqueeToast';
@@ -22,12 +22,16 @@ export default function PlannerPage() {
   const [meetings, setMeetings] = useState<PlannerMeeting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
   const [activeTab, setActiveTab] = useState<'daily'|'weekly'|'monthly'>('monthly');
 
   const loadData = async () => {
     if (!user) return;
     setIsLoading(true);
     try {
+      // Sync recurring items first
+      await syncRecurringItems(user.uid);
+      
       const dbMeetings = await getUserMeetings(user.uid);
       const gsMatches = await getUpcomingGSMatches();
       setMeetings([...dbMeetings, ...gsMatches]);
@@ -40,7 +44,6 @@ export default function PlannerPage() {
 
   useEffect(() => {
     loadData();
-    // Auto sync every 5 days could be handled here or simply rely on loadData when component mounts
   }, [user]);
 
   const handleDelete = async (id: string) => {
@@ -51,6 +54,11 @@ export default function PlannerPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleEdit = (item: PlannerMeeting) => {
+    setModalInitialData(item);
+    setIsModalOpen(true);
   };
 
   const handleToggleTodo = async (id: string, currentStatus: boolean) => {
@@ -144,7 +152,12 @@ export default function PlannerPage() {
               ) : currentDayMeetings.length > 0 ? (
                 <div className="space-y-3">
                   {currentDayMeetings.map((meeting, idx) => (
-                    <MeetingCard key={meeting.id || idx} meeting={meeting} onDelete={handleDelete} />
+                    <MeetingCard 
+                      key={meeting.id || idx} 
+                      meeting={meeting} 
+                      onDelete={handleDelete} 
+                      onEdit={handleEdit}
+                    />
                   ))}
                 </div>
               ) : (
@@ -168,6 +181,7 @@ export default function PlannerPage() {
                         todo={todo} 
                         onToggle={handleToggleTodo} 
                         onDelete={handleDelete} 
+                        onEdit={handleEdit}
                       />
                     ))}
                   </div>
@@ -214,9 +228,13 @@ export default function PlannerPage() {
 
       <QuickAddModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={() => {
+          setIsModalOpen(false);
+          setModalInitialData(null);
+        }} 
         selectedDate={selectedDate}
         onAdded={loadData}
+        initialData={modalInitialData}
       />
     </motion.div>
   );

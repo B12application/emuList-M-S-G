@@ -1,6 +1,6 @@
 // src/frontend/components/planner/RecurringManagerModal.tsx
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FaTimes, FaUndo, FaTrash, FaSyncAlt, FaCalendarCheck } from 'react-icons/fa';
 import { getRecurringMasters, deleteRecurringSeries } from '../../../backend/services/plannerService';
 import type { PlannerMeeting } from '../../../backend/types/planner';
@@ -40,7 +40,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
 
   const handleDeleteSeries = async (groupId: string) => {
     if (!confirm('Bu seriyi ve tüm gelecek haftalardaki kopyalarını silmek istediğinize emin misiniz?')) return;
-    
+
     try {
       await deleteRecurringSeries(groupId);
       toast.success('Seri tamamen silindi');
@@ -70,7 +70,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
             </h2>
             <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">Tekrarlayan görevlerinizi yönetin</p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-stone-200 dark:hover:bg-zinc-700 rounded-xl transition-colors"
           >
@@ -87,17 +87,16 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
           ) : masters.length > 0 ? (
             <div className="space-y-4">
               {masters.map((master) => (
-                <div 
+                <div
                   key={master.id}
                   className="bg-stone-50 dark:bg-zinc-800/40 border border-stone-200 dark:border-zinc-800 p-4 rounded-2xl flex items-center justify-between group"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        master.itemType === 'meeting' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' :
-                        master.itemType === 'todo' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' :
-                        'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${master.itemType === 'meeting' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' :
+                          master.itemType === 'todo' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' :
+                            'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                        }`}>
                         {master.itemType === 'meeting' ? 'Toplantı' : master.itemType === 'todo' ? 'Görev' : 'Jira'}
                       </span>
                       <span className="text-[10px] font-semibold text-stone-400 dark:text-zinc-500">
@@ -112,7 +111,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
                       Her Hafta · Gelecek 3 hafta aktif
                     </p>
                   </div>
-                  
+
                   <button
                     onClick={() => handleDeleteSeries(master.recurringGroupId!)}
                     className="p-3 bg-stone-100 hover:bg-rose-100 dark:bg-zinc-800 dark:hover:bg-rose-900/30 text-stone-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 rounded-xl transition-all"
@@ -137,7 +136,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
         </div>
 
         <div className="p-6 bg-stone-50 dark:bg-zinc-800/30 border-t border-stone-100 dark:border-zinc-800">
-          <button 
+          <button
             onClick={onClose}
             className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl font-bold shadow-lg shadow-stone-900/10 transition-transform active:scale-95"
           >

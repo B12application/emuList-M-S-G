@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaCalendarPlus, FaTasks, FaSyncAlt, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { addMeeting, updateMeeting } from '../../../backend/services/plannerService';
-import { format, addMinutes, parse } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 import { showMarqueeToast } from '../MarqueeToast';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 
@@ -96,7 +96,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
           mediaType: 'movie'
         });
       }
-      
+
       onAdded();
       onClose();
     } catch (err) {
@@ -136,8 +136,8 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`flex-1 py-2 text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${activeTab === tab
-                        ? 'bg-white dark:bg-zinc-700 shadow text-rose-600 dark:text-rose-400'
-                        : 'text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                      ? 'bg-white dark:bg-zinc-700 shadow text-rose-600 dark:text-rose-400'
+                      : 'text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200'
                       }`}
                   >
                     {tab === 'meeting' ? <FaCalendarPlus size={12} /> : <FaTasks size={12} />}
@@ -265,8 +265,8 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 type="submit"
                 disabled={isSubmitting || !title.trim()}
                 className={`w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:active:scale-100 active:scale-95 ${activeTab === 'todo'
-                    ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
-                    : activeTab === 'jira' 
+                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
+                  : activeTab === 'jira'
                     ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
                     : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
                   }`}

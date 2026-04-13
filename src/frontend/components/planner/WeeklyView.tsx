@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { format, startOfWeek, addDays, isSameDay, isToday } from 'date-fns';
+import { format, startOfWeek, addDays, isToday } from 'date-fns';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle } from 'react-icons/fa';
@@ -58,10 +58,10 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
       <div className="grid grid-cols-7 border-b border-stone-200 dark:border-zinc-800">
         {weekDays.map((day, idx) => {
           const dayMatches = getItemsForDay(day).filter(m => m.itemType === 'match');
-          
+
           return (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`py-3 text-center border-r relative last:border-r-0 border-stone-200 dark:border-zinc-800 ${isToday(day) ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}
             >
               <div className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
@@ -86,10 +86,10 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
         {weekDays.map((day, idx) => {
           // Maçları ana listeden ayırıyoruz, çünkü onları Date/Tarih kısmının yanına çizdik
           const dayItems = getItemsForDay(day).filter(m => m.itemType !== 'match');
-          
+
           return (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`p-2 border-r last:border-r-0 border-stone-200 dark:border-zinc-800 transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/30 cursor-pointer ${isToday(day) ? 'bg-amber-50/30 dark:bg-amber-900/5' : ''}`}
               onClick={() => onSelectDate(day)}
             >

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getShiftInfo } from '../utils/shiftLogic';
-import { FaCalendarDay, FaGift, FaTasks, FaExclamationCircle } from 'react-icons/fa';
+import { FaCalendarDay, FaGift, FaTasks } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings } from '../../backend/services/plannerService';
-import { format, differenceInDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function StatusBanner() {
@@ -12,33 +11,33 @@ export default function StatusBanner() {
   const [shiftMsg, setShiftMsg] = useState<string>('');
   const [upcomingTasks, setUpcomingTasks] = useState<any[]>([]);
   const [isHovered, setIsHovered] = useState(false);
-  
+
   useEffect(() => {
     const fetchTasks = async () => {
       if (!user) return;
       try {
         const meetings = await getUserMeetings(user.uid);
         const now = new Date();
-        
+
         const upcoming = meetings.filter(m => {
           if (m.isCompleted) return false;
-          
+
           const targetDateStr = m.dueDate || m.date;
           if (!targetDateStr) return false;
 
           let startTime = m.startTime || '00:00';
           let endTime = m.endTime || startTime;
-          
+
           const startDateTime = new Date(`${targetDateStr}T${startTime}`);
           const endDateTime = new Date(`${targetDateStr}T${endTime}`);
           // If no end time was provided, assume meeting is 1 hour long for filtering
           if (!m.endTime && m.startTime) {
-             endDateTime.setHours(endDateTime.getHours() + 1);
+            endDateTime.setHours(endDateTime.getHours() + 1);
           }
 
           // If meeting already finished, don't show it
           if (endDateTime.getTime() < now.getTime()) return false;
-          
+
           // Show upcoming within next ~72 hours (3 days)
           const diffHour = (startDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
           return diffHour <= 72; // Show only upcoming in 72 hours
@@ -47,7 +46,7 @@ export default function StatusBanner() {
           const d2 = new Date(`${b.dueDate || b.date}T${b.startTime || '00:00'}`).getTime();
           return d1 - d2;
         });
-        
+
         setUpcomingTasks(upcoming);
       } catch (err) {
         console.error(err);
@@ -62,7 +61,7 @@ export default function StatusBanner() {
     const updateTime = () => {
       const now = new Date();
       const shift = getShiftInfo(now);
-      
+
       if (shift.type === 'Tatil') {
         setShiftMsg(`Tatil (${shift.dayIndex}. Gün)`);
         setTimeRemaining('İyi dinlenmeler');
@@ -70,9 +69,9 @@ export default function StatusBanner() {
         const [hours, mins] = shift.startTime!.split(':').map(Number);
         const shiftStart = new Date();
         shiftStart.setHours(hours, mins, 0, 0);
-        
+
         const diffMs = shiftStart.getTime() - now.getTime();
-        
+
         if (diffMs > 0) {
           const h = Math.floor(diffMs / (1000 * 60 * 60));
           const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -83,7 +82,7 @@ export default function StatusBanner() {
           let endMins = parseInt(shift.endTime!.split(':')[1]);
           const shiftEnd = new Date();
           if (endHours < hours || (endHours === hours && endMins < mins)) {
-             shiftEnd.setDate(shiftEnd.getDate() + 1);
+            shiftEnd.setDate(shiftEnd.getDate() + 1);
           }
           shiftEnd.setHours(endHours, endMins, 0, 0);
           const diffEndMs = shiftEnd.getTime() - now.getTime();
@@ -100,21 +99,21 @@ export default function StatusBanner() {
         }
       }
     };
-    
+
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div 
+    <div
       className="hidden relative lg:flex items-center gap-2 bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/30 text-amber-700 dark:text-amber-400 py-1.5 px-3 rounded-full text-[11px] font-bold tracking-wide shadow-sm h-9 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {shiftMsg.includes('Tatil') ? <FaGift className="text-rose-500" /> : <FaCalendarDay className="text-amber-600 dark:text-amber-500" />}
       <span>{shiftMsg} <span className="opacity-60 mx-1">|</span> {timeRemaining}</span>
-      
+
       {upcomingTasks.length > 0 && (
         <span className="flex items-center justify-center bg-rose-500 text-white !w-4 !h-4 rounded-full text-[9px] -ml-1">
           {upcomingTasks.length}
@@ -142,12 +141,12 @@ export default function StatusBanner() {
                     const st = t.startTime || '00:00';
                     const startDateTime = new Date(`${targetStr}T${st}`);
                     const now = new Date();
-                    
+
                     const diffMs = startDateTime.getTime() - now.getTime();
-                    
+
                     let timeRemainingLabel = "";
                     let highlightClass = "";
-                    
+
                     if (diffMs < 0) {
                       timeRemainingLabel = "Devam Ediyor";
                       highlightClass = "text-emerald-500 font-bold";
@@ -155,7 +154,7 @@ export default function StatusBanner() {
                       const diffMins = Math.floor(diffMs / 60000);
                       const diffHours = Math.floor(diffMins / 60);
                       const remainsMins = diffMins % 60;
-                      
+
                       if (diffHours === 0) {
                         timeRemainingLabel = `${remainsMins} dk kaldı`;
                         highlightClass = "text-rose-500 font-extrabold";

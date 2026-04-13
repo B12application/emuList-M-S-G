@@ -134,9 +134,9 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     // Diziler için toplam sezon sayısını ekle
                     totalSeasons: type === 'series' && data.totalSeasons ? parseInt(data.totalSeasons, 10) : undefined,
                     // Çıkış tarihi
-                    releaseDate: data.Released && data.Released !== 'N/A' ? data.Released : undefined,
+                    releaseDate: data.Released && data.Released !== 'N/A' ? data.Released : '',
                     // Süre bilgisi
-                    runtime: data.Runtime && data.Runtime !== 'N/A' ? data.Runtime : undefined,
+                    runtime: data.Runtime && data.Runtime !== 'N/A' ? data.Runtime : '',
                     // IMDb ID
                     imdbId: data.imdbID
                 };
@@ -150,7 +150,7 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     author: formatAuthors(data.volumeInfo.authors),
                     genres: data.volumeInfo.categories || [],
                     // Kitaplar için yayın tarihi
-                    releaseDate: data.volumeInfo.publishedDate || undefined
+                    releaseDate: data.volumeInfo.publishedDate || ''
                 };
             } else {
                 const data = await getGameById(Number(result.id));
@@ -161,7 +161,7 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     rating: data.rating ? normalizeGameRating(data.rating) : '0',
                     genres: data.genres ? data.genres.map((g: any) => g.name) : [],
                     // Oyunlar için çıkış tarihi
-                    releaseDate: data.released || undefined
+                    releaseDate: data.released || ''
                 };
             }
 

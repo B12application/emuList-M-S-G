@@ -8,7 +8,7 @@ export const addMeeting = async (
   isRecurring: boolean = false
 ): Promise<string> => {
   try {
-    const recurringGroupId = isRecurring ? crypto.randomUUID() : undefined;
+    const recurringGroupId = isRecurring ? crypto.randomUUID() : null;
     
     const docData: any = {
       ...meeting,
@@ -76,15 +76,20 @@ export const syncRecurringItems = async (userId: string): Promise<void> => {
         
         if (checkSnap.empty) {
           // Eksik haftayı oluştur (Master DEĞİL, normal instance olarak)
-          await addDoc(collection(db, 'meetings'), {
+          // id: undefined is removed by not passing it
+          const newInstance = {
             ...master,
-            id: undefined, // ensure new id
             date: targetDate,
             isRecurringMaster: false, // Instances are not masters
             createdAt: serverTimestamp(),
             // Don't copy notes if they were meeting-specific (optional)
-            notes: master.itemType === 'meeting' ? '' : master.notes 
-          });
+            notes: master.itemType === 'meeting' ? '' : (master.notes || '') 
+          };
+          
+          // Remove ID field if it exists to avoid undefined error
+          const { id, ...dataToSave } = newInstance;
+          
+          await addDoc(collection(db, 'meetings'), dataToSave);
         }
       }
 

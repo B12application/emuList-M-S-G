@@ -111,7 +111,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
           await createActivity(
             user.uid,
             user.displayName || 'User',
-            user.photoURL || undefined,
+            user.photoURL || '',
             'media_watched',
             item
           );
@@ -155,7 +155,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
           await createActivity(
             user.uid,
             user.displayName || 'User',
-            user.photoURL || undefined,
+            user.photoURL || '',
             newValue ? 'favorite_added' : 'favorite_removed',
             item
           );

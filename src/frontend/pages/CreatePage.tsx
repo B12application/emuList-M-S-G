@@ -37,7 +37,7 @@ export default function CreatePage() {
   const defaultType = searchParams.get('type') as MediaType | null;
 
   // Form state
-  const [type, setType] = useState<MediaType | undefined>(defaultType || undefined);
+  const [type, setType] = useState<MediaType | null>(defaultType || 'movie');
   const [title, setTitle] = useState('');
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
@@ -108,11 +108,11 @@ export default function CreatePage() {
     type: type || 'movie',
     createdAt: Timestamp.now(),
     author: type === 'book' ? author : undefined,
-    genre: genres.join(', ') || undefined,
-    tags: tags.length > 0 ? tags : undefined,
-    releaseDate: releaseDate || undefined,
-    runtime: runtime || undefined,
-    imdbId: imdbId || undefined,
+    genre: genres.join(', ') || '',
+    tags: tags.length > 0 ? tags : [],
+    releaseDate: releaseDate || '',
+    runtime: runtime || '',
+    imdbId: imdbId || '',
   };
 
   // Submit handler
@@ -171,7 +171,7 @@ export default function CreatePage() {
       }
 
       // Create activity
-      await createActivity(user.uid, user.displayName || 'User', user.photoURL || undefined, 'media_added', {
+      await createActivity(user.uid, user.displayName || 'User', user.photoURL || '', 'media_added', {
         ...newItem, id: docRef.id
       });
 

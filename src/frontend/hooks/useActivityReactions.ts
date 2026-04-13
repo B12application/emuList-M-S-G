@@ -97,7 +97,7 @@ export default function useActivityReactions(activityId: string) {
                 activityId,
                 user.uid,
                 user.displayName || 'User',
-                userAvatar || user.photoURL || undefined,
+                userAvatar || user.photoURL || '',
                 text.trim(),
                 activityOwnerId,
                 userGender

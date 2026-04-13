@@ -28,7 +28,7 @@ export default function ListsPage() {
 
         createList({
             name: newListName.trim(),
-            description: newListDesc.trim() || undefined,
+            description: newListDesc.trim(),
             color: newListColor,
             isPublic: newListPublic,
             itemIds: []

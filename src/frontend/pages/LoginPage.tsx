@@ -22,8 +22,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-
-
   useEffect(() => {
     if (user) {
       navigate('/');
@@ -60,8 +58,12 @@ export default function LoginPage() {
         await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL || '',
           gender: ''
         });
+      } else {
+        await setDoc(userDocRef, { photoURL: user.photoURL || '' }, { merge: true });
       }
       navigate('/');
     } catch (err: any) {
@@ -73,139 +75,108 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-stone-950 font-sans relative overflow-hidden">
-
-      {/* Page Background */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src="/auth-bg.png"
-          alt="Background"
-          className="w-full h-full object-cover blur-md scale-105 opacity-40"
-        />
-        <div className="absolute inset-0 bg-stone-950/70"></div>
+    <div className="flex min-h-screen w-full bg-white dark:bg-black text-black dark:text-white font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+      
+      {/* MOBILE-ONLY TOP HEADER */}
+      <div className="lg:hidden absolute top-0 w-full p-6 flex justify-between items-center z-50">
+        <h1 className="text-xl font-bold tracking-widest font-[Orbitron]">B12</h1>
+        <div className="flex items-center gap-5">
+            <button onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')} className="text-sm font-semibold uppercase opacity-60 hover:opacity-100 transition-opacity">{language}</button>
+            <Link to="/" className="text-xl opacity-60 hover:opacity-100 transition-opacity"><FaArrowLeft /></Link>
+        </div>
       </div>
 
-      {/* Modal Container */}
-      <div className="relative z-10 w-full max-w-5xl h-[85vh] max-h-[800px] bg-stone-950 rounded-3xl shadow-2xl overflow-hidden flex border border-white/5 animate-fade-in-up mx-4">
-
-        {/* LEFT SIDE - VISUAL */}
-        <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-stone-900">
-          {/* Background Image with Overlay */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src="/auth-bg.png"
-              alt="Library Atmosphere"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/60 to-stone-900/40 mix-blend-multiply"></div>
-            <div className="absolute inset-0 bg-black/20"></div>
-          </div>
-
-          {/* Branding (Top Left) */}
-          <div className="relative z-10">
-            <h1 className="text-4xl font-black tracking-widest text-white font-[Orbitron] drop-shadow-lg">
-              EMU
-            </h1>
-          </div>
-
-          {/* Back Link (Top Right) */}
-          <div className="absolute top-12 right-12 z-10">
-            <Link to="/" className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all text-sm font-medium text-white/90 hover:text-white">
-              <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" /> {t('common.back') || 'Geri Dön'}
-            </Link>
-          </div>
-
-          {/* Caption (Bottom) */}
-          <div className="relative z-10 max-w-lg mb-12">
-            <h2 className="text-4xl font-bold leading-tight mb-6 drop-shadow-xl text-white">
-              Capturing Moments,<br />
-              <span className="text-amber-400">Creating Memories</span>
-            </h2>
+      {/* LEFT SIDE - FORM CONTENT */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-16 lg:p-24 relative z-10 overflow-y-auto">
+        
+        {/* DESKTOP HEADER */}
+        <div className="hidden lg:flex w-full justify-between items-center absolute top-12 left-12 right-12 pr-24">
+          <Link to="/" className="flex items-center gap-3 text-sm font-semibold opacity-60 hover:opacity-100 transition-opacity"><FaArrowLeft /> {t('common.back') || 'Geri'}</Link>
+          <div className="flex gap-4">
+            <button onClick={() => setLanguage('tr')} className={`text-sm font-semibold uppercase transition-opacity ${language === 'tr' ? 'opacity-100 text-neutral-500' : 'opacity-40 hover:opacity-100'}`}>TR</button>
+            <button onClick={() => setLanguage('en')} className={`text-sm font-semibold uppercase transition-opacity ${language === 'en' ? 'opacity-100 text-neutral-500' : 'opacity-40 hover:opacity-100'}`}>EN</button>
           </div>
         </div>
 
-        {/* RIGHT SIDE - FORM */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 sm:p-12 bg-stone-950 relative overflow-y-auto">
-          {/* Mobile Branding */}
-          <div className="lg:hidden absolute top-8 left-8">
-            <h1 className="text-2xl font-black tracking-widest text-white font-[Orbitron]">EMU</h1>
-          </div>
-          <div className="lg:hidden absolute top-8 right-8">
-            <Link to="/" className="text-stone-400 hover:text-white"><FaArrowLeft /></Link>
+        <div className="w-full max-w-sm mx-auto mt-16 md:mt-0 pt-10 sm:pt-0 pb-10 animate-fade-in-up">
+          <div className="mb-10 space-y-2">
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tight">{t('auth.login') || 'Giriş Yap'}</h3>
+            <p className="text-sm font-medium opacity-60">
+              {t('auth.dontHaveAccount') || 'Hesabınız yok mu?'} <Link to="/signup" className="underline underline-offset-4 hover:opacity-100 opacity-80 transition-opacity">{t('auth.signup') || 'Kayıt Ol'}</Link>
+            </p>
           </div>
 
-          {/* Language Switcher (Absolute Top Right for Desktop, relative for Mobile) */}
-          <div className="absolute top-8 right-8 hidden lg:flex gap-2">
-            <button onClick={() => setLanguage('tr')} className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${language === 'tr' ? 'bg-amber-500 text-stone-900' : 'bg-stone-800 text-stone-400 hover:text-white'}`}>TR</button>
-            <button onClick={() => setLanguage('en')} className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${language === 'en' ? 'bg-amber-500 text-stone-900' : 'bg-stone-800 text-stone-400 hover:text-white'}`}>EN</button>
-          </div>
-
-          <div className="w-full max-w-sm space-y-6">
-            <div className="text-center lg:text-left">
-              <h3 className="text-3xl font-bold text-white mb-2">{t('auth.login')}</h3>
-              <p className="text-stone-400 text-sm">
-                {t('auth.dontHaveAccount')} <Link to="/signup" className="text-amber-500 hover:text-amber-400 font-medium transition-colors hover:underline underline-offset-4">{t('auth.signup')}</Link>
-              </p>
+          <form className="space-y-5" onSubmit={handleLogin}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium mb-1.5 opacity-80">{t('auth.email') || 'E-posta adresi'}</label>
+              <input
+                id="email" type="email" required value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-transparent border-b border-black/20 dark:border-white/20 text-black dark:text-white placeholder-black/30 dark:placeholder-white/30 focus:border-black dark:focus:border-white focus:outline-none py-2 transition-colors text-base"
+                placeholder="name@example.com"
+              />
             </div>
 
-            <form className="space-y-5 mt-6" onSubmit={handleLogin}>
-              <div className="space-y-4">
-                <div className="group">
-                  <label htmlFor="email" className="block text-xs font-medium text-stone-400 mb-1.5 ml-1 transition-colors group-focus-within:text-amber-500">{t('auth.email')}</label>
-                  <input
-                    id="email" type="email" required value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-600 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 focus:outline-hidden transition-all text-sm"
-                    placeholder="name@example.com"
-                  />
-                </div>
-                <div className="group">
-                  <div className="flex justify-between items-center mb-1.5 ml-1">
-                    <label htmlFor="password" className="block text-xs font-medium text-stone-400 transition-colors group-focus-within:text-amber-500">{t('auth.password')}</label>
-                    <Link to="/sifremi-unuttum" className="text-xs text-stone-500 hover:text-stone-300 transition-colors">{t('auth.forgotPassword')}</Link>
-                  </div>
-                  <input
-                    id="password" type="password" required value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-600 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 focus:outline-hidden transition-all text-sm"
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium mb-1.5 opacity-80">{t('auth.password') || 'Şifre'}</label>
+              <input
+                id="password" type="password" required value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-transparent border-b border-black/20 dark:border-white/20 text-black dark:text-white placeholder-black/30 dark:placeholder-white/30 focus:border-black dark:focus:border-white focus:outline-none py-2 transition-colors text-base"
+                placeholder="••••••"
+              />
+            </div>
+            
+            <div className="flex justify-between items-center py-2">
+                <Link to="/sifremi-unuttum" className="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity">Şifremi Unuttum</Link>
+            </div>
 
-              {error && (<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center font-medium animate-pulse">{error}</div>)}
+            {error && (<div className="py-2 text-red-500 text-sm font-medium">{error}</div>)}
 
-              <button type="submit" disabled={loading || googleLoading}
-                className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-sm shadow-lg shadow-amber-900/20 hover:shadow-amber-900/40 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            <button type="submit" disabled={loading || googleLoading}
+              className="w-full py-3.5 bg-black dark:bg-white text-white dark:text-black font-semibold text-sm hover:opacity-80 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 rounded-[4px]"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-4 h-4 border-2 border-white/30 dark:border-black/30 border-t-current rounded-full animate-spin"></div>
+                  {t('auth.signingIn') || 'Giriş Yapılıyor'}
+                </div>
+              ) : (t('auth.login') || 'Giriş Yap')}
+            </button>
+
+            <div className="py-2 flex items-center gap-4 opacity-30">
+              <div className="h-[1px] flex-grow bg-current"></div>
+              <span className="text-xs font-semibold">{t('auth.or') || 'Veya'}</span>
+              <div className="h-[1px] flex-grow bg-current"></div>
+            </div>
+
+            <button
+                type="button"
+                disabled={loading || googleLoading}
+                onClick={handleGoogleLogin}
+                className="w-full py-3.5 border border-black dark:border-white flex justify-center items-center gap-2 font-semibold text-sm hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all rounded-[4px] group"
               >
-                {loading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    {t('auth.loggingIn')}
-                  </div>
-                ) : t('auth.login')}
-              </button>
+                <FaGoogle className="text-base" /> Google ile Devam Et
+            </button>
+          </form>
+        </div>
+      </div>
 
-              <div className="relative py-3">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-stone-800"></div></div>
-                <div className="relative flex justify-center text-xs"><span className="px-4 bg-stone-950 text-stone-500">{t('auth.or')}</span></div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  disabled={loading || googleLoading}
-                  onClick={handleGoogleLogin}
-                  className="flex justify-center items-center gap-2 px-4 py-3 rounded-xl border border-stone-800 bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white font-semibold transition-all hover:border-stone-700 text-sm"
-                >
-                  <FaGoogle className="text-lg" /> Google
-                </button>
-                <button type="button" disabled className="flex justify-center items-center gap-2 px-4 py-3 rounded-xl border border-stone-800 bg-stone-900 opacity-50 cursor-not-allowed text-stone-500 font-semibold grayscale text-sm">
-                  Apple
-                </button>
-              </div>
-            </form>
+      {/* RIGHT SIDE - VISUAL (DESKTOP ONLY) */}
+      <div className="hidden lg:flex flex-col lg:w-1/2 relative bg-zinc-50 dark:bg-zinc-900 overflow-hidden items-center justify-center border-l border-black/5 dark:border-white/5 p-12">
+        <div className="absolute inset-0">
+          <img src="/auth-bg.png" alt="Atmosphere" className="w-full h-full object-cover opacity-[0.15] dark:opacity-[0.05] grayscale mix-blend-multiply dark:mix-blend-screen" />
+        </div>
+        <div className="relative z-10 text-center flex flex-col items-center">
+          <div className="w-16 h-16 border-2 border-black dark:border-white rounded-full flex items-center justify-center mb-6">
+            <span className="font-bold font-[Orbitron] tracking-wider">B12</span>
           </div>
+          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">
+            Emu Sport App ile <br/>
+            <span className="opacity-50">Sürecinizi Takip Edin</span>
+          </h2>
+          <div className="w-8 h-1 bg-black/20 dark:bg-white/20 my-6 rounded-full"></div>
+          <p className="font-medium text-sm text-neutral-500 uppercase tracking-widest">Mustafa Ulusoy</p>
         </div>
       </div>
     </div>

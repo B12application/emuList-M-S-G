@@ -179,6 +179,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                 </div>
 
                 <NavLink to="/my-shows" className={getNavCls}>{t('myShows.title')}</NavLink>
+                <NavLink to="/planner" className={getNavCls}>Takvim</NavLink>
                 <NavLink to="/feed" className={getNavCls}>{t('nav.feed')}</NavLink>
                 <NavLink to="/map" className={getNavCls}>{t('nav.map')}</NavLink>
               </nav>

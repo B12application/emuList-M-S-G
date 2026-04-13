@@ -1,6 +1,6 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaUsersCog } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaUsersCog, FaCalendarAlt } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -70,6 +70,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     { to: '/book', icon: FaBook, label: t('nav.books'), color: 'purple' },
     // Diğerleri
     { to: '/all', icon: FaClone, label: t('nav.all'), color: 'rose' },
+    { to: '/planner', icon: FaCalendarAlt, label: 'Takvim/Plan', color: 'emerald' },
     { to: '/feed', icon: FaHistory, label: t('nav.feed'), color: 'violet' },
     { to: '/my-shows', icon: FaTv, label: t('myShows.title'), color: 'purple' },
     { to: '/map', icon: FaMap, label: t('nav.map'), color: 'indigo' },

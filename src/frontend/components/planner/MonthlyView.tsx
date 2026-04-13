@@ -74,9 +74,21 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
               `}
             >
               <div className="flex justify-between items-start">
-                <span className={`flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold ${isToday ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20' : 'text-stone-700 dark:text-zinc-300'}`}>
-                  {format(day, dateFormat)}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className={`flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold ${isToday ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20' : 'text-stone-700 dark:text-zinc-300'}`}>
+                    {format(day, dateFormat)}
+                  </span>
+                  {/* GS Match — small dot + time */}
+                  {dayMeetings.filter(m => m.itemType === 'match').length > 0 && (
+                    <span 
+                      className="flex items-center gap-0.5 cursor-help" 
+                      title={`${dayMeetings.filter(m => m.itemType === 'match')[0].title} — ${dayMeetings.filter(m => m.itemType === 'match')[0].startTime}`}
+                    >
+                      <span className="text-sm">⚽</span>
+                      <span className="text-[9px] font-bold text-red-500 dark:text-red-400">{dayMeetings.filter(m => m.itemType === 'match')[0].startTime}</span>
+                    </span>
+                  )}
+                </div>
                 
                 {/* Mini Shift Indicator Box */}
                 {isCurrentMonth && (
@@ -84,15 +96,19 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                 )}
               </div>
               
-              <div className="mt-2 space-y-1">
-                {dayMeetings.slice(0, 3).map((m, i) => (
-                  <div key={m.id || i} className="text-[9px] sm:text-[10px] truncate px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300 font-semibold border border-rose-100 dark:border-rose-900/50">
+              <div className="mt-1.5 space-y-1">
+                {dayMeetings.filter(m => m.itemType !== 'match').slice(0, 3).map((m, i) => (
+                  <div key={m.id || i} className={`text-[9px] sm:text-[10px] truncate px-1.5 py-0.5 rounded font-semibold border 
+                    ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' : 
+                      m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
+                      'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
+                  >
                     <span className="opacity-70 mr-1">{m.startTime}</span>{m.title}
                   </div>
                 ))}
-                {dayMeetings.length > 3 && (
+                {dayMeetings.filter(m => m.itemType !== 'match').length > 3 && (
                   <div className="text-[10px] text-stone-500 dark:text-zinc-500 font-medium px-1">
-                    +{dayMeetings.length - 3} daha
+                    +{dayMeetings.filter(m => m.itemType !== 'match').length - 3} daha
                   </div>
                 )}
               </div>

@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, where, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import type { PlannerMeeting } from '../types/planner';
 
@@ -44,6 +44,19 @@ export const deleteMeeting = async (meetingId: string): Promise<void> => {
     await deleteDoc(doc(db, 'meetings', meetingId));
   } catch (error) {
     console.error('Error deleting meeting:', error);
+    throw error;
+  }
+};
+
+// Görev Durumunu Değiştirme (Tamamlandı / Yapılmadı)
+export const toggleTodoStatus = async (meetingId: string, isCompleted: boolean): Promise<void> => {
+  try {
+    const meetingRef = doc(db, 'meetings', meetingId);
+    await updateDoc(meetingRef, {
+      isCompleted
+    });
+  } catch (error) {
+    console.error('Error toggling todo status:', error);
     throw error;
   }
 };

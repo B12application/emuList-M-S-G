@@ -12,6 +12,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { isAdmin } from '../../backend/config/adminConfig';
+import StatusBanner from './StatusBanner';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -160,6 +161,12 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                             </div>
                             {t('nav.series')}
                           </NavLink>
+                          <NavLink to="/my-shows" className={getDropdownItemCls}>
+                            <div className="p-1.5 bg-rose-50 dark:bg-rose-900/30 rounded-lg text-rose-500">
+                              <FaTv />
+                            </div>
+                            {t('myShows.title')}
+                          </NavLink>
                           <NavLink to="/game" className={getDropdownItemCls}>
                             <div className="p-1.5 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-500">
                               <FaGamepad />
@@ -178,10 +185,8 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                   </AnimatePresence>
                 </div>
 
-                <NavLink to="/my-shows" className={getNavCls}>{t('myShows.title')}</NavLink>
                 <NavLink to="/planner" className={getNavCls}>Takvim</NavLink>
                 <NavLink to="/feed" className={getNavCls}>{t('nav.feed')}</NavLink>
-                <NavLink to="/map" className={getNavCls}>{t('nav.map')}</NavLink>
               </nav>
             )}
 
@@ -189,6 +194,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
             <div className="flex items-center gap-3">
               {user ? (
                 <>
+                  <StatusBanner />
                   <Link
                     to="/create"
                     className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-stone-200 dark:bg-zinc-800 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-all duration-300"
@@ -273,6 +279,18 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                         <div className={`w-2 h-2 rounded-full bg-violet-500 ${location.pathname.startsWith('/lists') ? 'ring-2 ring-violet-300 dark:ring-violet-600' : ''}`}></div>
                         {t('lists.title')}
                         {location.pathname.startsWith('/lists') && <span className="ml-auto text-xs">●</span>}
+                      </Link>
+
+                      <Link
+                        to="/map"
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/map'
+                          ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold'
+                          : 'text-stone-700 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-rose-600 dark:hover:text-amber-700'
+                          }`}
+                      >
+                        <div className={`w-2 h-2 rounded-full bg-indigo-500 ${location.pathname === '/map' ? 'ring-2 ring-indigo-300 dark:ring-indigo-600' : ''}`}></div>
+                        {t('nav.map')}
+                        {location.pathname === '/map' && <span className="ml-auto text-xs">●</span>}
                       </Link>
 
                       <Link

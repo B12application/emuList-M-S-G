@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaQuoteLeft, FaFilm, FaTv, FaBook, FaGamepad, FaSyncAlt } from 'react-icons/fa';
 import { getDailyQuote, getRandomQuote, type Quote } from '../data/quotes';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function QuoteWidget() {
+    const { language } = useLanguage();
     const [quote, setQuote] = useState<Quote>(getDailyQuote());
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -33,6 +35,8 @@ export default function QuoteWidget() {
             setIsRefreshing(false);
         }, 300);
     };
+
+    const displayText = language === 'tr' && quote.textTr ? quote.textTr : quote.text;
 
     return (
         <motion.div
@@ -71,7 +75,7 @@ export default function QuoteWidget() {
                         transition={{ duration: 0.3 }}
                     >
                         <p className="text-lg md:text-xl font-medium text-white leading-relaxed mb-4 italic">
-                            "{quote.text}"
+                            "{displayText}"
                         </p>
 
                         {/* Kaynak */}

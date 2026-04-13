@@ -66,13 +66,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     // Kategoriler
     { to: '/movie', icon: FaFilm, label: t('nav.movies'), color: 'blue' },
     { to: '/series', icon: FaTv, label: t('nav.series'), color: 'emerald' },
+    { to: '/my-shows', icon: FaTv, label: t('myShows.title'), color: 'purple' },
     { to: '/game', icon: FaGamepad, label: t('nav.games'), color: 'amber' },
     { to: '/book', icon: FaBook, label: t('nav.books'), color: 'purple' },
     // Diğerleri
     { to: '/all', icon: FaClone, label: t('nav.all'), color: 'rose' },
     { to: '/planner', icon: FaCalendarAlt, label: 'Takvim/Plan', color: 'emerald' },
     { to: '/feed', icon: FaHistory, label: t('nav.feed'), color: 'violet' },
-    { to: '/my-shows', icon: FaTv, label: t('myShows.title'), color: 'purple' },
     { to: '/map', icon: FaMap, label: t('nav.map'), color: 'indigo' },
     { to: '/stats', icon: FaChartBar, label: t('home.stats'), color: 'orange' },
     { to: '/lists', icon: FaListUl, label: t('lists.title') || 'Listelerim', color: 'violet' },

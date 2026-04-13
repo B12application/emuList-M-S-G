@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { FaUserEdit, FaCamera, FaHeart, FaFilm, FaTv, FaGamepad, FaBook, FaCalendarAlt, FaCheck, FaTimes, FaCog, FaStar, FaHistory, FaChevronRight, FaQuoteLeft, FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaGlobe, FaLink } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import Marquee from 'react-fast-marquee';
 import { doc, setDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db } from '../../backend/config/firebaseConfig';
@@ -373,6 +374,16 @@ export default function ProfilePage() {
                         </div>
                     )}
                 </div>
+
+                {/* MARQUEE */}
+                {!isEditing && (
+                    <div className="w-full bg-amber-500/5 border-y border-amber-500/10 py-3 mb-16 overflow-hidden backdrop-blur-sm">
+                        <Marquee gradient={false} speed={40} className="text-amber-600/50 dark:text-amber-400/50 font-bold uppercase tracking-[0.2em] text-xs">
+                            &nbsp;&bull; EmuSportApp &bull; V.I.P &bull; MOVIE LOVER &bull; SERIES ADDICT &bull; GAMER &bull; BOOKWORM &bull; EXPLORER
+                            &nbsp;&bull; EmuSportApp &bull; V.I.P &bull; MOVIE LOVER &bull; SERIES ADDICT &bull; GAMER &bull; BOOKWORM &bull; EXPLORER
+                        </Marquee>
+                    </div>
+                )}
 
                 {/* STATS ROW: Full Width Horizontal */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 max-w-4xl mx-auto">

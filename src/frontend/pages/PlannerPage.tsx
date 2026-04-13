@@ -6,10 +6,13 @@ import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
 import ShiftLegend from '../components/planner/ShiftLegend';
 import MeetingCard from '../components/planner/MeetingCard';
+import TodoCard from '../components/planner/TodoCard';
 import QuickAddModal from '../components/planner/QuickAddModal';
 import MonthlyView from '../components/planner/MonthlyView';
+import WeeklyView from '../components/planner/WeeklyView';
 import { useAuth } from '../context/AuthContext';
-import { getUserMeetings, deleteMeeting } from '../../backend/services/plannerService';
+import { getUserMeetings, deleteMeeting, toggleTodoStatus } from '../../backend/services/plannerService';
+import { getUpcomingGSMatches } from '../services/galatasarayService';
 import type { PlannerMeeting } from '../../backend/types/planner';
 import { showMarqueeToast } from '../components/MarqueeToast';
 
@@ -25,8 +28,9 @@ export default function PlannerPage() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const localMeetings = await getUserMeetings(user.uid);
-      setMeetings(localMeetings);
+      const dbMeetings = await getUserMeetings(user.uid);
+      const gsMatches = await getUpcomingGSMatches();
+      setMeetings([...dbMeetings, ...gsMatches]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -43,7 +47,16 @@ export default function PlannerPage() {
     try {
       await deleteMeeting(id);
       setMeetings(prev => prev.filter(m => m.id !== id));
-      showMarqueeToast({ message: 'Toplantı silindi', type: 'deleted', mediaType: 'movie' });
+      showMarqueeToast({ message: 'Öğe silindi', type: 'deleted', mediaType: 'movie' });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleTodo = async (id: string, currentStatus: boolean) => {
+    try {
+      await toggleTodoStatus(id, !currentStatus);
+      setMeetings(prev => prev.map(m => m.id === id ? { ...m, isCompleted: !currentStatus } : m));
     } catch (err) {
       console.error(err);
     }
@@ -51,16 +64,19 @@ export default function PlannerPage() {
 
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   
-  // Sort by start time basically.
-  const currentDayMeetings = meetings
-    .filter(m => m.date === selectedDateStr)
+  // Filter lists
+  const currentDayAll = meetings.filter(m => m.date === selectedDateStr);
+  const currentDayMeetings = currentDayAll
+    .filter(m => m.itemType !== 'todo')
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  
+  const currentDayTodos = currentDayAll.filter(m => m.itemType === 'todo');
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }} 
-      className="pb-24 pt-4 max-w-2xl mx-auto"
+      className="pb-24 pt-4 max-w-5xl mx-auto px-4"
     >
       <div className="flex items-center justify-between mb-6 px-1">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-stone-800 to-stone-500 dark:from-zinc-100 dark:to-zinc-400 text-transparent bg-clip-text">
@@ -97,49 +113,72 @@ export default function PlannerPage() {
         />
 
         {activeTab === 'daily' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="font-bold text-stone-800 dark:text-zinc-200 text-lg">Program</h3>
-              <div className="flex gap-2">
-                <button 
-                  onClick={loadData}
-                  className="p-2 text-stone-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
-                  title="Google Sheets'ten Yenile"
-                >
-                  <FaSyncAlt className={isLoading ? 'animate-spin' : ''} />
-                </button>
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-rose-100/50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 
-                             rounded-lg text-sm font-bold hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors border border-rose-200 dark:border-rose-900/50"
-                >
-                  <FaCalendarPlus />
-                  <span>Ekle</span>
-                </button>
+          <div className="space-y-8">
+            {/* MEETINGS SECTION */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="font-bold text-stone-800 dark:text-zinc-200 text-lg">Program</h3>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={loadData}
+                    className="p-2 text-stone-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                    title="Yenile"
+                  >
+                    <FaSyncAlt className={isLoading ? 'animate-spin' : ''} />
+                  </button>
+                  <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-rose-100/50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 
+                               rounded-lg text-sm font-bold hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors border border-rose-200 dark:border-rose-900/50"
+                  >
+                    <FaCalendarPlus />
+                    <span>Ekle</span>
+                  </button>
+                </div>
               </div>
+
+              {isLoading ? (
+                <div className="flex justify-center py-10 opacity-50">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+                </div>
+              ) : currentDayMeetings.length > 0 ? (
+                <div className="space-y-3">
+                  {currentDayMeetings.map((meeting, idx) => (
+                    <MeetingCard key={meeting.id || idx} meeting={meeting} onDelete={handleDelete} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-stone-50 dark:bg-zinc-900 border border-dashed border-stone-200 dark:border-zinc-800 rounded-3xl">
+                  <p className="text-stone-500 dark:text-zinc-500 text-sm font-medium">Bu gün için herhangi bir plan bulunmuyor.</p>
+                </div>
+              )}
             </div>
 
-            {isLoading ? (
-              <div className="flex justify-center py-10 opacity-50">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
-              </div>
-            ) : currentDayMeetings.length > 0 ? (
+            {/* TODOS SECTION */}
+            {!isLoading && (
               <div className="space-y-3">
-                {currentDayMeetings.map((meeting, idx) => (
-                  <MeetingCard key={meeting.id || idx} meeting={meeting} onDelete={handleDelete} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-10 bg-stone-50 dark:bg-zinc-900 border border-dashed border-stone-200 dark:border-zinc-800 rounded-3xl">
-                <p className="text-stone-500 dark:text-zinc-500 font-medium">Bu gün için herhangi bir plan bulunmuyor.</p>
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="mt-4 text-sm font-bold text-rose-500 hover:underline"
-                >
-                  Hemen bir toplantı ekle
-                </button>
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="font-bold text-stone-800 dark:text-zinc-200 text-lg">Bugün Yapılacaklar</h3>
+                </div>
+                {currentDayTodos.length > 0 ? (
+                  <div className="space-y-2">
+                    {currentDayTodos.map((todo, idx) => (
+                      <TodoCard 
+                        key={todo.id || idx} 
+                        todo={todo} 
+                        onToggle={handleToggleTodo} 
+                        onDelete={handleDelete} 
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-zinc-800 rounded-2xl">
+                    <p className="text-stone-400 dark:text-zinc-600 text-sm">Görev veya hatırlatıcı yok.</p>
+                  </div>
+                )}
               </div>
             )}
+
           </div>
         )}
         
@@ -158,8 +197,15 @@ export default function PlannerPage() {
         )}
 
         {activeTab === 'weekly' && (
-          <div className="text-center py-12 bg-stone-50 dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl">
-            <p className="text-stone-500 dark:text-zinc-500">Haftalık görünüm yakında eklenecek.</p>
+          <div className="mt-4">
+            <WeeklyView 
+              currentDate={selectedDate} 
+              meetings={meetings} 
+              onSelectDate={(date) => {
+                setSelectedDate(date);
+                setActiveTab('daily');
+              }} 
+            />
           </div>
         )}
 

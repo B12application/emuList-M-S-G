@@ -11,8 +11,9 @@ export interface ShiftInfo {
 
 // 10 day cycle: 4 Morning -> 4 Evening -> 2 Off
 const CYCLE_LENGTH = 10;
-// Reference: "Yarın (14 Nisan 2026) vardiyadaki son akşam günü" (Index 7)
-const REF_DATE = new Date(2026, 3, 14); // April 14, 2026
+// Referans: 13 Nisan 2026 = Akşam vardiyası son gün (4. akşam, index 7)
+// Döngü: 0-3 Sabah, 4-7 Akşam, 8-9 Tatil
+const REF_DATE = new Date(2026, 3, 13); // April 13, 2026
 const REF_INDEX = 7; 
 
 export function getShiftInfo(date: Date): ShiftInfo {

@@ -42,7 +42,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
     if (!confirm('Bu seriyi ve tüm gelecek haftalardaki kopyalarını silmek istediğinize emin misiniz?')) return;
 
     try {
-      await deleteRecurringSeries(groupId);
+      await deleteRecurringSeries(user!.uid, groupId);
       toast.success('Seri tamamen silindi');
       loadMasters();
       onRefresh();

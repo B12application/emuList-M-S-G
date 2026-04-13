@@ -16,6 +16,7 @@ const generateFutureInstances = async (master: PlannerMeeting, weeks: number = 3
     // Bu tarihte bu grup için kayıt var mı check?
     const checkQ = query(
       collection(db, 'meetings'),
+      where('userId', '==', master.userId),
       where('recurringGroupId', '==', master.recurringGroupId),
       where('date', '==', targetDate)
     );
@@ -110,6 +111,7 @@ export const syncRecurringItems = async (userId: string): Promise<void> => {
 
       const cleanupQ = query(
         collection(db, 'meetings'),
+        where('userId', '==', userId),
         where('recurringGroupId', '==', master.recurringGroupId),
         where('date', '<', twoWeeksAgoStr),
         where('isRecurringMaster', '==', false)
@@ -141,11 +143,12 @@ export const getRecurringMasters = async (userId: string): Promise<PlannerMeetin
 };
 
 // Komple Seriyi Sil
-export const deleteRecurringSeries = async (groupId: string): Promise<void> => {
+export const deleteRecurringSeries = async (userId: string, groupId: string): Promise<void> => {
   try {
     // 1. Tüm instances'ları bul ve sil
     const q = query(
       collection(db, 'meetings'),
+      where('userId', '==', userId),
       where('recurringGroupId', '==', groupId)
     );
     const snapshot = await getDocs(q);

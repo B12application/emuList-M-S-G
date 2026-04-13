@@ -66,36 +66,39 @@ export default function StatusBanner() {
         setShiftMsg(`Tatil (${shift.dayIndex}. Gün)`);
         setTimeRemaining('İyi dinlenmeler');
       } else {
-        const [hours, mins] = shift.startTime!.split(':').map(Number);
-        const shiftStart = new Date();
-        shiftStart.setHours(hours, mins, 0, 0);
+        const [startH, startM] = shift.startTime!.split(':').map(Number);
+        const [endH, endM] = shift.endTime!.split(':').map(Number);
+        
+        const shiftStart = new Date(shift.shiftDate);
+        shiftStart.setHours(startH, startM, 0, 0);
 
-        const diffMs = shiftStart.getTime() - now.getTime();
+        const shiftEnd = new Date(shift.shiftDate);
+        shiftEnd.setHours(endH, endM, 0, 0);
+        
+        // Eğer bitiş saati başlangıçtan küçükse (gece yarısı geçişi), bitişi 1 gün sonraya at
+        if (endH < startH || (endH === startH && endM < startM)) {
+          shiftEnd.setDate(shiftEnd.getDate() + 1);
+        }
 
-        if (diffMs > 0) {
-          const h = Math.floor(diffMs / (1000 * 60 * 60));
-          const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const diffStartMs = shiftStart.getTime() - now.getTime();
+        const diffEndMs = shiftEnd.getTime() - now.getTime();
+
+        if (diffStartMs > 0) {
+          // Henüz başlamadı
+          const h = Math.floor(diffStartMs / (1000 * 60 * 60));
+          const m = Math.floor((diffStartMs % (1000 * 60 * 60)) / (1000 * 60));
           setShiftMsg(`${shift.type} V. (${shift.startTime})`);
           setTimeRemaining(`${h}s ${m}d kaldı`);
+        } else if (diffEndMs > 0) {
+          // Devam ediyor
+          const h = Math.floor(diffEndMs / (1000 * 60 * 60));
+          const m = Math.floor((diffEndMs % (1000 * 60 * 60)) / (1000 * 60));
+          setShiftMsg(`Mesai (${shift.type})`);
+          setTimeRemaining(`Bitime ${h}s ${m}d`);
         } else {
-          let endHours = parseInt(shift.endTime!.split(':')[0]);
-          let endMins = parseInt(shift.endTime!.split(':')[1]);
-          const shiftEnd = new Date();
-          if (endHours < hours || (endHours === hours && endMins < mins)) {
-            shiftEnd.setDate(shiftEnd.getDate() + 1);
-          }
-          shiftEnd.setHours(endHours, endMins, 0, 0);
-          const diffEndMs = shiftEnd.getTime() - now.getTime();
-
-          if (diffEndMs > 0) {
-            const h = Math.floor(diffEndMs / (1000 * 60 * 60));
-            const m = Math.floor((diffEndMs % (1000 * 60 * 60)) / (1000 * 60));
-            setShiftMsg(`Mesai (${shift.type})`);
-            setTimeRemaining(`Bitime ${h}s ${m}d`);
-          } else {
-            setShiftMsg(`${shift.type} V.`);
-            setTimeRemaining('Bitti ✅');
-          }
+          // Bitti
+          setShiftMsg(`${shift.type} V.`);
+          setTimeRemaining('Bitti ✅');
         }
       }
     };

@@ -5,7 +5,7 @@ import type { PlannerMeeting } from '../../../backend/types/planner';
 interface TodoCardProps {
   todo: PlannerMeeting;
   onToggle: (id: string, currentStatus: boolean) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (item: PlannerMeeting) => void;
   onEdit?: (todo: PlannerMeeting) => void;
 }
 
@@ -77,7 +77,7 @@ export default function TodoCard({ todo, onToggle, onDelete, onEdit }: TodoCardP
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (todo.id) onDelete(todo.id);
+                  onDelete(todo);
                 }}
                 className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                 title="Sil"

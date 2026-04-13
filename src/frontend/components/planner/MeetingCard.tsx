@@ -3,7 +3,7 @@ import type { PlannerMeeting } from '../../../backend/types/planner';
 
 interface MeetingCardProps {
   meeting: PlannerMeeting;
-  onDelete?: (id: string) => void;
+  onDelete?: (item: PlannerMeeting) => void;
   onEdit?: (meeting: PlannerMeeting) => void;
 }
 
@@ -50,7 +50,7 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
             
             {!meeting.isGoogleSheet && onDelete && (
               <button 
-                onClick={() => meeting.id && onDelete(meeting.id)}
+                onClick={() => onDelete(meeting)}
                 className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                 title="Sil"
               >

@@ -11,8 +11,9 @@ import QuickAddModal from '../components/planner/QuickAddModal';
 import MonthlyView from '../components/planner/MonthlyView';
 import WeeklyView from '../components/planner/WeeklyView';
 import RecurringManagerModal from '../components/planner/RecurringManagerModal';
+import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
 import { useAuth } from '../context/AuthContext';
-import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems } from '../../backend/services/plannerService';
+import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
 import type { PlannerMeeting } from '../../backend/types/planner';
 import { showMarqueeToast } from '../components/MarqueeToast';
@@ -24,7 +25,10 @@ export default function PlannerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
+  const [isMatchViewActive, setIsMatchViewActive] = useState(false);
   const [activeTab, setActiveTab] = useState<'daily'|'weekly'|'monthly'>('monthly');
 
   const loadData = async () => {
@@ -48,11 +52,35 @@ export default function PlannerPage() {
     loadData();
   }, [user]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (item: PlannerMeeting) => {
+    if (!item.id) return;
+
+    // Eğer tekrarlayan bir öğeyse modal aç
+    if (item.isRecurring && item.recurringGroupId) {
+      setItemToDelete(item);
+      setIsDeleteModalOpen(true);
+      return;
+    }
+
+    // NORMAL TEKLİ SİLME
+    await executeSingleDelete(item);
+  };
+
+  const executeSingleDelete = async (item: PlannerMeeting) => {
     try {
-      await deleteMeeting(id);
-      setMeetings(prev => prev.filter(m => m.id !== id));
-      showMarqueeToast({ message: 'Öğe silindi', type: 'deleted', mediaType: 'movie' });
+      await deleteMeeting(item.id!);
+      setMeetings(prev => prev.filter(m => m.id !== item.id));
+      showMarqueeToast({ message: 'Öğe silindi', type: 'deleted' });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const executeSeriesDelete = async (item: PlannerMeeting) => {
+    try {
+      await deleteRecurringSeries(user!.uid, item.recurringGroupId!);
+      setMeetings(prev => prev.filter(m => m.recurringGroupId !== item.recurringGroupId));
+      showMarqueeToast({ message: 'Tüm seri silindi', type: 'deleted' });
     } catch (err) {
       console.error(err);
     }
@@ -215,6 +243,7 @@ export default function PlannerPage() {
                 setSelectedDate(date);
                 setActiveTab('daily');
               }} 
+              onMatchViewToggle={setIsMatchViewActive}
             />
           </div>
         )}
@@ -251,6 +280,19 @@ export default function PlannerPage() {
         onClose={() => setIsRecurringModalOpen(false)}
         onRefresh={loadData}
       />
+
+      {itemToDelete && (
+        <DeleteChoiceModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setItemToDelete(null);
+          }}
+          onConfirmSingle={() => executeSingleDelete(itemToDelete)}
+          onConfirmSeries={() => executeSeriesDelete(itemToDelete)}
+          title={itemToDelete.title}
+        />
+      )}
     </motion.div>
   );
 }

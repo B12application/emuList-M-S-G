@@ -28,7 +28,6 @@ export default function PlannerPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
-  const [isMatchViewActive, setIsMatchViewActive] = useState(false);
   const [activeTab, setActiveTab] = useState<'daily'|'weekly'|'monthly'>('monthly');
 
   const loadData = async () => {
@@ -243,7 +242,6 @@ export default function PlannerPage() {
                 setSelectedDate(date);
                 setActiveTab('daily');
               }} 
-              onMatchViewToggle={setIsMatchViewActive}
             />
           </div>
         )}

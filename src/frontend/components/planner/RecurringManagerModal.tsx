@@ -38,11 +38,11 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
     }
   }, [isOpen, user]);
 
-  const handleDeleteSeries = async (masterId: string, groupId: string) => {
+  const handleDeleteSeries = async (groupId: string) => {
     if (!confirm('Bu seriyi ve tüm gelecek haftalardaki kopyalarını silmek istediğinize emin misiniz?')) return;
     
     try {
-      await deleteRecurringSeries(masterId, groupId);
+      await deleteRecurringSeries(groupId);
       toast.success('Seri tamamen silindi');
       loadMasters();
       onRefresh();
@@ -114,7 +114,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
                   </div>
                   
                   <button
-                    onClick={() => handleDeleteSeries(master.id!, master.recurringGroupId!)}
+                    onClick={() => handleDeleteSeries(master.recurringGroupId!)}
                     className="p-3 bg-stone-100 hover:bg-rose-100 dark:bg-zinc-800 dark:hover:bg-rose-900/30 text-stone-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 rounded-xl transition-all"
                     title="Seriyi Sil"
                   >

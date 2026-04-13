@@ -141,7 +141,7 @@ export const getRecurringMasters = async (userId: string): Promise<PlannerMeetin
 };
 
 // Komple Seriyi Sil
-export const deleteRecurringSeries = async (masterId: string, groupId: string): Promise<void> => {
+export const deleteRecurringSeries = async (groupId: string): Promise<void> => {
   try {
     // 1. Tüm instances'ları bul ve sil
     const q = query(

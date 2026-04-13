@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { FaCalendarPlus, FaSyncAlt } from 'react-icons/fa';
+import { FaCalendarPlus, FaSyncAlt, FaHistory } from 'react-icons/fa';
 import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
 import ShiftLegend from '../components/planner/ShiftLegend';
@@ -10,6 +10,7 @@ import TodoCard from '../components/planner/TodoCard';
 import QuickAddModal from '../components/planner/QuickAddModal';
 import MonthlyView from '../components/planner/MonthlyView';
 import WeeklyView from '../components/planner/WeeklyView';
+import RecurringManagerModal from '../components/planner/RecurringManagerModal';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
@@ -22,6 +23,7 @@ export default function PlannerPage() {
   const [meetings, setMeetings] = useState<PlannerMeeting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
   const [activeTab, setActiveTab] = useState<'daily'|'weekly'|'monthly'>('monthly');
 
@@ -135,6 +137,13 @@ export default function PlannerPage() {
                     <FaSyncAlt className={isLoading ? 'animate-spin' : ''} />
                   </button>
                   <button 
+                    onClick={() => setIsRecurringModalOpen(true)}
+                    className="p-2 text-stone-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                    title="Tekrarlayan Seriler"
+                  >
+                    <FaHistory />
+                  </button>
+                  <button 
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-rose-100/50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 
                                rounded-lg text-sm font-bold hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors border border-rose-200 dark:border-rose-900/50"
@@ -235,6 +244,12 @@ export default function PlannerPage() {
         selectedDate={selectedDate}
         onAdded={loadData}
         initialData={modalInitialData}
+      />
+
+      <RecurringManagerModal
+        isOpen={isRecurringModalOpen}
+        onClose={() => setIsRecurringModalOpen(false)}
+        onRefresh={loadData}
       />
     </motion.div>
   );

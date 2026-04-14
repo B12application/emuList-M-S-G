@@ -23,8 +23,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
     const dateStr = format(date, 'yyyy-MM-dd');
     // Group all items that belong to this day
     const dayItems = meetings.filter((m) => {
-      // Due Date tracking for jira/tasks
-      if (m.itemType === 'jira' && m.dueDate) {
+      if (m.itemType === 'jira') {
         return m.dueDate === dateStr;
       }
       return m.date === dateStr;

@@ -14,14 +14,18 @@ import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';
 import Footer from '../components/Footer';
 import useMediaHistory from '../hooks/useMediaHistory';
+import DetailModal from '../components/DetailModal';
+import type { MediaItem } from '../../backend/types/media';
+
 
 export default function ProfilePage() {
     const { user } = useAuth();
     const { profile } = useUserProfile();
     const { t } = useLanguage();
     const { stats, loading: statsLoading } = useMediaStats();
-    const { items: allItems } = useMedia('all', 'all', true);
+    const { items: allItems, refetch: refetchMedia } = useMedia('all', 'all', true);
     const { history } = useMediaHistory();
+
 
     const [isEditing, setIsEditing] = useState(false);
     const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -35,6 +39,9 @@ export default function ProfilePage() {
         instagram?: string;
         website?: string;
     }>({});
+
+    const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+
 
     // Gender-based avatar URLs
     const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
@@ -427,7 +434,11 @@ export default function ProfilePage() {
                         {favorites.length > 0 ? (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 {favorites.map((item) => (
-                                    <Link to={`/${item.type}?openMediaId=${item.id}`} key={item.id} className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1">
+                                    <div 
+                                        key={item.id} 
+                                        onClick={() => setSelectedItem(item as MediaItem)}
+                                        className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1"
+                                    >
                                         <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-5">
                                             <div className="text-white font-bold text-base line-clamp-2 leading-tight mb-1.5 group-hover:text-amber-300 transition-colors">{item.title}</div>
@@ -441,9 +452,10 @@ export default function ProfilePage() {
                                                 {item.rating && <span className="text-amber-400 flex items-center gap-0.5"><FaStar size={8} /> {item.rating}</span>}
                                             </div>
                                         </div>
-                                    </Link>
+                                    </div>
                                 ))}
                             </div>
+
                         ) : (
                             <div className="h-48 flex flex-col items-center justify-center text-stone-400 dark:text-zinc-500 bg-stone-100 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-stone-300 dark:border-zinc-800">
                                 <FaHeart className="text-4xl mb-3 opacity-20" />
@@ -468,8 +480,13 @@ export default function ProfilePage() {
                         {recentlyWatched.length > 0 ? (
                             <div className="space-y-3">
                                 {recentlyWatched.map((item) => (
-                                    <Link to={`/${item.type}?openMediaId=${item.id}`} key={item.id} className="block group">
+                                    <div 
+                                        key={item.id} 
+                                        onClick={() => setSelectedItem(item as MediaItem)}
+                                        className="block group cursor-pointer"
+                                    >
                                         <div className="flex items-center gap-5 p-4 rounded-3xl hover:bg-white dark:hover:bg-white/5 transition-colors border border-transparent hover:border-stone-200 dark:hover:border-white/5 hover:shadow-lg dark:hover:shadow-black/20">
+
                                             {/* Icon Box */}
                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 ${item.type === 'movie' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
                                                 item.type === 'series' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
@@ -503,7 +520,7 @@ export default function ProfilePage() {
                                                 <FaChevronRight />
                                             </div>
                                         </div>
-                                    </Link>
+                                    </div>
                                 ))}
                             </div>
                         ) : (
@@ -588,6 +605,14 @@ export default function ProfilePage() {
             )}
 
             <Footer />
+
+            <DetailModal
+                isOpen={!!selectedItem}
+                onClose={() => setSelectedItem(null)}
+                item={selectedItem}
+                refetch={refetchMedia}
+            />
         </div>
+
     );
 }

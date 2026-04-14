@@ -870,7 +870,15 @@ export default function MediaListPage() {
       {/* === 2. DÜZELTME: Modal 'loading' DIŞINA TAŞINDI === */}
       <DetailModal
         isOpen={!!selectedItem}
-        onClose={() => setSelectedItem(null)}
+        onClose={() => {
+          setSelectedItem(null);
+          // URL'den openMediaId parametresini temizle
+          if (searchParams.has('openMediaId')) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('openMediaId');
+            setSearchParams(newParams);
+          }
+        }}
         item={selectedItem}
         refetch={refetch}
       />

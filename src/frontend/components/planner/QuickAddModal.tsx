@@ -27,6 +27,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
   const [isRecurring, setIsRecurring] = useState(false);
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<PlannerMeeting['status']>('todo');
 
   const isEditMode = !!initialData;
 
@@ -39,6 +40,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setNotes(initialData.notes || '');
       setIsRecurring(!!initialData.isRecurring);
       setDueDate(initialData.dueDate || '');
+      setStatus(initialData.status || 'todo');
     } else {
       // Reset for New
       setTitle('');
@@ -46,6 +48,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setNotes('');
       setIsRecurring(false);
       setDueDate('');
+      setStatus('todo');
     }
   }, [initialData, isOpen]);
 
@@ -81,7 +84,10 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
         notes: notes.trim(),
         dueDate: activeTab === 'jira' ? dueDate : '',
         itemType: activeTab,
-        ...(activeTab === 'todo' || activeTab === 'jira' ? { isCompleted: initialData?.isCompleted ?? false } : {}),
+        ...(activeTab === 'todo' || activeTab === 'jira' ? { 
+          isCompleted: initialData?.isCompleted ?? false,
+          status: status || 'todo'
+        } : {}),
         isRecurring,
       };
 
@@ -227,6 +233,59 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 required
               />
             </div>
+
+            {activeTab === 'jira' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-1.5"
+              >
+                <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
+                  Mevcut Durum
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['todo', 'planned', 'dev', 'test', 'done'] as const).map(s => {
+                    const getStatusColor = (statusKey: string) => {
+                      switch(statusKey) {
+                        case 'planned': return 'border-indigo-200 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20';
+                        case 'dev': return 'border-sky-200 dark:border-sky-900/50 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20';
+                        case 'test': return 'border-amber-200 dark:border-amber-900/50 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20';
+                        case 'done': return 'border-emerald-200 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20';
+                        default: return 'border-stone-200 dark:border-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800';
+                      }
+                    };
+                    
+                    const getStatusActiveColor = (statusKey: string) => {
+                      switch(statusKey) {
+                        case 'planned': return 'bg-indigo-600 border-indigo-600 text-white shadow-indigo-600/20';
+                        case 'dev': return 'bg-sky-600 border-sky-600 text-white shadow-sky-600/20';
+                        case 'test': return 'bg-amber-600 border-amber-600 text-white shadow-amber-600/20';
+                        case 'done': return 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-600/20';
+                        default: return 'bg-zinc-700 border-zinc-700 text-white shadow-zinc-700/20';
+                      }
+                    };
+
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setStatus(s)}
+                        className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all ${
+                          status === s 
+                            ? `${getStatusActiveColor(s)} shadow-sm` 
+                            : getStatusColor(s)
+                        }`}
+                      >
+                        {s === 'todo' ? 'Yapılacak' : 
+                         s === 'planned' ? 'Plan Hazır' : 
+                         s === 'dev' ? 'Geliştirme' : 
+                         s === 'test' ? 'Testte' : 'Bitti'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
 
             {(isEditMode || showNotesInAddMode) && (
               <motion.div

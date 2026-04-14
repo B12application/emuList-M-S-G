@@ -18,6 +18,7 @@ export interface PlannerMeeting {
   isRecurringMaster?: boolean; // If true, this is the template doc
   recurrenceFrequency?: 'weekly';
   lastGeneratedDate?: string; // Track up to which date instances are generated
+  status?: 'todo' | 'planned' | 'dev' | 'test' | 'done';
 }
 
 export interface GoogleSheetMeeting {

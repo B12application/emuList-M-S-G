@@ -147,7 +147,12 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
             {days.map((day, idx) => {
               const shift = getShiftInfo(day);
                 const dateStr = format(day, 'yyyy-MM-dd');
-                const dayMeetings = meetings.filter(m => m.date === dateStr);
+                const dayMeetings = meetings.filter(m => {
+                  if (m.itemType === 'jira') {
+                    return m.dueDate === dateStr;
+                  }
+                  return m.date === dateStr;
+                });
               const hasMatch = dayMeetings.some(m => m.itemType === 'match');
               const match = dayMeetings.find(m => m.itemType === 'match');
 
@@ -195,13 +200,26 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       const mDateTime = new Date(`${m.date}T${m.startTime}`);
                       const isPast = mDateTime < now;
                       
+                      const getStatusAccent = (statusKey: string) => {
+                        switch(statusKey) {
+                          case 'planned': return 'bg-indigo-500';
+                          case 'dev': return 'bg-sky-500';
+                          case 'test': return 'bg-amber-500';
+                          case 'done': return 'bg-emerald-500';
+                          default: return 'bg-zinc-400';
+                        }
+                      };
+
                       return (
-                        <div key={m.id || i} className={`text-[9px] sm:text-[10px] truncate px-1.5 py-0.5 rounded font-semibold border transition-all
+                        <div key={m.id || i} className={`text-[9px] sm:text-[10px] truncate pr-1.5 pl-2 py-0.5 rounded font-semibold border transition-all relative overflow-hidden
                           ${isPast ? 'opacity-40 grayscale-[0.5]' : ''}
                           ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' :
                             m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
                             'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
                         >
+                          {m.itemType === 'jira' && (
+                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusAccent(m.status || 'todo')}`} />
+                          )}
                           <span className="opacity-70 mr-1">{m.startTime}</span>{m.title}
                         </div>
                       );

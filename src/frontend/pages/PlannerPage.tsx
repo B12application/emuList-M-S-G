@@ -28,7 +28,10 @@ export default function PlannerPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
-  const [activeTab, setActiveTab] = useState<'daily'|'weekly'|'monthly'>('monthly');
+  // Mobilde daily, desktop'ta monthly başlat
+  const [activeTab, setActiveTab] = useState<'daily'|'weekly'|'monthly'>(() =>
+    window.innerWidth < 768 ? 'daily' : 'monthly'
+  );
 
   const loadData = async () => {
     if (!user) return;

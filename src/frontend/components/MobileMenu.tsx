@@ -1,6 +1,6 @@
 // src/components/MobileMenu.tsx
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaUsersCog, FaCalendarAlt } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaUsersCog, FaCalendarAlt, FaGift, FaBriefcase, FaMoon } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -8,6 +8,7 @@ import { auth } from '../../backend/config/firebaseConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { isAdmin } from '../../backend/config/adminConfig';
+import { getShiftInfo } from '../utils/shiftLogic';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -41,6 +42,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { profile } = useUserProfile();
   const { t } = useLanguage();
   const location = useLocation();
+
+  // Bugünkü vardiya bilgisi
+  const todayShift = getShiftInfo(new Date());
+  const shiftConfig = {
+    Sabah: { label: '☀️ Sabah Vardiyası', sub: '06:30 – 16:30', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700/50', icon: FaBriefcase },
+    Akşam: { label: '🌙 Akşam Vardiyası', sub: '16:00 – 02:00', color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700/50', icon: FaMoon },
+    Tatil: { label: '🎉 Tatil', sub: `${todayShift.dayIndex}. gün`, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/50', icon: FaGift },
+  }[todayShift.type];
 
   const getAvatar = () => {
     if (user?.photoURL && user.photoURL !== MALE_AVATAR_URL && user.photoURL !== FEMALE_AVATAR_URL) {
@@ -149,6 +158,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <p className="text-xs text-stone-500 dark:text-zinc-400 truncate max-w-[150px]">
                       {user.email}
                     </p>
+                    {/* Vardiya Pill */}
+                    <div className={`mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${shiftConfig.color}`}>
+                      <span>{shiftConfig.label}</span>
+                      <span className="opacity-60">|</span>
+                      <span>{shiftConfig.sub}</span>
+                    </div>
                   </div>
                 </motion.div>
               ) : (

@@ -1,7 +1,7 @@
 // src/components/MediaCard.tsx
 import { useState, useEffect } from 'react';
 import type { MediaItem } from '../../backend/types/media';
-import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm, FaClock, FaPlay } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaStar, FaTrash, FaPen, FaSpinner, FaCalendarAlt, FaHeart, FaRegHeart, FaTv, FaCheck, FaTimes, FaFilm, FaClock, FaPlay, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import EditModal from './EditModal';
@@ -35,6 +35,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
   const [localWatched, setLocalWatched] = useState(item.watched);
   const [localIsFavorite, setLocalIsFavorite] = useState(item.isFavorite || false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [isWatchBtnHovered, setIsWatchBtnHovered] = useState(false);
 
   useEffect(() => {
     setLocalWatched(item.watched);
@@ -481,13 +482,27 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                     e.stopPropagation();
                     handleToggle();
                   }}
+                  onMouseEnter={() => setIsWatchBtnHovered(true)}
+                  onMouseLeave={() => setIsWatchBtnHovered(false)}
                   disabled={isToggling}
-                  className={`flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-50 h-10 ${localWatched
-                    ? 'border-emerald-300 text-emerald-600 dark:text-emerald-400 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
-                    : 'border-stone-300 dark:border-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-800'
-                    }`}
+                  className={`flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-50 h-10 ${
+                    isWatchBtnHovered
+                      ? localWatched
+                        ? 'border-purple-400 text-purple-600 dark:text-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 scale-[1.04]'
+                        : 'border-cyan-400 text-cyan-600 dark:text-cyan-300 dark:border-cyan-700 bg-cyan-50 dark:bg-cyan-900/20 scale-[1.04]'
+                      : localWatched
+                        ? 'border-emerald-300 text-emerald-600 dark:text-emerald-400 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                        : 'border-stone-300 dark:border-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-800'
+                  }`}
                 >
-                  {localWatched ? <FaEye /> : <FaEyeSlash />}
+                  {isWatchBtnHovered
+                    ? localWatched
+                      ? <FaToggleOn className="text-purple-500 dark:text-purple-400" />
+                      : <FaToggleOff className="text-cyan-500 dark:text-cyan-400" />
+                    : localWatched
+                      ? <FaEye />
+                      : <FaEyeSlash />
+                  }
                   <span className="hidden md:inline">
                     {localWatched
                       ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
@@ -518,7 +533,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                     setIsEditModalOpen(true);
                   }}
                   title={t('actions.edit')}
-                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 dark:text-sky-300 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition"
+                  className="cursor-pointer h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 dark:border-sky-900/60 text-stone-500 dark:text-sky-300 hover:bg-sky-500 hover:text-white hover:border-sky-500 dark:hover:bg-sky-600 dark:hover:border-sky-600 dark:hover:text-white hover:scale-110 hover:shadow-md hover:shadow-sky-300/40 dark:hover:shadow-sky-800/40 transition-all duration-200"
                 >
                   <FaPen />
                 </button>
@@ -530,7 +545,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                   }}
                   disabled={isDeleting}
                   title={t('actions.delete')}
-                  className="h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 text-red-300 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
+                  className="cursor-pointer h-10 w-10 inline-flex items-center justify-center rounded-xl border border-stone-300 dark:border-red-900/60 text-red-400 dark:text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white hover:scale-110 hover:shadow-md hover:shadow-red-300/40 dark:hover:shadow-red-800/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isDeleting ? <FaSpinner className="animate-spin" /> : <FaTrash />}
                 </button>

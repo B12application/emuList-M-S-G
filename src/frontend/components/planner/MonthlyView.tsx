@@ -44,6 +44,8 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
     [startDate.getTime(), endDate.getTime()]
   );
 
+  const now = new Date();
+
   const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
   const nextMonth = () => onMonthChange(addMonths(currentMonth, 1));
@@ -144,8 +146,8 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
           <div className="grid grid-cols-7 auto-rows-fr">
             {days.map((day, idx) => {
               const shift = getShiftInfo(day);
-              const dateStr = format(day, 'yyyy-MM-dd');
-              const dayMeetings = meetings.filter(m => m.date === dateStr);
+                const dateStr = format(day, 'yyyy-MM-dd');
+                const dayMeetings = meetings.filter(m => m.date === dateStr);
               const hasMatch = dayMeetings.some(m => m.itemType === 'match');
               const match = dayMeetings.find(m => m.itemType === 'match');
 
@@ -189,15 +191,21 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   </div>
 
                   <div className="mt-1.5 space-y-1">
-                    {dayMeetings.filter(m => m.itemType !== 'match').slice(0, 3).map((m, i) => (
-                      <div key={m.id || i} className={`text-[9px] sm:text-[10px] truncate px-1.5 py-0.5 rounded font-semibold border
-                        ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' :
-                          m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
-                          'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
-                      >
-                        <span className="opacity-70 mr-1">{m.startTime}</span>{m.title}
-                      </div>
-                    ))}
+                    {dayMeetings.filter(m => m.itemType !== 'match').slice(0, 3).map((m, i) => {
+                      const mDateTime = new Date(`${m.date}T${m.startTime}`);
+                      const isPast = mDateTime < now;
+                      
+                      return (
+                        <div key={m.id || i} className={`text-[9px] sm:text-[10px] truncate px-1.5 py-0.5 rounded font-semibold border transition-all
+                          ${isPast ? 'opacity-40 grayscale-[0.5]' : ''}
+                          ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' :
+                            m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
+                            'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
+                        >
+                          <span className="opacity-70 mr-1">{m.startTime}</span>{m.title}
+                        </div>
+                      );
+                    })}
                     {dayMeetings.filter(m => m.itemType !== 'match').length > 3 && (
                       <div className="text-[10px] text-stone-500 dark:text-zinc-500 font-medium px-1">
                         +{dayMeetings.filter(m => m.itemType !== 'match').length - 3} daha
@@ -228,11 +236,12 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   <h3 className="text-base font-bold text-stone-800 dark:text-zinc-100">Fikstür Bilgisi</h3>
                 </div>
                 {monthMatches.map(match => (
-                  <div
-                    key={match.id}
-                    data-match-id={match.id}
-                    className="bg-white dark:bg-zinc-800/60 p-3.5 rounded-2xl border border-stone-200 dark:border-zinc-700 shadow-sm hover:border-red-400/60 transition-colors"
-                  >
+                    <div
+                      key={match.id}
+                      data-match-id={match.id}
+                      className={`bg-white dark:bg-zinc-800/60 p-3.5 rounded-2xl border border-stone-200 dark:border-zinc-700 shadow-sm hover:border-red-400/60 transition-all
+                        ${new Date(`${match.date}T${match.startTime}`) < now ? 'opacity-40 grayscale-[0.5]' : ''}`}
+                    >
                     <div className="text-[10px] font-bold text-red-500 dark:text-red-400 mb-1 flex items-center gap-1.5">
                       <span>{format(new Date(match.date), 'd MMMM', { locale: tr })}</span>
                       <span className="w-1 h-1 bg-stone-300 rounded-full" />

@@ -11,12 +11,15 @@ interface TodoCardProps {
 
 export default function TodoCard({ todo, onToggle, onDelete, onEdit }: TodoCardProps) {
   const isCompleted = !!todo.isCompleted;
+  const isPast = new Date(`${todo.date}T${todo.startTime}`) < new Date();
 
   return (
     <div 
       className={`bg-white dark:bg-zinc-900 border ${
         isCompleted ? 'border-emerald-200 dark:border-emerald-900/50 opacity-60' : 'border-stone-200 dark:border-zinc-800'
-      } rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-md group cursor-pointer relative`}
+      } rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-md group cursor-pointer relative ${
+        isPast && !isCompleted ? 'opacity-50 grayscale-[0.5]' : ''
+      }`}
       onClick={() => todo.id && onToggle(todo.id, isCompleted)}
     >
       

@@ -179,7 +179,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
   // 2. YENİ: Modal içindeysek hover efektlerini devre dışı bırak
   const containerHoverClasses = isModal
     ? "" // Modal içindeyse efekt yok
-    : "hover:shadow-xl hover:scale-105 hover:z-10"; // Listede ise büyüsün
+    : "hover:shadow-xl hover:scale-[1.03] hover:z-10 cursor-pointer"; // Listede ise büyüsün
 
   const imageHoverClasses = isModal
     ? "" // Modal içindeyse resim büyümesin
@@ -283,7 +283,7 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                   handleFavoriteToggle();
                 }}
                 disabled={isTogglingFavorite || readOnly}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full shadow-sm backdrop-blur-md transition-all hover:scale-110 disabled:opacity-50 cursor-pointer"
                 style={{
                   backgroundColor: localIsFavorite ? 'rgba(239, 68, 68, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                   color: localIsFavorite ? 'white' : '#ef4444'

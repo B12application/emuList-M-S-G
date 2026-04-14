@@ -34,6 +34,9 @@ export default function PlannerHeader({ selectedDate, meetingCount }: PlannerHea
     Icon = FaMoon;
     summaryText = `Akşam Vardiyası (${shift.dayIndex}. Gün)`;
     timeText = `${shift.startTime} - ${shift.endTime}`;
+  } else if (shift.type === 'Tatil') {
+    shiftBg = 'bg-emerald-100/50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-200';
+    summaryText = `Tatil (${shift.dayIndex}. Gün) | İyi dinlenmeler`;
   }
 
   return (

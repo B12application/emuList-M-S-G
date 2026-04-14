@@ -173,6 +173,17 @@ export default function MediaListPage() {
     }
   }, [items, selectedItem]);
 
+  // Deep link support: auto-open detail modal if openMediaId is in URL
+  useEffect(() => {
+    const openMediaId = searchParams.get('openMediaId');
+    if (openMediaId && items.length > 0 && !selectedItem) {
+      const itemToOpen = items.find(i => i.id === openMediaId);
+      if (itemToOpen) {
+        setSelectedItem(itemToOpen);
+      }
+    }
+  }, [searchParams, items, selectedItem]);
+
   const handleFilterChange = (newFilter: FilterStatus) => {
     refetch(); setSearchParams(prev => { prev.set('filter', newFilter); return prev; }, { replace: true });
   };

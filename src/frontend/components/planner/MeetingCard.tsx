@@ -8,8 +8,11 @@ interface MeetingCardProps {
 }
 
 export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardProps) {
+  const isPast = new Date(`${meeting.date}T${meeting.startTime}`) < new Date();
+
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 flex items-start gap-4 transition-all hover:shadow-md group relative">
+    <div className={`bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 flex items-start gap-4 transition-all hover:shadow-md group relative
+      ${isPast ? 'opacity-50 grayscale-[0.5]' : ''}`}>
       
       {/* Time block */}
       <div className="flex flex-col items-center justify-center min-w-[3.5rem] py-2 bg-stone-50 dark:bg-zinc-950 rounded-xl border border-stone-100 dark:border-zinc-800">

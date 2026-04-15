@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { format, startOfWeek, addDays, isToday } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle } from 'react-icons/fa';
@@ -54,65 +55,143 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
 
   return (
     <div className="bg-white dark:bg-zinc-900/50 border border-stone-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm">
-      <div className="grid grid-cols-1 md:grid-cols-7 border-b border-stone-200 dark:border-zinc-800">
-        {weekDays.map((day, idx) => {
-          const dayMatches = getItemsForDay(day).filter(m => m.itemType === 'match');
-
-          return (
-            <div
-              key={idx}
-              className={`py-3 text-center border-b md:border-b-0 md:border-r relative last:border-b-0 md:last:border-r-0 border-stone-200 dark:border-zinc-800 ${isToday(day) ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}
-            >
-              <div className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                {format(day, 'EEE')}
-              </div>
-              <div className={`text-lg font-bold ${isToday(day) ? 'text-amber-600 dark:text-amber-500' : 'text-stone-900 dark:text-zinc-100'}`}>
-                {format(day, 'd')}
-              </div>
-              {dayMatches.length > 0 && (
-                <div className="mt-1 cursor-help" title={`${dayMatches[0].title} — ${dayMatches[0].startTime}`}>
-                  <span className="text-sm">⚽</span>
-                  <span className="text-[9px] font-bold text-red-500 dark:text-red-400 ml-0.5">{dayMatches[0].startTime}</span>
+      {/* --- DESKTOP VIEW: Grid Layout --- */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-7 border-b border-stone-200 dark:border-zinc-800">
+          {weekDays.map((day, idx) => {
+            const dayMatches = getItemsForDay(day).filter(m => m.itemType === 'match');
+            return (
+              <div
+                key={idx}
+                className={`py-3 text-center border-r relative last:border-r-0 border-stone-200 dark:border-zinc-800 ${isToday(day) ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}
+              >
+                <div className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                  {format(day, 'EEE', { locale: tr })}
                 </div>
-              )}
-            </div>
-          );
-        })}
+                <div className={`text-lg font-bold ${isToday(day) ? 'text-amber-600 dark:text-amber-500' : 'text-stone-900 dark:text-zinc-100'}`}>
+                  {format(day, 'd')}
+                </div>
+                {dayMatches.length > 0 && (
+                  <div className="mt-1 cursor-help" title={`${dayMatches[0].title} — ${dayMatches[0].startTime}`}>
+                    <span className="text-sm">⚽</span>
+                    <span className="text-[9px] font-bold text-red-500 dark:text-red-400 ml-0.5">{dayMatches[0].startTime}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-7 min-h-[400px]">
+          {weekDays.map((day, idx) => {
+            const dayItems = getItemsForDay(day).filter(m => m.itemType !== 'match');
+            return (
+              <div
+                key={idx}
+                className={`p-2 border-r last:border-r-0 border-stone-200 dark:border-zinc-800 transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/30 cursor-pointer ${isToday(day) ? 'bg-amber-50/30 dark:bg-amber-900/5' : ''}`}
+                onClick={() => onSelectDate(day)}
+              >
+                <div className="flex flex-col gap-2">
+                  {dayItems.map((item, idxx) => (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idxx * 0.05 }}
+                      key={item.id || idxx}
+                      className={`p-1.5 rounded-xl border shadow-sm flex flex-col gap-0.5 transition-transform hover:scale-[1.05] ${getColorClassForType(item.itemType)}`}
+                    >
+                      <div className="flex items-center gap-1 font-bold opacity-80 text-[10px]">
+                        {getIconForType(item.itemType)}
+                        <span className="truncate">{item.startTime || 'Tüm Gün'}</span>
+                      </div>
+                      <div className="font-semibold text-xs leading-tight line-clamp-2">{item.title}</div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Grid Row */}
-      <div className="grid grid-cols-1 md:grid-cols-7 min-h-[400px]">
+      {/* --- MOBILE VIEW: Vertical List Layout --- */}
+      <div className="md:hidden flex flex-col divide-y divide-stone-200 dark:divide-zinc-800">
         {weekDays.map((day, idx) => {
-          // Maçları ana listeden ayırıyoruz, çünkü onları Date/Tarih kısmının yanına çizdik
-          const dayItems = getItemsForDay(day).filter(m => m.itemType !== 'match');
+          const dayItems = getItemsForDay(day);
+          const hasMatch = dayItems.some(m => m.itemType === 'match');
+          const dayMatches = dayItems.filter(m => m.itemType === 'match');
+          const otherItems = dayItems.filter(m => m.itemType !== 'match');
 
           return (
-            <div
-              key={idx}
-              className={`p-2 border-b md:border-b-0 md:border-r last:border-b-0 md:last:border-r-0 border-stone-200 dark:border-zinc-800 transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/30 cursor-pointer ${isToday(day) ? 'bg-amber-50/30 dark:bg-amber-900/5' : ''}`}
+            <div 
+              key={idx} 
+              className={`p-4 transition-colors ${isToday(day) ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}
               onClick={() => onSelectDate(day)}
             >
-              <div className="flex flex-col gap-2">
-                {dayItems.map((item, idxx) => (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idxx * 0.05 }}
-                    key={item.id || idxx}
-                    title={item.title}
-                    className={`p-1.5 rounded-xl border shadow-sm flex flex-col gap-0.5 transition-transform hover:scale-[1.02] ${getColorClassForType(item.itemType)}`}
-                  >
-                    <div className="flex items-center gap-1 font-bold opacity-80 text-[10px]">
-                      {getIconForType(item.itemType)}
-                      <span className="truncate">
-                        {item.startTime ? `${item.startTime}` : 'Tüm Gün'}
-                      </span>
+              {/* Mobile Card Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center border ${
+                    isToday(day) 
+                      ? 'bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-500/20' 
+                      : 'bg-white dark:bg-zinc-800 border-stone-200 dark:border-zinc-700'
+                  }`}>
+                    <span className="text-[10px] uppercase font-black opacity-80 leading-none mb-1">
+                      {format(day, 'EEE', { locale: tr })}
+                    </span>
+                    <span className="text-lg font-black leading-none italic">
+                      {format(day, 'd')}
+                    </span>
+                  </div>
+                  <div>
+                    <div className={`text-sm font-bold ${isToday(day) ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-white'}`}>
+                      {isToday(day) ? 'Bugün' : format(day, 'd MMMM', { locale: tr })}
                     </div>
-                    <div className="font-semibold text-xs leading-tight line-clamp-2">
-                      {item.title}
-                    </div>
-                  </motion.div>
-                ))}
+                    {hasMatch && (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-xs">⚽</span>
+                        <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tighter">
+                          Maç Günü: {dayMatches[0].startTime}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="text-stone-400 dark:text-zinc-600">
+                  <FaCalendarAlt size={16} className="opacity-30" />
+                </div>
+              </div>
+
+              {/* Mobile Item List */}
+              <div className="space-y-2 ml-1">
+                {otherItems.length > 0 ? (
+                  otherItems.map((item, idxx) => (
+                    <motion.div
+                      key={item.id || idxx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idxx * 0.05 }}
+                      className={`p-3 rounded-2xl border flex items-center gap-3 shadow-sm ${getColorClassForType(item.itemType)}`}
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/50 dark:bg-black/20 shrink-0">
+                        {getIconForType(item.itemType)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-black opacity-60 uppercase mb-0.5 tracking-tight group-hover:opacity-100 transition-opacity">
+                          {item.startTime ? `${item.startTime} ${item.endTime ? `- ${item.endTime}` : ''}` : 'Tüm Gün'}
+                        </div>
+                        <div className="text-sm font-bold truncate leading-tight">
+                          {item.title}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="py-2 px-3 rounded-xl border border-dashed border-stone-200 dark:border-zinc-800 text-stone-400 dark:text-zinc-600 text-xs italic">
+                    Planlanmış aktivite yok
+                  </div>
+                )}
               </div>
             </div>
           );

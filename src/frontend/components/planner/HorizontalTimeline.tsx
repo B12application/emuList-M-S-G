@@ -25,7 +25,7 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
       activeRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
-        inline: 'center'
+        inline: 'start'
       });
     }
   }, [selectedDate]);

@@ -2,15 +2,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaBell, FaUser, FaHeart, FaComment } from 'react-icons/fa';
+import { FaBell, FaUser, FaHeart, FaComment, FaCalendarDay, FaSun, FaMoon, FaCoffee } from 'react-icons/fa';
 import { useNotifications } from '../context/NotificationContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getShiftInfo } from '../utils/shiftLogic';
 
 export default function NotificationDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const { notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useNotifications();
     const { t } = useLanguage();
     const navigate = useNavigate();
+
+    // Get today's shift info
+    const todayShift = getShiftInfo(new Date());
 
     const getNotificationIcon = (type: string) => {
         switch (type) {
@@ -103,7 +107,7 @@ export default function NotificationDropdown() {
                             className="fixed sm:absolute top-20 sm:top-full left-4 right-4 sm:left-auto sm:right-0 sm:mt-2 sm:w-80 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 rounded-2xl shadow-xl z-50 overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="p-4 border-b border-stone-300 dark:border-zinc-700 flex items-center justify-between">
+                            <div className="p-4 border-b border-stone-300 dark:border-zinc-700 flex items-center justify-between bg-white dark:bg-zinc-900/50">
                                 <h3 className="font-bold text-stone-900 dark:text-white">
                                     {t('notifications.title')}
                                 </h3>
@@ -115,6 +119,38 @@ export default function NotificationDropdown() {
                                         {t('notifications.markAllRead')}
                                     </button>
                                 )}
+                            </div>
+
+                            {/* TODAY STATUS CARD */}
+                            <div className="p-3 bg-white dark:bg-zinc-900/30 border-b border-stone-200 dark:border-zinc-700/50">
+                                <div className={`p-3 rounded-xl flex items-center gap-3 border ${
+                                    todayShift.type === 'Sabah' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' :
+                                    todayShift.type === 'Akşam' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400' :
+                                    'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                }`}>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-zinc-800 shadow-sm border border-inherit">
+                                        {todayShift.type === 'Sabah' && <FaSun className="w-5 h-5" />}
+                                        {todayShift.type === 'Akşam' && <FaMoon className="w-5 h-5" />}
+                                        {todayShift.type === 'Tatil' && <FaCoffee className="w-5 h-5" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-[10px] uppercase tracking-wider font-bold opacity-70">
+                                            {t('planner.today')}
+                                        </div>
+                                        <div className="text-sm font-bold flex items-center gap-2">
+                                            {todayShift.type === 'Tatil' ? 'Tatil Günü' : `${todayShift.type} Vardiyası`}
+                                            {todayShift.dayIndex && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/50 dark:bg-black/20 border border-inherit">
+                                                    {todayShift.dayIndex}. Gün
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-[10px] opacity-80">
+                                            {todayShift.startTime ? `${todayShift.startTime} - ${todayShift.endTime}` : 'Dinlenme Zamanı'}
+                                        </div>
+                                    </div>
+                                    <FaCalendarDay className="opacity-20 w-6 h-6 shrink-0" />
+                                </div>
                             </div>
 
                             {/* Notifications List */}

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
@@ -12,7 +12,6 @@ import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { isAdmin } from '../../backend/config/adminConfig';
-import StatusBanner from './StatusBanner';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -190,111 +189,111 @@ export default function Header({ }: HeaderProps) {
               </nav>
             )}
 
-              {/* Theme, Language & Profile Toggles */}
-              <div className="flex items-center gap-1.5 pl-3 border-l border-stone-200 dark:border-zinc-800">
-                <NotificationDropdown />
+            {/* Theme, Language & Profile Toggles */}
+            <div className="flex items-center gap-1.5 pl-3 border-l border-stone-200 dark:border-zinc-800">
+              <NotificationDropdown />
 
-                <button
-                  onClick={toggleTheme}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  title="Tema"
-                >
-                  {isDark ? <FaMoon className="w-4 h-4" /> : <FaSun className="w-4 h-4" />}
-                </button>
+              <button
+                onClick={toggleTheme}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                title="Tema"
+              >
+                {isDark ? <FaMoon className="w-4 h-4" /> : <FaSun className="w-4 h-4" />}
+              </button>
 
-                <button
-                  onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-xs font-bold text-stone-500 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  title="Language / Dil"
-                >
-                  {language === 'tr' ? 'EN' : 'TR'}
-                </button>
+              <button
+                onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-xs font-bold text-stone-500 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                title="Language / Dil"
+              >
+                {language === 'tr' ? 'EN' : 'TR'}
+              </button>
 
-                {user && (
-                  <div className="relative group ml-1">
-                    <Link
-                      to="/profile"
-                      className="group relative flex items-center justify-center p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all"
-                    >
-                      <div className={`w-9 h-9 rounded-full overflow-hidden shadow-sm z-10 relative ring-2 transition-all ${location.pathname === '/profile' ? 'ring-rose-500' :
-                        location.pathname === '/stats' ? 'ring-amber-500' :
-                          location.pathname.startsWith('/lists') ? 'ring-violet-500' :
-                            location.pathname === '/settings' ? 'ring-gray-400' :
-                              'ring-stone-200 dark:ring-zinc-700'
-                        }`}>
-                        <img
-                          src={getAvatar()}
-                          alt="Profile"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      {['/profile', '/stats', '/settings'].includes(location.pathname) || location.pathname.startsWith('/lists') ? (
-                        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-950 ${location.pathname === '/profile' ? 'bg-rose-500' :
-                          location.pathname === '/stats' ? 'bg-amber-500' :
-                            location.pathname.startsWith('/lists') ? 'bg-violet-500' :
-                              'bg-gray-400'
-                          }`} />
-                      ) : null}
-                    </Link>
-
-                    {/* User Hover Menu */}
-                    <div className="absolute top-full right-0 mt-2 w-48 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
-                      <div className="px-4 py-2 border-b border-stone-200 dark:border-zinc-800 mb-1">
-                        <span className="block text-sm font-bold text-stone-900 dark:text-white truncate">
-                          {user.displayName || 'Kullanıcı'}
-                        </span>
-                        <span className="block text-xs text-stone-500 dark:text-zinc-400 truncate">
-                          {user.email}
-                        </span>
-                      </div>
-
-                      {[
-                        { to: '/profile', label: t('nav.myProfile'), icon: 'bg-rose-500' },
-                        { to: '/stats', label: t('home.stats'), icon: 'bg-amber-500' },
-                        { to: '/lists', label: t('lists.title'), icon: 'bg-violet-500' },
-                        { to: '/map', label: t('nav.map'), icon: 'bg-indigo-500' },
-                        { to: '/settings', label: t('nav.settings'), icon: 'bg-gray-400' }
-                      ].map((item) => (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname.startsWith(item.to)
-                            ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-semibold'
-                            : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50'
-                            }`}
-                        >
-                          <div className={`w-2 h-2 rounded-full ${item.icon}`}></div>
-                          {item.label}
-                        </Link>
-                      ))}
-
-                      {isAdmin(user.uid) && (
-                        <Link
-                          to="/admin"
-                          className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/admin'
-                            ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold'
-                            : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                            }`}
-                        >
-                          <FaUsersCog className="text-xs" />
-                          {t('nav.adminPanel')}
-                        </Link>
-                      )}
-
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
-                      >
-                        <FaSignOutAlt className="text-xs" />
-                        {t('nav.logout')}
-                      </button>
+              {user && (
+                <div className="relative group ml-1">
+                  <Link
+                    to="/profile"
+                    className="group relative flex items-center justify-center p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all"
+                  >
+                    <div className={`w-9 h-9 rounded-full overflow-hidden shadow-sm z-10 relative ring-2 transition-all ${location.pathname === '/profile' ? 'ring-rose-500' :
+                      location.pathname === '/stats' ? 'ring-amber-500' :
+                        location.pathname.startsWith('/lists') ? 'ring-violet-500' :
+                          location.pathname === '/settings' ? 'ring-gray-400' :
+                            'ring-stone-200 dark:ring-zinc-700'
+                      }`}>
+                      <img
+                        src={getAvatar()}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                  </div>
-                )}
-              </div>
+                    {['/profile', '/stats', '/settings'].includes(location.pathname) || location.pathname.startsWith('/lists') ? (
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-zinc-950 ${location.pathname === '/profile' ? 'bg-rose-500' :
+                        location.pathname === '/stats' ? 'bg-amber-500' :
+                          location.pathname.startsWith('/lists') ? 'bg-violet-500' :
+                            'bg-gray-400'
+                        }`} />
+                    ) : null}
+                  </Link>
 
-              {/* Mobile Menu Button — Bottom Nav Bar kullanıldığı için gizlendi */}
+                  {/* User Hover Menu */}
+                  <div className="absolute top-full right-0 mt-2 w-48 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
+                    <div className="px-4 py-2 border-b border-stone-200 dark:border-zinc-800 mb-1">
+                      <span className="block text-sm font-bold text-stone-900 dark:text-white truncate">
+                        {user.displayName || 'Kullanıcı'}
+                      </span>
+                      <span className="block text-xs text-stone-500 dark:text-zinc-400 truncate">
+                        {user.email}
+                      </span>
+                    </div>
+
+                    {[
+                      { to: '/profile', label: t('nav.myProfile'), icon: 'bg-rose-500' },
+                      { to: '/stats', label: t('home.stats'), icon: 'bg-amber-500' },
+                      { to: '/lists', label: t('lists.title'), icon: 'bg-violet-500' },
+                      { to: '/map', label: t('nav.map'), icon: 'bg-indigo-500' },
+                      { to: '/settings', label: t('nav.settings'), icon: 'bg-gray-400' }
+                    ].map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname.startsWith(item.to)
+                          ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-semibold'
+                          : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50'
+                          }`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${item.icon}`}></div>
+                        {item.label}
+                      </Link>
+                    ))}
+
+                    {isAdmin(user.uid) && (
+                      <Link
+                        to="/admin"
+                        className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${location.pathname === '/admin'
+                          ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold'
+                          : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                          }`}
+                      >
+                        <FaUsersCog className="text-xs" />
+                        {t('nav.adminPanel')}
+                      </Link>
+                    )}
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                    >
+                      <FaSignOutAlt className="text-xs" />
+                      {t('nav.logout')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Mobile Menu Button — Bottom Nav Bar kullanıldığı için gizlendi */}
+          </div>
         </motion.header>
       </div>
     </>

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaBars, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog } from 'react-icons/fa';
+import { FaMoon, FaSun, FaPlus, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
@@ -32,10 +32,10 @@ const getDropdownItemCls = ({ isActive }: NavLinkRenderProps) => {
 };
 
 interface HeaderProps {
-  onMobileMenuOpen: () => void;
+  onMobileMenuOpen?: () => void;
 }
 
-export default function Header({ onMobileMenuOpen }: HeaderProps) {
+export default function Header({ }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
   const { profile } = useUserProfile();
@@ -371,15 +371,7 @@ export default function Header({ onMobileMenuOpen }: HeaderProps) {
                 </button>
               </div>
 
-              {/* Mobile Menu Button */}
-              {user && (
-                <button
-                  onClick={onMobileMenuOpen}
-                  className="md:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                >
-                  <FaBars />
-                </button>
-              )}
+              {/* Mobile Menu Button — Bottom Nav Bar kullanıldığı için gizlendi */}
             </div>
           </div>
         </motion.header>

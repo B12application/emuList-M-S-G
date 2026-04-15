@@ -54,14 +54,14 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
 
   return (
     <div className="bg-white dark:bg-zinc-900/50 border border-stone-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm">
-      <div className="grid grid-cols-7 border-b border-stone-200 dark:border-zinc-800">
+      <div className="grid grid-cols-1 md:grid-cols-7 border-b border-stone-200 dark:border-zinc-800">
         {weekDays.map((day, idx) => {
           const dayMatches = getItemsForDay(day).filter(m => m.itemType === 'match');
 
           return (
             <div
               key={idx}
-              className={`py-3 text-center border-r relative last:border-r-0 border-stone-200 dark:border-zinc-800 ${isToday(day) ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}
+              className={`py-3 text-center border-b md:border-b-0 md:border-r relative last:border-b-0 md:last:border-r-0 border-stone-200 dark:border-zinc-800 ${isToday(day) ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}
             >
               <div className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
                 {format(day, 'EEE')}
@@ -81,7 +81,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
       </div>
 
       {/* Grid Row */}
-      <div className="grid grid-cols-7 min-h-[400px]">
+      <div className="grid grid-cols-1 md:grid-cols-7 min-h-[400px]">
         {weekDays.map((day, idx) => {
           // Maçları ana listeden ayırıyoruz, çünkü onları Date/Tarih kısmının yanına çizdik
           const dayItems = getItemsForDay(day).filter(m => m.itemType !== 'match');
@@ -89,7 +89,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
           return (
             <div
               key={idx}
-              className={`p-2 border-r last:border-r-0 border-stone-200 dark:border-zinc-800 transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/30 cursor-pointer ${isToday(day) ? 'bg-amber-50/30 dark:bg-amber-900/5' : ''}`}
+              className={`p-2 border-b md:border-b-0 md:border-r last:border-b-0 md:last:border-r-0 border-stone-200 dark:border-zinc-800 transition-colors hover:bg-stone-50 dark:hover:bg-zinc-800/30 cursor-pointer ${isToday(day) ? 'bg-amber-50/30 dark:bg-amber-900/5' : ''}`}
               onClick={() => onSelectDate(day)}
             >
               <div className="flex flex-col gap-2">

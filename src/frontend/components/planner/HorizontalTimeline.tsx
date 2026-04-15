@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { addDays, format, isSameDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { getShiftInfo } from '../../utils/shiftLogic';
@@ -8,19 +9,32 @@ interface HorizontalTimelineProps {
 }
 
 export default function HorizontalTimeline({ selectedDate, onSelectDate }: HorizontalTimelineProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLButtonElement>(null);
+
   // Generate 15 days around the selected date (7 before, 1 after? Or just 15 days starting from today - 3)
-  // Let's generate from today - 15 to today + 30
   const today = new Date();
   
-  // We'll show a window of 30 days
-  const startDate = addDays(today, -5);
-  const days = Array.from({ length: 45 }).map((_, i) => addDays(startDate, i));
+  // We'll show a window of 45 days
+  const startDate = addDays(today, -10);
+  const days = Array.from({ length: 90 }).map((_, i) => addDays(startDate, i));
 
-  // Find index of selected date to try and keep it in view
-  // In a real app we might use a ref and scrollIntoView, but basic horizontal scroll works.
+  // Sayda açıldığında veya tarih değiştiğinde aktif öğeye kaydır
+  useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [selectedDate]);
 
   return (
-    <div className="w-full overflow-x-auto pb-4 pt-2 hide-scrollbar">
+    <div 
+      ref={scrollRef}
+      className="w-full overflow-x-auto pb-4 pt-2 hide-scrollbar scroll-smooth"
+    >
       <div className="flex gap-2 min-w-max px-2">
         {days.map((date, idx) => {
           const shift = getShiftInfo(date);
@@ -33,6 +47,7 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
           return (
             <button
               key={idx}
+              ref={isSelected ? activeRef : null}
               onClick={() => onSelectDate(date)}
               className={`flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl border transition-all duration-200 ${
                 isSelected 

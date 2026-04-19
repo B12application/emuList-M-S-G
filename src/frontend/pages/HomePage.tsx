@@ -246,12 +246,12 @@ export default function HomePage() {
         <section className="py-10">
 
             {/* === AÇILIŞ EKRANI (SENİN TASARIMIN) === */}
-            <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 p-8 md:p-12 mb-16 shadow-2xl">
+            <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 p-8 md:p-8 mb-8 shadow-2xl">
                 {/* Arka plan dekorları */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full -translate-y-32 translate-x-32" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -translate-x-24 translate-y-24" />
 
-                <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-8">
 
                     {/* Avatar */}
                     <Link to="/profile" className="shrink-0 relative group cursor-pointer">
@@ -346,7 +346,7 @@ export default function HomePage() {
 
 
             {/* === İSTATİSTİK BÖLÜMÜ (SENİN TASARIMIN) === */}
-            <div className="mt-16 mb-12">
+            <div className="mt-8 mb-6">
                 <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3 text-stone-900 dark:text-zinc-200">
                     <FaChartPie className="text-amber-700" /> {t('home.stats')}
                 </h2>
@@ -407,15 +407,15 @@ export default function HomePage() {
 
             {/* === DEVAM ET (Continue Watching) === */}
             {continueWatchingShows.length > 0 && (
-                <div className="mt-12 mb-8">
+                <div className="mt-6 mb-8">
                     <div className="flex items-center justify-between mb-5">
                         <h2 className="text-2xl font-semibold flex items-center gap-3 text-stone-900 dark:text-zinc-200">
-                            <FaPlay className="text-red-500" />
+                            <FaPlay className="text-[#00A896]" />
                             {t('myShows.continueWatching')}
                         </h2>
                         <Link
                             to="/my-shows"
-                            className="text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-1.5 transition-colors"
+                            className="text-sm font-semibold text-[#00A896] dark:text-[#48E5C2] hover:text-[#028090] dark:hover:text-[#00A896] flex items-center gap-1.5 transition-colors"
                         >
                             {t('myShows.viewAll')} <FaArrowRight size={11} />
                         </Link>
@@ -441,7 +441,7 @@ export default function HomePage() {
                                         {/* Info */}
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                                             <div>
-                                                <h4 className="text-sm font-bold text-stone-900 dark:text-white truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                                                <h4 className="text-sm font-bold text-stone-900 dark:text-white truncate group-hover:text-[#00A896] dark:group-hover:text-[#48E5C2] transition-colors">
                                                     {show.title}
                                                 </h4>
                                                 <p className="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5">
@@ -455,11 +455,11 @@ export default function HomePage() {
                                                         className="h-full rounded-full transition-all duration-500"
                                                         style={{
                                                             width: `${progress.percentage}%`,
-                                                            background: 'linear-gradient(90deg, #b91c1c, #991b1b)'
+                                                            background: 'linear-gradient(90deg, #00A896, #028090)'
                                                         }}
                                                     />
                                                 </div>
-                                                <p className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-0.5 text-right">{progress.percentage}%</p>
+                                                <p className="text-[10px] font-bold text-[#00A896] dark:text-[#48E5C2] mt-0.5 text-right">{progress.percentage}%</p>
                                             </div>
                                         </div>
                                     </div>
@@ -467,7 +467,7 @@ export default function HomePage() {
                                     {nextEp && (
                                         <button
                                             onClick={() => handleQuickMarkHome(show)}
-                                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-[12px] font-bold hover:from-red-600 hover:to-red-700 transition-all active:scale-[0.98]"
+                                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-[#00A896] to-[#028090] text-white text-[12px] font-bold hover:from-[#028090] hover:to-[#007b6c] transition-all active:scale-[0.98]"
                                         >
                                             <FaPlay size={8} />
                                             S{nextEp.season}E{nextEp.episode} — {t('myShows.continueWatchingHome')}
@@ -481,12 +481,12 @@ export default function HomePage() {
             )}
 
             {/* === GÜNÜN SÖZÜ WİDGET === */}
-            <div className="mt-8 mb-12">
+            <div className="mt-8 mb-6">
                 <QuoteWidget />
             </div>
 
             {/* === FAVORİLER BÖLÜMÜ === */}
-            <div className="mt-16">
+            <div className="mt-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-semibold flex items-center gap-3 text-stone-900 dark:text-zinc-200">
                         <FaHeart className="text-amber-700" /> {t('home.favorites')}
@@ -606,7 +606,7 @@ export default function HomePage() {
                             )}
                         </>
                     ) : (
-                        <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-12 text-center border-2 border-dashed border-blue-200 dark:border-blue-800">
+                        <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-8 text-center border-2 border-dashed border-blue-200 dark:border-blue-800">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 rounded-full blur-3xl -translate-y-16 translate-x-16" />
                             <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-200/30 rounded-full blur-2xl translate-y-12 -translate-x-12" />
 
@@ -627,7 +627,7 @@ export default function HomePage() {
 
             {/* === 4. YENİ BÖLÜM: GELİŞTİRİCİ GÜNLÜĞÜ & TOZLU RAFLAR === */}
             {/* Burası "Tarih Eklemesi" ile ilgili istediğin yeni bölüm */}
-            <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* SOL: Kütüphane Günlüğü (Timeline) */}
                 <div className="lg:col-span-2 flex flex-col">
@@ -714,7 +714,7 @@ export default function HomePage() {
             </div>
 
             {/* === NAVİGASYON KARTLARI === */}
-            <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
                 {/* FİLM KARTI */}
                 <Link to="/movie" className="group relative flex flex-col justify-between rounded-3xl p-8 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
                     {/* Arka Plan Gradyanı (Hover'da görünür) */}
@@ -796,7 +796,7 @@ export default function HomePage() {
             </div>
 
             {/* === EN İYİ ÖNERİLER BÖLÜMÜ (DİNAMİK & YÖNETİLEBİLİR) === */}
-            <div className="mt-20">
+            <div className="mt-10">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-3">
                         <FaStar className="text-amber-500" /> {t('home.bestRecsTitle')}
@@ -823,9 +823,9 @@ export default function HomePage() {
                 </div>
 
                 {recsExpanded && (
-                    <div className="space-y-12">
+                    <div className="space-y-6">
                         {recsLoading ? (
-                            <div className="flex justify-center py-12">
+                            <div className="flex justify-center py-6">
                                 <FaSpinner className="animate-spin h-10 w-10 text-amber-500" />
                             </div>
                         ) : (() => {
@@ -1172,7 +1172,7 @@ export default function HomePage() {
 
                                     {/* No recommendations message */}
                                     {recommendations.length === 0 && (
-                                        <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-2xl p-12 text-center border-2 border-dashed border-gray-300 dark:border-zinc-700">
+                                        <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-2xl p-8 text-center border-2 border-dashed border-gray-300 dark:border-zinc-700">
                                             <FaStar className="mx-auto h-16 w-16 text-gray-300 dark:text-stone-700 mb-4" />
                                             <h3 className="text-xl font-bold text-stone-700 dark:text-zinc-300 mb-2">
                                                 Henüz öneri eklenmemiş!
@@ -1206,7 +1206,7 @@ export default function HomePage() {
 
 
             {/* === KOLEKSİYONUNDAKİ ÖNERİLER BÖLÜMÜ (AÇILIR/KAPANIR) === */}
-            < div className="mt-20" >
+            < div className="mt-10" >
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold text-stone-900 dark:text-zinc-200 flex items-center gap-3">
                         <FaLightbulb className="text-yellow-500" /> {t('home.collectionRecommendations')}
@@ -1243,7 +1243,7 @@ export default function HomePage() {
 
 
             {/* === FOOTER */}
-            < div className="mt-20 relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 p-8 md:p-12 text-center shadow-2xl" >
+            < div className="mt-10 relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 p-8 md:p-8 text-center shadow-2xl" >
 
                 {/* Arka plan ışık efektleri */}
                 < div className="absolute top-0 left-0 w-56 h-56 bg-white/30 rounded-full blur-3xl -translate-x-20 -translate-y-20" />

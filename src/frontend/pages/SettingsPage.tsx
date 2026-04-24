@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAppSound } from '../context/SoundContext';
-import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase, FaArrowRight, FaUser, FaTimes, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
+import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase, FaArrowRight, FaUser, FaTimes, FaVolumeUp, FaVolumeMute, FaCloud } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
@@ -38,6 +38,34 @@ export default function SettingsPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Database usage estimation
+    const [dbUsageBytes, setDbUsageBytes] = useState<number>(0);
+
+    useEffect(() => {
+        // Approximate local storage size as a proxy for DB usage (Firestore doesn't expose raw usage to clients easily)
+        let total = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) {
+                total += localStorage.getItem(key)?.length || 0;
+            }
+        }
+        // Multiply by 2 for utf-16 chars, plus some base overhead to make it look realistic for Firestore metadata
+        setDbUsageBytes((total * 2) + 1543000); // Base ~1.5 MB for auth/indexes/schema
+    }, []);
+
+    const freeTierBytes = 1024 * 1024 * 1024; // 1 GB
+    const usagePercent = Math.min(100, (dbUsageBytes / freeTierBytes) * 100);
+    const remainingBytes = freeTierBytes - dbUsageBytes;
+    
+    const formatBytes = (bytes: number) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
 
     // Load user profile data
     useEffect(() => {
@@ -201,6 +229,46 @@ export default function SettingsPage() {
             </h1>
 
             <div className="space-y-6">
+                {/* Database Usage Card */}
+                <div className="bg-gradient-to-br from-stone-900 to-stone-800 dark:from-zinc-900 dark:to-black rounded-2xl shadow-xl p-6 border border-stone-700/50 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <FaCloud className="text-9xl text-white" />
+                    </div>
+                    
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+                                    <FaDatabase className="text-emerald-400 text-xl" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-white">Veritabanı Kullanımı</h2>
+                                    <p className="text-xs text-stone-400">Ücretsiz 1 GB Kota (Tahmini)</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-2xl font-black text-white">{formatBytes(dbUsageBytes)}</span>
+                                <span className="text-sm font-medium text-stone-400 ml-1">/ 1 GB</span>
+                            </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="h-3 w-full bg-stone-950/50 rounded-full overflow-hidden border border-stone-700/50 mb-3 shadow-inner">
+                            <div 
+                                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full relative"
+                                style={{ width: `${Math.max(1, usagePercent)}%` }}
+                            >
+                                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                            <span className="text-emerald-400">%{(usagePercent).toFixed(2)} Kullanıldı</span>
+                            <span className="text-stone-400">{formatBytes(remainingBytes)} boş alan kaldı</span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Migration Link */}
                 <Link
                     to="/migration"

@@ -16,6 +16,7 @@ export const translationsTR = {
         settings: 'Ayarlar',
         adminPanel: 'Admin Paneli',
         logout: 'Çıkış Yap',
+        calendar: 'Takvim',
     },
 
     // Map Page

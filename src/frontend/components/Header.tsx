@@ -25,11 +25,6 @@ const getNavCls = ({ isActive }: NavLinkRenderProps) => {
     : "relative px-5 py-2.5 text-sm font-semibold text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors duration-300 hover:bg-stone-50 dark:hover:bg-zinc-800/40 rounded-full border border-transparent";
 };
 
-const getDropdownItemCls = ({ isActive }: NavLinkRenderProps) => {
-  return isActive
-    ? "flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800/80 rounded-xl transition-all"
-    : "flex items-center gap-3 px-4 py-3 text-sm font-semibold text-stone-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800/40 hover:text-stone-900 dark:hover:text-white rounded-xl transition-all group";
-};
 
 interface HeaderProps {
   onMobileMenuOpen?: () => void;
@@ -169,7 +164,7 @@ export default function Header({ }: HeaderProps) {
                     </AnimatePresence>
                   </div>
 
-                  <NavLink to="/planner" className={getNavCls}>Takvim</NavLink>
+                  <NavLink to="/planner" className={getNavCls}>{t('nav.calendar')}</NavLink>
                   <NavLink to="/feed" className={getNavCls}>{t('nav.feed')}</NavLink>
                 </nav>
               )}

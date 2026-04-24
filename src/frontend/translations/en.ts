@@ -16,6 +16,7 @@ export const translationsEN = {
         settings: 'Settings',
         adminPanel: 'Admin Panel',
         logout: 'Logout',
+        calendar: 'Calendar',
     },
 
     // Map Page

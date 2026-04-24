@@ -124,8 +124,8 @@ export default function NotificationDropdown() {
                             {/* TODAY STATUS CARD */}
                             <div className="p-3 bg-white dark:bg-zinc-900/30 border-b border-stone-200 dark:border-zinc-700/50">
                                 <div className={`p-3 rounded-xl flex items-center gap-3 border ${todayShift.type === 'Sabah' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' :
-                                        todayShift.type === 'Akşam' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400' :
-                                            'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                    todayShift.type === 'Akşam' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400' :
+                                        'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                                     }`}>
                                     <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-zinc-800 shadow-sm border border-inherit">
                                         {todayShift.type === 'Sabah' && <FaSun className="w-5 h-5" />}

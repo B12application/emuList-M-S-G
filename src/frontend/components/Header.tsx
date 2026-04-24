@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus } from 'react-icons/fa';
 import B12Logo from './B12Logo';
+import QuickAddModal from './planner/QuickAddModal';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
@@ -41,6 +42,8 @@ export default function Header({ }: HeaderProps) {
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
   const [showListsDropdown, setShowListsDropdown] = useState(false);
+  const [showAddDropdown, setShowAddDropdown] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   // Gender-based avatar URLs
@@ -136,27 +139,28 @@ export default function Header({ }: HeaderProps) {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 15, scale: 0.95 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="absolute top-full mt-2 w-64 p-3 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
+                          className="absolute top-full mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
                         >
-                          <div className="space-y-1">
-                            <NavLink to="/movie" className={getDropdownItemCls}>
-                              <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-lg text-stone-700 dark:text-zinc-300 group-hover:bg-stone-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-stone-900 transition-colors"><FaFilm /></div>
-                              {t('nav.movies')}
-                            </NavLink>
-                            <NavLink to="/series" className={getDropdownItemCls}>
-                              <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-lg text-stone-700 dark:text-zinc-300 group-hover:bg-stone-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-stone-900 transition-colors"><FaTv /></div>
-                              {t('nav.series')}
-                            </NavLink>
-                            <NavLink to="/my-shows" className={getDropdownItemCls}>
-                              <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-lg text-stone-700 dark:text-zinc-300 group-hover:bg-stone-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-stone-900 transition-colors"><FaTv /></div>
+                          <div className="flex flex-col">
+                            <NavLink to="/my-shows" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaTv className="text-sm opacity-70" />
                               {t('myShows.title')}
                             </NavLink>
-                            <NavLink to="/game" className={getDropdownItemCls}>
-                              <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-lg text-stone-700 dark:text-zinc-300 group-hover:bg-stone-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-stone-900 transition-colors"><FaGamepad /></div>
+                            <div className="h-px bg-stone-100 dark:bg-zinc-800 my-1 mx-3" />
+                            <NavLink to="/movie" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaFilm className="text-sm opacity-70" />
+                              {t('nav.movies')}
+                            </NavLink>
+                            <NavLink to="/series" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaTv className="text-sm opacity-70" />
+                              {t('nav.series')}
+                            </NavLink>
+                            <NavLink to="/game" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaGamepad className="text-sm opacity-70" />
                               {t('nav.games')}
                             </NavLink>
-                            <NavLink to="/book" className={getDropdownItemCls}>
-                              <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-lg text-stone-700 dark:text-zinc-300 group-hover:bg-stone-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-stone-900 transition-colors"><FaBook /></div>
+                            <NavLink to="/book" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaBook className="text-sm opacity-70" />
                               {t('nav.books')}
                             </NavLink>
                           </div>
@@ -176,6 +180,53 @@ export default function Header({ }: HeaderProps) {
 
               {/* Theme & Language & Notifications */}
               <div className="flex items-center gap-1.5 sm:gap-2 bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-full border border-stone-200/50 dark:border-zinc-700/50 shadow-inner">
+                {user && (
+                  <div 
+                    className="relative group"
+                    onMouseEnter={() => setShowAddDropdown(true)}
+                    onMouseLeave={() => setShowAddDropdown(false)}
+                  >
+                    <button
+                      className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
+                    >
+                      <FaPlus className="w-4 h-4" />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {showAddDropdown && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="absolute top-full right-0 md:-right-12 mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top-right"
+                        >
+                          <div className="flex flex-col">
+                            <Link 
+                              to="/create" 
+                              className="flex items-center gap-3 px-5 py-2.5 text-sm text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium transition-colors"
+                              onClick={() => setShowAddDropdown(false)}
+                            >
+                              <FaPlus className="text-sm opacity-70" />
+                              {t('create.title')}
+                            </Link>
+                            <button 
+                              onClick={() => {
+                                setShowAddDropdown(false);
+                                setIsQuickAddOpen(true);
+                              }}
+                              className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium transition-colors text-left"
+                            >
+                              <FaCalendarPlus className="text-sm opacity-70" />
+                              {t('actions.addNew')}
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
                 <NotificationDropdown />
 
                 <button
@@ -276,6 +327,15 @@ export default function Header({ }: HeaderProps) {
           </div>
         </motion.header>
       </div>
+      
+      {isQuickAddOpen && (
+        <QuickAddModal 
+          isOpen={isQuickAddOpen}
+          onClose={() => setIsQuickAddOpen(false)}
+          selectedDate={new Date()}
+          onAdded={() => setIsQuickAddOpen(false)}
+        />
+      )}
     </>
   );
 }

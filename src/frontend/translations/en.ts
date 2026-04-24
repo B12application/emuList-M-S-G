@@ -9,7 +9,7 @@ export const translationsEN = {
         books: 'Books',
         all: 'All',
         map: 'My Map',
-        collection: 'My List',
+        collection: 'Library',
         feed: 'Activity',
         // Profile dropdown
         myProfile: 'My Profile',

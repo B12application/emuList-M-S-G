@@ -10,16 +10,15 @@ export interface ShiftInfo {
   shiftDate: Date;   // The "logical" date of the shift
 }
 
-// 10 day cycle: 4 Morning -> 4 Evening -> 2 Off
-const CYCLE_LENGTH = 10;
-// Referans: 13 Nisan 2026 = Akşam vardiyası son gün (4. akşam, index 7)
-// Döngü: 0-3 Sabah, 4-7 Akşam, 8-9 Tatil
-const REF_DATE = new Date(2026, 3, 13); // April 13, 2026
-const REF_INDEX = 7; 
+// 12 günlük döngü: 4 Sabah → 2 Tatil → 4 Akşam → 2 Tatil
+// Google Sheet verisiyle doğrulanmış desen
+const CYCLE_LENGTH = 12;
+// Referans: 4 Nisan 2026 = Sabah 1. gün (index 0)
+const REF_DATE = new Date(2026, 3, 3); // April 4, 2026
 
 export function getShiftInfo(date: Date): ShiftInfo {
   let dateToCalculate = new Date(date);
-  
+
   // Eğer saat 00:00 ile 02:00 arasındaysa, hala bir önceki günün vardiyası içindeyiz demektir
   // (Özellikle Akşam vardiyası 02:00'de bittiği için)
   const hour = date.getHours();
@@ -28,33 +27,42 @@ export function getShiftInfo(date: Date): ShiftInfo {
   }
 
   const diff = differenceInCalendarDays(dateToCalculate, REF_DATE);
-  
-  let index = (diff % CYCLE_LENGTH) + REF_INDEX;
-  index = index % CYCLE_LENGTH;
-  if (index < 0) {
-    index += CYCLE_LENGTH;
-  }
+
+  let index = diff % CYCLE_LENGTH;
+  if (index < 0) index += CYCLE_LENGTH;
+
+  // Döngü haritası:
+  // 0-3:   Sabah   (06:30 – 16:30)
+  // 4-5:   Tatil 1
+  // 6-9:   Akşam   (16:00 – 02:00)
+  // 10-11: Tatil 2
 
   if (index >= 0 && index <= 3) {
-    return { 
-      type: 'Sabah', 
-      startTime: '06:30', 
+    return {
+      type: 'Sabah',
+      startTime: '06:30',
       endTime: '16:30',
       dayIndex: index + 1,
       shiftDate: dateToCalculate
     };
-  } else if (index >= 4 && index <= 7) {
-    return { 
-      type: 'Akşam', 
-      startTime: '16:00', 
-      endTime: '02:00',
+  } else if (index >= 4 && index <= 5) {
+    return {
+      type: 'Tatil',
       dayIndex: index - 3,
       shiftDate: dateToCalculate
     };
+  } else if (index >= 6 && index <= 9) {
+    return {
+      type: 'Akşam',
+      startTime: '16:00',
+      endTime: '02:00',
+      dayIndex: index - 5,
+      shiftDate: dateToCalculate
+    };
   } else {
-    return { 
+    return {
       type: 'Tatil',
-      dayIndex: index - 7,
+      dayIndex: index - 9,
       shiftDate: dateToCalculate
     };
   }

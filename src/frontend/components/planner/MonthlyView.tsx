@@ -6,7 +6,7 @@ import { tr } from 'date-fns/locale';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getShiftInfo } from '../../utils/shiftLogic';
-import type { PlannerMeeting } from '../../../backend/types/planner';
+import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 
@@ -15,6 +15,7 @@ interface MonthlyViewProps {
   onMonthChange: (date: Date) => void;
   meetings: PlannerMeeting[];
   onSelectDate: (date: Date) => void;
+  calendarAlerts?: CalendarAlert[];
 }
 
 interface Arrow {
@@ -25,7 +26,7 @@ interface Arrow {
   endY: number;
 }
 
-export default function MonthlyView({ currentMonth, onMonthChange, meetings, onSelectDate }: MonthlyViewProps) {
+export default function MonthlyView({ currentMonth, onMonthChange, meetings, onSelectDate, calendarAlerts = [] }: MonthlyViewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -47,6 +48,32 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
   const now = new Date();
 
   const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+  // ─── Calendar Alert Helpers ───
+  // Her gün için, o güne denk gelen alert bilgisini hesapla
+  const getAlertInfoForDay = (day: Date, dayIndex: number) => {
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const results: {
+      alert: CalendarAlert;
+      isStart: boolean;
+      isEnd: boolean;
+      isRowStart: boolean;
+      isRowEnd: boolean;
+    }[] = [];
+
+    calendarAlerts.forEach(alert => {
+      if (dateStr >= alert.startDate && dateStr <= alert.endDate) {
+        const isStart = dateStr === alert.startDate;
+        const isEnd = dateStr === alert.endDate;
+        const colInWeek = dayIndex % 7; // 0=Pzt, 6=Paz
+        const isRowStart = isStart || colInWeek === 0; // Satır başı veya alert başlangıcı
+        const isRowEnd = isEnd || colInWeek === 6; // Satır sonu veya alert bitişi
+        results.push({ alert, isStart, isEnd, isRowStart, isRowEnd });
+      }
+    });
+
+    return results;
+  };
 
   const nextMonth = () => onMonthChange(addMonths(currentMonth, 1));
   const prevMonth = () => onMonthChange(subMonths(currentMonth, 1));
@@ -162,6 +189,9 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
               const isCurrentMonth = isSameMonth(day, monthStart);
               const isToday = isSameDay(day, new Date());
 
+              // Alert bilgisi
+              const alertInfos = getAlertInfoForDay(day, idx);
+
               return (
                 <div
                   key={day.toString()}
@@ -247,6 +277,74 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       <div className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-zinc-500" />
                     )}
                   </div>
+
+                  {/* ─── CALENDAR ALERT BARS ─── */}
+                  {alertInfos.length > 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 pointer-events-none hidden sm:block">
+                      {alertInfos.map((info, aIdx) => (
+                        <div
+                          key={`${info.alert.id}-${aIdx}`}
+                          className="relative"
+                          style={{ marginBottom: aIdx * 14 }}
+                        >
+                          {/* Kırmızı çizgi bandı */}
+                          <div
+                            className="h-[3px] absolute bottom-3"
+                            style={{
+                              backgroundColor: info.alert.color || '#ef4444',
+                              left: info.isRowStart ? '8px' : '-1px',
+                              right: info.isRowEnd ? '8px' : '-1px',
+                              borderRadius: `${info.isStart ? '4px' : '0'} ${info.isEnd ? '4px' : '0'} ${info.isEnd ? '4px' : '0'} ${info.isStart ? '4px' : '0'}`,
+                              opacity: 0.7,
+                            }}
+                          />
+
+                          {/* Başlangıç noktası */}
+                          {info.isStart && (
+                            <div
+                              className="absolute bottom-[9px] w-[9px] h-[9px] rounded-full shadow-sm"
+                              style={{
+                                left: '4px',
+                                backgroundColor: info.alert.color || '#ef4444',
+                              }}
+                            />
+                          )}
+
+                          {/* Bitiş noktası */}
+                          {info.isEnd && (
+                            <div
+                              className="absolute bottom-[9px] w-[9px] h-[9px] rounded-full shadow-sm"
+                              style={{
+                                right: '4px',
+                                backgroundColor: info.alert.color || '#ef4444',
+                              }}
+                            />
+                          )}
+
+                          {/* Etiket — her satır segment'inin sonunda (isRowEnd) göster */}
+                          {info.isRowEnd && (
+                            <div
+                              className="absolute bottom-5 pointer-events-auto"
+                              style={{
+                                right: info.isEnd ? '0' : '-4px',
+                              }}
+                            >
+                              <span
+                                className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded border whitespace-nowrap"
+                                style={{
+                                  color: info.alert.color || '#ef4444',
+                                  borderColor: `${info.alert.color || '#ef4444'}50`,
+                                  backgroundColor: `${info.alert.color || '#ef4444'}12`,
+                                }}
+                              >
+                                {info.alert.label}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}

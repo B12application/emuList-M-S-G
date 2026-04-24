@@ -19,6 +19,8 @@ export interface PlannerMeeting {
   recurrenceFrequency?: 'weekly';
   lastGeneratedDate?: string; // Track up to which date instances are generated
   status?: 'todo' | 'planned' | 'dev' | 'test' | 'done';
+  category?: string;      // Görev kategorisi: 'araba', 'ev', 'kişisel', etc.
+  categoryColor?: string; // Kategori rengi: '#f97316', '#10b981', etc.
 }
 
 export interface GoogleSheetMeeting {
@@ -27,4 +29,14 @@ export interface GoogleSheetMeeting {
   Konu: string;
   BitisSaati?: string;
   Detay?: string;
+}
+
+export interface CalendarAlert {
+  id?: string;
+  userId: string;
+  startDate: string;    // YYYY-MM-DD
+  endDate: string;      // YYYY-MM-DD
+  label: string;        // "İstanbul Yolculuğu" gibi
+  color?: string;       // Varsayılan: '#ef4444' (kırmızı)
+  createdAt?: Date | any;
 }

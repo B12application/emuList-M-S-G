@@ -1,6 +1,6 @@
 import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
-import type { PlannerMeeting } from '../types/planner';
+import type { PlannerMeeting, CalendarAlert } from '../types/planner';
 
 // Dahili yardımcı: Gelecek Instances'ları oluşturma
 const generateFutureInstances = async (master: PlannerMeeting, weeks: number = 3) => {
@@ -201,6 +201,47 @@ export const toggleTodoStatus = async (meetingId: string, isCompleted: boolean):
     });
   } catch (error) {
     console.error('Error toggling todo status:', error);
+    throw error;
+  }
+};
+
+// ─── Takvim Uyarıları (Calendar Alerts) ─────────────────────────────
+
+// Takvim Uyarısı Ekleme
+export const addCalendarAlert = async (alert: Omit<CalendarAlert, 'id' | 'createdAt'>): Promise<string> => {
+  try {
+    const docRef = await addDoc(collection(db, 'calendarAlerts'), {
+      ...alert,
+      createdAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding calendar alert:', error);
+    throw error;
+  }
+};
+
+// Kullanıcının Takvim Uyarılarını Getirme
+export const getUserCalendarAlerts = async (userId: string): Promise<CalendarAlert[]> => {
+  try {
+    const q = query(
+      collection(db, 'calendarAlerts'),
+      where('userId', '==', userId)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as CalendarAlert));
+  } catch (error) {
+    console.error('Error getting calendar alerts:', error);
+    return [];
+  }
+};
+
+// Takvim Uyarısı Silme
+export const deleteCalendarAlert = async (alertId: string): Promise<void> => {
+  try {
+    await deleteDoc(doc(db, 'calendarAlerts', alertId));
+  } catch (error) {
+    console.error('Error deleting calendar alert:', error);
     throw error;
   }
 };

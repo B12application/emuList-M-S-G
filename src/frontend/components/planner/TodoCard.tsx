@@ -1,4 +1,4 @@
-import { FaTrash, FaCheck, FaEdit, FaSyncAlt } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaEdit, FaSyncAlt, FaCar, FaHome, FaUser, FaHeartbeat, FaBriefcase } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 
@@ -17,6 +17,28 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
   const isJira = todo.itemType === 'jira';
   const statuses: PlannerMeeting['status'][] = ['todo', 'planned', 'dev', 'test', 'done'];
   const currentStatus = todo.status || 'todo';
+
+  const getCategoryIcon = (cat?: string) => {
+    switch (cat) {
+      case 'araba': return FaCar;
+      case 'ev': return FaHome;
+      case 'kisisel': return FaUser;
+      case 'saglik': return FaHeartbeat;
+      case 'is': return FaBriefcase;
+      default: return null;
+    }
+  };
+  const getCategoryLabel = (cat?: string) => {
+    switch (cat) {
+      case 'araba': return 'Araba';
+      case 'ev': return 'Ev';
+      case 'kisisel': return 'Kişisel';
+      case 'saglik': return 'Sağlık';
+      case 'is': return 'İş';
+      default: return '';
+    }
+  };
+  const CategoryIcon = getCategoryIcon(todo.category);
 
   const getStatusInfo = (s: PlannerMeeting['status']) => {
     // If not Jira, always return neutral/simple style
@@ -106,7 +128,14 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
       {isJira ? (
         <div className={`absolute left-0 top-0 bottom-0 w-2 ${statusInfo.accent} ${isCompleted ? 'opacity-50' : 'opacity-100'}`} />
       ) : (
-        <div className={`absolute left-0 top-0 bottom-0 w-1 ${isCompleted ? 'bg-emerald-500' : 'bg-stone-200 dark:bg-zinc-700'}`} />
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-1 ${
+            isCompleted ? 'bg-emerald-500' 
+              : todo.categoryColor ? '' 
+              : 'bg-stone-200 dark:bg-zinc-700'
+          }`}
+          style={!isCompleted && todo.categoryColor ? { backgroundColor: todo.categoryColor } : undefined}
+        />
       )}
 
       <div className="pl-3 py-3 flex items-center gap-3 w-full min-h-[64px]">
@@ -138,6 +167,21 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
                 
                 {todo.isRecurring && (
                   <FaSyncAlt size={10} className="text-stone-400 dark:text-zinc-600 animate-spin-slow" />
+                )}
+
+                {/* Kategori Badge */}
+                {CategoryIcon && todo.category && !isCompleted && (
+                  <span
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border whitespace-nowrap"
+                    style={{
+                      color: todo.categoryColor || '#6b7280',
+                      borderColor: `${todo.categoryColor || '#6b7280'}40`,
+                      backgroundColor: `${todo.categoryColor || '#6b7280'}12`,
+                    }}
+                  >
+                    <CategoryIcon size={9} />
+                    {getCategoryLabel(todo.category)}
+                  </span>
                 )}
 
                 {isCompleted && (

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaCalendarPlus, FaTasks, FaSyncAlt, FaEdit } from 'react-icons/fa';
+import { FaTimes, FaCalendarPlus, FaTasks, FaSyncAlt, FaEdit, FaCar, FaHome, FaUser, FaHeartbeat, FaBriefcase, FaTag } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { useAppSound } from '../../context/SoundContext';
 import { addMeeting, updateMeeting } from '../../../backend/services/plannerService';
 import { format, addMinutes } from 'date-fns';
 import { showMarqueeToast } from '../MarqueeToast';
@@ -19,6 +20,7 @@ type TabType = 'meeting' | 'todo' | 'jira';
 
 export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, initialData }: QuickAddModalProps) {
   const { user } = useAuth();
+  const { playSuccess } = useAppSound();
   const [activeTab, setActiveTab] = useState<TabType>('meeting');
   const [title, setTitle] = useState('');
   const [startTime, setStartTime] = useState('09:00');
@@ -28,6 +30,16 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<PlannerMeeting['status']>('todo');
+  const [category, setCategory] = useState('');
+  const [categoryColor, setCategoryColor] = useState('');
+
+  const TASK_CATEGORIES = [
+    { key: 'araba', label: 'Araba', icon: FaCar, color: '#f97316' },
+    { key: 'ev', label: 'Ev', icon: FaHome, color: '#8b5cf6' },
+    { key: 'kisisel', label: 'Kişisel', icon: FaUser, color: '#06b6d4' },
+    { key: 'saglik', label: 'Sağlık', icon: FaHeartbeat, color: '#ef4444' },
+    { key: 'is', label: 'İş', icon: FaBriefcase, color: '#10b981' },
+  ];
 
   const isEditMode = !!initialData;
 
@@ -41,6 +53,8 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setIsRecurring(!!initialData.isRecurring);
       setDueDate(initialData.dueDate || '');
       setStatus(initialData.status || 'todo');
+      setCategory(initialData.category || '');
+      setCategoryColor(initialData.categoryColor || '');
     } else {
       // Reset for New
       setTitle('');
@@ -49,6 +63,8 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setIsRecurring(false);
       setDueDate('');
       setStatus('todo');
+      setCategory('');
+      setCategoryColor('');
     }
   }, [initialData, isOpen]);
 
@@ -88,20 +104,27 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
           isCompleted: initialData?.isCompleted ?? false,
           status: status || 'todo'
         } : {}),
+        ...(activeTab === 'todo' && category ? {
+          category,
+          categoryColor
+        } : {}),
         isRecurring,
       };
 
       if (isEditMode && initialData?.id) {
         await updateMeeting(initialData.id, meetingData);
-        showMarqueeToast({ message: 'Güncellendi', type: 'watched', mediaType: 'movie' });
+        showMarqueeToast({ message: 'Güncellendi', type: 'success' });
       } else {
         await addMeeting(meetingData, isRecurring);
+        const typeLabel = activeTab === 'meeting' ? 'Toplantı' : activeTab === 'jira' ? 'Jira Task' : 'Görev';
         showMarqueeToast({
-          message: isRecurring ? 'Haftalık seri oluşturuldu' : 'Eklendi',
-          type: 'watched',
-          mediaType: 'movie'
+          message: isRecurring ? `Haftalık ${typeLabel.toLowerCase()} serisi oluşturuldu` : `${typeLabel} eklendi`,
+          type: 'success'
         });
       }
+
+      // Ses efekti çal
+      playSuccess();
 
       onAdded();
       onClose();
@@ -233,6 +256,53 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 required
               />
             </div>
+
+            {activeTab === 'todo' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                  <FaTag className="inline mr-1" size={10} />
+                  Kategori (Opsiyonel)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {TASK_CATEGORIES.map(cat => {
+                    const Icon = cat.icon;
+                    const isActive = category === cat.key;
+                    return (
+                      <button
+                        key={cat.key}
+                        type="button"
+                        onClick={() => {
+                          if (isActive) {
+                            setCategory('');
+                            setCategoryColor('');
+                          } else {
+                            setCategory(cat.key);
+                            setCategoryColor(cat.color);
+                          }
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                          isActive
+                            ? 'text-white shadow-sm scale-105'
+                            : 'text-stone-600 dark:text-zinc-400 border-stone-200 dark:border-zinc-700 hover:border-stone-300 dark:hover:border-zinc-600'
+                        }`}
+                        style={
+                          isActive
+                            ? { backgroundColor: cat.color, borderColor: cat.color }
+                            : {}
+                        }
+                      >
+                        <Icon size={12} />
+                        {cat.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
 
             {activeTab === 'jira' && (
               <motion.div

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { FaCalendarPlus, FaSyncAlt, FaHistory } from 'react-icons/fa';
+import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt } from 'react-icons/fa';
 import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
 import ShiftLegend from '../components/planner/ShiftLegend';
@@ -13,10 +13,12 @@ import WeeklyView from '../components/planner/WeeklyView';
 import JiraView from '../components/planner/JiraView';
 import RecurringManagerModal from '../components/planner/RecurringManagerModal';
 import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
+import CalendarAlertModal from '../components/planner/CalendarAlertModal';
 import { useAuth } from '../context/AuthContext';
-import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting } from '../../backend/services/plannerService';
+import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
 import type { PlannerMeeting } from '../../backend/types/planner';
+import type { CalendarAlert } from '../../backend/types/planner';
 import { showMarqueeToast } from '../components/MarqueeToast';
 
 export default function PlannerPage() {
@@ -34,6 +36,8 @@ export default function PlannerPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [calendarAlerts, setCalendarAlerts] = useState<CalendarAlert[]>([]);
   // Mobilde daily, desktop'ta monthly başlat
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira'>(() =>
     window.innerWidth < 768 ? 'daily' : 'monthly'
@@ -49,13 +53,15 @@ export default function PlannerPage() {
 
     try {
       // 1. Verileri PARALEL çek (Hız kazandırır)
-      const [dbMeetings, gsMatches] = await Promise.all([
+      const [dbMeetings, gsMatches, alerts] = await Promise.all([
         getUserMeetings(user.uid),
-        getUpcomingGSMatches()
+        getUpcomingGSMatches(),
+        getUserCalendarAlerts(user.uid)
       ]);
 
       const allMeetings = [...dbMeetings, ...gsMatches];
       setMeetings(allMeetings);
+      setCalendarAlerts(alerts);
 
       // Cache'e yaz (Anında yükleme için)
       localStorage.setItem(`planner_meetings_${user.uid}`, JSON.stringify(allMeetings));
@@ -332,11 +338,23 @@ export default function PlannerPage() {
         )}
 
         {activeTab === 'monthly' && (
-          <div className="mt-4">
+          <div className="mt-4 space-y-3">
+            {/* Özel Takvim Uyarısı Butonu */}
+            <div className="flex justify-end px-1">
+              <button
+                onClick={() => setIsAlertModalOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 
+                           rounded-lg text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-900/40"
+              >
+                <FaMapMarkerAlt size={11} />
+                <span>Özel Takvim Uyarısı{calendarAlerts.length > 0 ? ` (${calendarAlerts.length})` : ''}</span>
+              </button>
+            </div>
             <MonthlyView
               currentMonth={selectedDate}
               onMonthChange={setSelectedDate}
               meetings={meetings}
+              calendarAlerts={calendarAlerts}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 setActiveTab('daily');
@@ -403,6 +421,13 @@ export default function PlannerPage() {
           title={itemToDelete.title}
         />
       )}
+
+      <CalendarAlertModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        onAdded={loadData}
+        existingAlerts={calendarAlerts}
+      />
     </motion.div>
   );
 }

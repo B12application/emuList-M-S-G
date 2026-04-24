@@ -245,3 +245,16 @@ export const deleteCalendarAlert = async (alertId: string): Promise<void> => {
     throw error;
   }
 };
+
+// Takvim Uyarısı Güncelleme
+export const updateCalendarAlert = async (alertId: string, alert: Partial<Omit<CalendarAlert, 'id' | 'createdAt'>>): Promise<void> => {
+  try {
+    const alertRef = doc(db, 'calendarAlerts', alertId);
+    await updateDoc(alertRef, {
+      ...alert
+    });
+  } catch (error) {
+    console.error('Error updating calendar alert:', error);
+    throw error;
+  }
+};

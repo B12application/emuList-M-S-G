@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaMapMarkerAlt, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import { addCalendarAlert, deleteCalendarAlert } from '../../../backend/services/plannerService';
+import { addCalendarAlert, deleteCalendarAlert, updateCalendarAlert } from '../../../backend/services/plannerService';
 import { showMarqueeToast } from '../MarqueeToast';
 import { useAppSound } from '../../context/SoundContext';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS } from 'date-fns/locale';
+import { useLanguage } from '../../context/LanguageContext';
 import type { CalendarAlert } from '../../../backend/types/planner';
 
 interface CalendarAlertModalProps {
@@ -27,12 +28,15 @@ const COLOR_OPTIONS = [
 export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingAlerts }: CalendarAlertModalProps) {
   const { user } = useAuth();
   const { playSuccess } = useAppSound();
+  const { language } = useLanguage();
+  const dateLocale = language === 'tr' ? tr : enUS;
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [label, setLabel] = useState('');
   const [color, setColor] = useState('#ef4444');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(existingAlerts.length === 0);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -47,26 +51,58 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
 
     setIsSubmitting(true);
     try {
-      await addCalendarAlert({
-        userId: user.uid,
-        startDate,
-        endDate,
-        label: label.trim(),
-        color
-      });
-      showMarqueeToast({ message: 'Takvim uyarısı eklendi', type: 'success' });
+      if (editingId) {
+        await updateCalendarAlert(editingId, {
+          startDate,
+          endDate,
+          label: label.trim(),
+          color
+        });
+        showMarqueeToast({ message: 'Takvim uyarısı güncellendi', type: 'success' });
+      } else {
+        await addCalendarAlert({
+          userId: user.uid,
+          startDate,
+          endDate,
+          label: label.trim(),
+          color
+        });
+        showMarqueeToast({ message: 'Takvim uyarısı eklendi', type: 'success' });
+      }
       playSuccess();
       setStartDate('');
       setEndDate('');
       setLabel('');
       setColor('#ef4444');
+      setEditingId(null);
+      setShowForm(false);
       onAdded();
       onClose();
     } catch (err) {
       console.error(err);
-      showMarqueeToast({ message: 'Uyarı eklenemedi', type: 'error' });
+      showMarqueeToast({ message: 'İşlem başarısız', type: 'error' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEditAlert = (alert: CalendarAlert) => {
+    setEditingId(alert.id || null);
+    setLabel(alert.label);
+    setStartDate(alert.startDate);
+    setEndDate(alert.endDate);
+    setColor(alert.color || '#ef4444');
+    setShowForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setLabel('');
+    setStartDate('');
+    setEndDate('');
+    setColor('#ef4444');
+    if (existingAlerts.length > 0) {
+      setShowForm(false);
     }
   };
 
@@ -82,7 +118,8 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
 
   const formatDateLabel = (dateStr: string) => {
     try {
-      return format(new Date(dateStr), 'd MMM', { locale: tr });
+      const dateObj = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`);
+      return format(dateObj, 'd MMM', { locale: dateLocale });
     } catch {
       return dateStr;
     }
@@ -132,13 +169,22 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                         {formatDateLabel(alert.startDate)} → {formatDateLabel(alert.endDate)}
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteAlert(alert.id!)}
-                      className="p-1.5 text-stone-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                      title="Sil"
-                    >
-                      <FaTrash size={12} />
-                    </button>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        onClick={() => handleEditAlert(alert)}
+                        className="p-1.5 text-stone-400 hover:text-blue-500 dark:hover:text-blue-400"
+                        title="Düzenle"
+                      >
+                        Düzenle
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAlert(alert.id!)}
+                        className="p-1.5 text-stone-400 hover:text-red-500 dark:hover:text-red-400"
+                        title="Sil"
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -246,13 +292,22 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                 )}
 
                 {/* Submit */}
-                <div className="pt-2">
+                <div className="pt-2 flex gap-3">
+                  {existingAlerts.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="flex-1 text-stone-600 dark:text-zinc-300 font-bold py-3 px-4 rounded-xl bg-stone-100 dark:bg-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
+                    >
+                      İptal
+                    </button>
+                  )}
                   <button
                     type="submit"
                     disabled={isSubmitting || !label.trim() || !startDate || !endDate}
-                    className="w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:active:scale-100 active:scale-95 bg-red-600 hover:bg-red-700 shadow-red-600/20"
+                    className="flex-[2] text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:active:scale-100 active:scale-95 bg-red-600 hover:bg-red-700 shadow-red-600/20"
                   >
-                    {isSubmitting ? 'Ekleniyor...' : 'Uyarı Ekle'}
+                    {isSubmitting ? 'İşleniyor...' : editingId ? 'Güncelle' : 'Uyarı Ekle'}
                   </button>
                 </div>
               </form>

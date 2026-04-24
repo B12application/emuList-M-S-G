@@ -287,6 +287,9 @@ export const translationsTR = {
         deleteConfirm: 'Hesabımı Silmek İstiyorum',
         deleteWarning: 'Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
         reauthRequired: 'Güvenlik gereği bu işlem için tekrar giriş yapmalısınız.',
+        soundTitle: 'Ses Ayarları',
+        soundEffects: 'Ses Efektleri',
+        soundEffectsDesc: 'Uygulama içi aksiyonlarda (görev ekleme, tamamlama) ses çalınsın.',
     },
 
     // Stats Page

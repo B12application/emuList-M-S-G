@@ -1,5 +1,6 @@
 import { format, isToday, isTomorrow } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS } from 'date-fns/locale';
+import { useLanguage } from '../../context/LanguageContext';
 import { getShiftInfo } from '../../utils/shiftLogic';
 import { FaSun, FaMoon, FaBed } from 'react-icons/fa';
 
@@ -10,33 +11,35 @@ interface PlannerHeaderProps {
 
 export default function PlannerHeader({ selectedDate, meetingCount }: PlannerHeaderProps) {
   const shift = getShiftInfo(selectedDate);
+  const { language } = useLanguage();
+  const dateLocale = language === 'tr' ? tr : enUS;
   
-  let dateText = format(selectedDate, 'd MMMM yyyy, EEEE', { locale: tr });
+  let dateText = format(selectedDate, 'd MMMM yyyy, EEEE', { locale: dateLocale });
   if (isToday(selectedDate)) {
-    dateText = `Bugün (${dateText})`;
+    dateText = language === 'tr' ? `Bugün (${dateText})` : `Today (${dateText})`;
   } else if (isTomorrow(selectedDate)) {
-    dateText = `Yarın (${dateText})`;
+    dateText = language === 'tr' ? `Yarın (${dateText})` : `Tomorrow (${dateText})`;
   }
 
   // Determine styles and icon based on shift type
   let shiftBg = 'bg-stone-100 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-stone-700 dark:text-zinc-300';
   let Icon = FaBed;
-  let summaryText = 'Tatildesin. Dinlenmene bak!';
+  let summaryText = language === 'tr' ? 'Tatildesin. Dinlenmene bak!' : 'On holiday. Enjoy your rest!';
   let timeText = '';
 
   if (shift.type === 'Sabah') {
     shiftBg = 'bg-amber-100/50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200';
     Icon = FaSun;
-    summaryText = `Sabah Vardiyası (${shift.dayIndex}. Gün)`;
+    summaryText = language === 'tr' ? `Sabah Vardiyası (${shift.dayIndex}. Gün)` : `Morning Shift (Day ${shift.dayIndex})`;
     timeText = `${shift.startTime} - ${shift.endTime}`;
   } else if (shift.type === 'Akşam') {
     shiftBg = 'bg-indigo-100/50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800/50 text-indigo-800 dark:text-indigo-200';
     Icon = FaMoon;
-    summaryText = `Akşam Vardiyası (${shift.dayIndex}. Gün)`;
+    summaryText = language === 'tr' ? `Akşam Vardiyası (${shift.dayIndex}. Gün)` : `Evening Shift (Day ${shift.dayIndex})`;
     timeText = `${shift.startTime} - ${shift.endTime}`;
   } else if (shift.type === 'Tatil') {
     shiftBg = 'bg-emerald-100/50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-200';
-    summaryText = `Tatil (${shift.dayIndex}. Gün) | İyi dinlenmeler`;
+    summaryText = language === 'tr' ? `Tatil (${shift.dayIndex}. Gün) | İyi dinlenmeler` : `Holiday (Day ${shift.dayIndex}) | Have a good rest`;
   }
 
   return (
@@ -55,8 +58,8 @@ export default function PlannerHeader({ selectedDate, meetingCount }: PlannerHea
         <div className="mt-4 pt-4 border-t border-current/10">
           <p className="text-sm font-semibold">
             {meetingCount > 0 
-              ? `Bu güne ait ${meetingCount} toplantı/not bulundu.` 
-              : 'Bugün için planlanmış bir kayıt yok.'}
+              ? (language === 'tr' ? `Bu güne ait ${meetingCount} toplantı/not bulundu.` : `${meetingCount} meetings/notes found for this day.`)
+              : (language === 'tr' ? 'Bugün için planlanmış bir kayıt yok.' : 'No items planned for today.')}
           </p>
         </div>
       </div>

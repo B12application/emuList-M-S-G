@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { format, startOfWeek, addDays, isToday } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS } from 'date-fns/locale';
+import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle } from 'react-icons/fa';
@@ -15,6 +16,8 @@ interface WeeklyViewProps {
 export default function WeeklyView({ currentDate, meetings, onSelectDate }: WeeklyViewProps) {
   // Start week from Monday (weekStartsOn: 1)
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const { language } = useLanguage();
+  const dateLocale = language === 'tr' ? tr : enUS;
 
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
@@ -66,7 +69,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                 className={`py-3 text-center border-r relative last:border-r-0 border-stone-200 dark:border-zinc-800 ${isToday(day) ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}
               >
                 <div className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                  {format(day, 'EEE', { locale: tr })}
+                  {format(day, 'EEE', { locale: dateLocale })}
                 </div>
                 <div className={`text-lg font-bold ${isToday(day) ? 'text-amber-600 dark:text-amber-500' : 'text-stone-900 dark:text-zinc-100'}`}>
                   {format(day, 'd')}

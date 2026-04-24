@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { addDays, format, isSameDay } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS } from 'date-fns/locale';
+import { useLanguage } from '../../context/LanguageContext';
 import { getShiftInfo } from '../../utils/shiftLogic';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -12,6 +13,8 @@ interface HorizontalTimelineProps {
 export default function HorizontalTimeline({ selectedDate, onSelectDate }: HorizontalTimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
+  const { language } = useLanguage();
+  const dateLocale = language === 'tr' ? tr : enUS;
 
   // Generate 15 days around the selected date (7 before, 1 after? Or just 15 days starting from today - 3)
   const today = new Date();
@@ -75,7 +78,7 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
                   }`}
               >
                 <span className={`text-xs font-medium mb-1 ${isSelected ? 'text-white/80' : 'opacity-70'}`}>
-                  {format(date, 'EEE', { locale: tr })}
+                  {format(date, 'EEE', { locale: dateLocale })}
                 </span>
                 <span className="text-xl font-bold mb-1">
                   {format(date, 'd')}

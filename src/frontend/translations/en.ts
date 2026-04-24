@@ -287,6 +287,9 @@ export const translationsEN = {
         deleteConfirm: 'I Want to Delete My Account',
         deleteWarning: 'This action cannot be undone. Do you wish to continue?',
         reauthRequired: 'For security reasons, you must re-login to perform this action.',
+        soundTitle: 'Sound Settings',
+        soundEffects: 'Sound Effects',
+        soundEffectsDesc: 'Play sound for in-app actions.',
     },
 
     // Stats Page

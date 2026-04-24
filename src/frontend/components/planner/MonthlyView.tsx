@@ -2,8 +2,9 @@ import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths
 } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS } from 'date-fns/locale';
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getShiftInfo } from '../../utils/shiftLogic';
 import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
@@ -32,6 +33,8 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [showMatches, setShowMatches] = useState(false);
   const [arrows, setArrows] = useState<Arrow[]>([]);
+  const { language } = useLanguage();
+  const dateLocale = language === 'tr' ? tr : enUS;
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -47,7 +50,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
 
   const now = new Date();
 
-  const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  const weekDays = language === 'tr' ? ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   // ─── Calendar Alert Helpers ───
   // Her gün için, o güne denk gelen alert bilgisini hesapla
@@ -132,7 +135,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
         >
           {/* HEADER */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-stone-200 dark:border-zinc-800">
-            <h2 className="text-xl font-bold capitalize">{format(currentMonth, 'MMMM yyyy', { locale: tr })}</h2>
+            <h2 className="text-xl font-bold capitalize">{format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowMatches(v => !v)}

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaTasks, FaPlus, FaCheckCircle, FaTrash, FaUndo, FaTag } from 'react-icons/fa';
+import { FaTimes, FaTasks, FaPlus, FaCheckCircle, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { addMeeting, toggleTodoStatus, deleteMeeting, updateMeeting } from '../../../backend/services/plannerService';
 import type { PlannerMeeting } from '../../../backend/types/planner';

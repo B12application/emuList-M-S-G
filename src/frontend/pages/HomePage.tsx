@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // 1. YENİ İKONLAR EKLENDİ: FaCalendarCheck, FaHistory, FaArrowRight, FaHourglassHalf, FaStar
-import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog, FaPlay } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog, FaPlay, FaTimes } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';
@@ -45,6 +45,7 @@ export default function HomePage() {
     const [recsExpanded, setRecsExpanded] = useState(true); // Başta açık gelsin
     const [showAdminPanel, setShowAdminPanel] = useState(false);
     const [collectionRecsExpanded, setCollectionRecsExpanded] = useState(true); // Koleksiyon önerileri açık başlasın
+    const [isProfilePreviewOpen, setIsProfilePreviewOpen] = useState(false);
 
     // Pagination State for 2025 Best Recommendations
     const [recFilmPage, setRecFilmPage] = useState(1);
@@ -142,6 +143,19 @@ export default function HomePage() {
     useEffect(() => {
         loadRecommendations();
     }, []);
+
+    useEffect(() => {
+        if (!isProfilePreviewOpen) return;
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsProfilePreviewOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [isProfilePreviewOpen]);
 
     const loadRecommendations = async () => {
         setRecsLoading(true);
@@ -254,7 +268,11 @@ export default function HomePage() {
                 <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-8">
 
                     {/* Avatar */}
-                    <Link to="/profile" className="shrink-0 relative group cursor-pointer">
+                    <button
+                        type="button"
+                        onClick={() => setIsProfilePreviewOpen(true)}
+                        className="shrink-0 relative group cursor-pointer"
+                    >
                         <div className="absolute -inset-4 bg-linear-to-r from-white/40 to-transparent rounded-full blur-xl opacity-75 group-hover:opacity-100 transition-opacity" />
                         <img
                             src={getAvatar()}
@@ -264,7 +282,7 @@ export default function HomePage() {
                         <div className="absolute -bottom-2 -right-2 bg-amber-700 p-2 rounded-full shadow-lg group-hover:bg-amber-800 transition-colors">
                             <FaHeart className="h-5 w-5 text-white" />
                         </div>
-                    </Link>
+                    </button>
 
                     {/* Sağ taraf */}
                     <div className="flex-1 text-stone-900 dark:text-zinc-200">
@@ -1293,6 +1311,48 @@ export default function HomePage() {
 
 
             {/* Modallar */}
+            {isProfilePreviewOpen && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 flex items-center justify-center"
+                    onClick={() => setIsProfilePreviewOpen(false)}
+                >
+                    <div
+                        className="w-full max-w-md rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 shadow-2xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 flex items-center justify-between border-b border-stone-200 dark:border-zinc-800">
+                            <h3 className="text-lg font-bold text-stone-900 dark:text-zinc-100">{t('nav.myProfile')}</h3>
+                            <button
+                                type="button"
+                                onClick={() => setIsProfilePreviewOpen(false)}
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800"
+                            >
+                                <FaTimes />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <img
+                                src={getAvatar()}
+                                alt="Profil önizleme"
+                                className="w-64 h-64 max-w-full mx-auto rounded-full object-cover border-4 border-stone-200 dark:border-zinc-700 shadow-xl"
+                            />
+                            <p className="mt-5 text-center text-sm text-stone-600 dark:text-zinc-300">
+                                {displayName}
+                            </p>
+                            <Link
+                                to="/profile"
+                                onClick={() => setIsProfilePreviewOpen(false)}
+                                className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold transition-colors"
+                            >
+                                Profilim sayfasına git
+                                <FaArrowRight size={12} />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <LuckyDipModal
                 isOpen={!!randomItem}
                 onClose={() => setRandomItem(null)}

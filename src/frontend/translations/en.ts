@@ -291,6 +291,11 @@ export const translationsEN = {
         soundTitle: 'Sound Settings',
         soundEffects: 'Sound Effects',
         soundEffectsDesc: 'Play sound for in-app actions.',
+        tabs: {
+            general: 'General Site Settings',
+            profile: 'Profile Settings',
+            security: 'Security & Account',
+        },
     },
 
     // Stats Page

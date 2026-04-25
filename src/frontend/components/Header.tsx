@@ -1,8 +1,8 @@
 // src/components/Header.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
 import NotificationDropdown from './NotificationDropdown';
@@ -13,6 +13,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { isAdmin } from '../../backend/config/adminConfig';
+import { getShiftInfo } from '../utils/shiftLogic';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -40,6 +41,9 @@ export default function Header({ }: HeaderProps) {
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const listsDropdownRef = useRef<HTMLDivElement | null>(null);
+  const addDropdownRef = useRef<HTMLDivElement | null>(null);
+  const todayShift = getShiftInfo(new Date(), true);
 
   // Gender-based avatar URLs
   const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
@@ -65,6 +69,21 @@ export default function Header({ }: HeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (listsDropdownRef.current && !listsDropdownRef.current.contains(target)) {
+        setShowListsDropdown(false);
+      }
+      if (addDropdownRef.current && !addDropdownRef.current.contains(target)) {
+        setShowAddDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const getListTitle = () => {
     if (location.pathname.startsWith('/movie')) return t('nav.movies');
     if (location.pathname.startsWith('/series')) return t('nav.series');
@@ -86,10 +105,10 @@ export default function Header({ }: HeaderProps) {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`pointer-events-auto w-full max-w-7xl backdrop-blur-2xl bg-white/70 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-3xl transition-all duration-300 ${scrolled ? 'py-3' : 'py-4'}`}
         >
-          <div className="px-6 md:px-8 flex items-center justify-between">
+          <div className="relative px-6 md:px-8 flex items-center justify-between">
 
             {/* --- LEFT SECTION: Logo --- */}
-            <div className="flex-1 flex items-center justify-start z-10 transition-transform duration-300 hover:scale-105">
+            <div className="shrink-0 flex items-center justify-start z-10 transition-transform duration-300 hover:scale-105">
               <Link to="/" className="flex items-center">
                 <div className="hidden sm:block">
                   <B12Logo size="md" />
@@ -101,18 +120,18 @@ export default function Header({ }: HeaderProps) {
             </div>
 
             {/* --- CENTER SECTION: Navigation --- */}
-            <div className="flex-none flex items-center justify-center overflow-visible">
-              {/* Desktop Navigation */}
-              {user && (
-                <nav className="hidden xl:flex items-center gap-2 overflow-visible">
+            <div className="pointer-events-none flex-1 flex items-center justify-start ml-16 md:ml-24 lg:ml-62 overflow-visible">              {user && (
+                <nav className="pointer-events-auto hidden md:flex items-center gap-2 overflow-visible">
                   <NavLink to="/" end className={getNavCls}>{t('nav.home')}</NavLink>
 
                   <div
+                    ref={listsDropdownRef}
                     className="relative group"
                     onMouseEnter={() => setShowListsDropdown(true)}
                     onMouseLeave={() => setShowListsDropdown(false)}
                   >
                     <button
+                      onClick={() => setShowListsDropdown((prev) => !prev)}
                       className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border border-transparent ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
                         ? "text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800/80 shadow-sm border-stone-200/50 dark:border-zinc-700/50"
                         : "text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-zinc-800/40"
@@ -171,17 +190,36 @@ export default function Header({ }: HeaderProps) {
             </div>
 
             {/* --- RIGHT SECTION: Actions & Profile --- */}
-            <div className="flex-1 flex items-center justify-end gap-3 sm:gap-4 overflow-visible">
+            <div className="shrink-0 flex items-center justify-end gap-3 sm:gap-4 overflow-visible">
 
               {/* Theme & Language & Notifications */}
               <div className="flex items-center gap-1.5 sm:gap-2 bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-full border border-stone-200/50 dark:border-zinc-700/50 shadow-inner">
                 {user && (
-                  <div 
+                  <div
+                    className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${todayShift.type === 'Sabah'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800'
+                      : todayShift.type === 'Akşam'
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
+                      }`}
+                    title={todayShift.type === 'Tatil' ? 'Tatil Günü' : `${todayShift.type} Vardiyası`}
+                  >
+                    {todayShift.type === 'Sabah' && <FaSun className="w-3.5 h-3.5" />}
+                    {todayShift.type === 'Akşam' && <FaMoon className="w-3.5 h-3.5" />}
+                    {todayShift.type === 'Tatil' && <FaCoffee className="w-3.5 h-3.5" />}
+                    <span>{todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type}</span>
+                  </div>
+                )}
+
+                {user && (
+                  <div
+                    ref={addDropdownRef}
                     className="relative group"
                     onMouseEnter={() => setShowAddDropdown(true)}
                     onMouseLeave={() => setShowAddDropdown(false)}
                   >
                     <button
+                      onClick={() => setShowAddDropdown((prev) => !prev)}
                       className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
                     >
                       <FaPlus className="w-4 h-4" />

@@ -44,7 +44,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const location = useLocation();
 
   // Bugünkü vardiya bilgisi
-  const todayShift = getShiftInfo(new Date());
+  const todayShift = getShiftInfo(new Date(), true);
   const shiftConfig = {
     Sabah: { label: '☀️ Sabah Vardiyası', sub: '06:30 – 16:30', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700/50', icon: FaBriefcase },
     Akşam: { label: '🌙 Akşam Vardiyası', sub: '16:00 – 02:00', color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700/50', icon: FaMoon },

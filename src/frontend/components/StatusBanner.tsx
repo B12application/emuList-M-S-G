@@ -61,7 +61,7 @@ export default function StatusBanner() {
   useEffect(() => {
     const update = () => {
       const now = new Date();
-      const shift = getShiftInfo(now);
+      const shift = getShiftInfo(now, true);
 
       if (shift.type === 'Tatil') {
         setShiftDisplay({

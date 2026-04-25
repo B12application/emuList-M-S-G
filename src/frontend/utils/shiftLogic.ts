@@ -14,16 +14,18 @@ export interface ShiftInfo {
 // Google Sheet verisiyle doğrulanmış desen
 const CYCLE_LENGTH = 12;
 // Referans: 4 Nisan 2026 = Sabah 1. gün (index 0)
-const REF_DATE = new Date(2026, 3, 3); // April 4, 2026
+const REF_DATE = new Date(2026, 3, 4); // April 4, 2026
 
-export function getShiftInfo(date: Date): ShiftInfo {
+export function getShiftInfo(date: Date, exactTime: boolean = false): ShiftInfo {
   let dateToCalculate = new Date(date);
 
-  // Eğer saat 00:00 ile 02:00 arasındaysa, hala bir önceki günün vardiyası içindeyiz demektir
-  // (Özellikle Akşam vardiyası 02:00'de bittiği için)
-  const hour = date.getHours();
-  if (hour >= 0 && hour < 2) {
-    dateToCalculate.setDate(dateToCalculate.getDate() - 1);
+  // Eğer saat 00:00 ile 02:00 arasındaysa ve anlık zaman kontrolü (exactTime) yapılıyorsa, 
+  // hala bir önceki günün vardiyası içindeyiz demektir (Özellikle Akşam vardiyası 02:00'de bittiği için)
+  if (exactTime) {
+    const hour = date.getHours();
+    if (hour >= 0 && hour < 2) {
+      dateToCalculate.setDate(dateToCalculate.getDate() - 1);
+    }
   }
 
   const diff = differenceInCalendarDays(dateToCalculate, REF_DATE);

@@ -14,7 +14,7 @@ export default function NotificationDropdown() {
     const navigate = useNavigate();
 
     // Get today's shift info
-    const todayShift = getShiftInfo(new Date());
+    const todayShift = getShiftInfo(new Date(), true);
 
     const getNotificationIcon = (type: string) => {
         switch (type) {

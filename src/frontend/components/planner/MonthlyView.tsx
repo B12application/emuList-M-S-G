@@ -78,8 +78,14 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
     return results;
   };
 
-  const nextMonth = () => onMonthChange(addMonths(currentMonth, 1));
-  const prevMonth = () => onMonthChange(subMonths(currentMonth, 1));
+  const nextMonth = () => {
+    setShowMatches(false);
+    onMonthChange(addMonths(currentMonth, 1));
+  };
+  const prevMonth = () => {
+    setShowMatches(false);
+    onMonthChange(subMonths(currentMonth, 1));
+  };
 
   const monthMatches = useMemo(() =>
     meetings

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks } from 'react-icons/fa';
 import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
 import ShiftLegend from '../components/planner/ShiftLegend';
@@ -12,6 +12,7 @@ import MonthlyView from '../components/planner/MonthlyView';
 import WeeklyView from '../components/planner/WeeklyView';
 import JiraView from '../components/planner/JiraView';
 import RecurringManagerModal from '../components/planner/RecurringManagerModal';
+import TodoManagerModal from '../components/planner/TodoManagerModal';
 import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
 import CalendarAlertModal from '../components/planner/CalendarAlertModal';
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +34,7 @@ export default function PlannerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
+  const [isTodoModalOpen, setIsTodoModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
@@ -114,7 +116,7 @@ export default function PlannerPage() {
     const overdueTasks = tasks.filter(m =>
       (m.itemType === 'todo' || m.itemType === 'jira') &&
       !m.isCompleted &&
-      m.date < todayStr
+      m.date && m.date < todayStr
     );
 
     if (overdueTasks.length > 0) {
@@ -275,6 +277,13 @@ export default function PlannerPage() {
                     <FaHistory />
                   </button>
                   <button
+                    onClick={() => setIsTodoModalOpen(true)}
+                    className="p-2 text-stone-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+                    title="Görevlerim"
+                  >
+                    <FaTasks />
+                  </button>
+                  <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-rose-100/50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 
                                rounded-lg text-sm font-bold hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors border border-rose-200 dark:border-rose-900/50"
@@ -406,6 +415,13 @@ export default function PlannerPage() {
       <RecurringManagerModal
         isOpen={isRecurringModalOpen}
         onClose={() => setIsRecurringModalOpen(false)}
+        onRefresh={loadData}
+      />
+
+      <TodoManagerModal
+        isOpen={isTodoModalOpen}
+        onClose={() => setIsTodoModalOpen(false)}
+        meetings={meetings}
         onRefresh={loadData}
       />
 

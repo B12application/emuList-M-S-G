@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaTasks, FaPlus, FaCheckCircle, FaTrash } from 'react-icons/fa';
+import { FaTimes, FaTasks, FaPlus, FaCheckCircle, FaTrash, FaSort } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { addMeeting, toggleTodoStatus, deleteMeeting, updateMeeting } from '../../../backend/services/plannerService';
 import type { PlannerMeeting } from '../../../backend/types/planner';
@@ -32,11 +32,30 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
     return meetings.filter(m => m.itemType === 'todo' && !m.date);
   }, [meetings]);
 
-  const pendingTodos = todos.filter(t => !t.isCompleted);
+  const [isSortedByCategory, setIsSortedByCategory] = useState(false);
+
+  const pendingTodos = useMemo(() => {
+    const list = todos.filter(t => !t.isCompleted);
+    if (isSortedByCategory) {
+      return list.sort((a, b) => {
+        const catA = a.category || '';
+        const catB = b.category || '';
+        return catA.localeCompare(catB);
+      });
+    }
+    return list;
+  }, [todos, isSortedByCategory]);
+
   const completedTodos = todos.filter(t => t.isCompleted);
   
   // Son tamamlanan 10 öğeyi al
   const recentCompletedTodos = completedTodos.slice(-10).reverse();
+
+  const getCategoryBadgeClass = (categoryLabel: string | undefined) => {
+    if (!categoryLabel) return 'bg-stone-100 text-stone-500 dark:bg-zinc-700 dark:text-zinc-400';
+    const cat = CATEGORIES.find(c => c.label === categoryLabel);
+    return cat ? cat.badgeClass : 'bg-stone-100 text-stone-500 dark:bg-zinc-700 dark:text-zinc-400';
+  };
 
   if (!isOpen) return null;
 
@@ -111,9 +130,18 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
               </div>
               Görevlerim
             </h3>
-            <button onClick={onClose} className="p-2 text-stone-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-zinc-800 rounded-full shadow-sm">
-              <FaTimes />
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setIsSortedByCategory(!isSortedByCategory)} 
+                className={`p-2 rounded-full transition-colors shadow-sm ${isSortedByCategory ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400' : 'text-stone-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 bg-white dark:bg-zinc-800'}`}
+                title="Kategoriye Göre Sırala"
+              >
+                <FaSort />
+              </button>
+              <button onClick={onClose} className="p-2 text-stone-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-zinc-800 rounded-full shadow-sm">
+                <FaTimes />
+              </button>
+            </div>
           </div>
 
           {/* ADD TASK FORM */}
@@ -167,7 +195,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                       <span className="text-sm font-medium text-stone-800 dark:text-zinc-200 flex items-center flex-wrap gap-2">
                         {todo.title}
                         {todo.category && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-100 text-stone-500 dark:bg-zinc-700 dark:text-zinc-400">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${getCategoryBadgeClass(todo.category)}`}>
                             {todo.category}
                           </span>
                         )}
@@ -203,7 +231,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                       <span className="text-sm font-medium text-stone-500 dark:text-zinc-400 line-through flex items-center flex-wrap gap-2">
                         {todo.title}
                         {todo.category && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-200 text-stone-400 dark:bg-zinc-800 dark:text-zinc-600">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${getCategoryBadgeClass(todo.category)}`}>
                             {todo.category}
                           </span>
                         )}

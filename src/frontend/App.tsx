@@ -8,6 +8,7 @@ import CreatePage from './pages/CreatePage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import ProfilePage from './pages/ProfilePage';
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
   {
     path: '/signup',
     element: <SignupPage />
+  },
+  {
+    path: '/sifremi-unuttum',
+    element: <ForgotPasswordPage />
   },
 ]);
 

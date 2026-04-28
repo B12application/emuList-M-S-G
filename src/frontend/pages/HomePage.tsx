@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // 1. YENİ İKONLAR EKLENDİ: FaCalendarCheck, FaHistory, FaArrowRight, FaHourglassHalf, FaStar
-import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog, FaPlay, FaTimes } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog, FaPlay, FaTimes, FaTasks } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import useMediaStats from '../hooks/useMediaStats';
 import useMedia from '../hooks/useMedia';

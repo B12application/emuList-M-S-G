@@ -291,6 +291,11 @@ export const translationsTR = {
         soundTitle: 'Ses Ayarları',
         soundEffects: 'Ses Efektleri',
         soundEffectsDesc: 'Uygulama içi aksiyonlarda (görev ekleme, tamamlama) ses çalınsın.',
+        tabs: {
+            general: 'Genel Site Ayarları',
+            profile: 'Profil Ayarları',
+            security: 'Güvenlik & Hesap',
+        },
     },
 
     // Stats Page

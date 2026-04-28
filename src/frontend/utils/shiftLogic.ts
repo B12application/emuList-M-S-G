@@ -17,7 +17,7 @@ const CYCLE_LENGTH = 12;
 const REF_DATE = new Date(2026, 3, 4); // April 4, 2026
 
 export function getShiftInfo(date: Date, exactTime: boolean = false): ShiftInfo {
-  let dateToCalculate = new Date(date);
+  const dateToCalculate = new Date(date);
 
   // Eğer saat 00:00 ile 02:00 arasındaysa ve anlık zaman kontrolü (exactTime) yapılıyorsa, 
   // hala bir önceki günün vardiyası içindeyiz demektir (Özellikle Akşam vardiyası 02:00'de bittiği için)

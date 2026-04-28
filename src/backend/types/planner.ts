@@ -19,6 +19,7 @@ export interface PlannerMeeting {
   recurrenceFrequency?: 'weekly';
   lastGeneratedDate?: string; // Track up to which date instances are generated
   status?: 'todo' | 'planned' | 'dev' | 'test' | 'done';
+  priority?: 'urgent' | 'high' | 'medium' | 'low';
   category?: string;      // Görev kategorisi: 'araba', 'ev', 'kişisel', etc.
   categoryColor?: string; // Kategori rengi: '#f97316', '#10b981', etc.
 }

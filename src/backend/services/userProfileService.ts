@@ -81,7 +81,7 @@ export async function getUserMediaItems(
     filterStatus?: FilterStatus
 ): Promise<MediaItem[]> {
     try {
-        let q = query(
+        const q = query(
             collection(db, 'mediaItems'),
             where('userId', '==', userId),
             orderBy('createdAt', 'desc')

@@ -7,6 +7,7 @@ import { addMeeting, updateMeeting } from '../../../backend/services/plannerServ
 import { format, addMinutes } from 'date-fns';
 import { showMarqueeToast } from '../MarqueeToast';
 import type { PlannerMeeting } from '../../../backend/types/planner';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface QuickAddModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ type TabType = 'meeting' | 'todo' | 'jira';
 export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, initialData }: QuickAddModalProps) {
   const { user } = useAuth();
   const { playSuccess } = useAppSound();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('meeting');
   const [title, setTitle] = useState('');
   const [startTime, setStartTime] = useState('09:00');
@@ -32,13 +34,21 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
   const [status, setStatus] = useState<PlannerMeeting['status']>('todo');
   const [category, setCategory] = useState('');
   const [categoryColor, setCategoryColor] = useState('');
+  const [priority, setPriority] = useState<PlannerMeeting['priority']>('medium');
+
+  const PRIORITIES = [
+    { key: 'urgent', label: t('planner.urgent'), color: 'bg-rose-600', text: 'text-rose-600', border: 'border-rose-200 dark:border-rose-900/50', active: 'bg-rose-600 text-white border-rose-600 shadow-rose-600/20' },
+    { key: 'high', label: t('planner.high'), color: 'bg-orange-500', text: 'text-orange-500', border: 'border-orange-200 dark:border-orange-900/50', active: 'bg-orange-600 text-white border-orange-600 shadow-orange-600/20' },
+    { key: 'medium', label: t('planner.medium'), color: 'bg-amber-400', text: 'text-amber-500', border: 'border-amber-200 dark:border-amber-900/50', active: 'bg-amber-500 text-white border-amber-500 shadow-amber-500/20' },
+    { key: 'low', label: t('planner.low'), color: 'bg-blue-400', text: 'text-blue-500', border: 'border-blue-200 dark:border-blue-900/50', active: 'bg-blue-500 text-white border-blue-500 shadow-blue-500/20' },
+  ];
 
   const TASK_CATEGORIES = [
-    { key: 'araba', label: 'Araba', icon: FaCar, color: '#f97316' },
-    { key: 'ev', label: 'Ev', icon: FaHome, color: '#8b5cf6' },
-    { key: 'kisisel', label: 'Kişisel', icon: FaUser, color: '#06b6d4' },
-    { key: 'saglik', label: 'Sağlık', icon: FaHeartbeat, color: '#ef4444' },
-    { key: 'is', label: 'İş', icon: FaBriefcase, color: '#10b981' },
+    { key: 'araba', label: t('planner.catCar'), icon: FaCar, color: '#f97316' },
+    { key: 'ev', label: t('planner.catHome'), icon: FaHome, color: '#8b5cf6' },
+    { key: 'kisisel', label: t('planner.catPersonal'), icon: FaUser, color: '#06b6d4' },
+    { key: 'saglik', label: t('planner.catHealth'), icon: FaHeartbeat, color: '#ef4444' },
+    { key: 'is', label: t('planner.catWork'), icon: FaBriefcase, color: '#10b981' },
   ];
 
   const isEditMode = !!initialData;
@@ -55,6 +65,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setStatus(initialData.status || 'todo');
       setCategory(initialData.category || '');
       setCategoryColor(initialData.categoryColor || '');
+      setPriority(initialData.priority || 'medium');
     } else {
       // Reset for New
       setTitle('');
@@ -65,6 +76,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setStatus('todo');
       setCategory('');
       setCategoryColor('');
+      setPriority('medium');
     }
   }, [initialData, isOpen]);
 
@@ -104,21 +116,22 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
           isCompleted: initialData?.isCompleted ?? false,
           status: status || 'todo'
         } : {}),
-        ...(activeTab === 'todo' && category ? {
+        ...(activeTab === 'todo' ? {
           category,
           categoryColor
         } : {}),
+        priority: activeTab !== 'meeting' ? priority : undefined,
         isRecurring,
       };
 
       if (isEditMode && initialData?.id) {
         await updateMeeting(initialData.id, meetingData);
-        showMarqueeToast({ message: 'Güncellendi', type: 'success' });
+        showMarqueeToast({ message: t('planner.updated'), type: 'success' });
       } else {
         await addMeeting(meetingData, isRecurring);
-        const typeLabel = activeTab === 'meeting' ? 'Toplantı' : activeTab === 'jira' ? 'Jira Task' : 'Görev';
+        const typeLabel = activeTab === 'meeting' ? t('planner.meeting') : activeTab === 'jira' ? 'Jira' : t('planner.task');
         showMarqueeToast({
-          message: isRecurring ? `Haftalık ${typeLabel.toLowerCase()} serisi oluşturuldu` : `${typeLabel} eklendi`,
+          message: isRecurring ? t('planner.weeklySeriesCreated').replace('{type}', typeLabel.toLowerCase()) : t('planner.itemAdded').replace('{type}', typeLabel),
           type: 'success'
         });
       }
@@ -130,7 +143,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       onClose();
     } catch (err) {
       console.error(err);
-      showMarqueeToast({ message: 'İşlem başarısız', type: 'error' });
+      showMarqueeToast({ message: t('planner.actionFailed'), type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -150,7 +163,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
           <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800">
             <h3 className="text-lg font-bold flex items-center gap-2">
               {isEditMode ? <FaEdit className="text-rose-500" /> : <FaCalendarPlus className="text-rose-500" />}
-              <span>{isEditMode ? 'Düzenle' : 'Hızlı Ekle'}</span>
+              <span>{isEditMode ? t('planner.edit') : t('planner.quickAdd')}</span>
             </h3>
             <button onClick={onClose} className="p-2 text-stone-500 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors">
               <FaTimes />
@@ -170,7 +183,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                       }`}
                   >
                     {tab === 'meeting' ? <FaCalendarPlus size={12} /> : <FaTasks size={12} />}
-                    {tab === 'meeting' ? 'Toplantı' : tab === 'todo' ? 'Görev' : 'Jira'}
+                    {tab === 'meeting' ? t('planner.meeting') : tab === 'todo' ? t('planner.task') : 'Jira'}
                   </button>
                 ))}
               </div>
@@ -181,7 +194,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
             {!isEditMode && (
               <div>
                 <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                  Tarih
+                  {t('planner.date')}
                 </label>
                 <div className="w-full px-4 py-2.5 bg-stone-100 dark:bg-zinc-800 rounded-xl text-sm font-medium">
                   {format(selectedDate, 'dd.MM.yyyy')}
@@ -198,7 +211,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
               >
                 <div className="flex-1">
                   <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                    Başlangıç
+                    {t('planner.startTime')}
                   </label>
                   <input
                     type="time"
@@ -210,7 +223,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 </div>
                 <div className="flex-1">
                   <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                    Bitiş
+                    {t('planner.endTime')}
                   </label>
                   <input
                     type="time"
@@ -230,7 +243,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 exit={{ opacity: 0, height: 0 }}
               >
                 <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                  Son Gün (Due Date)
+                  {t('planner.dueDate')}
                 </label>
                 <input
                   type="date"
@@ -244,13 +257,13 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
 
             <div>
               <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                {activeTab === 'meeting' ? 'Konu' : activeTab === 'jira' ? 'Jira Task/Özet' : 'Ne Yapılacak?'}
+                {activeTab === 'meeting' ? t('planner.subject') : activeTab === 'jira' ? t('planner.jiraSummary') : t('planner.whatToDo')}
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={activeTab === 'meeting' ? 'Örn: Ekip Toplantısı' : activeTab === 'jira' ? 'Örn: PROJ-123 API Integrasyonu' : 'Örn: Spora git'}
+                placeholder={activeTab === 'meeting' ? t('planner.placeholderMeeting') : activeTab === 'jira' ? t('planner.placeholderJira') : t('planner.placeholderTask')}
                 className={`w-full px-4 py-2.5 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all text-sm ${activeTab === 'todo' ? 'focus:ring-emerald-500' : activeTab === 'jira' ? 'focus:ring-blue-500' : 'focus:ring-rose-500'
                   }`}
                 required
@@ -265,7 +278,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
               >
                 <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                   <FaTag className="inline mr-1" size={10} />
-                  Kategori (Opsiyonel)
+                  {t('planner.categoryOptional')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {TASK_CATEGORIES.map(cat => {
@@ -304,6 +317,34 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
               </motion.div>
             )}
 
+            {activeTab !== 'meeting' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-1.5"
+              >
+                <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
+                  {t('planner.priorityTitle')}
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {PRIORITIES.map(p => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => setPriority(p.key as any)}
+                      className={`py-1.5 px-1 text-[10px] font-bold rounded-lg border transition-all ${
+                        priority === p.key 
+                          ? p.active 
+                          : `${p.border} ${p.text} hover:bg-stone-50 dark:hover:bg-zinc-800`
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             {activeTab === 'jira' && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
@@ -311,7 +352,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 className="space-y-1.5"
               >
                 <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                  Mevcut Durum
+                  {t('planner.currentStatus')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['todo', 'planned', 'dev', 'test', 'done'] as const).map(s => {
@@ -346,10 +387,10 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                             : getStatusColor(s)
                         }`}
                       >
-                        {s === 'todo' ? 'Yapılacak' : 
-                         s === 'planned' ? 'Plan Hazır' : 
-                         s === 'dev' ? 'Geliştirme' : 
-                         s === 'test' ? 'Testte' : 'Bitti'}
+                        {s === 'todo' ? t('planner.todo') : 
+                         s === 'planned' ? t('planner.jiraPlanned') : 
+                         s === 'dev' ? t('planner.jiraDev') : 
+                         s === 'test' ? t('planner.jiraTest') : t('planner.done')}
                       </button>
                     );
                   })}
@@ -363,12 +404,12 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                 animate={{ opacity: 1, y: 0 }}
               >
                 <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                  Notlar {activeTab === 'meeting' && !isEditMode && '(Toplantı Sonrası)'}
+                  {t('planner.notes')} {activeTab === 'meeting' && !isEditMode && t('planner.afterMeeting')}
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder={activeTab === 'meeting' ? "Toplantı bittikten sonra alınan notlar..." : "Görev detayları..."}
+                  placeholder={activeTab === 'meeting' ? t('planner.notesPlaceholderMeeting') : t('planner.notesPlaceholderTask')}
                   className="w-full px-4 py-2.5 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all text-sm min-h-[80px] resize-none"
                 />
               </motion.div>
@@ -378,7 +419,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
             <div className="flex items-center justify-between p-3 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl">
               <div className="flex items-center gap-2">
                 <FaSyncAlt className={`text-xs ${isRecurring ? 'text-rose-500 animate-spin-slow' : 'text-stone-400'}`} />
-                <span className="text-sm font-semibold text-stone-700 dark:text-zinc-300">Haftalık Tekrarla</span>
+                <span className="text-sm font-semibold text-stone-700 dark:text-zinc-300">{t('planner.repeatWeekly')}</span>
               </div>
               <button
                 type="button"
@@ -400,7 +441,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
                     : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
                   }`}
               >
-                {isSubmitting ? (isEditMode ? 'Güncelleniyor...' : 'Ekleniyor...') : (isEditMode ? 'Güncelle' : (activeTab === 'todo' ? 'Görev Ekle' : activeTab === 'jira' ? 'Task Ekle' : 'Toplantı Ekle'))}
+                {isSubmitting ? (isEditMode ? t('planner.updating') : t('planner.adding')) : (isEditMode ? t('planner.edit') : (activeTab === 'todo' ? t('planner.addTaskBtn') : activeTab === 'jira' ? t('planner.addJiraBtn') : t('planner.addMeetingBtn')))}
               </button>
             </div>
           </form>

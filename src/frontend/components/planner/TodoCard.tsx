@@ -1,6 +1,7 @@
-import { FaTrash, FaCheck, FaEdit, FaSyncAlt, FaCar, FaHome, FaUser, FaHeartbeat, FaBriefcase } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaEdit, FaSyncAlt, FaCar, FaHome, FaUser, FaHeartbeat, FaBriefcase, FaExclamationCircle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface TodoCardProps {
   todo: PlannerMeeting;
@@ -11,6 +12,7 @@ interface TodoCardProps {
 }
 
 export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onEdit }: TodoCardProps) {
+  const { t } = useLanguage();
   const isCompleted = !!todo.isCompleted;
   const isPast = new Date(`${todo.date}T${todo.startTime || '23:59'}`) < new Date();
 
@@ -30,11 +32,11 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
   };
   const getCategoryLabel = (cat?: string) => {
     switch (cat) {
-      case 'araba': return 'Araba';
-      case 'ev': return 'Ev';
-      case 'kisisel': return 'Kişisel';
-      case 'saglik': return 'Sağlık';
-      case 'is': return 'İş';
+      case 'araba': return t('planner.catCar');
+      case 'ev': return t('planner.catHome');
+      case 'kisisel': return t('planner.catPersonal');
+      case 'saglik': return t('planner.catHealth');
+      case 'is': return t('planner.catWork');
       default: return '';
     }
   };
@@ -44,7 +46,7 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
     // If not Jira, always return neutral/simple style
     if (!isJira) {
       return { 
-        label: 'Yapılacak', 
+        label: t('planner.statusTodo'), 
         color: 'bg-stone-50 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400 border-stone-100 dark:border-zinc-700', 
         accent: 'bg-stone-300', 
         bg: 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800' 
@@ -53,31 +55,31 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
 
     switch (s) {
       case 'planned': return {
-        label: 'Plan Hazır',
+        label: t('planner.statusPlanned'),
         color: 'bg-indigo-500 text-white border-indigo-600 shadow-indigo-200',
         accent: 'bg-indigo-500',
         bg: 'bg-indigo-50/50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/50'
       };
       case 'dev': return {
-        label: 'Geliştirme',
+        label: t('planner.statusDev'),
         color: 'bg-sky-500 text-white border-sky-600 shadow-sky-200',
         accent: 'bg-sky-500',
         bg: 'bg-sky-50/50 dark:bg-sky-900/20 border-sky-100 dark:border-sky-800/50'
       };
       case 'test': return {
-        label: 'Testte',
+        label: t('planner.statusTest'),
         color: 'bg-amber-500 text-white border-amber-600 shadow-amber-200',
         accent: 'bg-amber-500',
         bg: 'bg-amber-50/50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/50'
       };
       case 'done': return {
-        label: 'Bitti',
+        label: t('planner.statusDone'),
         color: 'bg-emerald-600 text-white border-emerald-700 shadow-emerald-200',
         accent: 'bg-emerald-600',
         bg: 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/60'
       };
       default: return {
-        label: 'Yapılacak',
+        label: t('planner.statusTodo'),
         color: 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400 border-stone-200 dark:border-zinc-700',
         accent: 'bg-stone-400',
         bg: 'bg-white dark:bg-zinc-900 border-stone-100 dark:border-zinc-800'
@@ -85,7 +87,18 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
     }
   };
 
+  const getPriorityInfo = (p: PlannerMeeting['priority']) => {
+    switch (p) {
+      case 'urgent': return { label: t('planner.urgent'), color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/30', border: 'border-rose-200 dark:border-rose-800' };
+      case 'high': return { label: t('planner.high'), color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30', border: 'border-orange-200 dark:border-orange-800' };
+      case 'medium': return { label: t('planner.medium'), color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-800' };
+      case 'low': return { label: t('planner.low'), color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800' };
+      default: return null;
+    }
+  };
+
   const statusInfo = getStatusInfo(currentStatus);
+  const priorityInfo = getPriorityInfo(todo.priority);
 
   const changeStatus = (e: React.MouseEvent, nextStatus: PlannerMeeting['status']) => {
     e.stopPropagation();
@@ -181,6 +194,14 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
                   >
                     <CategoryIcon size={9} />
                     {getCategoryLabel(todo.category)}
+                  </span>
+                )}
+
+                {/* Öncelik Badge */}
+                {priorityInfo && !isCompleted && (
+                  <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black border uppercase tracking-tighter ${priorityInfo.bg} ${priorityInfo.color} ${priorityInfo.border}`}>
+                    <FaExclamationCircle size={8} />
+                    {priorityInfo.label}
                   </span>
                 )}
 

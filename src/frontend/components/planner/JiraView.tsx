@@ -4,6 +4,7 @@ import { FaSearch, FaFilter, FaPlus, FaCheckCircle, FaClock, FaTools, FaVial, Fa
 import { SiJira } from 'react-icons/si';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import TodoCard from './TodoCard';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface JiraViewProps {
   meetings: PlannerMeeting[];
@@ -15,6 +16,7 @@ interface JiraViewProps {
 }
 
 export default function JiraView({ meetings, onToggle, onStatusChange, onDelete, onEdit, onAdd }: JiraViewProps) {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'done'>('all');
 
@@ -23,13 +25,27 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
   }, [meetings]);
 
   const filteredTasks = useMemo(() => {
-    return jiraTasks.filter(task => {
+    const list = jiraTasks.filter(task => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                            task.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' ? true :
                            statusFilter === 'done' ? task.status === 'done' : 
                            task.status !== 'done';
       return matchesSearch && matchesStatus;
+    });
+
+    // Sort by priority
+    const priorityWeight = {
+      urgent: 0,
+      high: 1,
+      medium: 2,
+      low: 3
+    };
+
+    return [...list].sort((a, b) => {
+      const weightA = a.priority ? priorityWeight[a.priority] : 4;
+      const weightB = b.priority ? priorityWeight[b.priority] : 4;
+      return weightA - weightB;
     });
   }, [jiraTasks, searchTerm, statusFilter]);
 
@@ -45,11 +61,11 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
   }, [jiraTasks]);
 
   const statusGroups = [
-    { id: 'todo', label: 'Bekleyen', icon: <FaClipboardList className="text-stone-400" />, color: 'bg-stone-500' },
-    { id: 'planned', label: 'Planlandı', icon: <FaClock className="text-indigo-400" />, color: 'bg-indigo-500' },
-    { id: 'dev', label: 'Geliştirme', icon: <FaTools className="text-sky-400" />, color: 'bg-sky-500' },
-    { id: 'test', label: 'Test', icon: <FaVial className="text-amber-400" />, color: 'bg-amber-500' },
-    { id: 'done', label: 'Tamamlandı', icon: <FaCheckCircle className="text-emerald-400" />, color: 'bg-emerald-500' },
+    { id: 'todo', label: t('planner.statusTodo'), icon: <FaClipboardList className="text-stone-400" />, color: 'bg-stone-500' },
+    { id: 'planned', label: t('planner.statusPlanned'), icon: <FaClock className="text-indigo-400" />, color: 'bg-indigo-500' },
+    { id: 'dev', label: t('planner.statusDev'), icon: <FaTools className="text-sky-400" />, color: 'bg-sky-500' },
+    { id: 'test', label: t('planner.statusTest'), icon: <FaVial className="text-amber-400" />, color: 'bg-amber-500' },
+    { id: 'done', label: t('planner.statusDone'), icon: <FaCheckCircle className="text-emerald-400" />, color: 'bg-emerald-500' },
   ];
 
   return (
@@ -60,7 +76,7 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
           <input 
             type="text"
-            placeholder="Jira tasklarında ara..."
+            placeholder={t('planner.searchJira')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium text-sm"
@@ -72,14 +88,14 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl hover:bg-stone-50 dark:hover:bg-zinc-800 transition-colors text-sm font-bold text-stone-600 dark:text-zinc-400"
           >
             <FaFilter />
-            <span>{statusFilter === 'all' ? 'Tümü' : statusFilter === 'pending' ? 'Aktifler' : 'Bitenler'}</span>
+            <span>{statusFilter === 'all' ? t('planner.filterAll') : statusFilter === 'pending' ? t('planner.filterActive') : t('planner.filterDone')}</span>
           </button>
           <button 
             onClick={onAdd}
             className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 font-bold"
           >
             <FaPlus />
-            <span className="hidden sm:inline">Yeni Task</span>
+            <span className="hidden sm:inline">{t('planner.newTask')}</span>
           </button>
         </div>
       </div>
@@ -87,10 +103,10 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Toplam Task', value: stats.total, color: 'text-stone-600 dark:text-stone-400' },
-          { label: 'Aktif İşim', value: stats.pending, color: 'text-blue-600 dark:text-blue-400' },
-          { label: 'Tamamlanan', value: stats.done, color: 'text-emerald-600 dark:text-emerald-400' },
-          { label: 'Tamamlanma Oranı', value: `%${stats.percent}`, color: 'text-indigo-600 dark:text-indigo-400' },
+          { label: t('planner.totalTasks'), value: stats.total, color: 'text-stone-600 dark:text-stone-400' },
+          { label: t('planner.activeWork'), value: stats.pending, color: 'text-blue-600 dark:text-blue-400' },
+          { label: t('planner.statusDone'), value: stats.done, color: 'text-emerald-600 dark:text-emerald-400' },
+          { label: t('planner.completedRatio'), value: `%${stats.percent}`, color: 'text-indigo-600 dark:text-indigo-400' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-stone-100 dark:border-zinc-800 shadow-sm">
             <div className="text-[10px] uppercase tracking-wider font-bold text-stone-400 dark:text-zinc-500 mb-1">{stat.label}</div>
@@ -119,7 +135,7 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
                   <div>
                     <h3 className="font-black text-stone-800 dark:text-zinc-100 text-lg tracking-tight">{group.label}</h3>
                     <p className="text-[10px] font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest">
-                      {groupTasks.length} ADET GÖREV
+                      {groupTasks.length} {t('planner.taskCount')}
                     </p>
                   </div>
                 </div>
@@ -153,16 +169,16 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
           <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <SiJira className="text-2xl text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="text-lg font-bold text-stone-800 dark:text-zinc-200 mb-1">Jira Taskı Bulunamadı</h3>
+          <h3 className="text-lg font-bold text-stone-800 dark:text-zinc-200 mb-1">{t('planner.noJiraTasks')}</h3>
           <p className="text-stone-500 dark:text-zinc-500 text-sm max-w-xs mx-auto">
-            {searchTerm ? `"${searchTerm}" aramasına uygun task bulunamadı.` : 'Henüz herhangi bir Jira taskı eklememişsin.'}
+            {searchTerm ? t('planner.noJiraSearchMatch').replace('{search}', searchTerm) : t('planner.noJiraTasksYet')}
           </p>
           {!searchTerm && (
             <button 
               onClick={onAdd}
               className="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all"
             >
-              İlk Taskını Ekle
+              {t('planner.addFirstTask')}
             </button>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { FaClock, FaTrash, FaGoogle, FaSyncAlt, FaStickyNote, FaEdit, FaPlus } from 'react-icons/fa';
 import type { PlannerMeeting } from '../../../backend/types/planner';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface MeetingCardProps {
   meeting: PlannerMeeting;
@@ -8,6 +9,7 @@ interface MeetingCardProps {
 }
 
 export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardProps) {
+  const { t } = useLanguage();
   const isPast = new Date(`${meeting.date}T${meeting.startTime}`) < new Date();
 
   return (
@@ -30,7 +32,7 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
               {meeting.title}
             </h4>
             {meeting.isRecurring && (
-              <FaSyncAlt size={10} className="text-stone-400 dark:text-zinc-600 animate-spin-slow" title="Tekrarlayan Seri" />
+              <FaSyncAlt size={10} className="text-stone-400 dark:text-zinc-600 animate-spin-slow" title={t('planner.recurringSeries')} />
             )}
           </div>
           
@@ -39,14 +41,14 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
               <button 
                 onClick={() => onEdit(meeting)}
                 className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all"
-                title="Düzenle / Not Ekle"
+                title={t('planner.editAddNote')}
               >
                 <FaEdit size={12} />
               </button>
             )}
 
             {meeting.isGoogleSheet ? (
-              <span className="flex items-center justify-center w-6 h-6 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full" title="Google Sheets üzerinden geldi">
+              <span className="flex items-center justify-center w-6 h-6 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full" title={t('planner.fromGoogleSheets')}>
                 <FaGoogle size={10} />
               </span>
             ) : null}
@@ -55,7 +57,7 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
               <button 
                 onClick={() => onDelete(meeting)}
                 className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
-                title="Sil"
+                title={t('planner.delete')}
               >
                 <FaTrash size={12} />
               </button>
@@ -77,7 +79,7 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
               className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-rose-500 hover:text-rose-600 transition-colors uppercase tracking-tight"
             >
               <FaPlus size={8} />
-              Toplantı Notu Ekle
+              {t('planner.addMeetingNote')}
             </button>
           )
         )}
@@ -91,7 +93,7 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
         {!meeting.notes && !meeting.description && !onEdit && (
           <div className="flex items-center gap-1.5 mt-2 text-xs text-stone-400 dark:text-zinc-600 font-medium">
              <FaClock size={10} />
-             <span>Planlandı</span>
+             <span>{t('planner.planned')}</span>
           </div>
         )}
       </div>

@@ -56,10 +56,11 @@ export default function HomePage() {
     // 3. parametre 'true' olduğu için limit olmadan hepsini çeker.
     const { items: allItems, loading: allLoading, refetch: allRefetch } = useMedia('all', 'all', true);
 
-    if (!user) {
-        navigate('/login');
-        return null;
-    }
+    useEffect(() => {
+        if (!user) {
+            navigate('/login');
+        }
+    }, [user, navigate]);
 
     const { stats, loading: statsLoading } = useMediaStats();
     const { playClick } = useAppSound();
@@ -206,8 +207,14 @@ export default function HomePage() {
         }
     };
 
+    if (!user) {
+        // Render sırasında yönlendirme yapmak yerine useEffect kullanılabilir ancak mevcut yapıyı koruyarak sadece aşağı taşıyoruz.
+        // Hata fırlatmaması için optional chaining kullanıyoruz.
+        return null;
+    }
+
     // Profil
-    const displayName = user.displayName || user.email?.split('@')[0] || "Kullanıcı";
+    const displayName = user?.displayName || user?.email?.split('@')[0] || "Kullanıcı";
     const getAvatar = () => {
         // Önce kullanıcının özel fotoğrafını kontrol et (varsayılan avatarlar hariç)
         if (user.photoURL &&

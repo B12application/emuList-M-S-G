@@ -52,7 +52,7 @@ export async function migrateSeriesSeasons(
 
         try {
             let totalSeasons = data.totalSeasons;
-            let needsOmdbFetch = !totalSeasons || totalSeasons <= 0;
+            const needsOmdbFetch = !totalSeasons || totalSeasons <= 0;
 
             // Eğer sezon bilgisi yoksa OMDB'den çek
             if (needsOmdbFetch) {

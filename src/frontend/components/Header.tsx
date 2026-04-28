@@ -31,7 +31,7 @@ interface HeaderProps {
   onMobileMenuOpen?: () => void;
 }
 
-export default function Header({ }: HeaderProps) {
+export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
   const { profile } = useUserProfile();

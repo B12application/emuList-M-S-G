@@ -1,6 +1,7 @@
 // src/frontend/components/planner/DeleteChoiceModal.tsx
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrash, FaCalendarTimes, FaLayerGroup } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface DeleteChoiceModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export default function DeleteChoiceModal({
   onConfirmSeries,
   title 
 }: DeleteChoiceModalProps) {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -34,10 +36,10 @@ export default function DeleteChoiceModal({
             </div>
             
             <h3 className="text-xl font-bold text-stone-900 dark:text-white mb-2">
-              Silme Seçenekleri
+              {t('planner.deleteOptions')}
             </h3>
             <p className="text-sm text-stone-500 dark:text-zinc-400 mb-8 px-4">
-              "<span className="font-semibold text-stone-700 dark:text-zinc-200">{title}</span>" <br/> bu öğeyi nasıl silmek istersiniz?
+              "<span className="font-semibold text-stone-700 dark:text-zinc-200">{title}</span>" <br/> {t('planner.deleteHow')}
             </p>
 
             <div className="space-y-3">
@@ -53,8 +55,8 @@ export default function DeleteChoiceModal({
                     <FaCalendarTimes size={18} />
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-stone-800 dark:text-white">Sadece Günü Sil</div>
-                    <div className="text-[10px] text-stone-500">Sadece bu haftaki kopyayı kaldırır.</div>
+                    <div className="font-bold text-sm text-stone-800 dark:text-white">{t('planner.deleteSingle')}</div>
+                    <div className="text-[10px] text-stone-500">{t('planner.deleteSingleDesc')}</div>
                   </div>
                 </div>
               </button>
@@ -71,8 +73,8 @@ export default function DeleteChoiceModal({
                     <FaLayerGroup size={18} />
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-stone-800 dark:text-white">Tüm Seriyi Sil</div>
-                    <div className="text-[10px] text-stone-500">Tüm gelecek haftaları ve ana şablonu siler.</div>
+                    <div className="font-bold text-sm text-stone-800 dark:text-white">{t('planner.deleteAllSeries')}</div>
+                    <div className="text-[10px] text-stone-500">{t('planner.deleteAllSeriesDesc')}</div>
                   </div>
                 </div>
               </button>
@@ -82,7 +84,7 @@ export default function DeleteChoiceModal({
               onClick={onClose}
               className="mt-6 text-xs font-bold text-stone-400 hover:text-stone-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors uppercase tracking-widest"
             >
-              Vazgeç
+              {t('planner.giveUp')}
             </button>
           </div>
         </motion.div>

@@ -16,7 +16,7 @@ interface WeeklyViewProps {
 export default function WeeklyView({ currentDate, meetings, onSelectDate }: WeeklyViewProps) {
   // Start week from Monday (weekStartsOn: 1)
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const dateLocale = language === 'tr' ? tr : enUS;
 
   const weekDays = useMemo(() => {
@@ -105,7 +105,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                     >
                       <div className="flex items-center gap-1 font-bold opacity-80 text-[10px]">
                         {getIconForType(item.itemType)}
-                        <span className="truncate">{item.startTime || 'Tüm Gün'}</span>
+                        <span className="truncate">{item.startTime || t('planner.allDay')}</span>
                       </div>
                       <div className="font-semibold text-xs leading-tight line-clamp-2">{item.title}</div>
                     </motion.div>
@@ -140,7 +140,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                       : 'bg-white dark:bg-zinc-800 border-stone-200 dark:border-zinc-700'
                   }`}>
                     <span className="text-[10px] uppercase font-black opacity-80 leading-none mb-1">
-                      {format(day, 'EEE', { locale: tr })}
+                      {format(day, 'EEE', { locale: dateLocale })}
                     </span>
                     <span className="text-lg font-black leading-none italic">
                       {format(day, 'd')}
@@ -148,13 +148,13 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                   </div>
                   <div>
                     <div className={`text-sm font-bold ${isToday(day) ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-white'}`}>
-                      {isToday(day) ? 'Bugün' : format(day, 'd MMMM', { locale: tr })}
+                      {isToday(day) ? t('planner.today') : format(day, 'd MMMM', { locale: dateLocale })}
                     </div>
                     {hasMatch && (
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-xs">⚽</span>
                         <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tighter">
-                          Maç Günü: {dayMatches[0].startTime}
+                          {t('planner.matchDay')} {dayMatches[0].startTime}
                         </span>
                       </div>
                     )}
@@ -182,7 +182,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-black opacity-60 uppercase mb-0.5 tracking-tight group-hover:opacity-100 transition-opacity">
-                          {item.startTime ? `${item.startTime} ${item.endTime ? `- ${item.endTime}` : ''}` : 'Tüm Gün'}
+                          {item.startTime ? `${item.startTime} ${item.endTime ? `- ${item.endTime}` : ''}` : t('planner.allDay')}
                         </div>
                         <div className="text-sm font-bold truncate leading-tight">
                           {item.title}
@@ -192,7 +192,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                   ))
                 ) : (
                   <div className="py-2 px-3 rounded-xl border border-dashed border-stone-200 dark:border-zinc-800 text-stone-400 dark:text-zinc-600 text-xs italic">
-                    Planlanmış aktivite yok
+                    {t('planner.noActivity')}
                   </div>
                 )}
               </div>

@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaTasks, FaPlus, FaCheckCircle, FaTrash, FaSort } from 'react-icons/fa';
+import { FaTimes, FaTasks, FaPlus, FaCheckCircle, FaTrash, FaSort, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { addMeeting, toggleTodoStatus, deleteMeeting, updateMeeting } from '../../../backend/services/plannerService';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import { showMarqueeToast } from '../MarqueeToast';
 import { useAppSound } from '../../context/SoundContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface TodoManagerModalProps {
   isOpen: boolean;
@@ -17,15 +18,16 @@ interface TodoManagerModalProps {
 export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh }: TodoManagerModalProps) {
   const { user } = useAuth();
   const { playSuccess } = useAppSound();
+  const { t } = useLanguage();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const CATEGORIES = [
-    { id: 'genel', label: 'Genel', dotClass: 'bg-stone-500', badgeClass: 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400' },
-    { id: 'market', label: 'Market', dotClass: 'bg-orange-500', badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-    { id: 'alisveris', label: 'Alışveriş', dotClass: 'bg-purple-500', badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-    { id: 'spor', label: 'Spor', dotClass: 'bg-sky-500', badgeClass: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' },
-    { id: 'is', label: 'İş', dotClass: 'bg-indigo-500', badgeClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
+    { id: 'genel', label: t('planner.catGeneral'), dotClass: 'bg-stone-500', badgeClass: 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400' },
+    { id: 'market', label: t('planner.catMarket'), dotClass: 'bg-orange-500', badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+    { id: 'alisveris', label: t('planner.catShopping'), dotClass: 'bg-purple-500', badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+    { id: 'spor', label: t('planner.catSports'), dotClass: 'bg-sky-500', badgeClass: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' },
+    { id: 'is', label: t('planner.catWork'), dotClass: 'bg-indigo-500', badgeClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
   ];
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const todos = useMemo(() => {
@@ -57,6 +59,16 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
     return cat ? cat.badgeClass : 'bg-stone-100 text-stone-500 dark:bg-zinc-700 dark:text-zinc-400';
   };
 
+  const getPriorityBadge = (p: PlannerMeeting['priority']) => {
+    switch (p) {
+      case 'urgent': return { label: t('planner.urgent'), class: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400 border-rose-200 dark:border-rose-800' };
+      case 'high': return { label: t('planner.high'), class: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400 border-orange-200 dark:border-orange-800' };
+      case 'medium': return { label: t('planner.medium'), class: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border-amber-200 dark:border-amber-800' };
+      case 'low': return { label: t('planner.low'), class: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 border-blue-200 dark:border-blue-800' };
+      default: return null;
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleAddTask = async (e: React.FormEvent) => {
@@ -81,12 +93,12 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
       });
 
       playSuccess();
-      showMarqueeToast({ message: 'Görev eklendi', type: 'success' });
+      showMarqueeToast({ message: t('planner.taskAdded'), type: 'success' });
       setNewTaskTitle('');
       onRefresh();
     } catch (err) {
       console.error(err);
-      showMarqueeToast({ message: 'Görev eklenemedi', type: 'error' });
+      showMarqueeToast({ message: t('planner.taskAddError'), type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +118,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
   const handleDelete = async (id: string) => {
     try {
       await deleteMeeting(id);
-      showMarqueeToast({ message: 'Görev silindi', type: 'deleted' });
+      showMarqueeToast({ message: t('planner.taskDeleted'), type: 'deleted' });
       onRefresh();
     } catch (err) {
       console.error(err);
@@ -128,13 +140,13 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
                 <FaTasks size={18} />
               </div>
-              Görevlerim
+              {t('planner.myTasks')}
             </h3>
             <div className="flex gap-2">
               <button 
                 onClick={() => setIsSortedByCategory(!isSortedByCategory)} 
                 className={`p-2 rounded-full transition-colors shadow-sm ${isSortedByCategory ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400' : 'text-stone-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 bg-white dark:bg-zinc-800'}`}
-                title="Kategoriye Göre Sırala"
+                title={t('planner.sortByCategory')}
               >
                 <FaSort />
               </button>
@@ -166,7 +178,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                 type="text"
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                placeholder="Ne yapmak istersin? (Zamanı önemsiz)"
+                placeholder={t('planner.todoPlaceholder')}
                 className="w-full pl-4 pr-12 py-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-sm shadow-sm"
                 disabled={isSubmitting}
               />
@@ -199,6 +211,12 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                             {todo.category}
                           </span>
                         )}
+                        {todo.priority && (
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md border flex items-center gap-1 uppercase tracking-tighter ${getPriorityBadge(todo.priority)?.class}`}>
+                            <FaExclamationCircle size={8} />
+                            {getPriorityBadge(todo.priority)?.label}
+                          </span>
+                        )}
                       </span>
                     </div>
                     <button
@@ -213,7 +231,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                 {recentCompletedTodos.length > 0 && pendingTodos.length > 0 && (
                   <div className="py-2 flex items-center gap-4">
                     <div className="h-px flex-1 bg-stone-200 dark:bg-zinc-800" />
-                    <span className="text-xs font-medium text-stone-400 dark:text-zinc-500">Tamamlananlar</span>
+                    <span className="text-xs font-medium text-stone-400 dark:text-zinc-500">{t('planner.completedTasksTitle')}</span>
                     <div className="h-px flex-1 bg-stone-200 dark:bg-zinc-800" />
                   </div>
                 )}
@@ -235,6 +253,12 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                             {todo.category}
                           </span>
                         )}
+                        {todo.priority && (
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md border flex items-center gap-1 uppercase tracking-tighter ${getPriorityBadge(todo.priority)?.class}`}>
+                            <FaExclamationCircle size={8} />
+                            {getPriorityBadge(todo.priority)?.label}
+                          </span>
+                        )}
                       </span>
                     </div>
                     <button
@@ -248,7 +272,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
               </>
             ) : (
               <div className="text-center py-10 text-stone-500 dark:text-zinc-500">
-                <p className="text-sm">Bekleyen veya tamamlanan görevin yok.</p>
+                <p className="text-sm">{t('planner.noTasks')}</p>
               </div>
             )}
           </div>

@@ -5,6 +5,7 @@ import { FaTimes, FaUndo, FaTrash, FaSyncAlt, FaCalendarCheck } from 'react-icon
 import { getRecurringMasters, deleteRecurringSeries } from '../../../backend/services/plannerService';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import toast from 'react-hot-toast';
 
 interface RecurringManagerModalProps {
@@ -15,6 +16,7 @@ interface RecurringManagerModalProps {
 
 export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: RecurringManagerModalProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [masters, setMasters] = useState<PlannerMeeting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,7 +28,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
       setMasters(data);
     } catch (err) {
       console.error(err);
-      toast.error('Seriler yüklenirken hata oluştu');
+      toast.error(t('planner.errorLoadingSeries'));
     } finally {
       setIsLoading(false);
     }
@@ -39,16 +41,16 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
   }, [isOpen, user]);
 
   const handleDeleteSeries = async (groupId: string) => {
-    if (!confirm('Bu seriyi ve tüm gelecek haftalardaki kopyalarını silmek istediğinize emin misiniz?')) return;
+    if (!confirm(t('planner.confirmDeleteSeries'))) return;
 
     try {
       await deleteRecurringSeries(user!.uid, groupId);
-      toast.success('Seri tamamen silindi');
+      toast.success(t('planner.seriesDeleted'));
       loadMasters();
       onRefresh();
     } catch (err) {
       console.error(err);
-      toast.error('Seri silinirken hata oluştu');
+      toast.error(t('planner.errorDeletingSeries'));
     }
   };
 
@@ -66,9 +68,9 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
           <div>
             <h2 className="text-xl font-bold text-stone-900 dark:text-white flex items-center gap-2">
               <FaUndo className="text-rose-500 text-sm" />
-              Haftalık Seriler
+              {t('planner.weeklySeries')}
             </h2>
-            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">Tekrarlayan görevlerinizi yönetin</p>
+            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">{t('planner.manageRecurringTasks')}</p>
           </div>
           <button
             onClick={onClose}
@@ -82,7 +84,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
               <FaSyncAlt className="animate-spin text-rose-500 text-2xl" />
-              <span className="text-sm font-medium">Yükleniyor...</span>
+              <span className="text-sm font-medium">{t('planner.loading')}</span>
             </div>
           ) : masters.length > 0 ? (
             <div className="space-y-4">
@@ -97,7 +99,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
                           master.itemType === 'todo' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' :
                             'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
                         }`}>
-                        {master.itemType === 'meeting' ? 'Toplantı' : master.itemType === 'todo' ? 'Görev' : 'Jira'}
+                        {master.itemType === 'meeting' ? t('planner.meeting') : master.itemType === 'todo' ? t('planner.task') : 'Jira'}
                       </span>
                       <span className="text-[10px] font-semibold text-stone-400 dark:text-zinc-500">
                         {master.startTime}
@@ -108,14 +110,14 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
                     </h4>
                     <p className="text-[10px] text-stone-500 dark:text-zinc-500 mt-1 flex items-center gap-1">
                       <FaCalendarCheck className="text-[9px]" />
-                      Her Hafta · Gelecek 3 hafta aktif
+                      {t('planner.activeNext3Weeks')}
                     </p>
                   </div>
 
                   <button
                     onClick={() => handleDeleteSeries(master.recurringGroupId!)}
                     className="p-3 bg-stone-100 hover:bg-rose-100 dark:bg-zinc-800 dark:hover:bg-rose-900/30 text-stone-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 rounded-xl transition-all"
-                    title="Seriyi Sil"
+                    title={t('planner.deleteSeries')}
                   >
                     <FaTrash size={14} />
                   </button>
@@ -127,9 +129,9 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
               <div className="w-16 h-16 bg-stone-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FaUndo className="text-stone-300 dark:text-zinc-700 text-xl" />
               </div>
-              <h3 className="font-bold text-stone-800 dark:text-zinc-200">Henüz seri bulunmuyor</h3>
+              <h3 className="font-bold text-stone-800 dark:text-zinc-200">{t('planner.noSeries')}</h3>
               <p className="text-sm text-stone-500 dark:text-zinc-500 mt-1">
-                Yeni bir görev eklerken "Haftalık Tekrarla" seçeneğini kullanarak seri oluşturabilirsiniz.
+                {t('planner.noSeriesDesc')}
               </p>
             </div>
           )}
@@ -140,7 +142,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
             onClick={onClose}
             className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl font-bold shadow-lg shadow-stone-900/10 transition-transform active:scale-95"
           >
-            Kapat
+            {t('planner.close')}
           </button>
         </div>
       </motion.div>

@@ -33,7 +33,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [showMatches, setShowMatches] = useState(false);
   const [arrows, setArrows] = useState<Arrow[]>([]);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const dateLocale = language === 'tr' ? tr : enUS;
 
   const monthStart = startOfMonth(currentMonth);
@@ -152,11 +152,11 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       : 'bg-stone-100 text-stone-400 dark:bg-zinc-800/50 dark:text-zinc-600 cursor-not-allowed'
                   }`}
                 disabled={!showMatches && monthMatches.length === 0}
-                title={monthMatches.length === 0 ? 'Bu ay maç yok' : ''}
+                title={monthMatches.length === 0 ? t('planner.noMatches') : ''}
               >
                 <PiSoccerBallFill size={14} />
                 <span className="hidden sm:inline">
-                  {showMatches ? 'Fikstürü Gizle' : `Maçlara Bak${monthMatches.length > 0 ? ` (${monthMatches.length})` : ''}`}
+                  {showMatches ? t('planner.hideFixture') : `${t('planner.showMatches')}${monthMatches.length > 0 ? ` (${monthMatches.length})` : ''}`}
                 </span>
               </button>
               <button onClick={(e) => { e.stopPropagation(); prevMonth(); }} className="p-2.5 bg-stone-100 dark:bg-zinc-800 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition">
@@ -265,7 +265,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                     })}
                     {dayMeetings.filter(m => m.itemType !== 'match').length > 3 && (
                       <div className="text-[10px] text-stone-500 dark:text-zinc-500 font-medium px-1">
-                        +{dayMeetings.filter(m => m.itemType !== 'match').length - 3} daha
+                        +{dayMeetings.filter(m => m.itemType !== 'match').length - 3} {t('planner.more')}
                       </div>
                     )}
                   </div>
@@ -375,7 +375,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
               <div className="pl-6 pt-20 space-y-4 w-[280px]">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-1 h-6 bg-red-600 rounded-full" />
-                  <h3 className="text-base font-bold text-stone-800 dark:text-zinc-100">Fikstür Bilgisi</h3>
+                  <h3 className="text-base font-bold text-stone-800 dark:text-zinc-100">{t('planner.fixtureInfo')}</h3>
                 </div>
                 {monthMatches.map(match => (
                   <div

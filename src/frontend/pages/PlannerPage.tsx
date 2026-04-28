@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks } from 'react-icons/fa';
@@ -44,6 +45,17 @@ export default function PlannerPage() {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira'>(() =>
     window.innerWidth < 768 ? 'daily' : 'monthly'
   );
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('todo') === 'true') {
+      setIsTodoModalOpen(true);
+      // Clean up the URL so it doesn't reopen on every refresh
+      searchParams.delete('todo');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const loadData = async (isManualRefresh = false) => {
     if (!user) return;

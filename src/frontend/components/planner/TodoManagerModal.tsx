@@ -19,6 +19,15 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
   const { playSuccess } = useAppSound();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const CATEGORIES = [
+    { id: 'genel', label: 'Genel', dotClass: 'bg-stone-500', badgeClass: 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400' },
+    { id: 'market', label: 'Market', dotClass: 'bg-orange-500', badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+    { id: 'alisveris', label: 'Alışveriş', dotClass: 'bg-purple-500', badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+    { id: 'spor', label: 'Spor', dotClass: 'bg-sky-500', badgeClass: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' },
+    { id: 'is', label: 'İş', dotClass: 'bg-indigo-500', badgeClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
+  ];
+  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const todos = useMemo(() => {
     return meetings.filter(m => m.itemType === 'todo' && !m.date);
   }, [meetings]);
@@ -49,6 +58,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
         isCompleted: false,
         status: 'todo',
         isRecurring: false,
+        category: selectedCategory.label,
       });
 
       playSuccess();
@@ -108,6 +118,21 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
 
           {/* ADD TASK FORM */}
           <div className="p-4 bg-stone-50 dark:bg-zinc-950 border-b border-stone-200 dark:border-zinc-800">
+            {/* Category Selector */}
+            <div className="flex gap-2 overflow-x-auto pb-3 mb-1 scrollbar-hide">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${selectedCategory.id === cat.id ? 'border-emerald-500 ring-1 ring-emerald-500 ' + cat.badgeClass : 'border-transparent text-stone-500 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-800'}`}
+                >
+                  <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${cat.dotClass}`} />
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
             <form onSubmit={handleAddTask} className="relative">
               <input
                 type="text"
@@ -139,7 +164,14 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                         className="w-5 h-5 flex-shrink-0 rounded-md border-2 border-stone-300 dark:border-zinc-600 flex items-center justify-center hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
                       >
                       </button>
-                      <span className="text-sm font-medium text-stone-800 dark:text-zinc-200">{todo.title}</span>
+                      <span className="text-sm font-medium text-stone-800 dark:text-zinc-200 flex items-center flex-wrap gap-2">
+                        {todo.title}
+                        {todo.category && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-100 text-stone-500 dark:bg-zinc-700 dark:text-zinc-400">
+                            {todo.category}
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <button
                       onClick={() => todo.id && handleDelete(todo.id)}
@@ -168,7 +200,14 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                       >
                         <FaCheckCircle size={20} />
                       </button>
-                      <span className="text-sm font-medium text-stone-500 dark:text-zinc-400 line-through">{todo.title}</span>
+                      <span className="text-sm font-medium text-stone-500 dark:text-zinc-400 line-through flex items-center flex-wrap gap-2">
+                        {todo.title}
+                        {todo.category && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-200 text-stone-400 dark:bg-zinc-800 dark:text-zinc-600">
+                            {todo.category}
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <button
                       onClick={() => todo.id && handleDelete(todo.id)}

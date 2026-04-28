@@ -346,6 +346,17 @@ export default function HomePage() {
                                 {t('home.randomButton')}
                             </button>
 
+                            {/* Görevlerim (Hızlı Erişim) */}
+                            <Link
+                                to="/planner?todo=true"
+                                className="group px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold 
+             shadow-lg shadow-emerald-500/30 transition-all transform 
+             hover:-translate-y-1 hover:shadow-emerald-500/50 flex items-center gap-2"
+                            >
+                                <FaTasks className="transition-transform duration-300 group-hover:scale-110" />
+                                Görevlerim
+                            </Link>
+
                         </div>
                     </div>
 

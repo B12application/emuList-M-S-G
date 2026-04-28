@@ -19,14 +19,15 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
   const { playSuccess } = useAppSound();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending');
-
   const todos = useMemo(() => {
     return meetings.filter(m => m.itemType === 'todo' && !m.date);
   }, [meetings]);
 
   const pendingTodos = todos.filter(t => !t.isCompleted);
   const completedTodos = todos.filter(t => t.isCompleted);
+  
+  // Son tamamlanan 10 öğeyi al
+  const recentCompletedTodos = completedTodos.slice(-10).reverse();
 
   if (!isOpen) return null;
 
@@ -126,57 +127,43 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
             </form>
           </div>
 
-          {/* TABS */}
-          <div className="flex px-4 pt-4 border-b border-stone-200 dark:border-zinc-800">
-            <button
-              onClick={() => setActiveTab('pending')}
-              className={`flex-1 pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'pending' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-stone-500 dark:text-zinc-400 hover:text-stone-700'}`}
-            >
-              Yapılacaklar ({pendingTodos.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('completed')}
-              className={`flex-1 pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'completed' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-stone-500 dark:text-zinc-400 hover:text-stone-700'}`}
-            >
-              Tamamlananlar ({completedTodos.length})
-            </button>
-          </div>
-
           {/* LIST */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-stone-50/50 dark:bg-zinc-950/50">
-            {activeTab === 'pending' ? (
-              pendingTodos.length > 0 ? (
-                pendingTodos.map(todo => (
+            {pendingTodos.length > 0 || recentCompletedTodos.length > 0 ? (
+              <>
+                {pendingTodos.map(todo => (
                   <div key={todo.id} className="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 rounded-xl border border-stone-100 dark:border-zinc-700 shadow-sm group hover:border-emerald-200 dark:hover:border-emerald-900/50 transition-all">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1">
                       <button
                         onClick={() => todo.id && handleToggle(todo.id, !!todo.isCompleted)}
-                        className="w-5 h-5 rounded-md border-2 border-stone-300 dark:border-zinc-600 flex items-center justify-center hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
+                        className="w-5 h-5 flex-shrink-0 rounded-md border-2 border-stone-300 dark:border-zinc-600 flex items-center justify-center hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors"
                       >
                       </button>
                       <span className="text-sm font-medium text-stone-800 dark:text-zinc-200">{todo.title}</span>
                     </div>
                     <button
                       onClick={() => todo.id && handleDelete(todo.id)}
-                      className="text-stone-400 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-2 -mr-2 text-stone-400 hover:text-rose-500 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     >
-                      <FaTrash size={12} />
+                      <FaTrash size={14} />
                     </button>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-10 text-stone-500 dark:text-zinc-500">
-                  <p className="text-sm">Bekleyen görevin yok. Harika!</p>
-                </div>
-              )
-            ) : (
-              completedTodos.length > 0 ? (
-                completedTodos.map(todo => (
-                  <div key={todo.id} className="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 rounded-xl border border-stone-100 dark:border-zinc-700 shadow-sm group opacity-75 hover:opacity-100 transition-all">
-                    <div className="flex items-center gap-3">
+                ))}
+                
+                {recentCompletedTodos.length > 0 && pendingTodos.length > 0 && (
+                  <div className="py-2 flex items-center gap-4">
+                    <div className="h-px flex-1 bg-stone-200 dark:bg-zinc-800" />
+                    <span className="text-xs font-medium text-stone-400 dark:text-zinc-500">Tamamlananlar</span>
+                    <div className="h-px flex-1 bg-stone-200 dark:bg-zinc-800" />
+                  </div>
+                )}
+
+                {recentCompletedTodos.map(todo => (
+                  <div key={todo.id} className="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 rounded-xl border border-stone-100 dark:border-zinc-700 shadow-sm group opacity-60 hover:opacity-100 transition-all">
+                    <div className="flex items-center gap-3 flex-1">
                       <button
                         onClick={() => todo.id && handleToggle(todo.id, !!todo.isCompleted)}
-                        className="text-emerald-500 dark:text-emerald-400"
+                        className="text-emerald-500 dark:text-emerald-400 flex-shrink-0"
                         title="Geri Al"
                       >
                         <FaCheckCircle size={20} />
@@ -185,17 +172,17 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
                     </div>
                     <button
                       onClick={() => todo.id && handleDelete(todo.id)}
-                      className="text-stone-400 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-2 -mr-2 text-stone-400 hover:text-rose-500 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     >
-                      <FaTrash size={12} />
+                      <FaTrash size={14} />
                     </button>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-10 text-stone-500 dark:text-zinc-500">
-                  <p className="text-sm">Henüz tamamlanan görev yok.</p>
-                </div>
-              )
+                ))}
+              </>
+            ) : (
+              <div className="text-center py-10 text-stone-500 dark:text-zinc-500">
+                <p className="text-sm">Bekleyen veya tamamlanan görevin yok.</p>
+              </div>
             )}
           </div>
         </motion.div>

@@ -1,7 +1,7 @@
 // src/components/BottomNavBar.tsx
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaHome, FaFilm, FaCalendarAlt, FaPlus, FaBars, FaWallet } from 'react-icons/fa';
+import { FaHome, FaFilm, FaPlus, FaBars, FaWallet } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 

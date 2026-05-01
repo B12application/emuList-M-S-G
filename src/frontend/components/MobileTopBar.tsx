@@ -1,15 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaWallet } from 'react-icons/fa';
+import { FaSun, FaMoon } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import B12Logo from './B12Logo';
 import useUserProfile from '../hooks/useUserProfile';
 
 export default function MobileTopBar() {
   const { user } = useAuth();
   const { profile } = useUserProfile();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
 
   if (!user) return null;
@@ -55,17 +57,21 @@ export default function MobileTopBar() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Link 
-            to="/expenses" 
-            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
-              location.pathname.startsWith('/expenses')
-                ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950 shadow-md'
-                : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
-            }`}
-          >
-            <FaWallet className="text-xs" />
-          </Link>
-          <Link to="/profile" className="w-9 h-9 rounded-xl overflow-hidden border border-stone-200 dark:border-zinc-700 shadow-sm transition-transform active:scale-90">
+          <div className="flex items-center gap-1 bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-2xl border border-stone-200/50 dark:border-zinc-700/50 shadow-inner">
+            <button
+              onClick={toggleTheme}
+              className="w-8 h-8 flex items-center justify-center rounded-xl text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
+            >
+              {isDark ? <FaMoon className="text-xs" /> : <FaSun className="text-xs" />}
+            </button>
+            <button
+              onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
+              className="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-bold text-stone-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
+            >
+              {language === 'tr' ? 'EN' : 'TR'}
+            </button>
+          </div>
+          <Link to="/profile" className="w-10 h-10 rounded-2xl overflow-hidden border border-stone-200 dark:border-zinc-700 shadow-sm transition-transform active:scale-90">
             <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
           </Link>
         </div>

@@ -1,13 +1,11 @@
-// src/components/MobileMenu.tsx
-import { NavLink, useLocation, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaPlus, FaClone, FaMap, FaUser, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaUsersCog, FaCalendarAlt, FaGift, FaBriefcase, FaMoon, FaWallet } from 'react-icons/fa';
+import { NavLink, Link } from 'react-router-dom';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaMap, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../backend/config/firebaseConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
-import { isAdmin } from '../../backend/config/adminConfig';
 import { getShiftInfo } from '../utils/shiftLogic';
 
 interface MobileMenuProps {
@@ -18,45 +16,40 @@ interface MobileMenuProps {
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
 
-const containerVariants = {
-  hidden: { opacity: 0, y: -20, scale: 0.95 },
+const drawerVariants = {
+  hidden: { x: '100%', opacity: 0 },
   visible: {
-    opacity: 1, y: 0, scale: 1,
-    transition: { type: 'spring' as const, stiffness: 400, damping: 30, staggerChildren: 0.04, delayChildren: 0.1 }
+    x: 0,
+    opacity: 1,
+    transition: { type: 'spring' as const, damping: 25, stiffness: 200 }
   },
-  exit: { opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.15 } }
+  exit: {
+    x: '100%',
+    opacity: 0,
+    transition: { type: 'tween' as const, duration: 0.25, ease: 'easeInOut' as const }
+  }
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 500, damping: 30 } }
-};
-
-const buttonVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 25 } }
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } }
 };
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { user } = useAuth();
   const { profile } = useUserProfile();
   const { t } = useLanguage();
-  const location = useLocation();
 
-  // Bugünkü vardiya bilgisi
+  if (!user) return null;
+
   const todayShift = getShiftInfo(new Date(), true);
-  const shiftConfig = {
-    Sabah: { label: '☀️ Sabah Vardiyası', sub: '06:30 – 16:30', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700/50', icon: FaBriefcase },
-    Akşam: { label: '🌙 Akşam Vardiyası', sub: '16:00 – 02:00', color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700/50', icon: FaMoon },
-    Tatil: { label: '🎉 Tatil', sub: `${todayShift.dayIndex}. gün`, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/50', icon: FaGift },
-  }[todayShift.type];
 
   const getAvatar = () => {
     if (user?.photoURL && user.photoURL !== MALE_AVATAR_URL && user.photoURL !== FEMALE_AVATAR_URL) {
       return user.photoURL;
     }
-    if (profile?.gender === 'female') return FEMALE_AVATAR_URL;
-    return MALE_AVATAR_URL;
+    return profile?.gender === 'female' ? FEMALE_AVATAR_URL : MALE_AVATAR_URL;
   };
 
   const handleLogout = () => {
@@ -64,265 +57,148 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     onClose();
   };
 
-  const pathSegments = location.pathname.split('/');
-  const potentialType = pathSegments[1];
-  const createType = ['movie', 'series', 'game', 'book'].includes(potentialType) ? potentialType : undefined;
-  const createLink = createType ? `/create?type=${createType}` : '/create';
-
-  // Tüm nav items birleşik - Anasayfa, sonra kategoriler, sonra diğerleri
-  const allNavItems = [
-    { to: '/', icon: FaHome, label: t('nav.home'), color: 'rose', end: true },
-    // Kategoriler
-    { to: '/movie', icon: FaFilm, label: t('nav.movies'), color: 'blue' },
-    { to: '/series', icon: FaTv, label: t('nav.series'), color: 'emerald' },
-    { to: '/my-shows', icon: FaTv, label: t('myShows.title'), color: 'purple' },
-    { to: '/game', icon: FaGamepad, label: t('nav.games'), color: 'amber' },
-    { to: '/book', icon: FaBook, label: t('nav.books'), color: 'purple' },
-    // Diğerleri
-    { to: '/all', icon: FaClone, label: t('nav.all'), color: 'rose' },
-    { to: '/planner', icon: FaCalendarAlt, label: 'Takvim/Plan', color: 'emerald' },
-    { to: '/expenses', icon: FaWallet, label: t('nav.expenses'), color: 'amber' },
-    { to: '/feed', icon: FaHistory, label: t('nav.feed'), color: 'violet' },
-    { to: '/map', icon: FaMap, label: t('nav.map'), color: 'indigo' },
-    { to: '/stats', icon: FaChartBar, label: t('home.stats'), color: 'orange' },
-    { to: '/lists', icon: FaListUl, label: t('lists.title') || 'Listelerim', color: 'violet' },
+  const menuGroups = [
+    {
+      title: 'Koleksiyonlar',
+      items: [
+        { to: '/movie', icon: FaFilm, label: t('nav.movies') },
+        { to: '/series', icon: FaTv, label: t('nav.series') },
+        { to: '/game', icon: FaGamepad, label: t('nav.games') },
+        { to: '/book', icon: FaBook, label: t('nav.books') },
+        { to: '/my-shows', icon: FaTv, label: t('myShows.title') },
+      ]
+    },
+    {
+      title: 'Araçlar',
+      items: [
+        { to: '/planner', icon: FaCalendarAlt, label: 'Takvim/Plan' },
+        { to: '/lists', icon: FaListUl, label: 'Listelerim' },
+        { to: '/expenses', icon: FaWallet, label: 'Harcamalar' },
+        { to: '/stats', icon: FaChartBar, label: 'İstatistikler' },
+        { to: '/feed', icon: FaHistory, label: 'Akış' },
+        { to: '/map', icon: FaMap, label: 'Harita' },
+        { to: '/all', icon: FaClone, label: 'Tümü' },
+      ]
+    }
   ];
-
-  const getActiveStyles = (color: string) => {
-    const styles: Record<string, string> = {
-      rose: 'bg-amber-50 dark:bg-amber-900/20 text-rose-600 dark:text-amber-700',
-      blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
-      emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
-      amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
-      purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
-      violet: 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400',
-      indigo: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
-      orange: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
-    };
-    return styles[color] || styles.rose;
-  };
-
-  const getIconColor = (color: string) => {
-    const colors: Record<string, string> = {
-      rose: 'text-amber-700', blue: 'text-blue-500', emerald: 'text-emerald-500',
-      amber: 'text-amber-500', purple: 'text-purple-500', violet: 'text-violet-500',
-      indigo: 'text-indigo-500', orange: 'text-orange-500',
-    };
-    return colors[color] || 'text-amber-700';
-  };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-[100] md:hidden">
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={onClose}
-          />
-
-          {/* Menu Panel */}
-          <motion.div
-            variants={containerVariants}
+            variants={backdropVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute top-4 left-4 right-4 backdrop-blur-xl bg-white/90 dark:bg-zinc-900/95 border border-white/20 dark:border-zinc-700/30 rounded-2xl shadow-xl overflow-hidden"
+            onClick={onClose}
+            className="absolute inset-0 bg-stone-900/40 dark:bg-black/60 backdrop-blur-[2px]"
+          />
+
+          {/* Drawer */}
+          <motion.div
+            variants={drawerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="absolute top-0 right-0 bottom-0 w-[80vw] max-w-[320px] bg-white dark:bg-zinc-900 shadow-2xl flex flex-col overflow-hidden border-l border-stone-200/50 dark:border-zinc-800/50"
           >
-            {/* Header */}
-            <motion.div
-              variants={itemVariants}
-              className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800"
-            >
-              {user ? (
-                <motion.div
-                  className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1, type: 'spring', stiffness: 300 }}
-                >
-                  <motion.div
-                    className="w-10 h-10 rounded-full ring-2 ring-amber-700/50 overflow-hidden"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <img src={getAvatar()} alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                  <div>
-                    <p className="font-semibold text-stone-900 dark:text-white text-sm">
-                      {user.displayName || 'Kullanıcı'}
-                    </p>
-                    <p className="text-xs text-stone-500 dark:text-zinc-400 truncate max-w-[150px]">
-                      {user.email}
-                    </p>
-                    {/* Vardiya Pill */}
-                    <div className={`mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${shiftConfig.color}`}>
-                      <span>{shiftConfig.label}</span>
-                      <span className="opacity-60">|</span>
-                      <span>{shiftConfig.sub}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ) : (
-                <span className="font-semibold text-stone-900 dark:text-white">Menü</span>
-              )}
-
-              <motion.button
+            {/* Header Profile Area */}
+            <div className="px-5 pt-12 pb-5 bg-stone-50 dark:bg-zinc-950/50 border-b border-stone-100 dark:border-zinc-800 shrink-0 relative">
+              <button
                 onClick={onClose}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-stone-200 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-amber-900/30 dark:hover:text-rose-400 transition-colors"
-                whileHover={{ rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ opacity: 0, rotate: -90 }}
-                animate={{ opacity: 1, rotate: 0 }}
-                transition={{ delay: 0.2 }}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-stone-200/50 dark:bg-zinc-800/50 text-stone-500 dark:text-zinc-400 hover:bg-stone-300/50 dark:hover:bg-zinc-700/50 transition-colors"
               >
-                <FaTimes />
-              </motion.button>
-            </motion.div>
+                <FaTimes className="text-xs" />
+              </button>
 
-            {/* Navigation Links - Tümü yatay liste halinde */}
-            <div className="p-2 max-h-[320px] overflow-y-auto">
-              {allNavItems.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <motion.div
-                    key={item.to}
-                    variants={itemVariants}
-                    custom={index}
-                    whileHover={{ x: 4 }}
-                  >
-                    <NavLink
-                      to={item.to}
-                      end={item.end}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
-                          ? getActiveStyles(item.color)
-                          : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60'
-                        }`
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <motion.div
-                            animate={isActive ? { rotate: [0, -10, 10, 0] } : {}}
-                            transition={{ duration: 0.4 }}
-                          >
-                            <Icon className={isActive ? getIconColor(item.color) : 'text-zinc-400'} />
-                          </motion.div>
-                          <span>{item.label}</span>
-                          {isActive && (
-                            <motion.div
-                              className={`ml-auto w-1.5 h-1.5 rounded-full ${getIconColor(item.color)}`}
-                              layoutId="navDot"
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                            />
-                          )}
-                        </>
-                      )}
-                    </NavLink>
-                  </motion.div>
-                );
-              })}
+              <Link to="/profile" onClick={onClose} className="flex items-center gap-3 group">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-zinc-800 shadow-sm shrink-0">
+                  <img src={getAvatar()} alt="Profile" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                    {user.displayName || 'Kullanıcı'}
+                  </h3>
+                  <p className="text-[11px] font-medium text-stone-500 dark:text-zinc-500 truncate">
+                    {user.email}
+                  </p>
+                </div>
+                <FaChevronRight className="text-stone-300 dark:text-zinc-600 text-xs shrink-0 group-hover:translate-x-1 transition-transform" />
+              </Link>
+
+              {todayShift && (
+                <div className="mt-4 px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+                  <span className="text-xs font-semibold text-stone-600 dark:text-zinc-300">Günün Vardiyası</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${todayShift.type === 'Sabah' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                      todayShift.type === 'Akşam' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    }`}>
+                    {todayShift.type}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Quick Actions */}
-            {user && (
-              <motion.div
-                variants={buttonVariants}
-                className="p-3 border-t border-stone-200 dark:border-zinc-800 space-y-2"
+            {/* Nav Items Scrollable Area */}
+            <div className="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar">
+              <NavLink
+                to="/"
+                onClick={onClose}
+                className={({ isActive }) => `flex items-center gap-3 px-3 py-3 rounded-xl mb-4 transition-colors ${isActive
+                    ? 'bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-white font-bold'
+                    : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'
+                  }`}
               >
-                {/* Admin Panel - Only for admin */}
-                {isAdmin(user.uid) && (
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Link
-                      to="/admin"
-                      onClick={onClose}
-                      className="flex items-center justify-center gap-2 py-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors w-full"
-                    >
-                      <FaUsersCog className="text-xs" /> {t('nav.adminPanel')}
-                    </Link>
-                  </motion.div>
-                )}
+                <FaHome className="text-lg opacity-80" />
+                <span className="text-sm">Ana Sayfa</span>
+              </NavLink>
 
-                <div className="flex gap-2">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                    <Link
-                      to="/profile"
-                      onClick={onClose}
-                      className="flex items-center justify-center gap-2 py-2.5 bg-stone-200 dark:bg-zinc-800 rounded-xl text-sm font-medium text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors w-full"
-                    >
-                      <FaUser className="text-rose-500 text-xs" /> {t('nav.myProfile')}
-                    </Link>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                    <Link
-                      to="/settings"
-                      onClick={onClose}
-                      className="flex items-center justify-center gap-2 py-2.5 bg-stone-200 dark:bg-zinc-800 rounded-xl text-sm font-medium text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors w-full"
-                    >
-                      <FaCog className="text-stone-500 text-xs" /> {t('nav.settings')}
-                    </Link>
-                  </motion.div>
-                  <motion.button
-                    onClick={handleLogout}
-                    className="flex items-center justify-center px-4 py-2.5 bg-red-50 dark:bg-red-900/20 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <FaSignOutAlt />
-                  </motion.button>
+              {menuGroups.map((group, idx) => (
+                <div key={idx} className="mb-6">
+                  <h4 className="px-3 mb-2 text-[10px] font-bold tracking-widest uppercase text-stone-400 dark:text-zinc-600">
+                    {group.title}
+                  </h4>
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={onClose}
+                        className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${isActive
+                            ? 'bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-white font-bold'
+                            : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium hover:pl-4'
+                          }`}
+                      >
+                        <item.icon className="text-base opacity-70" />
+                        <span className="text-sm">{item.label}</span>
+                      </NavLink>
+                    ))}
+                  </div>
                 </div>
-              </motion.div>
-            )}
+              ))}
+            </div>
 
-            {/* Not logged in */}
-            {!user && (
-              <motion.div
-                variants={buttonVariants}
-                className="p-3 border-t border-stone-200 dark:border-zinc-800 flex gap-2"
+            {/* Footer Actions */}
+            <div className="p-4 bg-stone-50 dark:bg-zinc-950/50 border-t border-stone-100 dark:border-zinc-800 shrink-0">
+              <Link
+                to="/settings"
+                onClick={onClose}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-600 dark:text-zinc-400 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50 font-medium transition-colors mb-1"
               >
-                <Link
-                  to="/login"
-                  onClick={onClose}
-                  className="flex-1 py-2.5 bg-stone-200 dark:bg-zinc-800 rounded-xl text-sm font-medium text-stone-700 dark:text-zinc-300 text-center"
-                >
-                  Giriş Yap
-                </Link>
-                <Link
-                  to="/signup"
-                  onClick={onClose}
-                  className="flex-1 py-2.5 bg-rose-600 rounded-xl text-sm font-medium text-white text-center shadow-lg shadow-amber-800/20"
-                >
-                  Kayıt Ol
-                </Link>
-              </motion.div>
-            )}
+                <FaCog className="text-base opacity-70" />
+                <span className="text-sm">Ayarlar</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors"
+              >
+                <FaSignOutAlt className="text-base opacity-70" />
+                <span className="text-sm">Çıkış Yap</span>
+              </button>
+            </div>
 
-            {/* Create Button */}
-            <motion.div variants={buttonVariants} className="p-3 pt-0">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  to={createLink}
-                  onClick={onClose}
-                  className="relative flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-rose-600 to-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-800/20 overflow-hidden group"
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                    initial={{ x: '-100%' }}
-                    animate={{ x: '100%' }}
-                    transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.8, ease: 'easeInOut' }}
-                  />
-                  <FaPlus className="text-sm relative z-10" />
-                  <span className="relative z-10">{t('actions.create')}</span>
-                </Link>
-              </motion.div>
-            </motion.div>
           </motion.div>
         </div>
       )}

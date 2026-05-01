@@ -100,6 +100,11 @@ export default function ExpensesPage() {
 
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [visibleCount, setVisibleCount] = useState(50);
+
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [activeCategory, selectedMonth, searchTerm, sortBy, sortOrder]);
 
   // Filtered Expenses
   const filteredExpenses = useMemo(() => {
@@ -494,10 +499,10 @@ export default function ExpensesPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 relative z-0">
+    <div className="min-h-screen pt-24 pb-20 px-2 sm:px-4 md:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 relative z-0">
       {/* Sidebar - Categories */}
       <div className="w-full lg:w-64 shrink-0 flex flex-col gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 sticky top-28">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 sticky top-28">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
               <FaWallet className="text-stone-400 dark:text-zinc-500" />
@@ -836,25 +841,25 @@ export default function ExpensesPage() {
           <div className="space-y-6">
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
                 <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{t('expenses.totalLabel')}</p>
                 <h4 className="text-xl font-black text-stone-900 dark:text-white">
                   {t('expenses.currency')}{totalFilteredAmount.toLocaleString()}
                 </h4>
               </div>
-              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
                 <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Toplam (Tüm Zamanlar)</p>
                 <h4 className="text-xl font-black text-stone-900 dark:text-white text-emerald-600 dark:text-emerald-400">
                   {t('expenses.currency')}{totalLifetimeAmount.toLocaleString()}
                 </h4>
               </div>
-              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
                 <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{t('expenses.countColumn')}</p>
                 <h4 className="text-xl font-black text-stone-900 dark:text-white">
                   {filteredExpenses.length} <span className="text-xs font-bold text-stone-400">İşlem</span>
                 </h4>
               </div>
-              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
                 <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Ortalama</p>
                 <h4 className="text-xl font-black text-stone-900 dark:text-white">
                   {t('expenses.currency')}{(filteredExpenses.length > 0 ? totalFilteredAmount / filteredExpenses.length : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -865,7 +870,7 @@ export default function ExpensesPage() {
             {/* Charts Section */}
             {selectedMonth !== 'all' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 h-[300px]">
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 h-[300px]">
                   <h3 className="text-xs font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-4">Harcama Akışı (Günlük)</h3>
                   <ResponsiveContainer width="100%" height="80%">
                     <AreaChart data={dailyTrendData}>
@@ -885,7 +890,7 @@ export default function ExpensesPage() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 h-[300px]">
+                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 h-[300px]">
                   <h3 className="text-xs font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-4">Kategori Dağılımı</h3>
                   <ResponsiveContainer width="100%" height="80%">
                     <PieChart>
@@ -912,8 +917,8 @@ export default function ExpensesPage() {
               </div>
             )}
 
-            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] px-2 py-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 px-2 sm:px-0">
                 <h3 className="text-sm font-bold text-stone-900 dark:text-white flex items-center gap-2">
                   <FaList className="text-stone-400 dark:text-zinc-500" />
                   {selectedMonth === 'all' ? t('expenses.title') : format(parseISO(`${selectedMonth}-01`), 'MMMM yyyy', { locale: dateLocale })}
@@ -942,19 +947,19 @@ export default function ExpensesPage() {
               ) : (
                 <div className="space-y-3">
                   <AnimatePresence mode="popLayout">
-                    {filteredExpenses.map((expense) => (
+                    {filteredExpenses.slice(0, visibleCount).map((expense) => (
                       <motion.div
                         layout
                         key={expense.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className={`group p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-4 ${selectedIds.has(expense.id)
+                        className={`group p-3 sm:p-4 rounded-2xl border transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 ${selectedIds.has(expense.id)
                           ? 'bg-stone-900 border-stone-900 dark:bg-white dark:border-white shadow-lg translate-x-1'
                           : 'bg-stone-50/50 dark:bg-zinc-800/30 border-stone-100 dark:border-zinc-800/50 hover:bg-white dark:hover:bg-zinc-800 hover:shadow-md'
                           }`}
                       >
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-1 min-w-0">
                           {/* Selection Checkbox */}
                           <div
                             onClick={(e) => {
@@ -971,18 +976,18 @@ export default function ExpensesPage() {
                             )}
                           </div>
 
-                          <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner transition-colors ${selectedIds.has(expense.id) ? 'bg-white/10' : 'bg-white dark:bg-zinc-900'}`}>
-                            <FaTag className={`text-xs ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-400'}`} />
+                          <div className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner transition-colors ${selectedIds.has(expense.id) ? 'bg-white/10' : 'bg-white dark:bg-zinc-900'}`}>
+                            <FaTag className={`text-[10px] sm:text-xs ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-400'}`} />
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className={`text-sm font-bold truncate ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-900 dark:text-white'}`}>
                               {expense.title}
                             </h4>
-                            <div className="flex items-center gap-2 mt-0.5">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5">
                               <span className={`text-[10px] font-medium ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-zinc-950/60' : 'text-stone-400 dark:text-zinc-500'}`}>
                                 {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
                               </span>
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tight ${selectedIds.has(expense.id)
+                              <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tight ${selectedIds.has(expense.id)
                                 ? 'bg-white/10 text-white dark:bg-zinc-950/10 dark:text-zinc-950'
                                 : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
                                 }`}>
@@ -990,37 +995,48 @@ export default function ExpensesPage() {
                               </span>
                             </div>
                             {expense.installmentCount && expense.installmentCount > 1 && (
-                              <span className="text-[10px] font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
+                              <span className="text-[9px] sm:text-[10px] inline-block mt-1 font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
                                 {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                          <span className="font-black text-lg text-stone-900 dark:text-white mr-3">
+                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pl-8 sm:pl-0">
+                          <span className="font-black text-base sm:text-lg text-stone-900 dark:text-white mr-auto sm:mr-3">
                             {t('expenses.currency')}{expense.amount.toLocaleString()}
                           </span>
-                          <div className="flex items-center gap-2 transition-opacity">
+                          <div className="flex items-center gap-1.5 sm:gap-2 transition-opacity shrink-0">
                             <button
                               onClick={() => handleEditClick(expense)}
-                              className="p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                              className="p-2 sm:p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-xl sm:rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
                               title={t('common.edit')}
                             >
-                              <FaEdit className="text-sm" />
+                              <FaEdit className="text-xs sm:text-sm" />
                             </button>
                             <button
                               onClick={() => handleDeleteExpense(expense.id)}
-                              className="p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                              className="p-2 sm:p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-xl sm:rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
                               title={t('common.delete')}
                             >
-                              <FaTrash className="text-sm" />
+                              <FaTrash className="text-xs sm:text-sm" />
                             </button>
                           </div>
                         </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>
+                  
+                  {visibleCount < filteredExpenses.length && (
+                    <div className="pt-6 pb-2 flex justify-center">
+                      <button
+                        onClick={() => setVisibleCount(prev => prev + 50)}
+                        className="px-6 py-3 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-600 dark:text-zinc-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
+                      >
+                        {t('common.loadMore') || 'Daha Fazla Yükle'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

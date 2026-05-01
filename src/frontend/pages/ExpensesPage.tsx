@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import useExpenses from '../hooks/useExpenses';
 import type { NewExpense, Expense } from '../hooks/useExpenses';
 import { FaPlus, FaTrash, FaWallet, FaChartBar, FaList, FaTag, FaEdit, FaFileImport, FaCalendarAlt, FaCheckCircle } from 'react-icons/fa';
-import { format, parse, isValid, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, parse, isValid, parseISO } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import toast from 'react-hot-toast';
@@ -17,16 +17,16 @@ import ConfirmModal from '../components/ConfirmModal';
 export default function ExpensesPage() {
   const { t, language } = useLanguage();
   const { isDark } = useTheme();
-  const { 
-    expenses, 
-    categories, 
-    addExpense, 
+  const {
+    expenses,
+    categories,
+    addExpense,
     addCategory,
     addBulkExpenses,
-    deleteExpense, 
+    deleteExpense,
     updateExpense,
     deleteCategory,
-    isLoading 
+    isLoading
   } = useExpenses();
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -46,7 +46,7 @@ export default function ExpensesPage() {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
     variant: 'danger',
   });
 
@@ -110,7 +110,7 @@ export default function ExpensesPage() {
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingExpense) {
         await updateExpense({
@@ -208,7 +208,6 @@ export default function ExpensesPage() {
     // Example: 01/05/2026 MARKET HARCAMASI 125.50
     const lines = importText.split('\n');
     const expenses: NewExpense[] = [];
-    const dateRegex = /(\d{2})[./-](\d{2})[./-](\d{2,4})/;
 
     lines.forEach(line => {
       // More flexible date regex: matches DD.MM.YYYY, DD/MM/YYYY, YYYY-MM-DD
@@ -216,7 +215,7 @@ export default function ExpensesPage() {
       if (dateMatch) {
         const fullDate = dateMatch[0];
         let dateStr = '';
-        
+
         // Try to parse whatever format we found
         try {
           const formats = ['dd.MM.yyyy', 'dd/MM/yyyy', 'yyyy-MM-dd', 'dd-MM-yyyy'];
@@ -227,19 +226,19 @@ export default function ExpensesPage() {
               break;
             }
           }
-        } catch (e) {}
+        } catch (e) { }
 
         if (dateStr) {
           // Remove date and try to extract amount
           const rest = line.replace(fullDate, '').trim();
           // Extract amount at end or middle: handles 123.45 or 1.234,56
           const amountMatch = rest.match(/(\d+[,.]\d{2})$|(\d+[,.]\d{2})\s|(\d+)$/);
-          
+
           if (amountMatch) {
             const amountStr = (amountMatch[1] || amountMatch[2] || amountMatch[3]).replace(',', '.');
             const amount = parseFloat(amountStr);
             const title = rest.replace(amountMatch[0], '').trim() || 'Imported Expense';
-            
+
             if (!isNaN(amount)) {
               expenses.push({
                 title,
@@ -302,7 +301,7 @@ export default function ExpensesPage() {
   // Monthly Summary Data
   const monthlySummary = useMemo(() => {
     const summary: Record<string, { total: number; count: number; date: Date }> = {};
-    
+
     expenses.forEach(exp => {
       const date = parseISO(exp.date);
       const monthKey = format(date, 'yyyy-MM');
@@ -315,7 +314,7 @@ export default function ExpensesPage() {
 
     return Object.entries(summary)
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .map(([key, data]) => ({
+      .map(([, data]) => ({
         month: format(data.date, 'MMMM yyyy', { locale: dateLocale }),
         total: data.total,
         count: data.count
@@ -366,11 +365,10 @@ export default function ExpensesPage() {
               <div key={cat} className="relative group">
                 <div
                   onClick={() => setActiveCategory(cat)}
-                  className={`w-full cursor-pointer text-left px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm flex items-center justify-between ${
-                    activeCategory === cat
-                      ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950 shadow-lg scale-[1.02]'
-                      : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
-                  }`}
+                  className={`w-full cursor-pointer text-left px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm flex items-center justify-between ${activeCategory === cat
+                    ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950 shadow-lg scale-[1.02]'
+                    : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${activeCategory === cat ? 'bg-stone-800 dark:bg-stone-100' : 'bg-stone-100 dark:bg-zinc-800'}`}>
@@ -387,11 +385,10 @@ export default function ExpensesPage() {
                         e.stopPropagation();
                         handleDeleteCategory(cat);
                       }}
-                      className={`p-2 rounded-lg transition-all ${
-                        activeCategory === cat 
-                          ? 'text-white/50 hover:text-red-400' 
-                          : 'text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100'
-                      }`}
+                      className={`p-2 rounded-lg transition-all ${activeCategory === cat
+                        ? 'text-white/50 hover:text-red-400'
+                        : 'text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100'
+                        }`}
                       title={t('common.delete')}
                     >
                       <FaTrash className="w-3 h-3" />
@@ -451,22 +448,20 @@ export default function ExpensesPage() {
         <div className="flex bg-stone-100 dark:bg-zinc-800 p-1.5 rounded-2xl w-full sm:w-72">
           <button
             onClick={() => setActiveTab('expenses')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${
-              activeTab === 'expenses' 
-                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm' 
-                : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'expenses'
+              ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+              : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
+              }`}
           >
             <FaList />
             {t('expenses.expensesTab')}
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${
-              activeTab === 'reports' 
-                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm' 
-                : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'reports'
+              ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+              : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
+              }`}
           >
             <FaChartBar />
             {t('expenses.reportsTab')}
@@ -600,74 +595,74 @@ export default function ExpensesPage() {
               {t('expenses.title')}
             </h3>
 
-          {filteredExpenses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-stone-400 dark:text-zinc-500">
-              <FaTag className="text-4xl mb-4 opacity-20" />
-              <p className="text-sm font-medium">{t('expenses.noExpenses')}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <AnimatePresence>
-                {filteredExpenses.map((expense) => (
-                  <motion.div
-                    key={expense.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 group hover:border-stone-200 dark:hover:border-zinc-700 transition-colors gap-4"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-stone-900 dark:text-white">{expense.title}</h4>
-                        {activeCategory === 'all' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-200 dark:bg-zinc-700 text-stone-600 dark:text-zinc-300 rounded-full">
-                            {expense.category}
-                          </span>
-                        )}
-                        {expense.installmentCount && expense.installmentCount > 1 && (
-                          <span className="text-[10px] font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
-                            {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
-                          </span>
-                        )}
+            {filteredExpenses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-stone-400 dark:text-zinc-500">
+                <FaTag className="text-4xl mb-4 opacity-20" />
+                <p className="text-sm font-medium">{t('expenses.noExpenses')}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <AnimatePresence>
+                  {filteredExpenses.map((expense) => (
+                    <motion.div
+                      key={expense.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 group hover:border-stone-200 dark:hover:border-zinc-700 transition-colors gap-4"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-stone-900 dark:text-white">{expense.title}</h4>
+                          {activeCategory === 'all' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-200 dark:bg-zinc-700 text-stone-600 dark:text-zinc-300 rounded-full">
+                              {expense.category}
+                            </span>
+                          )}
+                          {expense.installmentCount && expense.installmentCount > 1 && (
+                            <span className="text-[10px] font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
+                              {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1 flex items-center gap-2">
+                          {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
+                          {expense.description && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate max-w-[200px]">{expense.description}</span>
+                            </>
+                          )}
+                        </p>
                       </div>
-                      <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1 flex items-center gap-2">
-                        {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
-                        {expense.description && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate max-w-[200px]">{expense.description}</span>
-                          </>
-                        )}
-                      </p>
-                    </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                      <span className="font-black text-lg text-stone-900 dark:text-white mr-3">
-                        {t('expenses.currency')}{expense.amount.toLocaleString()}
-                      </span>
-                      <div className="flex items-center gap-2 transition-opacity">
-                        <button
-                          onClick={() => handleEditClick(expense)}
-                          className="p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
-                          title={t('common.edit')}
-                        >
-                          <FaEdit className="text-sm" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExpense(expense.id)}
-                          className="p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
-                          title={t('common.delete')}
-                        >
-                          <FaTrash className="text-sm" />
-                        </button>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                        <span className="font-black text-lg text-stone-900 dark:text-white mr-3">
+                          {t('expenses.currency')}{expense.amount.toLocaleString()}
+                        </span>
+                        <div className="flex items-center gap-2 transition-opacity">
+                          <button
+                            onClick={() => handleEditClick(expense)}
+                            className="p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                            title={t('common.edit')}
+                          >
+                            <FaEdit className="text-sm" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExpense(expense.id)}
+                            className="p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                            title={t('common.delete')}
+                          >
+                            <FaTrash className="text-sm" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -759,10 +754,10 @@ export default function ExpensesPage() {
               className="relative w-full max-w-[400px] bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-2xl border border-stone-200/50 dark:border-zinc-800/50"
             >
               <h2 className="text-lg font-black text-stone-900 dark:text-white mb-6 px-1">
-                {editingExpense 
-                  ? t('expenses.editExpense') 
-                  : isNewCategory 
-                    ? t('expenses.addCategory') 
+                {editingExpense
+                  ? t('expenses.editExpense')
+                  : isNewCategory
+                    ? t('expenses.addCategory')
                     : t('expenses.addExpense')}
               </h2>
 
@@ -858,11 +853,11 @@ export default function ExpensesPage() {
                     {!editingExpense && (
                       <CustomSelect
                         label={t('expenses.installmentCount')}
-                        options={['1', '2', '3', '6', '9', '12'].map(num => 
+                        options={['1', '2', '3', '6', '9', '12'].map(num =>
                           num === '1' ? t('expenses.singlePayment') : `${num} ${t('expenses.installments')}`
                         )}
-                        value={formData.installmentCount === '1' 
-                          ? t('expenses.singlePayment') 
+                        value={formData.installmentCount === '1'
+                          ? t('expenses.singlePayment')
                           : `${formData.installmentCount} ${t('expenses.installments')}`
                         }
                         onChange={(val) => {
@@ -902,10 +897,10 @@ export default function ExpensesPage() {
                     type="submit"
                     className="flex-1 py-2.5 px-4 bg-stone-900 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-bold text-sm shadow-lg hover:scale-[1.02] transition-transform"
                   >
-                    {editingExpense 
-                      ? t('common.save') 
-                      : isNewCategory 
-                        ? (formData.title ? t('expenses.addExpense') : t('expenses.createCategory')) 
+                    {editingExpense
+                      ? t('common.save')
+                      : isNewCategory
+                        ? (formData.title ? t('expenses.addExpense') : t('expenses.createCategory'))
                         : t('expenses.addExpense')}
                   </button>
                 </div>

@@ -1,0 +1,114 @@
+[
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 808.75,
+        "date": "2025-12-03",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer]"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 7000.00,
+        "date": "2025-12-03",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık kalan]"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 5300.00,
+        "date": "2025-12-08",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme]"
+    },
+    {
+        "title": "Mesut Yücedağ",
+        "amount": 8000.00,
+        "date": "2025-12-08",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer]"
+    },
+    {
+        "title": "Epic Games Store",
+        "amount": 1031.51,
+        "date": "2025-12-11",
+        "category": "Eğlence / Oyun",
+        "description": "Encard Harcaması]"
+    },
+    {
+        "title": "Enpara Kredi Kartı Ödemesi",
+        "amount": 20488.96,
+        "date": "2025-12-17",
+        "category": "Kredi Kartı",
+        "description": "Ödeme]"
+    },
+    {
+        "title": "Ceren Göktaş",
+        "amount": 3500.00,
+        "date": "2025-12-17",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme]"
+    },
+    {
+        "title": "Vodafone",
+        "amount": 285.00,
+        "date": "2025-12-18",
+        "category": "Fatura",
+        "description": "Encard Harcaması, Masterpass]"
+    },
+    {
+        "title": "Hasan Hüseyin Yılmaz",
+        "amount": 800.00,
+        "date": "2025-12-19",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme]"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 4000.00,
+        "date": "2025-12-20",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme]"
+    },
+    {
+        "title": "Obilet",
+        "amount": 6477.00,
+        "date": "2025-12-20",
+        "category": "Ulaşım",
+        "description": "Encard Harcaması, Pos satış]"
+    },
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 277.53,
+        "date": "2025-12-22",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer]"
+    },
+    {
+        "title": "Amazon Prime",
+        "amount": 69.90,
+        "date": "2025-12-23",
+        "category": "Abonelik",
+        "description": "Encard Harcaması, Pos satış]"
+    },
+    {
+        "title": "Ali Kemal Sönmez",
+        "amount": 10000.00,
+        "date": "2025-12-24",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer]"
+    },
+    {
+        "title": "RTE Kağan Akaryakıt",
+        "amount": 732.78,
+        "date": "2025-12-29",
+        "category": "Akaryakıt",
+        "description": "Encard Harcaması]"
+    },
+    {
+        "title": "Microsoft Store",
+        "amount": 68.00,
+        "date": "2025-12-31",
+        "category": "Yazılım / Abonelik",
+        "description": "Encard Harcaması]"
+    }
+]

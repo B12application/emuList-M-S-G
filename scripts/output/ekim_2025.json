@@ -1,0 +1,233 @@
+[
+    {
+        "title": "Trendyol",
+        "amount": 75.00,
+        "date": "2025-10-14",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması, Pos satış"
+    },
+    {
+        "title": "Amazon.com.tr",
+        "amount": 1149.00,
+        "date": "2025-10-14",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması, Pos satış"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 5000.00,
+        "date": "2025-10-14",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Obilet",
+        "amount": 1000.00,
+        "date": "2025-10-14",
+        "category": "Ulaşım",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Obilet",
+        "amount": 4180.00,
+        "date": "2025-10-15",
+        "category": "Ulaşım",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Obilet",
+        "amount": 1000.00,
+        "date": "2025-10-17",
+        "category": "Ulaşım",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Talas Zafer Sokak",
+        "amount": 184.75,
+        "date": "2025-10-18",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Gönül Sofrası",
+        "amount": 410.00,
+        "date": "2025-10-18",
+        "category": "Yemek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Kahve Kahve 80s",
+        "amount": 110.00,
+        "date": "2025-10-18",
+        "category": "Kafe / İçecek",
+        "description": "Encard Harcaması, Pos satış"
+    },
+    {
+        "title": "Star Pastaneleri",
+        "amount": 230.00,
+        "date": "2025-10-19",
+        "category": "Yemek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "BİM A.Ş.",
+        "amount": 151.50,
+        "date": "2025-10-19",
+        "category": "Market",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Quakka Coffee",
+        "amount": 220.00,
+        "date": "2025-10-19",
+        "category": "Kafe / İçecek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Kasaba Garden",
+        "amount": 560.00,
+        "date": "2025-10-21",
+        "category": "Eğlence / Restoran",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Taşkın Pide Fırını",
+        "amount": 44.00,
+        "date": "2025-10-21",
+        "category": "Yemek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 746.28,
+        "date": "2025-10-21",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Muammer Lale",
+        "amount": 395.00,
+        "date": "2025-10-21",
+        "category": "Diğer",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "TEB ATM",
+        "amount": 1000.00,
+        "date": "2025-10-22",
+        "category": "Nakit Çekim",
+        "description": "Para Çekme"
+    },
+    {
+        "title": "TEB ATM Komisyon",
+        "amount": 12.54,
+        "date": "2025-10-22",
+        "category": "Masraf / Kesinti",
+        "description": "Masraf/Ücret"
+    },
+    {
+        "title": "TEB ATM BSMV",
+        "amount": 0.63,
+        "date": "2025-10-22",
+        "category": "Vergi",
+        "description": "Vergi Kesintisi"
+    },
+    {
+        "title": "Sarpet Gıda Nakliye",
+        "amount": 400.00,
+        "date": "2025-10-22",
+        "category": "Akaryakıt / Market",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Muammer Lale",
+        "amount": 50.00,
+        "date": "2025-10-22",
+        "category": "Diğer",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Furkan Ünal",
+        "amount": 191.85,
+        "date": "2025-10-25",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 150.00,
+        "date": "2025-10-25",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer"
+    },
+    {
+        "title": "Enpara Kredi Kartı Ödemesi",
+        "amount": 31263.36,
+        "date": "2025-10-26",
+        "category": "Kredi Kartı",
+        "description": "Ödeme"
+    },
+    {
+        "title": "DeFacto",
+        "amount": 1999.99,
+        "date": "2025-10-26",
+        "category": "Giyim",
+        "description": "Encard Harcaması, Pos satış"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 3500.00,
+        "date": "2025-10-27",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık"
+    },
+    {
+        "title": "Yenidoğan Mh. Kayseri",
+        "amount": 436.35,
+        "date": "2025-10-27",
+        "category": "Market",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "QNB ATM",
+        "amount": 15000.00,
+        "date": "2025-10-27",
+        "category": "Nakit Çekim",
+        "description": "Para Çekme"
+    },
+    {
+        "title": "Star Pastanesi",
+        "amount": 630.00,
+        "date": "2025-10-28",
+        "category": "Yemek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Vodafone",
+        "amount": 285.00,
+        "date": "2025-10-31",
+        "category": "Fatura",
+        "description": "Encard Harcaması, Masterpass"
+    },
+    {
+        "title": "Buğra Emiroğlu",
+        "amount": 633.41,
+        "date": "2025-10-31",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Mesut Yücedağ",
+        "amount": 8000.00,
+        "date": "2025-10-31",
+        "category": "Eğitim",
+        "description": "Giden Transfer, MY akademi"
+    },
+    {
+        "title": "Kaygısızlar Kebap",
+        "amount": 150.00,
+        "date": "2025-10-31",
+        "category": "Yemek",
+        "description": "Encard Harcaması"
+    }
+]

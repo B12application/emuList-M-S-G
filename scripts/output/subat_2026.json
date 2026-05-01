@@ -1,0 +1,100 @@
+[
+    {
+        "title": "Getir",
+        "amount": 506.47,
+        "date": "2026-02-03",
+        "category": "Market / Yemek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Hüseyin Ulaş Yılmaz",
+        "amount": 732.00,
+        "date": "2026-02-13",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Recep Ceylan",
+        "amount": 3500.00,
+        "date": "2026-02-14",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Enpara Kredi Kartı Ödemesi",
+        "amount": 25137.72,
+        "date": "2026-02-16",
+        "category": "Kredi Kartı",
+        "description": "Ödeme"
+    },
+    {
+        "title": "Aslan Mahmut Ertunç",
+        "amount": 3900.00,
+        "date": "2026-02-16",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Mehmet Ulusoy",
+        "amount": 5500.00,
+        "date": "2026-02-18",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 18000.00,
+        "date": "2026-02-18",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 13.00,
+        "date": "2026-02-19",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Amazon.com.tr",
+        "amount": 178.90,
+        "date": "2026-02-21",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması, Pos satış"
+    },
+    {
+        "title": "Vodafone",
+        "amount": 311.75,
+        "date": "2026-02-23",
+        "category": "Fatura",
+        "description": "Encard Harcaması, Masterpass"
+    },
+    {
+        "title": "Recep Ceylan",
+        "amount": 500.00,
+        "date": "2026-02-23",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "USD Alış",
+        "amount": 59.68,
+        "date": "2026-02-24",
+        "category": "Döviz / Yatırım",
+        "description": "Döviz Alış/Satış, 1,35 USD alış"
+    },
+    {
+        "title": "Kambiyo Vergisi",
+        "amount": 0.12,
+        "date": "2026-02-24",
+        "category": "Vergi",
+        "description": "Vergi Kesintisi"
+    },
+    {
+        "title": "Amazon.com.tr",
+        "amount": 434.90,
+        "date": "2026-02-28",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması, Pos satış"
+    }
+]

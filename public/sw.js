@@ -72,8 +72,9 @@ self.addEventListener('fetch', (event) => {
                         }
                         // Return offline page for navigation requests
                         if (event.request.mode === 'navigate') {
-                            return caches.match('/');
+                            return caches.match('/') || new Response('Offline', { status: 503 });
                         }
+                        return new Response('Not found', { status: 404 });
                     });
             })
     );

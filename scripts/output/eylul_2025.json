@@ -1,0 +1,191 @@
+[
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 233.35,
+        "date": "2025-09-01",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 209.00,
+        "date": "2025-09-01",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Salih Ulusoy",
+        "amount": 251.00,
+        "date": "2025-09-03",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 127.00,
+        "date": "2025-09-03",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 175.00,
+        "date": "2025-09-04",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 233.00,
+        "date": "2025-09-06",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 250.00,
+        "date": "2025-09-06",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Salih Ulusoy",
+        "amount": 290.00,
+        "date": "2025-09-06",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Apple.com/Bill",
+        "amount": 499.99,
+        "date": "2025-09-06",
+        "category": "Abonelik / Yazılım",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "A101",
+        "amount": 294.50,
+        "date": "2025-09-06",
+        "category": "Market",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 185.00,
+        "date": "2025-09-07",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 100.00,
+        "date": "2025-09-08",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 226.00,
+        "date": "2025-09-10",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Vodafone",
+        "amount": 338.50,
+        "date": "2025-09-11",
+        "category": "Fatura",
+        "description": "Encard Harcaması, Masterpass"
+    },
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 500.00,
+        "date": "2025-09-13",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer"
+    },
+    {
+        "title": "Trendyol",
+        "amount": 934.00,
+        "date": "2025-09-13",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 136.00,
+        "date": "2025-09-13",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 5000.00,
+        "date": "2025-09-15",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 600.00,
+        "date": "2025-09-21",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Sevginur Akıllı",
+        "amount": 1300.00,
+        "date": "2025-09-23",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme"
+    },
+    {
+        "title": "Kaygısızlar Kebap",
+        "amount": 150.00,
+        "date": "2025-09-23",
+        "category": "Yemek",
+        "description": "Diğer"
+    },
+    {
+        "title": "Talimatlı Kredi Kartı Ödemesi",
+        "amount": 6672.21,
+        "date": "2025-09-25",
+        "category": "Kredi Kartı",
+        "description": "Ödeme"
+    },
+    {
+        "title": "Enpara Kredi Kartı Ödemesi",
+        "amount": 12055.52,
+        "date": "2025-09-25",
+        "category": "Kredi Kartı",
+        "description": "Ödeme"
+    },
+    {
+        "title": "X Corp. Paid Features",
+        "amount": 1569.99,
+        "date": "2025-09-25",
+        "category": "Abonelik",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "Dominos",
+        "amount": 275.00,
+        "date": "2025-09-25",
+        "category": "Yemek",
+        "description": "Encard Harcaması"
+    },
+    {
+        "title": "A101",
+        "amount": 204.50,
+        "date": "2025-09-25",
+        "category": "Market",
+        "description": "Diğer"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 28500.00,
+        "date": "2025-09-26",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık"
+    }
+]

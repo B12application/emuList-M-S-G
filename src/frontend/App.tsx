@@ -25,6 +25,7 @@ import MigrationPage from './pages/MigrationPage';
 import AdminPage from './pages/AdminPage';
 import MyShowsPage from './pages/MyShowsPage';
 import PlannerPage from './pages/PlannerPage';
+import ExpensesPage from './pages/ExpensesPage';
 import { LanguageProvider } from './context/LanguageContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAuth } from './context/AuthContext';
@@ -62,6 +63,7 @@ const router = createBrowserRouter([
       { path: 'admin', element: <AdminPage /> },
       { path: 'my-shows', element: <MyShowsPage /> },
       { path: 'planner', element: <PlannerPage /> },
+      { path: 'expenses', element: <ExpensesPage /> },
     ]
   },
 

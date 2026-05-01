@@ -1,0 +1,380 @@
+[
+    {
+        "title": "Mehmet Ulusoy",
+        "amount": 4420.82,
+        "date": "2025-07-01",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    },
+    {
+        "title": "Hepsiburada",
+        "amount": 427.50,
+        "date": "2025-07-01",
+        "category": "Alışveriş",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 194.92,
+        "date": "2025-07-01",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 125.00,
+        "date": "2025-07-02",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Hasan Öztoprak Opet",
+        "amount": 658.48,
+        "date": "2025-07-02",
+        "category": "Akaryakıt",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Star Pastanesi",
+        "amount": 76.00,
+        "date": "2025-07-03",
+        "category": "Yemek",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Tuğçe Doğan",
+        "amount": 500.00,
+        "date": "2025-07-03",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 195.00,
+        "date": "2025-07-05",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Yenidoğan Mh. Kayseri",
+        "amount": 470.32,
+        "date": "2025-07-05",
+        "category": "Market",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 130.00,
+        "date": "2025-07-06",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 173.00,
+        "date": "2025-07-07",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 105.00,
+        "date": "2025-07-08",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Millenicom",
+        "amount": 157.34,
+        "date": "2025-07-08",
+        "category": "Fatura",
+        "description": "Ödeme, Fatura[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 150.47,
+        "date": "2025-07-10",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 1200.00,
+        "date": "2025-07-10",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    },
+    {
+        "title": "BİM A.Ş.",
+        "amount": 1097.53,
+        "date": "2025-07-10",
+        "category": "Market",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Recep Ceylan",
+        "amount": 686.64,
+        "date": "2025-07-11",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer[cite: 2]"
+    },
+    {
+        "title": "Migros Yemek",
+        "amount": 230.00,
+        "date": "2025-07-11",
+        "category": "Yemek",
+        "description": "Encard Harcaması[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 165.00,
+        "date": "2025-07-12",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 3000.00,
+        "date": "2025-07-12",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık[cite: 2]"
+    },
+    {
+        "title": "Mackbear Kayseri",
+        "amount": 125.00,
+        "date": "2025-07-12",
+        "category": "Kafe / İçecek",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 189.00,
+        "date": "2025-07-13",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Türk Telekom",
+        "amount": 121.37,
+        "date": "2025-07-14",
+        "category": "Fatura",
+        "description": "Ödeme, Mobil Faturalı Hat[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 105.00,
+        "date": "2025-07-14",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 3000.00,
+        "date": "2025-07-14",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık[cite: 2]"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 5000.00,
+        "date": "2025-07-14",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    },
+    {
+        "title": "Yusufcan Ulusoy",
+        "amount": 264.63,
+        "date": "2025-07-14",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 190.00,
+        "date": "2025-07-15",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Osman Akıllı",
+        "amount": 500.00,
+        "date": "2025-07-15",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 135.00,
+        "date": "2025-07-16",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Yemeksepeti",
+        "amount": 356.32,
+        "date": "2025-07-16",
+        "category": "Yemek",
+        "description": "Encard Harcaması[cite: 2]"
+    },
+    {
+        "title": "Vodafone",
+        "amount": 265.00,
+        "date": "2025-07-16",
+        "category": "Fatura",
+        "description": "Encard Harcaması, Masterpass[cite: 2]"
+    },
+    {
+        "title": "QNB ATM",
+        "amount": 800.00,
+        "date": "2025-07-17",
+        "category": "Nakit Çekim",
+        "description": "Para Çekme[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 145.00,
+        "date": "2025-07-17",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 195.00,
+        "date": "2025-07-18",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 137.50,
+        "date": "2025-07-19",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 150.00,
+        "date": "2025-07-20",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Anayurt Talas Kayseri",
+        "amount": 893.38,
+        "date": "2025-07-21",
+        "category": "Market",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "A101",
+        "amount": 253.50,
+        "date": "2025-07-21",
+        "category": "Market",
+        "description": "Encard Harcaması[cite: 2]"
+    },
+    {
+        "title": "Mesut Yücedağ",
+        "amount": 8000.00,
+        "date": "2025-07-21",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Kurs taksiti[cite: 2]"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 18000.00,
+        "date": "2025-07-21",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık[cite: 2]"
+    },
+    {
+        "title": "Enpara Kredi Kartı Ödemesi",
+        "amount": 4789.40,
+        "date": "2025-07-21",
+        "category": "Kredi Kartı",
+        "description": "Ödeme[cite: 2]"
+    },
+    {
+        "title": "X Corp. Paid Features",
+        "amount": 150.00,
+        "date": "2025-07-24",
+        "category": "Abonelik",
+        "description": "Encard Harcaması[cite: 2]"
+    },
+    {
+        "title": "Rüya Halı Saha",
+        "amount": 40.00,
+        "date": "2025-07-24",
+        "category": "Eğlence / Spor",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Kurtulmuş Tekel",
+        "amount": 150.00,
+        "date": "2025-07-24",
+        "category": "Market",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 240.00,
+        "date": "2025-07-24",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 210.00,
+        "date": "2025-07-26",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "MigrosOne",
+        "amount": 233.89,
+        "date": "2025-07-26",
+        "category": "Market",
+        "description": "Encard Harcaması[cite: 2]"
+    },
+    {
+        "title": "Mustafa Ulusoy",
+        "amount": 200.00,
+        "date": "2025-07-27",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 138.00,
+        "date": "2025-07-27",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "File Market",
+        "amount": 1219.68,
+        "date": "2025-07-28",
+        "category": "Market",
+        "description": "Diğer[cite: 2]"
+    },
+    {
+        "title": "Melike Taşkın",
+        "amount": 14500.00,
+        "date": "2025-07-28",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Zekiye Ceylan aylık[cite: 2]"
+    },
+    {
+        "title": "Trendyol Yemek",
+        "amount": 148.00,
+        "date": "2025-07-29",
+        "category": "Yemek",
+        "description": "Encard Harcaması, Webpos Satış[cite: 2]"
+    },
+    {
+        "title": "Aslan Mahmut Ertunç",
+        "amount": 3900.00,
+        "date": "2025-07-31",
+        "category": "Transfer (Giden)",
+        "description": "Giden Transfer, Bireysel Ödeme[cite: 2]"
+    }
+]

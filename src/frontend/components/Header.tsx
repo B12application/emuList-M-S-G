@@ -184,7 +184,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   </div>
 
                   <NavLink to="/planner" className={getNavCls}>{t('nav.calendar')}</NavLink>
-                  <NavLink to="/feed" className={getNavCls}>{t('nav.feed')}</NavLink>
+                  <NavLink to="/expenses" className={getNavCls}>{t('expenses.title')}</NavLink>
                 </nav>
               )}
             </div>
@@ -317,6 +317,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                       { to: '/stats', label: t('home.stats'), icon: 'bg-stone-500' },
                       { to: '/lists', label: t('lists.title'), icon: 'bg-stone-500' },
                       { to: '/map', label: t('nav.map'), icon: 'bg-stone-500' },
+                      { to: '/feed', label: t('nav.feed'), icon: 'bg-stone-500' },
                       { to: '/settings', label: t('nav.settings'), icon: 'bg-stone-500' }
                     ].map((item) => (
                       <Link

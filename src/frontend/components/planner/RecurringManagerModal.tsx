@@ -80,7 +80,7 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
               <FaSyncAlt className="animate-spin text-rose-500 text-2xl" />

@@ -193,7 +193,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
           </div>
 
           {/* LIST */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-stone-50/50 dark:bg-zinc-950/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-stone-50/50 dark:bg-zinc-950/50 custom-scrollbar">
             {pendingTodos.length > 0 || recentCompletedTodos.length > 0 ? (
               <>
                 {pendingTodos.map(todo => (

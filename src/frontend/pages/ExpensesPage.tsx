@@ -1,14 +1,14 @@
 // src/pages/ExpensesPage.tsx
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import useExpenses from '../hooks/useExpenses';
 import type { NewExpense, Expense } from '../hooks/useExpenses';
-import { FaPlus, FaTrash, FaWallet, FaChartBar, FaList, FaTag, FaEdit, FaFileImport, FaCalendarAlt, FaCheckCircle } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaWallet, FaChartBar, FaList, FaTag, FaEdit, FaFileImport, FaCalendarAlt, FaCheckCircle, FaCheck, FaSearch, FaTimes, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 import { format, parse, isValid, parseISO } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, AreaChart, Area, PieChart, Pie } from 'recharts';
 import toast from 'react-hot-toast';
 import CalendarPicker from '../components/CalendarPicker';
 import CustomSelect from '../components/CustomSelect';
@@ -25,12 +25,15 @@ export default function ExpensesPage() {
     addBulkExpenses,
     deleteExpense,
     updateExpense,
+    bulkUpdateCategory,
     deleteCategory,
     isLoading
   } = useExpenses();
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'expenses' | 'reports'>('expenses');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -66,15 +69,72 @@ export default function ExpensesPage() {
     installmentCount: '1',
   });
 
+  const [isBulkCategoryModalOpen, setIsBulkCategoryModalOpen] = useState(false);
+  const [selectedBulkCategory, setSelectedBulkCategory] = useState('');
+
+  // Clear selection when category or month changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+    setIsBulkCategoryModalOpen(false);
+  }, [activeCategory, selectedMonth]);
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const dateLocale = language === 'tr' ? tr : enUS;
 
+  // Month Options for filtering
+  const monthOptions = useMemo(() => {
+    const months = new Set<string>();
+    expenses.forEach(exp => {
+      try {
+        const date = parseISO(exp.date);
+        if (isValid(date)) {
+          months.add(format(date, 'yyyy-MM'));
+        }
+      } catch (e) { }
+    });
+    return Array.from(months).sort((a, b) => b.localeCompare(a));
+  }, [expenses]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
   // Filtered Expenses
   const filteredExpenses = useMemo(() => {
-    if (activeCategory === 'all') return expenses;
-    return expenses.filter((e) => e.category === activeCategory);
-  }, [expenses, activeCategory]);
+    let filtered = [...expenses];
+
+    if (activeCategory !== 'all') {
+      filtered = filtered.filter((e) => e.category === activeCategory);
+    }
+
+    if (selectedMonth !== 'all') {
+      filtered = filtered.filter((e) => e.date.startsWith(selectedMonth));
+    }
+
+    if (searchTerm.trim() !== '') {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((e) => 
+        e.title.toLowerCase().includes(lowerSearch) || 
+        e.category.toLowerCase().includes(lowerSearch) ||
+        e.amount.toString().includes(lowerSearch) ||
+        (e.description && e.description.toLowerCase().includes(lowerSearch))
+      );
+    }
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'date') {
+        return sortOrder === 'desc' 
+          ? b.date.localeCompare(a.date)
+          : a.date.localeCompare(b.date);
+      } else {
+        return sortOrder === 'desc'
+          ? b.amount - a.amount
+          : a.amount - b.amount;
+      }
+    });
+  }, [expenses, activeCategory, selectedMonth, searchTerm, sortBy, sortOrder]);
 
   // Chart Data preparation
   const chartData = useMemo(() => {
@@ -161,6 +221,66 @@ export default function ExpensesPage() {
     }
   };
 
+  const handleBulkCategoryUpdate = async () => {
+    if (selectedIds.size === 0 || !selectedBulkCategory) return;
+
+    try {
+      await bulkUpdateCategory({
+        ids: Array.from(selectedIds),
+        category: selectedBulkCategory
+      });
+      setSelectedIds(new Set());
+      setIsBulkCategoryModalOpen(false);
+      setSelectedBulkCategory('');
+      toast.success(t('expenses.updateSuccess'));
+    } catch (error) {
+      console.error('Bulk category update error:', error);
+      toast.error(t('common.error'));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    setConfirmConfig({
+      isOpen: true,
+      title: t('expenses.bulkDeleteTitle'),
+      message: t('expenses.bulkDeleteMessage').replace('{count}', selectedIds.size.toString()),
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          for (const id of Array.from(selectedIds)) {
+            await deleteExpense(id);
+          }
+          setSelectedIds(new Set());
+          toast.success(t('expenses.bulkDeleteSuccess'));
+        } catch (error) {
+          console.error('Bulk delete error:', error);
+          toast.error(t('expenses.bulkDeleteError'));
+        }
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredExpenses.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredExpenses.map(e => e.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
   const handleDeleteExpense = (id: string) => {
     setConfirmConfig({
       isOpen: true,
@@ -204,19 +324,15 @@ export default function ExpensesPage() {
   const handleParseStatement = useCallback(() => {
     if (!importText.trim()) return;
 
-    // Enhanced regex to match typical bank statement lines: Date - Description - Amount
-    // Example: 01/05/2026 MARKET HARCAMASI 125.50
     const lines = importText.split('\n');
     const expenses: NewExpense[] = [];
 
     lines.forEach(line => {
-      // More flexible date regex: matches DD.MM.YYYY, DD/MM/YYYY, YYYY-MM-DD
       const dateMatch = line.match(/(\d{2}[./-]\d{2}[./-]\d{2,4})|(\d{4}[./-]\d{2}[./-]\d{2})/);
       if (dateMatch) {
         const fullDate = dateMatch[0];
         let dateStr = '';
 
-        // Try to parse whatever format we found
         try {
           const formats = ['dd.MM.yyyy', 'dd/MM/yyyy', 'yyyy-MM-dd', 'dd-MM-yyyy'];
           for (const f of formats) {
@@ -229,9 +345,7 @@ export default function ExpensesPage() {
         } catch (e) { }
 
         if (dateStr) {
-          // Remove date and try to extract amount
           const rest = line.replace(fullDate, '').trim();
-          // Extract amount at end or middle: handles 123.45 or 1.234,56
           const amountMatch = rest.match(/(\d+[,.]\d{2})$|(\d+[,.]\d{2})\s|(\d+)$/);
 
           if (amountMatch) {
@@ -281,7 +395,6 @@ export default function ExpensesPage() {
       }
     };
     reader.readAsText(file);
-    // Reset input
     e.target.value = '';
   };
 
@@ -325,6 +438,53 @@ export default function ExpensesPage() {
     return filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   }, [filteredExpenses]);
 
+  const totalLifetimeAmount = useMemo(() => {
+    return expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  }, [expenses]);
+
+  // Sorted Categories by frequency (highest to lowest)
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => {
+      const countA = expenses.filter(e => e.category === a).length;
+      const countB = expenses.filter(e => e.category === b).length;
+      return countB - countA;
+    });
+  }, [categories, expenses]);
+
+  // Daily trend for the selected month
+  const dailyTrendData = useMemo(() => {
+    if (selectedMonth === 'all') return [];
+
+    const daysInMonth = new Date(
+      parseInt(selectedMonth.split('-')[0]),
+      parseInt(selectedMonth.split('-')[1]),
+      0
+    ).getDate();
+
+    const data = Array.from({ length: daysInMonth }, (_, i) => ({
+      day: i + 1,
+      amount: 0
+    }));
+
+    filteredExpenses.forEach(exp => {
+      const day = new Date(exp.date).getDate();
+      if (data[day - 1]) {
+        data[day - 1].amount += exp.amount;
+      }
+    });
+
+    return data;
+  }, [filteredExpenses, selectedMonth]);
+
+  // Category breakdown for the selected month/view
+  const categoryBreakdownData = useMemo(() => {
+    const breakdown: Record<string, number> = {};
+    filteredExpenses.forEach(exp => {
+      breakdown[exp.category] = (breakdown[exp.category] || 0) + exp.amount;
+    });
+    return Object.entries(breakdown).map(([name, value]) => ({ name, value }));
+  }, [filteredExpenses]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full min-h-screen text-stone-500 dark:text-zinc-400">
@@ -345,39 +505,35 @@ export default function ExpensesPage() {
             </h2>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5 max-h-[calc(100vh-420px)] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`text-left px-4 py-3 rounded-2xl transition-all duration-300 font-medium text-sm flex items-center justify-between ${activeCategory === 'all'
+              className={`text-left px-3 py-2.5 rounded-xl transition-all duration-300 font-bold text-[11px] flex items-center justify-between uppercase tracking-wider ${activeCategory === 'all'
                 ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950 shadow-md'
-                : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
+                : 'text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
                 }`}
             >
               <span>{t('list.all')}</span>
-              {activeCategory === 'all' && (
-                <span className="text-xs opacity-70">
-                  {t('expenses.currency')}{expenses.reduce((s, e) => s + e.amount, 0).toLocaleString()}
-                </span>
-              )}
+              <span className="opacity-50 font-black">{expenses.length}</span>
             </button>
 
-            {categories.map((cat) => (
+            {sortedCategories.map((cat) => (
               <div key={cat} className="relative group">
                 <div
                   onClick={() => setActiveCategory(cat)}
-                  className={`w-full cursor-pointer text-left px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm flex items-center justify-between ${activeCategory === cat
+                  className={`w-full cursor-pointer text-left px-3 py-2.5 rounded-xl transition-all duration-300 font-bold text-[11px] flex items-center justify-between ${activeCategory === cat
                     ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950 shadow-lg scale-[1.02]'
                     : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
                     }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${activeCategory === cat ? 'bg-stone-800 dark:bg-stone-100' : 'bg-stone-100 dark:bg-zinc-800'}`}>
-                      <FaTag className={`text-[10px] ${activeCategory === cat ? 'text-white dark:text-stone-900' : 'text-stone-400'}`} />
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className={`w-6 h-6 shrink-0 rounded-lg flex items-center justify-center transition-colors ${activeCategory === cat ? 'bg-stone-800 dark:bg-stone-100' : 'bg-stone-100 dark:bg-zinc-800'}`}>
+                      <FaTag className={`text-[8px] ${activeCategory === cat ? 'text-white dark:text-stone-900' : 'text-stone-400'}`} />
                     </div>
-                    <span className="truncate max-w-[100px]">{cat}</span>
+                    <span className="truncate pr-2">{cat}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-black ${activeCategory === cat ? 'opacity-60' : 'opacity-40'}`}>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={`text-[9px] font-black ${activeCategory === cat ? 'opacity-60' : 'opacity-40'}`}>
                       {expenses.filter(e => e.category === cat).length}
                     </span>
                     <button
@@ -385,13 +541,13 @@ export default function ExpensesPage() {
                         e.stopPropagation();
                         handleDeleteCategory(cat);
                       }}
-                      className={`p-2 rounded-lg transition-all ${activeCategory === cat
+                      className={`p-1.5 rounded-lg transition-all ${activeCategory === cat
                         ? 'text-white/50 hover:text-red-400'
                         : 'text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100'
                         }`}
                       title={t('common.delete')}
                     >
-                      <FaTrash className="w-3 h-3" />
+                      <FaTrash className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 </div>
@@ -399,15 +555,15 @@ export default function ExpensesPage() {
             ))}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-6">
             <button
               onClick={() => {
                 setIsNewCategory(true);
                 setIsAddModalOpen(true);
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-white rounded-2xl font-bold text-sm hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-stone-50 dark:bg-zinc-800/50 text-stone-600 dark:text-zinc-400 rounded-2xl font-bold text-xs hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors border border-stone-100 dark:border-zinc-800"
             >
-              <FaPlus className="text-xs" />
+              <FaPlus className="text-[10px]" />
               {t('expenses.addCategory')}
             </button>
           </div>
@@ -415,7 +571,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col gap-8">
+      <div className="flex-1 min-w-0 flex flex-col gap-8">
         {/* Header & Stats */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -445,27 +601,115 @@ export default function ExpensesPage() {
         </div>
 
         {/* Tab Selection */}
-        <div className="flex bg-stone-100 dark:bg-zinc-800 p-1.5 rounded-2xl w-full sm:w-72">
-          <button
-            onClick={() => setActiveTab('expenses')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'expenses'
-              ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
-              : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
-              }`}
-          >
-            <FaList />
-            {t('expenses.expensesTab')}
-          </button>
-          <button
-            onClick={() => setActiveTab('reports')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'reports'
-              ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
-              : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
-              }`}
-          >
-            <FaChartBar />
-            {t('expenses.reportsTab')}
-          </button>
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+          <div className="flex bg-stone-100 dark:bg-zinc-800 p-1.5 rounded-2xl w-full sm:w-72">
+            <button
+              onClick={() => setActiveTab('expenses')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'expenses'
+                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                }`}
+            >
+              <FaList />
+              {t('expenses.expensesTab')}
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'reports'
+                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                }`}
+            >
+              <FaChartBar />
+              {t('expenses.reportsTab')}
+            </button>
+          </div>
+
+          {activeTab === 'expenses' && (
+            <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center gap-4 min-w-0">
+              <div className="flex-1 overflow-hidden">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                  <button
+                    onClick={() => setSelectedMonth('all')}
+                    className={`shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedMonth === 'all'
+                      ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950'
+                      : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
+                      }`}
+                  >
+                    {t('list.all')}
+                  </button>
+                  {monthOptions.map((month) => (
+                    <button
+                      key={month}
+                      onClick={() => setSelectedMonth(month)}
+                      className={`shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedMonth === month
+                        ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950'
+                        : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
+                        }`}
+                    >
+                      {format(parseISO(`${month}-01`), 'MMM yyyy', { locale: dateLocale })}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative group w-full md:w-64 shrink-0">
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-stone-900 dark:group-focus-within:text-white transition-colors text-[10px]" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t('common.searchPlaceholder')}
+                  className="w-full bg-stone-100 dark:bg-zinc-800 border-none rounded-2xl py-3 pl-11 pr-11 text-xs font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-400"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+                  >
+                    <FaTimes className="text-[10px]" />
+                  </button>
+                )}
+              </div>
+
+              {/* Sort Controls */}
+              <div className="flex bg-stone-100 dark:bg-zinc-800 p-1 rounded-2xl shrink-0">
+                <button
+                  onClick={() => setSortBy('date')}
+                  className={`p-2.5 rounded-xl transition-all ${sortBy === 'date'
+                    ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                    : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-400'
+                    }`}
+                  title={t('common.sortDate')}
+                >
+                  <FaCalendarAlt className="text-xs" />
+                </button>
+                <button
+                  onClick={() => setSortBy('amount')}
+                  className={`p-2.5 rounded-xl transition-all ${sortBy === 'amount'
+                    ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                    : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-400'
+                    }`}
+                  title={t('common.sortAmount')}
+                >
+                  <FaWallet className="text-xs" />
+                </button>
+                <div className="w-[1px] h-4 bg-stone-200 dark:bg-zinc-700 mx-1 self-center" />
+                <button
+                  onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                  className="p-2.5 text-stone-400 hover:text-stone-600 dark:hover:text-zinc-400 rounded-xl transition-all"
+                  title={sortOrder === 'desc' ? t('common.desc') : t('common.asc')}
+                >
+                  {sortOrder === 'desc' ? (
+                    <FaSortAmountDown className="text-xs" />
+                  ) : (
+                    <FaSortAmountUp className="text-xs" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {activeTab === 'reports' ? (
@@ -588,80 +832,240 @@ export default function ExpensesPage() {
             </div>
           </div>
         ) : (
-          /* Expenses List */
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 flex-1">
-            <h3 className="text-sm font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
-              <FaList className="text-stone-400 dark:text-zinc-500" />
-              {t('expenses.title')}
-            </h3>
-
-            {filteredExpenses.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-stone-400 dark:text-zinc-500">
-                <FaTag className="text-4xl mb-4 opacity-20" />
-                <p className="text-sm font-medium">{t('expenses.noExpenses')}</p>
+          /* Expenses List & Stats */
+          <div className="space-y-6">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+                <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{t('expenses.totalLabel')}</p>
+                <h4 className="text-xl font-black text-stone-900 dark:text-white">
+                  {t('expenses.currency')}{totalFilteredAmount.toLocaleString()}
+                </h4>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <AnimatePresence>
-                  {filteredExpenses.map((expense) => (
-                    <motion.div
-                      key={expense.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 group hover:border-stone-200 dark:hover:border-zinc-700 transition-colors gap-4"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-stone-900 dark:text-white">{expense.title}</h4>
-                          {activeCategory === 'all' && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-200 dark:bg-zinc-700 text-stone-600 dark:text-zinc-300 rounded-full">
-                              {expense.category}
-                            </span>
-                          )}
-                          {expense.installmentCount && expense.installmentCount > 1 && (
-                            <span className="text-[10px] font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
-                              {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1 flex items-center gap-2">
-                          {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
-                          {expense.description && (
-                            <>
-                              <span>•</span>
-                              <span className="truncate max-w-[200px]">{expense.description}</span>
-                            </>
-                          )}
-                        </p>
-                      </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+                <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Toplam (Tüm Zamanlar)</p>
+                <h4 className="text-xl font-black text-stone-900 dark:text-white text-emerald-600 dark:text-emerald-400">
+                  {t('expenses.currency')}{totalLifetimeAmount.toLocaleString()}
+                </h4>
+              </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+                <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{t('expenses.countColumn')}</p>
+                <h4 className="text-xl font-black text-stone-900 dark:text-white">
+                  {filteredExpenses.length} <span className="text-xs font-bold text-stone-400">İşlem</span>
+                </h4>
+              </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+                <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Ortalama</p>
+                <h4 className="text-xl font-black text-stone-900 dark:text-white">
+                  {t('expenses.currency')}{(filteredExpenses.length > 0 ? totalFilteredAmount / filteredExpenses.length : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </h4>
+              </div>
+            </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                        <span className="font-black text-lg text-stone-900 dark:text-white mr-3">
-                          {t('expenses.currency')}{expense.amount.toLocaleString()}
-                        </span>
-                        <div className="flex items-center gap-2 transition-opacity">
-                          <button
-                            onClick={() => handleEditClick(expense)}
-                            className="p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
-                            title={t('common.edit')}
-                          >
-                            <FaEdit className="text-sm" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteExpense(expense.id)}
-                            className="p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
-                            title={t('common.delete')}
-                          >
-                            <FaTrash className="text-sm" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+            {/* Charts Section */}
+            {selectedMonth !== 'all' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 h-[300px]">
+                  <h3 className="text-xs font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-4">Harcama Akışı (Günlük)</h3>
+                  <ResponsiveContainer width="100%" height="80%">
+                    <AreaChart data={dailyTrendData}>
+                      <defs>
+                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#1c1917" stopOpacity={0.1} />
+                          <stop offset="95%" stopColor="#1c1917" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#a8a29e' }} />
+                      <Tooltip
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                        formatter={(val: any) => [`₺${Number(val || 0).toLocaleString()}`, 'Tutar']}
+                      />
+                      <Area type="monotone" dataKey="amount" stroke="#1c1917" fillOpacity={1} fill="url(#colorAmount)" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 h-[300px]">
+                  <h3 className="text-xs font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-4">Kategori Dağılımı</h3>
+                  <ResponsiveContainer width="100%" height="80%">
+                    <PieChart>
+                      <Pie
+                        data={categoryBreakdownData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {categoryBreakdownData.map((_entry, index) => (
+                          <Cell key={`cell-${index}`} fill={['#1c1917', '#44403c', '#78716c', '#a8a29e', '#d6d3d1'][index % 5]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                        formatter={(val: any) => [`₺${Number(val || 0).toLocaleString()}`, '']}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             )}
+
+            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-bold text-stone-900 dark:text-white flex items-center gap-2">
+                  <FaList className="text-stone-400 dark:text-zinc-500" />
+                  {selectedMonth === 'all' ? t('expenses.title') : format(parseISO(`${selectedMonth}-01`), 'MMMM yyyy', { locale: dateLocale })}
+                </h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="text-[10px] font-black text-stone-400 hover:text-stone-900 dark:hover:text-white uppercase tracking-widest transition-colors"
+                    >
+                      {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? t('common.deselectAll') : t('common.selectAll')}
+                    </button>
+                    <div className="w-1 h-1 rounded-full bg-stone-200 dark:bg-zinc-800" />
+                    <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">
+                      {filteredExpenses.length} {t('expenses.transactionCount')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {filteredExpenses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-stone-400 dark:text-zinc-500">
+                  <FaTag className="text-4xl mb-4 opacity-20" />
+                  <p className="text-sm font-medium">{t('expenses.noExpenses')}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <AnimatePresence mode="popLayout">
+                    {filteredExpenses.map((expense) => (
+                      <motion.div
+                        layout
+                        key={expense.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className={`group p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-4 ${selectedIds.has(expense.id)
+                          ? 'bg-stone-900 border-stone-900 dark:bg-white dark:border-white shadow-lg translate-x-1'
+                          : 'bg-stone-50/50 dark:bg-zinc-800/30 border-stone-100 dark:border-zinc-800/50 hover:bg-white dark:hover:bg-zinc-800 hover:shadow-md'
+                          }`}
+                      >
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          {/* Selection Checkbox */}
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelect(expense.id);
+                            }}
+                            className={`w-5 h-5 shrink-0 rounded-md border-2 flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
+                              ? 'bg-transparent border-white/30 dark:border-zinc-950/30'
+                              : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400 dark:hover:border-zinc-500'
+                              }`}
+                          >
+                            {selectedIds.has(expense.id) && (
+                              <FaCheck className={`text-[8px] ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : ''}`} />
+                            )}
+                          </div>
+
+                          <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner transition-colors ${selectedIds.has(expense.id) ? 'bg-white/10' : 'bg-white dark:bg-zinc-900'}`}>
+                            <FaTag className={`text-xs ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-400'}`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className={`text-sm font-bold truncate ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-900 dark:text-white'}`}>
+                              {expense.title}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className={`text-[10px] font-medium ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-zinc-950/60' : 'text-stone-400 dark:text-zinc-500'}`}>
+                                {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
+                              </span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tight ${selectedIds.has(expense.id)
+                                ? 'bg-white/10 text-white dark:bg-zinc-950/10 dark:text-zinc-950'
+                                : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
+                                }`}>
+                                {expense.category}
+                              </span>
+                            </div>
+                            {expense.installmentCount && expense.installmentCount > 1 && (
+                              <span className="text-[10px] font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
+                                {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                          <span className="font-black text-lg text-stone-900 dark:text-white mr-3">
+                            {t('expenses.currency')}{expense.amount.toLocaleString()}
+                          </span>
+                          <div className="flex items-center gap-2 transition-opacity">
+                            <button
+                              onClick={() => handleEditClick(expense)}
+                              className="p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                              title={t('common.edit')}
+                            >
+                              <FaEdit className="text-sm" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteExpense(expense.id)}
+                              className="p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                              title={t('common.delete')}
+                            >
+                              <FaTrash className="text-sm" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
+
+            {/* Floating Bulk Action Bar */}
+            <AnimatePresence>
+              {selectedIds.size > 0 && (
+                <motion.div
+                  initial={{ y: 100, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 100, opacity: 0 }}
+                  className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-lg"
+                >
+                  <div className="bg-stone-900 dark:bg-white text-white dark:text-zinc-950 px-6 py-4 rounded-3xl shadow-2xl border border-white/10 dark:border-zinc-200 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                      <div className="w-10 h-10 rounded-2xl bg-red-500 flex items-center justify-center text-xs font-black shadow-lg shadow-red-500/20">
+                        {selectedIds.size}
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">{t('expenses.selectedCount')}</p>
+                        <p className="text-sm font-black">
+                          {t('expenses.totalValue')}: {t('expenses.currency')}
+                          {filteredExpenses.filter(e => selectedIds.has(e.id)).reduce((a, b) => a + b.amount, 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setIsBulkCategoryModalOpen(true)}
+                        className="px-6 py-2.5 bg-stone-800 dark:bg-stone-100 hover:bg-stone-700 dark:hover:bg-stone-200 text-white dark:text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                      >
+                        <FaTag />
+                        {t('bulk.changeCategory')}
+                      </button>
+                      <button
+                        onClick={handleBulkDelete}
+                        className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-red-500/20 active:scale-95"
+                      >
+                        {t('common.delete')}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
@@ -673,10 +1077,69 @@ export default function ExpensesPage() {
         onConfirm={confirmConfig.onConfirm}
         title={confirmConfig.title}
         message={confirmConfig.message}
-        variant={confirmConfig.variant}
-        confirmText={t('common.confirm')}
-        cancelText={t('common.cancel')}
+        variant={confirmConfig.variant as 'danger' | 'warning'}
       />
+
+      {/* Bulk Category Change Modal */}
+      <AnimatePresence>
+        {isBulkCategoryModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsBulkCategoryModalOpen(false)}
+              className="absolute inset-0 bg-stone-900/60 dark:bg-zinc-950/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 shadow-2xl border border-stone-200 dark:border-zinc-800"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-stone-100 dark:bg-zinc-800 flex items-center justify-center">
+                  <FaTag className="text-xl text-stone-900 dark:text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-stone-900 dark:text-white">
+                    {t('bulk.bulkCategoryTitle')}
+                  </h3>
+                  <p className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-widest">
+                    {selectedIds.size} {t('expenses.selectedCount')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <CustomSelect
+                  label={t('bulk.bulkCategorySelect')}
+                  options={categories}
+                  value={selectedBulkCategory}
+                  onChange={setSelectedBulkCategory}
+                  placeholder={t('expenses.selectCategory')}
+                />
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setIsBulkCategoryModalOpen(false)}
+                    className="flex-1 py-3 px-4 bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-white rounded-2xl font-bold text-sm hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={handleBulkCategoryUpdate}
+                    disabled={!selectedBulkCategory}
+                    className="flex-1 py-3 px-4 bg-stone-900 dark:bg-white text-white dark:text-zinc-950 rounded-2xl font-bold text-sm shadow-lg hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    {t('common.confirm')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Import Preview Modal */}
       <AnimatePresence>

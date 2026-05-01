@@ -1,7 +1,7 @@
 // src/components/BottomNavBar.tsx
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaHome, FaFilm, FaCalendarAlt, FaPlus, FaBars } from 'react-icons/fa';
+import { FaHome, FaFilm, FaCalendarAlt, FaPlus, FaBars, FaWallet } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -29,7 +29,7 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
     { to: '/', icon: FaHome, label: t('nav.home'), end: true },
     { to: '/movie', icon: FaFilm, label: t('nav.collection') || 'Koleksiyon' },
     { to: '/create', icon: FaPlus, label: t('actions.create') || 'Ekle', isAction: true },
-    { to: '/planner', icon: FaCalendarAlt, label: 'Takvim' },
+    { to: '/expenses', icon: FaWallet, label: t('nav.expenses') || 'Harcamalar' },
     { to: '#', icon: FaBars, label: 'Menü', isMenu: true },
   ];
 

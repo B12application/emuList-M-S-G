@@ -98,12 +98,12 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
   return (
     <>
-      <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+      <div className="fixed top-0 inset-x-0 z-50 hidden md:flex items-center justify-center p-4 sm:p-6 pointer-events-none">
         <motion.header
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className={`pointer-events-auto w-full max-w-7xl backdrop-blur-2xl bg-white/70 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-3xl transition-all duration-300 ${scrolled ? 'py-3' : 'py-4'}`}
+          className={`pointer-events-auto w-full max-w-7xl backdrop-blur-2xl bg-white/70 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-3xl transition-all duration-300 hidden md:block ${scrolled ? 'py-3' : 'py-4'}`}
         >
           <div className="relative px-6 md:px-8 flex items-center justify-between">
 

@@ -916,6 +916,7 @@ export const translationsTR = {
         // Tabs
         expensesTab: 'Harcamalar',
         reportsTab: 'Raporlar',
+        vehicleTab: 'Araçlarım',
         // Monthly Summary
         monthlySummary: 'Aylık Özet',
         monthColumn: 'Ay',

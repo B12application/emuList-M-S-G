@@ -912,6 +912,7 @@ export const translationsEN = {
         // Tabs
         expensesTab: 'Expenses',
         reportsTab: 'Reports',
+        vehicleTab: 'My Vehicle',
         // Monthly Summary
         monthlySummary: 'Monthly Summary',
         monthColumn: 'Month',

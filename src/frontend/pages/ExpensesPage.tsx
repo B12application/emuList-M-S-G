@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import useExpenses from '../hooks/useExpenses';
 import type { NewExpense, Expense } from '../hooks/useExpenses';
-import { FaPlus, FaTrash, FaWallet, FaChartBar, FaList, FaTag, FaEdit, FaFileImport, FaCalendarAlt, FaCheckCircle, FaCheck, FaSearch, FaTimes, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaWallet, FaChartBar, FaList, FaTag, FaEdit, FaFileImport, FaCalendarAlt, FaCheckCircle, FaCheck, FaSearch, FaTimes, FaSortAmountDown, FaSortAmountUp, FaCar } from 'react-icons/fa';
 import { format, parse, isValid, parseISO } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, AreaChart, Area, PieChart, Pie } from 'recharts';
@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import CalendarPicker from '../components/CalendarPicker';
 import CustomSelect from '../components/CustomSelect';
 import ConfirmModal from '../components/ConfirmModal';
+import VehicleTab from '../components/expenses/VehicleTab';
 
 export default function ExpensesPage() {
   const { t, language } = useLanguage();
@@ -32,7 +33,7 @@ export default function ExpensesPage() {
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'expenses' | 'reports'>('expenses');
+  const [activeTab, setActiveTab] = useState<'expenses' | 'reports' | 'vehicle'>('expenses');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
@@ -501,8 +502,9 @@ export default function ExpensesPage() {
   return (
     <div className="min-h-screen pt-24 pb-20 px-2 sm:px-4 md:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 relative z-0">
       {/* Sidebar - Categories */}
-      <div className="w-full lg:w-64 shrink-0 flex flex-col gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 sticky top-28">
+      {activeTab !== 'vehicle' && (
+        <div className="w-full lg:w-64 shrink-0 flex flex-col gap-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50 sticky top-28">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
               <FaWallet className="text-stone-400 dark:text-zinc-500" />
@@ -572,13 +574,15 @@ export default function ExpensesPage() {
               {t('expenses.addCategory')}
             </button>
           </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 min-w-0 flex flex-col gap-8">
         {/* Header & Stats */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {activeTab !== 'vehicle' && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-stone-900 dark:text-white">
               {activeCategory === 'all' ? t('expenses.title') : activeCategory}
@@ -604,6 +608,7 @@ export default function ExpensesPage() {
             {t('expenses.addExpense')}
           </button>
         </div>
+        )}
 
         {/* Tab Selection */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
@@ -627,6 +632,16 @@ export default function ExpensesPage() {
             >
               <FaChartBar />
               {t('expenses.reportsTab')}
+            </button>
+            <button
+              onClick={() => setActiveTab('vehicle')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'vehicle'
+                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                }`}
+            >
+              <FaCar />
+              {t('expenses.vehicleTab')}
             </button>
           </div>
 
@@ -836,6 +851,8 @@ export default function ExpensesPage() {
               </div>
             </div>
           </div>
+        ) : activeTab === 'vehicle' ? (
+          <VehicleTab />
         ) : (
           /* Expenses List & Stats */
           <div className="space-y-6">

@@ -7,6 +7,16 @@
   --animate-shoot: shoot 3s linear infinite;
 }
 
+:root {
+  --ui-light-brightness: 0.96;
+  --ui-light-softness: 0.022;
+}
+
+html:not(.dark) body {
+  filter: brightness(var(--ui-light-brightness, 1)) sepia(var(--ui-light-softness, 0));
+  transition: filter 200ms ease;
+}
+
 /* Star Animations */
 @keyframes twinkle {
 
@@ -179,4 +189,4 @@
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #27272a;
-}
+}

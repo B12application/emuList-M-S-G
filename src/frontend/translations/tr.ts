@@ -427,6 +427,7 @@ export const translationsTR = {
         loading: 'Yükleniyor...',
         error: 'Hata',
         success: 'Başarılı',
+        date: 'Tarih',
         close: 'Kapat',
         confirm: 'Onayla',
         back: 'Geri',
@@ -923,6 +924,9 @@ export const translationsTR = {
         monthlySummary: 'Aylık Özet',
         monthColumn: 'Ay',
         countColumn: 'Adet',
+        lifetimeLabel: 'TÜM ZAMANLAR',
+        averageLabel: 'ORTALAMA',
+        transactionSuffix: 'İşlem',
         // Import
         importStatement: 'Hesap Özeti Yükle',
         pasteStatement: 'Hesap özeti metnini buraya yapıştırın veya PDF\'den dönüştürülmüş JSON dosyasını yükleyin.',

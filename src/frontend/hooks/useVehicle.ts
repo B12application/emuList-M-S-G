@@ -130,7 +130,11 @@ export default function useVehicle() {
       if (!snapshot.empty) {
         // Update existing log for the month
         const existingDoc = snapshot.docs[0];
-        await setDoc(doc(db, 'vehicle_logs', existingDoc.id), { ...existingDoc.data(), ...log }, { merge: true });
+        await setDoc(
+          doc(db, 'vehicle_logs', existingDoc.id),
+          { ...existingDoc.data(), ...log, userId: user.uid },
+          { merge: true }
+        );
       } else {
         // Create new log
         await addDoc(collection(db, 'vehicle_logs'), { ...log, userId: user.uid, createdAt: Date.now() });
@@ -138,7 +142,7 @@ export default function useVehicle() {
 
       // Also update vehicle currentKm if this log km is higher
       if (vehicle && log.km > vehicle.currentKm) {
-        saveVehicleMutation.mutate({ currentKm: log.km });
+        await saveVehicleMutation.mutateAsync({ currentKm: log.km });
       }
     },
     onSuccess: () => {

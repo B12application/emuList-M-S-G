@@ -2,6 +2,22 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwnerByResource() {
+      return isSignedIn() && resource.data.userId is string && request.auth.uid == resource.data.userId;
+    }
+
+    function isOwnerByRequest() {
+      return isSignedIn() && request.resource.data.userId is string && request.auth.uid == request.resource.data.userId;
+    }
+
+    function isLegacyWithoutUserId() {
+      return !(resource.data.userId is string);
+    }
+
     // Media Items - GÜNCELLEME: Herkes okuyabilir (public profiles için), sadece sahibi yazabilir
     match /mediaItems/{itemId} {
       allow read: if request.auth != null; // ✅ Public read for viewing other users' libraries
@@ -82,32 +98,41 @@ service cloud.firestore {
 
     // Expenses - Sadece kullanıcı kendi harcamalarına erişebilir
     match /expenses/{expenseId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Legacy compatibility: old docs may not have userId.
+      allow read: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow update: if isOwnerByResource() || (isLegacyWithoutUserId() && isOwnerByRequest());
+      allow delete: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow create: if isOwnerByRequest();
     }
 
     // Categories - Harcama kategorileri
     match /categories/{categoryId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Legacy compatibility: old docs may not have userId.
+      allow read: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow update: if isOwnerByResource() || (isLegacyWithoutUserId() && isOwnerByRequest());
+      allow delete: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow create: if isOwnerByRequest();
     }
 
     // Vehicles - Sadece kullanıcı kendi araçlarına erişebilir
     match /vehicles/{vehicleId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, delete: if isOwnerByResource();
+      allow update: if isOwnerByResource() || isOwnerByRequest();
+      allow create: if isOwnerByRequest();
     }
 
     // Vehicle Logs - Yakıt ve diğer kayıtlar
     match /vehicle_logs/{logId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, delete: if isOwnerByResource();
+      allow update: if isOwnerByResource() || isOwnerByRequest();
+      allow create: if isOwnerByRequest();
     }
 
     // Vehicle Maintenance - Bakım kayıtları
     match /vehicle_maintenance/{maintenanceId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, delete: if isOwnerByResource();
+      allow update: if isOwnerByResource() || isOwnerByRequest();
+      allow create: if isOwnerByRequest();
     }
   }
 }

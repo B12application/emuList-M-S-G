@@ -7,7 +7,7 @@ import useVehicle from '../../hooks/useVehicle';
 import type { VehicleData } from '../../hooks/useVehicle';
 import useExpenses from '../../hooks/useExpenses';
 import { addCalendarAlert } from '../../../backend/services/plannerService';
-import { FaCar, FaTools, FaCalendarAlt, FaPlus, FaTrash, FaSave, FaBell, FaGasPump, FaCheckCircle, FaExclamationTriangle, FaChevronDown, FaChevronUp, FaWrench, FaCogs } from 'react-icons/fa';
+import { FaCar, FaTools, FaCalendarAlt, FaPlus, FaTrash, FaSave, FaBell, FaGasPump, FaCheckCircle, FaWrench, FaEdit } from 'react-icons/fa';
 import { format, differenceInDays, addMonths, parseISO, isValid } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -35,9 +35,9 @@ const COMMON_PARTS = [
 
 export default function VehicleTab() {
   const { t, language } = useLanguage();
-  const { isDark } = useTheme();
+  useTheme();
   const { user } = useAuth();
-  const { vehicle, logs, maintenanceRecords, saveVehicle, addLog, deleteLog, addMaintenanceRecord, deleteMaintenanceRecord, isLoading } = useVehicle();
+  const { vehicle, logs, maintenanceRecords, saveVehicle, addLog, deleteLog, addMaintenanceRecord, deleteMaintenanceRecord, isLoading, isSaving } = useVehicle();
   const { expenses, categories } = useExpenses();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -55,6 +55,7 @@ export default function VehicleTab() {
   });
 
   const [newLog, setNewLog] = useState({ month: format(new Date(), 'yyyy-MM'), km: '' });
+  const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [showAddPart, setShowAddPart] = useState(false);
   const [newPart, setNewPart] = useState({
     partName: '',
@@ -73,27 +74,39 @@ export default function VehicleTab() {
 
   const dateLocale = language === 'tr' ? tr : enUS;
 
+  const parseKmInput = (value: string): number => {
+    const digitsOnly = value.replace(/[^\d]/g, '');
+    return digitsOnly ? Number(digitsOnly) : 0;
+  };
+
+
   const handleSave = async () => {
+    if (!user) {
+      toast.error('Oturum bulunamadı, tekrar giriş yapın');
+      return;
+    }
     try {
       await saveVehicle(formData);
       setIsEditing(false);
       toast.success(t('common.success') || 'Kaydedildi');
-    } catch (err) {
-      toast.error(t('common.error') || 'Hata oluştu');
+    } catch (err: any) {
+      toast.error(err?.message || t('common.error') || 'Hata oluştu');
     }
   };
 
   const handleAddLog = async () => {
-    if (!newLog.km || isNaN(Number(newLog.km))) return;
+    const parsedKm = parseKmInput(newLog.km);
+    if (!parsedKm) return;
     try {
       await addLog({
         month: newLog.month,
-        km: Number(newLog.km)
+        km: parsedKm
       });
       setNewLog({ month: format(new Date(), 'yyyy-MM'), km: '' });
+      setEditingLogId(null);
       toast.success(t('expenses.vehicle.add') + ' ' + t('common.success'));
-    } catch (err) {
-      toast.error(t('common.error'));
+    } catch (err: any) {
+      toast.error(err?.message || t('common.error'));
     }
   };
 
@@ -132,19 +145,19 @@ export default function VehicleTab() {
     return maintenanceRecords.map(record => {
       const kmLimit = record.replacedKm + record.lifespanKm;
       const dateLimit = addMonths(parseISO(record.replacedDate), record.lifespanMonths);
-      
+
       const kmRemaining = kmLimit - (vehicle.currentKm || 0);
       const daysRemaining = differenceInDays(dateLimit, new Date());
-      
+
       const kmProgress = Math.max(0, Math.min(100, (kmRemaining / record.lifespanKm) * 100));
       const timeProgress = Math.max(0, Math.min(100, (daysRemaining / (record.lifespanMonths * 30)) * 100));
-      
+
       const overallProgress = Math.min(kmProgress, timeProgress);
-      
+
       let status: 'safe' | 'warning' | 'critical' = 'safe';
       if (overallProgress <= 10) status = 'critical';
       else if (overallProgress <= 25) status = 'warning';
-      
+
       return {
         ...record,
         kmRemaining,
@@ -159,28 +172,29 @@ export default function VehicleTab() {
 
   const fuelAnalysis = useMemo(() => {
     if (!logs.length || !expenses.length || !vehicle?.fuelCategory) return [];
-    
+
     const sortedLogs = [...logs].sort((a, b) => b.month.localeCompare(a.month));
-    
+
     return sortedLogs.map((log, index) => {
       const previousLog = sortedLogs[index + 1];
-      const drivenKm = previousLog ? log.km - previousLog.km : 0;
-      
-      const monthExpenses = expenses.filter(e => 
-        e.category === vehicle.fuelCategory && 
+      const baselineKm = previousLog ? previousLog.km : (vehicle.purchaseKm || 0);
+      const drivenKm = Math.max(0, log.km - baselineKm);
+
+      const monthExpenses = expenses.filter(e =>
+        e.category === vehicle.fuelCategory &&
         e.date.startsWith(log.month)
       );
-      
+
       const fuelTotal = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
       const costPerKm = drivenKm > 0 ? fuelTotal / drivenKm : 0;
-      
+
       return {
         month: log.month,
         drivenKm,
         fuelTotal,
         costPerKm
       };
-    }).filter(a => a.drivenKm > 0);
+    }).filter(a => a.drivenKm > 0 || a.fuelTotal > 0);
   }, [logs, expenses, vehicle]);
 
   const handleAddPart = async () => {
@@ -206,15 +220,17 @@ export default function VehicleTab() {
 
   const handlePartMaintenanceDone = async (record: any) => {
     try {
+      // Persist only canonical maintenance fields to Firestore.
       await addMaintenanceRecord({
-        ...record,
-        id: undefined,
+        partName: record.partName,
+        lifespanKm: Number(record.lifespanKm) || 0,
+        lifespanMonths: Number(record.lifespanMonths) || 0,
         replacedKm: vehicle?.currentKm || record.replacedKm,
         replacedDate: format(new Date(), 'yyyy-MM-dd')
       });
       toast.success(`${record.partName} bakımı kaydedildi`);
-    } catch (err) {
-      toast.error(t('common.error'));
+    } catch (err: any) {
+      toast.error(err?.message || t('common.error'));
     }
   };
 
@@ -269,10 +285,11 @@ export default function VehicleTab() {
           )}
           <button
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            disabled={isSaving}
             className={`flex items-center justify-center gap-2 px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all shadow-sm ${isEditing
               ? 'bg-rose-500 hover:bg-rose-600 text-white'
               : 'bg-stone-900 dark:bg-white text-white dark:text-zinc-950 hover:scale-[1.02]'
-              }`}
+              } ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}`}
           >
             {isEditing ? <><FaSave /> {t('expenses.vehicle.save')}</> : <>{t('expenses.vehicle.edit')}</>}
           </button>
@@ -324,7 +341,7 @@ export default function VehicleTab() {
             ].map(item => {
               const value = (formData as any)[item.key];
               const daysLeft = (item.type === 'insurance' || item.type === 'inspection') && value && isValid(parseISO(value)) ? differenceInDays(parseISO(value), new Date()) : null;
-              
+
               return (
                 <div key={item.key} className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800">
                   <div className="flex items-center gap-3">
@@ -333,9 +350,8 @@ export default function VehicleTab() {
                       <div className="flex items-center gap-2">
                         <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase">{item.label}</p>
                         {!isEditing && daysLeft !== null && (
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter ${
-                            daysLeft < 30 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
-                          }`}>
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter ${daysLeft < 30 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
+                            }`}>
                             {daysLeft > 0 ? `${daysLeft} Gün Kaldı` : 'Süresi Doldu'}
                           </span>
                         )}
@@ -400,11 +416,10 @@ export default function VehicleTab() {
                       <p className="text-sm font-black text-stone-900 dark:text-white">{formData.mtvYear}</p>
                       <div className="flex gap-1.5">
                         {[1, 2].map(i => (
-                          <span key={i} className={`text-[8px] px-2 py-1 rounded-md font-black uppercase tracking-tighter ${
-                            (formData as any)[`mtvPaid${i}`] 
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                          }`}>
+                          <span key={i} className={`text-[8px] px-2 py-1 rounded-md font-black uppercase tracking-tighter ${(formData as any)[`mtvPaid${i}`]
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>
                             Taksit {i}: {(formData as any)[`mtvPaid${i}`] ? 'ÖDENDİ' : 'ÖDENMEDİ'}
                           </span>
                         ))}
@@ -550,14 +565,14 @@ export default function VehicleTab() {
                       <p className="text-[8px] font-bold text-stone-400 uppercase mt-0.5">Son Değişim: {(part.replacedKm || 0).toLocaleString()} KM / {format(parseISO(part.replacedDate), 'dd.MM.yyyy')}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => handlePartMaintenanceDone(part)}
                         className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:scale-110 transition-transform"
                         title="Bakım Yapıldı"
                       >
                         <FaCheckCircle size={12} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => part.id && deleteMaintenanceRecord(part.id)}
                         className="p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:scale-110 transition-transform opacity-0 group-hover:opacity-100"
                       >
@@ -565,7 +580,7 @@ export default function VehicleTab() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-tighter">
                       <span className={part.status === 'critical' ? 'text-rose-500' : 'text-stone-400'}>
@@ -579,10 +594,9 @@ export default function VehicleTab() {
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${part.overallProgress}%` }}
-                        className={`h-full rounded-full ${
-                          part.status === 'safe' ? 'bg-emerald-500' : 
+                        className={`h-full rounded-full ${part.status === 'safe' ? 'bg-emerald-500' :
                           part.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500'
-                        }`}
+                          }`}
                       />
                     </div>
                   </div>
@@ -592,8 +606,6 @@ export default function VehicleTab() {
           </div>
         </div>
       </div>
-
-      {/* Analytics & History Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Monthly KM Input */}
         <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800">
@@ -601,18 +613,69 @@ export default function VehicleTab() {
             <FaCalendarAlt className="text-stone-400 dark:text-zinc-500" /> Aylık KM Girişi
           </h3>
           <div className="space-y-3 mb-6">
-            <input type="month" value={newLog.month} onChange={e => setNewLog({ ...newLog, month: e.target.value })} className="w-full bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-xs font-black focus:outline-none dark:text-white" />
-            <input type="number" placeholder="Ay Sonu KM" value={newLog.km} onChange={e => setNewLog({ ...newLog, km: e.target.value })} className="w-full bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-xs font-black focus:outline-none dark:text-white" />
-            <button onClick={handleAddLog} className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
-              <FaPlus /> Ekle
+            <input
+              type="month"
+              value={newLog.month}
+              onChange={e => setNewLog({ ...newLog, month: e.target.value })}
+              disabled={!!editingLogId}
+              className="w-full bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-xs font-black focus:outline-none dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+            />
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Ay Sonu KM"
+              value={newLog.km}
+              onChange={e => {
+                // Sadece sayı, nokta ve virgül girişine izin ver, anlık olarak state'e yaz
+                const val = e.target.value.replace(/[^0-9.,]/g, '');
+                setNewLog({ ...newLog, km: val });
+              }}
+              className="w-full bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-xs font-black focus:outline-none dark:text-white"
+            />
+            <button
+              onClick={() => {
+                // Hesaplamaya göndermeden önce virgülü noktaya çevirip sayıya dönüştür
+                const cleanKm = typeof newLog.km === 'string'
+                  ? parseFloat(newLog.km.replace(',', '.'))
+                  : newLog.km;
+
+                if (!isNaN(cleanKm as number)) {
+                  handleAddLog();
+                }
+              }}
+              className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+            >
+              <FaPlus /> {editingLogId ? 'Guncelle' : 'Ekle'}
             </button>
+            {editingLogId && (
+              <button
+                onClick={() => {
+                  setEditingLogId(null);
+                  setNewLog({ month: format(new Date(), 'yyyy-MM'), km: '' });
+                }}
+                className="w-full py-2 bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all"
+              >
+                Duzenlemeyi Iptal Et
+              </button>
+            )}
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
             {logs.map(log => (
               <div key={log.id} className="flex justify-between items-center p-3 bg-stone-50 dark:bg-zinc-800/20 rounded-xl border border-stone-100 dark:border-zinc-800">
                 <span className="text-[9px] font-black text-stone-400 uppercase">{format(parseISO(`${log.month}-01`), 'MMM yyyy', { locale: dateLocale })}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-stone-900 dark:text-white">{log.km.toLocaleString()} KM</span>
+                  <span className="text-[10px] font-black text-stone-900 dark:text-white">{Number(log.km).toLocaleString('tr-TR')} KM</span>
+                  <button
+                    onClick={() => {
+                      setEditingLogId(log.id || null);
+                      // Duzenleme modunda virgullu gosterim icin noktayi virgul yap
+                      setNewLog({ month: log.month, km: log.km.toString().replace('.', ',') });
+                    }}
+                    className="text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors"
+                    title="Duzenle"
+                  >
+                    <FaEdit size={10} />
+                  </button>
                   <button onClick={() => log.id && deleteLog(log.id)} className="text-stone-400 hover:text-rose-500 transition-colors"><FaTrash size={10} /></button>
                 </div>
               </div>
@@ -647,14 +710,14 @@ export default function VehicleTab() {
                         <p className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-tight">{format(parseISO(`${item.month}-01`), 'MMMM yyyy', { locale: dateLocale })}</p>
                       </td>
                       <td className="py-4 text-right">
-                        <p className="text-xs font-bold text-stone-500 dark:text-zinc-400">{item.drivenKm.toLocaleString()} KM</p>
+                        <p className="text-xs font-bold text-stone-500 dark:text-zinc-400">{Number(item.drivenKm).toLocaleString('tr-TR')} KM</p>
                       </td>
                       <td className="py-4 text-right">
-                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{item.fuelTotal.toLocaleString()} TL</p>
+                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{Number(item.fuelTotal).toLocaleString('tr-TR')} TL</p>
                       </td>
                       <td className="py-4 text-right pr-2">
                         <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-black ${item.costPerKm > 5 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'}`}>
-                          {item.costPerKm.toFixed(2)} ₺
+                          {Number(item.costPerKm).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
                         </span>
                       </td>
                     </tr>

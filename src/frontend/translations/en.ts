@@ -427,6 +427,7 @@ export const translationsEN = {
         loading: 'Loading...',
         error: 'Error',
         success: 'Success',
+        date: 'Date',
         close: 'Close',
         confirm: 'Confirm',
         back: 'Back',
@@ -919,6 +920,9 @@ export const translationsEN = {
         monthlySummary: 'Monthly Summary',
         monthColumn: 'Month',
         countColumn: 'Count',
+        lifetimeLabel: 'ALL TIME',
+        averageLabel: 'AVERAGE',
+        transactionSuffix: 'Transactions',
         // Import
         importStatement: 'Import Statement',
         pasteStatement: 'Paste your bank statement text here or upload a JSON file converted from PDF.',

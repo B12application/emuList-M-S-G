@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAppSound } from '../context/SoundContext';
+import { useTheme } from '../context/ThemeContext';
 import { FaLock, FaUserSlash, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase, FaArrowRight, FaUser, FaTimes, FaVolumeUp, FaVolumeMute, FaCloud } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -16,6 +17,7 @@ export default function SettingsPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { soundEnabled, toggleSound } = useAppSound();
+    const { isDark, lightBrightness, setLightBrightness, lightSoftness, setLightSoftness, resetLightThemeTuning } = useTheme();
 
     // Profile info states
     const [firstName, setFirstName] = useState('');
@@ -350,6 +352,73 @@ export default function SettingsPage() {
                                             }`}
                                     />
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Light Theme Comfort Settings */}
+                        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-8 border border-stone-200 dark:border-zinc-700">
+                            <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-2">
+                                Acik Tema Konforu
+                            </h2>
+                            <p className="text-sm text-stone-500 dark:text-zinc-400 mb-6">
+                                Beyaz temada goz yorgunlugunu azaltmak icin parlaklik ve beyazlik yumusatmasini ayarlayin.
+                            </p>
+
+                            <div className="space-y-5">
+                                <div>
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <label className="text-sm font-medium text-stone-700 dark:text-zinc-300">
+                                            Parlaklik
+                                        </label>
+                                        <span className="text-xs font-semibold text-stone-500 dark:text-zinc-400">
+                                            %{lightBrightness}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min={82}
+                                        max={105}
+                                        step={1}
+                                        value={lightBrightness}
+                                        onChange={(e) => setLightBrightness(Number(e.target.value))}
+                                        className="w-full accent-amber-600"
+                                        disabled={isDark}
+                                    />
+                                </div>
+
+                                <div>
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <label className="text-sm font-medium text-stone-700 dark:text-zinc-300">
+                                            Beyazlik Yumusatma
+                                        </label>
+                                        <span className="text-xs font-semibold text-stone-500 dark:text-zinc-400">
+                                            %{lightSoftness}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min={0}
+                                        max={35}
+                                        step={1}
+                                        value={lightSoftness}
+                                        onChange={(e) => setLightSoftness(Number(e.target.value))}
+                                        className="w-full accent-amber-600"
+                                        disabled={isDark}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between pt-1">
+                                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                        Bu ayarlar sadece acik temada uygulanir.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={resetLightThemeTuning}
+                                        className="rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                                    >
+                                        Varsayilana Don
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </>

@@ -24,14 +24,14 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   return (
     <motion.aside
       initial={false}
-      animate={{ 
+      animate={{
         width: isSidebarOpen ? 240 : 72,
         transition: { type: 'spring', stiffness: 300, damping: 30 }
       }}
       className="relative flex-shrink-0 hidden md:block"
     >
       <div className="sticky top-24 h-[calc(100vh-120px)] bg-white dark:bg-zinc-900 rounded-[2rem] shadow-sm border border-stone-200/50 dark:border-zinc-800/50 overflow-hidden flex flex-col transition-colors duration-300">
-        
+
         {/* Toggle Button - Sleek and integrated */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -98,17 +98,15 @@ interface SidebarItemProps {
 const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClick, isOpen, isDark }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group ${
-      isActive
+    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group ${isActive
         ? 'bg-stone-900 dark:bg-white shadow-md'
         : 'hover:bg-stone-50 dark:hover:bg-zinc-800/50'
-    }`}
+      }`}
   >
-    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-      isActive
+    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isActive
         ? 'bg-white/10 dark:bg-black/10'
         : 'bg-stone-50 dark:bg-zinc-800'
-    }`}>
+      }`}>
       <span className={isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-600'}>
         {icon}
       </span>
@@ -117,9 +115,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClic
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`text-[11px] font-bold uppercase tracking-wide truncate ${
-          isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-900 dark:hover:text-white'
-        }`}
+        className={`text-[11px] font-bold uppercase tracking-wide truncate ${isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-900 dark:hover:text-white'
+          }`}
       >
         {label}
       </motion.span>

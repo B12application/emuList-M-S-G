@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { FaChartBar, FaFileImport, FaInfoCircle, FaFileAlt } from 'react-icons/fa';
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -28,24 +27,24 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
         <ResponsiveContainer width="100%" height="80%">
           <BarChart data={monthlyChartData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#27272a' : '#f0f0f0'} />
-            <XAxis 
-              dataKey="month" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 9, fill: '#a8a29e', fontWeight: 700 }} 
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 9, fill: '#a8a29e', fontWeight: 700 }}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 9, fill: '#a8a29e', fontWeight: 700 }} 
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 9, fill: '#a8a29e', fontWeight: 700 }}
             />
             <Tooltip
               cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}
-              contentStyle={{ 
+              contentStyle={{
                 backgroundColor: isDark ? '#18181b' : '#ffffff',
-                borderRadius: '12px', 
-                border: isDark ? '1px solid #27272a' : '1px solid #e7e5e4', 
-                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', 
+                borderRadius: '12px',
+                border: isDark ? '1px solid #27272a' : '1px solid #e7e5e4',
+                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                 fontSize: '11px',
                 fontWeight: '900',
                 color: isDark ? '#ffffff' : '#1c1917'
@@ -53,11 +52,11 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
               itemStyle={{ color: isDark ? '#ffffff' : '#1c1917' }}
               formatter={(val: any) => [`₺${Number(val || 0).toLocaleString()}`, t('expenses.amount')]}
             />
-            <Bar 
-              dataKey="amount" 
-              fill={isDark ? '#ffffff' : '#1c1917'} 
-              radius={[4, 4, 0, 0]} 
-              barSize={32} 
+            <Bar
+              dataKey="amount"
+              fill={isDark ? '#ffffff' : '#1c1917'}
+              radius={[4, 4, 0, 0]}
+              barSize={32}
             />
           </BarChart>
         </ResponsiveContainer>

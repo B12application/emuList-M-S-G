@@ -98,11 +98,11 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#a8a29e' }} />
                 <Tooltip
                   cursor={{ stroke: isDark ? '#ffffff20' : '#1c191710', strokeWidth: 2 }}
-                  contentStyle={{ 
+                  contentStyle={{
                     backgroundColor: isDark ? '#18181b' : '#ffffff',
-                    borderRadius: '16px', 
-                    border: 'none', 
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', 
+                    borderRadius: '16px',
+                    border: 'none',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
                     fontSize: '11px',
                     fontWeight: '900'
                   }}
@@ -130,11 +130,11 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ 
+                  contentStyle={{
                     backgroundColor: isDark ? '#18181b' : '#ffffff',
-                    borderRadius: '16px', 
-                    border: 'none', 
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', 
+                    borderRadius: '16px',
+                    border: 'none',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
                     fontSize: '11px',
                     fontWeight: '900'
                   }}
@@ -153,22 +153,20 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSelectAll}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
                   ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900'
                   : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-700'
-              }`}
+                }`}
             >
-              <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-colors ${
-                selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
+              <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-colors ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
                   ? 'border-transparent'
                   : 'border-stone-300 dark:border-zinc-600'
-              }`}>
+                }`}>
                 {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 && <FaCheck size={8} />}
               </div>
               {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? t('common.deselectAll') : t('common.selectAll')}
             </button>
-            
+
             <div className="flex flex-col">
               <span className="text-[11px] font-black text-stone-900 dark:text-white uppercase tracking-tight">
                 {filteredExpenses.length} {t('expenses.transactionSuffix') || 'Harcama'}
@@ -245,20 +243,18 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className={`group relative p-4 rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 ${
-                      selectedIds.has(expense.id)
+                    className={`group relative p-4 rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 ${selectedIds.has(expense.id)
                         ? 'bg-stone-900 dark:bg-white'
                         : 'hover:bg-stone-50 dark:hover:bg-zinc-800/40'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div
                         onClick={() => toggleSelect(expense.id)}
-                        className={`w-5 h-5 shrink-0 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
-                          selectedIds.has(expense.id)
+                        className={`w-5 h-5 shrink-0 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
                             ? 'bg-transparent border-white/30 dark:border-black/30'
                             : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400'
-                        }`}
+                          }`}
                       >
                         {selectedIds.has(expense.id) && <FaCheck size={8} className={selectedIds.has(expense.id) ? 'text-white dark:text-black' : ''} />}
                       </div>
@@ -271,11 +267,10 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                           <span className={`text-[9px] font-black uppercase tracking-wider ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-black/60' : 'text-stone-400 dark:text-zinc-500'}`}>
                             {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
                           </span>
-                          <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
-                            selectedIds.has(expense.id)
+                          <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${selectedIds.has(expense.id)
                               ? 'bg-white/10 text-white dark:bg-black/10 dark:text-black'
                               : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
-                          }`}>
+                            }`}>
                             {expense.category}
                           </span>
                         </div>

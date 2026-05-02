@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { FaPlus, FaLayerGroup, FaTrash } from 'react-icons/fa';
+import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar } from 'react-icons/fa';
 
 import useExpenses from '../hooks/useExpenses';
 import type { Expense } from '../hooks/useExpenses';
@@ -221,121 +221,153 @@ const ExpensesPage: React.FC = () => {
   const handleDeletePreviewItem = (idx: number) => setImportPreview(prev => prev.filter((_, i) => i !== idx));
 
   return (
-    <div className="selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
-      <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-
-        <CategorySidebar
-          t={t}
-          isDark={isDark}
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-          categories={categories}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-        />
-
-        <div className="flex-1">
-          <ExpensesLayout
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            monthOptions={monthOptions}
-          >
-            <AnimatePresence>
-              {selectedIds.size > 0 && (
+    <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
+      <div className="mb-8 flex items-center justify-end">
+        <div className="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50 backdrop-blur-sm">
+          {[
+            { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
+            { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
+            { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'harcamalar' | 'raporlar' | 'araclar')}
+              className={`relative flex items-center gap-2.5 px-6 py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${activeTab === tab.id
+                ? 'text-white dark:text-stone-900'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
+                }`}
+            >
+              {activeTab === tab.id && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-stone-900 dark:bg-white px-6 py-3 rounded-full shadow-2xl border border-stone-800 dark:border-stone-100"
-                >
-                  <span className="text-[10px] font-black text-white dark:text-stone-900 uppercase tracking-[0.2em]">
-                    {selectedIds.size} {t('expenses.selectedCount') || 'SEÇİLDİ'}
-                  </span>
-                  <div className="w-[1px] h-4 bg-white/20 dark:bg-black/20" />
-                  <div className="flex gap-2">
-                    <button onClick={() => setIsBulkCategoryModalOpen(true)} className="p-2 text-white dark:text-stone-900 hover:bg-white/10 dark:hover:bg-black/5 rounded-xl transition-all" title="Kategori Değiştir">
-                      <FaLayerGroup size={12} />
-                    </button>
-                    <button onClick={handleBulkDelete} className="p-2 text-red-400 hover:bg-red-500/20 rounded-xl transition-all" title="Seçilenleri Sil">
-                      <FaTrash size={12} />
-                    </button>
-                  </div>
-                </motion.div>
+                  layoutId="activeTabBg"
+                  className="absolute inset-0 bg-stone-900 dark:bg-white rounded-[1.2rem] shadow-lg shadow-stone-900/10 dark:shadow-white/10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
               )}
-            </AnimatePresence>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                {activeTab === 'harcamalar' && (
-                  <ExpensesHomeView
-                    t={t}
-                    isDark={isDark}
-                    dateLocale={dateLocale}
-                    filteredExpenses={filteredExpenses}
-                    totalFilteredAmount={totalFilteredAmount}
-                    totalLifetimeAmount={totalLifetimeAmount}
-                    selectedMonth={selectedMonth}
-                    dailyTrendData={dailyTrendData}
-                    categoryBreakdownData={categoryBreakdownData}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    sortBy={sortBy}
-                    setSortBy={setSortBy}
-                    sortOrder={sortOrder}
-                    setSortOrder={setSortOrder}
-                    selectedIds={selectedIds}
-                    toggleSelect={toggleSelect}
-                    toggleSelectAll={toggleSelectAll}
-                    handleEditClick={handleEditClick}
-                    handleDeleteExpense={handleDeleteExpense}
-                    visibleCount={visibleCount}
-                    setVisibleCount={setVisibleCount}
-                  />
-                )}
-                {activeTab === 'raporlar' && (
-                  <ReportsTab
-                    t={t}
-                    isDark={isDark}
-                    monthlyChartData={monthlyChartData}
-                    monthlySummary={monthlySummary}
-                    onImportClick={handleImportFile}
-                  />
-                )}
-                {activeTab === 'araclar' && (
-                  <VehicleTab />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </ExpensesLayout>
+              <tab.icon size={12} className="relative z-10" />
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => {
-          setIsEditing(false);
-          setNewExpense({
-            title: '', amount: 0, category: categories[0] || 'Genel',
-            date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1
-          });
-          setIsAddModalOpen(true);
-        }}
-        className="fixed bottom-8 right-8 sm:bottom-12 sm:right-12 w-14 h-14 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl flex items-center justify-center shadow-2xl z-40 group overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-stone-800 dark:bg-stone-100 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-        <FaPlus className="relative z-10 text-lg" />
-      </motion.button>
+      {activeTab === 'araclar' ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="araclar-view"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <VehicleTab />
+          </motion.div>
+        </AnimatePresence>
+      ) : (
+        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
+          <CategorySidebar
+            t={t}
+            isDark={isDark}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+            categories={categories}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+          />
+
+          <div className="flex-1">
+            <ExpensesLayout
+              activeTab={activeTab as 'harcamalar' | 'raporlar'}
+              isSidebarOpen={isSidebarOpen}
+              setIsSidebarOpen={setIsSidebarOpen}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              monthOptions={monthOptions}
+              showAddButton={activeTab === 'harcamalar'}
+              onAddClick={() => {
+                setIsEditing(false);
+                setNewExpense({
+                  title: '', amount: 0, category: categories[0] || 'Genel',
+                  date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1
+                });
+                setIsAddModalOpen(true);
+              }}
+            >
+              <AnimatePresence>
+                {activeTab === 'harcamalar' && selectedIds.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-stone-900 dark:bg-white px-6 py-3 rounded-full shadow-2xl border border-stone-800 dark:border-stone-100"
+                  >
+                    <span className="text-[10px] font-black text-white dark:text-stone-900 uppercase tracking-[0.2em]">
+                      {selectedIds.size} {t('expenses.selectedCount') || 'SEÇİLDİ'}
+                    </span>
+                    <div className="w-[1px] h-4 bg-white/20 dark:bg-black/20" />
+                    <div className="flex gap-2">
+                      <button onClick={() => setIsBulkCategoryModalOpen(true)} className="p-2 text-white dark:text-stone-900 hover:bg-white/10 dark:hover:bg-black/5 rounded-xl transition-all" title="Kategori Değiştir">
+                        <FaLayerGroup size={12} />
+                      </button>
+                      <button onClick={handleBulkDelete} className="p-2 text-red-400 hover:bg-red-500/20 rounded-xl transition-all" title="Seçilenleri Sil">
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {activeTab === 'harcamalar' && (
+                    <ExpensesHomeView
+                      t={t}
+                      isDark={isDark}
+                      dateLocale={dateLocale}
+                      filteredExpenses={filteredExpenses}
+                      totalFilteredAmount={totalFilteredAmount}
+                      totalLifetimeAmount={totalLifetimeAmount}
+                      selectedMonth={selectedMonth}
+                      dailyTrendData={dailyTrendData}
+                      categoryBreakdownData={categoryBreakdownData}
+                      searchTerm={searchTerm}
+                      setSearchTerm={setSearchTerm}
+                      sortBy={sortBy}
+                      setSortBy={setSortBy}
+                      sortOrder={sortOrder}
+                      setSortOrder={setSortOrder}
+                      selectedIds={selectedIds}
+                      toggleSelect={toggleSelect}
+                      toggleSelectAll={toggleSelectAll}
+                      handleEditClick={handleEditClick}
+                      handleDeleteExpense={handleDeleteExpense}
+                      visibleCount={visibleCount}
+                      setVisibleCount={setVisibleCount}
+                    />
+                  )}
+                  {activeTab === 'raporlar' && (
+                    <ReportsTab
+                      t={t}
+                      isDark={isDark}
+                      monthlyChartData={monthlyChartData}
+                      monthlySummary={monthlySummary}
+                      onImportClick={handleImportFile}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </ExpensesLayout>
+          </div>
+        </div>
+      )}
+
+
 
       <ExpenseModals
         t={t} isDark={isDark} dateLocale={dateLocale}

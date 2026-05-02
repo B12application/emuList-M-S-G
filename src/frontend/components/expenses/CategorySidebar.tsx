@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronLeft, FaFilter, FaTags, FaCircle } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { FaFilter, FaTags, FaCircle } from 'react-icons/fa';
 
 interface CategorySidebarProps {
   t: (key: string) => string;
@@ -95,17 +95,17 @@ interface SidebarItemProps {
   isDark: boolean;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClick, isOpen, isDark }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClick, isOpen }) => (
   <button
     onClick={onClick}
     className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group ${isActive
-        ? 'bg-stone-900 dark:bg-white shadow-md'
-        : 'hover:bg-stone-50 dark:hover:bg-zinc-800/50'
+      ? 'bg-stone-900 dark:bg-white shadow-md'
+      : 'hover:bg-stone-50 dark:hover:bg-zinc-800/50'
       }`}
   >
     <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isActive
-        ? 'bg-white/10 dark:bg-black/10'
-        : 'bg-stone-50 dark:bg-zinc-800'
+      ? 'bg-white/10 dark:bg-black/10'
+      : 'bg-stone-50 dark:bg-zinc-800'
       }`}>
       <span className={isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-600'}>
         {icon}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp, FaFilter } from 'react-icons/fa';
+import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import type { Expense } from '../../hooks/useExpenses';
 
@@ -154,13 +154,13 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
             <button
               onClick={toggleSelectAll}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
-                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900'
-                  : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-700'
+                ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900'
+                : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-700'
                 }`}
             >
               <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-colors ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
-                  ? 'border-transparent'
-                  : 'border-stone-300 dark:border-zinc-600'
+                ? 'border-transparent'
+                : 'border-stone-300 dark:border-zinc-600'
                 }`}>
                 {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 && <FaCheck size={8} />}
               </div>
@@ -244,16 +244,16 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     className={`group relative p-4 rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 ${selectedIds.has(expense.id)
-                        ? 'bg-stone-900 dark:bg-white'
-                        : 'hover:bg-stone-50 dark:hover:bg-zinc-800/40'
+                      ? 'bg-stone-900 dark:bg-white'
+                      : 'hover:bg-stone-50 dark:hover:bg-zinc-800/40'
                       }`}
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div
                         onClick={() => toggleSelect(expense.id)}
                         className={`w-5 h-5 shrink-0 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
-                            ? 'bg-transparent border-white/30 dark:border-black/30'
-                            : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400'
+                          ? 'bg-transparent border-white/30 dark:border-black/30'
+                          : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400'
                           }`}
                       >
                         {selectedIds.has(expense.id) && <FaCheck size={8} className={selectedIds.has(expense.id) ? 'text-white dark:text-black' : ''} />}
@@ -268,8 +268,8 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                             {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
                           </span>
                           <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${selectedIds.has(expense.id)
-                              ? 'bg-white/10 text-white dark:bg-black/10 dark:text-black'
-                              : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
+                            ? 'bg-white/10 text-white dark:bg-black/10 dark:text-black'
+                            : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
                             }`}>
                             {expense.category}
                           </span>

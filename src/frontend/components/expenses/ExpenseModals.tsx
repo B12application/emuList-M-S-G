@@ -34,8 +34,6 @@ interface ExpenseModalsProps {
 
 const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   t,
-  isDark,
-  dateLocale,
   isAddModalOpen,
   setIsAddModalOpen,
   isEditing,

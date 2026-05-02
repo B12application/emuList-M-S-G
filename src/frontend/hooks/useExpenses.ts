@@ -216,6 +216,20 @@ export default function useExpenses() {
     },
   });
 
+  const bulkDeleteExpensesMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (!user) throw new Error('User not authenticated');
+      const batch = writeBatch(db);
+      ids.forEach(id => {
+        batch.delete(doc(db, 'expenses', id));
+      });
+      await batch.commit();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+    },
+  });
+
   const deleteCategoryMutation = useMutation({
     mutationFn: async (categoryName: string) => {
       if (!user) throw new Error('User not authenticated');
@@ -257,6 +271,7 @@ export default function useExpenses() {
     deleteExpense: deleteExpenseMutation.mutateAsync,
     updateExpense: updateExpenseMutation.mutateAsync,
     bulkUpdateCategory: bulkUpdateCategoryMutation.mutateAsync,
+    bulkDeleteExpenses: bulkDeleteExpensesMutation.mutateAsync,
     deleteCategory: deleteCategoryMutation.mutateAsync,
     isAdding: addExpenseMutation.isPending,
     isDeleting: deleteExpenseMutation.isPending,
@@ -264,5 +279,6 @@ export default function useExpenses() {
     isDeletingCategory: deleteCategoryMutation.isPending,
     isBulkAdding: addBulkExpensesMutation.isPending,
     isBulkUpdating: bulkUpdateCategoryMutation.isPending,
+    isBulkDeleting: bulkDeleteExpensesMutation.isPending,
   };
 }

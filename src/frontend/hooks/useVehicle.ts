@@ -19,6 +19,7 @@ export interface VehicleData {
   mtvYear?: number;
   mtvPaid1?: boolean;
   mtvPaid2?: boolean;
+  fuelCategory?: string;
   createdAt: number;
 }
 
@@ -27,6 +28,20 @@ export interface MonthlyKmLog {
   userId: string;
   month: string; // e.g. "2026-05"
   km: number;
+  drivenKm?: number;
+  fuelExpense?: number;
+  costPerKm?: number;
+  createdAt: number;
+}
+
+export interface MaintenanceRecord {
+  id?: string;
+  userId: string;
+  partName: string;
+  replacedKm: number;
+  replacedDate: string;
+  lifespanKm: number;
+  lifespanMonths: number;
   createdAt: number;
 }
 
@@ -50,6 +65,15 @@ const fetchMonthlyLogs = async (userId: string): Promise<MonthlyKmLog[]> => {
     .sort((a, b) => b.month.localeCompare(a.month)); // newest first
 };
 
+const fetchMaintenanceRecords = async (userId: string): Promise<MaintenanceRecord[]> => {
+  const recordsRef = collection(db, 'vehicle_maintenance');
+  const q = query(recordsRef, where('userId', '==', userId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() } as MaintenanceRecord))
+    .sort((a, b) => b.createdAt - a.createdAt);
+};
+
 export default function useVehicle() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -63,6 +87,12 @@ export default function useVehicle() {
   const { data: logs = [], isLoading: isLoadingLogs } = useQuery({
     queryKey: ['vehicle_logs', user?.uid],
     queryFn: () => fetchMonthlyLogs(user!.uid),
+    enabled: !!user?.uid,
+  });
+
+  const { data: maintenanceRecords = [], isLoading: isLoadingMaintenance } = useQuery({
+    queryKey: ['vehicle_maintenance', user?.uid],
+    queryFn: () => fetchMaintenanceRecords(user!.uid),
     enabled: !!user?.uid,
   });
 
@@ -100,7 +130,7 @@ export default function useVehicle() {
       if (!snapshot.empty) {
         // Update existing log for the month
         const existingDoc = snapshot.docs[0];
-        await setDoc(doc(db, 'vehicle_logs', existingDoc.id), { ...existingDoc.data(), km: log.km }, { merge: true });
+        await setDoc(doc(db, 'vehicle_logs', existingDoc.id), { ...existingDoc.data(), ...log }, { merge: true });
       } else {
         // Create new log
         await addDoc(collection(db, 'vehicle_logs'), { ...log, userId: user.uid, createdAt: Date.now() });
@@ -125,13 +155,35 @@ export default function useVehicle() {
     },
   });
 
+  const addMaintenanceMutation = useMutation({
+    mutationFn: async (record: Omit<MaintenanceRecord, 'id' | 'userId' | 'createdAt'>) => {
+      if (!user) throw new Error('User not authenticated');
+      await addDoc(collection(db, 'vehicle_maintenance'), { ...record, userId: user.uid, createdAt: Date.now() });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle_maintenance', user?.uid] });
+    },
+  });
+
+  const deleteMaintenanceMutation = useMutation({
+    mutationFn: async (recordId: string) => {
+      await deleteDoc(doc(db, 'vehicle_maintenance', recordId));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle_maintenance', user?.uid] });
+    },
+  });
+
   return {
     vehicle,
     logs,
-    isLoading: isLoadingVehicle || isLoadingLogs,
+    maintenanceRecords,
+    isLoading: isLoadingVehicle || isLoadingLogs || isLoadingMaintenance,
     saveVehicle: saveVehicleMutation.mutateAsync,
     addLog: addLogMutation.mutateAsync,
     deleteLog: deleteLogMutation.mutateAsync,
+    addMaintenanceRecord: addMaintenanceMutation.mutateAsync,
+    deleteMaintenanceRecord: deleteMaintenanceMutation.mutateAsync,
     isSaving: saveVehicleMutation.isPending,
   };
 }

@@ -952,6 +952,8 @@ export const translationsEN = {
         loadMore: 'Load More',
         allTime: 'All Time',
         categoriesTitle: 'Categories',
+        monthlyAverageLabel: 'MONTHLY AVERAGE',
+        dailyTrend: 'DAILY SPENDING FLOW',
         // Vehicle Section
         vehicle: {
             title: 'My Vehicle',

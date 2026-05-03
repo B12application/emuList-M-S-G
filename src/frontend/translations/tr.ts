@@ -956,6 +956,8 @@ export const translationsTR = {
         loadMore: 'Daha Fazla Yükle',
         allTime: 'Tüm Zamanlar',
         categoriesTitle: 'Kategoriler',
+        monthlyAverageLabel: 'AYLIK ORTALAMA',
+        dailyTrend: 'GÜNLÜK HARCAMA AKIŞI',
         // Vehicle Section
         vehicle: {
             title: 'Aracım',

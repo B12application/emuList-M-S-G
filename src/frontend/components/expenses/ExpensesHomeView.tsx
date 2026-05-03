@@ -12,6 +12,7 @@ interface ExpensesHomeViewProps {
   filteredExpenses: Expense[];
   totalFilteredAmount: number;
   totalLifetimeAmount: number;
+  monthlyAverage: number;
   selectedMonth: string;
   dailyTrendData: any[];
   categoryBreakdownData: any[];
@@ -37,6 +38,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
   filteredExpenses,
   totalFilteredAmount,
   totalLifetimeAmount,
+  monthlyAverage,
   selectedMonth,
   dailyTrendData,
   categoryBreakdownData,
@@ -61,9 +63,9 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
         {[
           { label: t('expenses.totalLabel'), value: totalFilteredAmount, color: 'text-stone-900 dark:text-white' },
           { label: t('expenses.lifetimeLabel') || 'TÜM ZAMANLAR', value: totalLifetimeAmount, color: 'text-emerald-600 dark:text-emerald-400' },
-          { label: t('expenses.countColumn'), value: filteredExpenses.length, suffix: ` ${t('expenses.transactionSuffix') || 'İşlem'}` },
-          { label: t('expenses.averageLabel') || 'ORTALAMA', value: filteredExpenses.length > 0 ? totalFilteredAmount / filteredExpenses.length : 0 }
-        ].map((stat, i) => (
+          { label: t('expenses.monthlyAverageLabel') || 'AYLIK ORTALAMA', value: monthlyAverage, color: 'text-blue-600 dark:text-blue-400' },
+          { label: t('expenses.averageLabel') || 'İŞLEM ORTALAMA', value: filteredExpenses.length > 0 ? totalFilteredAmount / filteredExpenses.length : 0 }
+        ].map((stat: { label: string; value: number; color?: string; suffix?: string }, i) => (
           <div key={i} className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-100 dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-all">
             <p className="text-[9px] sm:text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-1.5 truncate">{stat.label}</p>
             <h4 className={`text-lg sm:text-xl font-black tracking-tighter ${stat.color || 'text-stone-900 dark:text-white'}`}>

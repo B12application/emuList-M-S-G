@@ -146,6 +146,11 @@ const ExpensesPage: React.FC = () => {
     return Object.entries(summary).map(([month, amount]) => ({ month, amount })).reverse();
   }, [expenses, dateLocale]);
 
+  const monthlyAverage = useMemo(() => {
+    if (monthlySummary.length === 0) return 0;
+    return totalLifetimeAmount / monthlySummary.length;
+  }, [totalLifetimeAmount, monthlySummary]);
+
   // Handlers
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -336,6 +341,7 @@ const ExpensesPage: React.FC = () => {
                       filteredExpenses={filteredExpenses}
                       totalFilteredAmount={totalFilteredAmount}
                       totalLifetimeAmount={totalLifetimeAmount}
+                      monthlyAverage={monthlyAverage}
                       selectedMonth={selectedMonth}
                       dailyTrendData={dailyTrendData}
                       categoryBreakdownData={categoryBreakdownData}

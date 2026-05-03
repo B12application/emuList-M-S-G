@@ -29,12 +29,20 @@ export interface VehicleData {
   fuelType?: string;
   tireSummerBrand?: string;
   tireSummerYear?: number;
+  tireSummerPurchaseDate?: string;
   tireWinterBrand?: string;
   tireWinterYear?: number;
+  tireWinterPurchaseDate?: string;
+  tireLastChangeDate?: string;
+  tireLastChangeKm?: number;
+  tireSummerTotalKm?: number;
+  tireWinterTotalKm?: number;
+  tireHistory?: Array<{ type: 'summer' | 'winter' | 'purchase', date: string, km: number, brand?: string, note?: string }>;
   tramerAmount?: number;
   damageHistory?: string;
   carBodyStatus?: Record<string, 'original' | 'painted' | 'changed'>;
   createdAt: number;
+  updatedAt?: number;
 }
 
 export interface MonthlyKmLog {
@@ -121,10 +129,10 @@ export default function useVehicle() {
       if (!snapshot.empty) {
         // Update
         const existingDoc = snapshot.docs[0];
-        await setDoc(doc(db, 'vehicles', existingDoc.id), { ...existingDoc.data(), ...data, userId: user.uid }, { merge: true });
+        await setDoc(doc(db, 'vehicles', existingDoc.id), { ...existingDoc.data(), ...data, userId: user.uid, updatedAt: Date.now() }, { merge: true });
       } else {
         // Create
-        await addDoc(collection(db, 'vehicles'), { ...data, userId: user.uid, createdAt: Date.now() });
+        await addDoc(collection(db, 'vehicles'), { ...data, userId: user.uid, createdAt: Date.now(), updatedAt: Date.now() });
       }
     },
     onSuccess: () => {

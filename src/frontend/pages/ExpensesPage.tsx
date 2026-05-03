@@ -222,8 +222,8 @@ const ExpensesPage: React.FC = () => {
 
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
-      <div className="mb-8 flex items-center justify-end">
-        <div className="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50 backdrop-blur-sm">
+      <div className="mb-8 flex items-center justify-center sm:justify-end overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50 backdrop-blur-sm min-w-max">
           {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
             { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
@@ -232,7 +232,7 @@ const ExpensesPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as 'harcamalar' | 'raporlar' | 'araclar')}
-              className={`relative flex items-center gap-2.5 px-6 py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${activeTab === tab.id
+              className={`relative flex items-center gap-2.5 px-4 sm:px-6 py-2.5 sm:py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
                 ? 'text-white dark:text-stone-900'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
                 }`}
@@ -283,6 +283,9 @@ const ExpensesPage: React.FC = () => {
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               monthOptions={monthOptions}
+              categories={categories}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
               showAddButton={activeTab === 'harcamalar'}
               onAddClick={() => {
                 setIsEditing(false);

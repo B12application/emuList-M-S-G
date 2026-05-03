@@ -64,9 +64,9 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
           { label: t('expenses.countColumn'), value: filteredExpenses.length, suffix: ` ${t('expenses.transactionSuffix') || 'İşlem'}` },
           { label: t('expenses.averageLabel') || 'ORTALAMA', value: filteredExpenses.length > 0 ? totalFilteredAmount / filteredExpenses.length : 0 }
         ].map((stat, i) => (
-          <div key={i} className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-3xl p-5 border border-stone-100 dark:border-zinc-800 group hover:border-stone-400 dark:hover:border-zinc-600 transition-all">
-            <p className="text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-2">{stat.label}</p>
-            <h4 className={`text-xl font-black tracking-tighter ${stat.color || 'text-stone-900 dark:text-white'}`}>
+          <div key={i} className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-100 dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-all">
+            <p className="text-[9px] sm:text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-1.5 truncate">{stat.label}</p>
+            <h4 className={`text-lg sm:text-xl font-black tracking-tighter ${stat.color || 'text-stone-900 dark:text-white'}`}>
               {!stat.suffix && t('expenses.currency')}
               {stat.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               {stat.suffix || ''}
@@ -149,78 +149,79 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
       {/* List Container */}
       <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2.5rem] border border-stone-100 dark:border-zinc-800 flex flex-col overflow-hidden">
         {/* Header / Unified Toolbar */}
-        <div className="p-6 border-b border-stone-100 dark:border-zinc-800 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleSelectAll}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
-                ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900'
-                : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-700'
-                }`}
-            >
-              <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-colors ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
-                ? 'border-transparent'
-                : 'border-stone-300 dark:border-zinc-600'
-                }`}>
-                {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 && <FaCheck size={8} />}
-              </div>
-              {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? t('common.deselectAll') : t('common.selectAll')}
-            </button>
+        <div className="p-3 sm:p-6 border-b border-stone-100 dark:border-zinc-800">
+          {/* Row 1: Select + Count + Sort */}
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={toggleSelectAll}
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
+                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900'
+                  : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-700'
+                  }`}
+              >
+                <div className={`w-3 h-3 rounded-md border flex items-center justify-center transition-colors ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
+                  ? 'border-transparent'
+                  : 'border-stone-300 dark:border-zinc-600'
+                  }`}>
+                  {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 && <FaCheck size={6} />}
+                </div>
+                <span className="hidden sm:inline">{selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? t('common.deselectAll') : t('common.selectAll')}</span>
+              </button>
 
-            <div className="flex flex-col">
-              <span className="text-[11px] font-black text-stone-900 dark:text-white uppercase tracking-tight">
-                {filteredExpenses.length} {t('expenses.transactionSuffix') || 'Harcama'}
-              </span>
-              {selectedIds.size > 0 && (
-                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
-                  {selectedIds.size} SEÇİLDİ
+              <div className="flex flex-col">
+                <span className="text-[11px] font-black text-stone-900 dark:text-white uppercase tracking-tight">
+                  {filteredExpenses.length} {t('expenses.transactionSuffix') || 'Harcama'}
                 </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 flex-1 lg:justify-end">
-            {/* Search */}
-            <div className="relative group flex-1 max-w-sm">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-stone-900 dark:group-focus-within:text-white transition-colors" size={12} />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('common.searchPlaceholder')}
-                className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 rounded-2xl py-3 pl-12 pr-10 text-[11px] font-black uppercase tracking-wider text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-stone-900/5 dark:focus:ring-white/5 transition-all"
-              />
-              {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-900 dark:hover:text-white">
-                  <FaTimes size={12} />
-                </button>
-              )}
+                {selectedIds.size > 0 && (
+                  <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                    {selectedIds.size} SEÇİLDİ
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Sort Controls */}
-            <div className="flex bg-stone-50 dark:bg-zinc-800 p-1 rounded-2xl border border-stone-100 dark:border-zinc-800">
+            {/* Sort Controls - compact, always visible */}
+            <div className="flex bg-stone-50 dark:bg-zinc-800 p-1 rounded-xl border border-stone-100 dark:border-zinc-800 shrink-0">
               <button
                 onClick={() => setSortBy('date')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${sortBy === 'date' ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-400'}`}
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${sortBy === 'date' ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-400'}`}
               >
-                <FaCalendarAlt size={10} />
-                {t('common.date')}
+                <FaCalendarAlt size={9} />
+                <span className="hidden sm:inline">{t('common.date')}</span>
               </button>
               <button
                 onClick={() => setSortBy('amount')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${sortBy === 'amount' ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-400'}`}
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${sortBy === 'amount' ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-400'}`}
               >
-                <FaWallet size={10} />
-                {t('expenses.amount')}
+                <FaWallet size={9} />
+                <span className="hidden sm:inline">{t('expenses.amount')}</span>
               </button>
-              <div className="w-[1px] h-4 bg-stone-200 dark:bg-zinc-700 mx-1 self-center" />
+              <div className="w-[1px] h-3.5 bg-stone-200 dark:bg-zinc-700 mx-0.5 self-center" />
               <button
                 onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                className="p-2 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                className="p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
               >
-                {sortOrder === 'desc' ? <FaSortAmountDown size={12} /> : <FaSortAmountUp size={12} />}
+                {sortOrder === 'desc' ? <FaSortAmountDown size={10} /> : <FaSortAmountUp size={10} />}
               </button>
             </div>
+          </div>
+
+          {/* Row 2: Search - full width */}
+          <div className="relative group">
+            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-stone-900 dark:group-focus-within:text-white transition-colors" size={11} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t('common.searchPlaceholder')}
+              className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-9 text-[11px] font-black uppercase tracking-wider text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-stone-900/5 dark:focus:ring-white/5 transition-all"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-900 dark:hover:text-white">
+                <FaTimes size={11} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -243,58 +244,54 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className={`group relative p-4 rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 ${selectedIds.has(expense.id)
+                    className={`relative p-3 sm:p-4 rounded-2xl flex items-center gap-3 transition-all duration-300 ${selectedIds.has(expense.id)
                       ? 'bg-stone-900 dark:bg-white'
                       : 'hover:bg-stone-50 dark:hover:bg-zinc-800/40'
                       }`}
                   >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div
-                        onClick={() => toggleSelect(expense.id)}
-                        className={`w-5 h-5 shrink-0 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
-                          ? 'bg-transparent border-white/30 dark:border-black/30'
-                          : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400'
-                          }`}
-                      >
-                        {selectedIds.has(expense.id) && <FaCheck size={8} className={selectedIds.has(expense.id) ? 'text-white dark:text-black' : ''} />}
-                      </div>
+                    <div
+                      onClick={() => toggleSelect(expense.id)}
+                      className={`w-5 h-5 shrink-0 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
+                        ? 'bg-transparent border-white/30 dark:border-black/30'
+                        : 'border-stone-200 dark:border-zinc-700'
+                        }`}
+                    >
+                      {selectedIds.has(expense.id) && <FaCheck size={8} className={selectedIds.has(expense.id) ? 'text-white dark:text-black' : ''} />}
+                    </div>
 
-                      <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h4 className={`text-xs font-black uppercase tracking-tight truncate ${selectedIds.has(expense.id) ? 'text-white dark:text-black' : 'text-stone-900 dark:text-white'}`}>
                           {expense.title}
                         </h4>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className={`text-[9px] font-black uppercase tracking-wider ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-black/60' : 'text-stone-400 dark:text-zinc-500'}`}>
-                            {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
-                          </span>
-                          <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${selectedIds.has(expense.id)
-                            ? 'bg-white/10 text-white dark:bg-black/10 dark:text-black'
-                            : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
-                            }`}>
-                            {expense.category}
-                          </span>
-                        </div>
+                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-widest shrink-0 ${selectedIds.has(expense.id)
+                          ? 'bg-white/10 text-white dark:bg-black/10 dark:text-black'
+                          : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
+                          }`}>
+                          {expense.category}
+                        </span>
                       </div>
+                      <span className={`text-[9px] font-black uppercase tracking-wider mt-0.5 block ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-black/60' : 'text-stone-400 dark:text-zinc-500'}`}>
+                        {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 shrink-0">
                       <span className={`text-sm font-black tracking-tighter ${selectedIds.has(expense.id) ? 'text-white dark:text-black' : 'text-stone-900 dark:text-white'}`}>
                         {t('expenses.currency')}{expense.amount.toLocaleString()}
                       </span>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                        <button
-                          onClick={() => handleEditClick(expense)}
-                          className={`p-2.5 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 shadow-sm border border-transparent hover:border-stone-100'}`}
-                        >
-                          <FaEdit size={12} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExpense(expense.id)}
-                          className={`p-2.5 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-rose-300 hover:text-rose-100 hover:bg-rose-500/20' : 'text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 shadow-sm border border-transparent hover:border-rose-100'}`}
-                        >
-                          <FaTrash size={12} />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleEditClick(expense)}
+                        className={`p-2 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-stone-400 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-zinc-800 border border-stone-100 dark:border-zinc-700'}`}
+                      >
+                        <FaEdit size={11} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteExpense(expense.id)}
+                        className={`p-2 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-rose-300 hover:text-rose-100 hover:bg-rose-500/20' : 'text-stone-400 hover:text-rose-500 bg-white dark:bg-zinc-800 border border-stone-100 dark:border-zinc-700'}`}
+                      >
+                        <FaTrash size={11} />
+                      </button>
                     </div>
                   </motion.div>
                 ))}

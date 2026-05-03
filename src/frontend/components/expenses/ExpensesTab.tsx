@@ -57,28 +57,28 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
-          <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{t('expenses.totalLabel')}</p>
-          <h4 className="text-xl font-black text-stone-900 dark:text-white">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] p-3.5 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1 truncate">{t('expenses.totalLabel')}</p>
+          <h4 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white">
             {t('expenses.currency')}{totalFilteredAmount.toLocaleString()}
           </h4>
         </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
-          <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Toplam (Tüm Zamanlar)</p>
-          <h4 className="text-xl font-black text-stone-900 dark:text-white text-emerald-600 dark:text-emerald-400">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] p-3.5 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1 truncate">Tüm Zamanlar</p>
+          <h4 className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">
             {t('expenses.currency')}{totalLifetimeAmount.toLocaleString()}
           </h4>
         </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
-          <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{t('expenses.countColumn')}</p>
-          <h4 className="text-xl font-black text-stone-900 dark:text-white">
-            {filteredExpenses.length} <span className="text-xs font-bold text-stone-400">İşlem</span>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] p-3.5 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1 truncate">{t('expenses.countColumn')}</p>
+          <h4 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white">
+            {filteredExpenses.length} <span className="text-[10px] font-bold text-stone-400">İşlem</span>
           </h4>
         </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-4 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
-          <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Ortalama</p>
-          <h4 className="text-xl font-black text-stone-900 dark:text-white">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] p-3.5 sm:p-5 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1 truncate">Ortalama</p>
+          <h4 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white">
             {t('expenses.currency')}{(filteredExpenses.length > 0 ? totalFilteredAmount / filteredExpenses.length : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </h4>
         </div>
@@ -148,73 +148,76 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
         </div>
       )}
 
-      <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] px-2 py-4 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 px-2 sm:px-0">
-          <div className="flex items-center gap-4">
-             <button
-                onClick={toggleSelectAll}
-                className="text-[10px] font-black text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800 px-3 py-2 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors uppercase tracking-widest flex items-center gap-2 shadow-sm"
-              >
-                <div className={`w-3 h-3 rounded border ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? 'bg-stone-900 border-stone-900 dark:bg-white dark:border-white' : 'border-stone-400'}`}>
-                  {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 && <FaCheck className="text-[6px] text-white dark:text-stone-900 m-auto" />}
-                </div>
-                {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? t('common.deselectAll') : t('common.selectAll')}
-              </button>
-              <span className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest bg-stone-50 dark:bg-zinc-800/50 px-3 py-2 rounded-xl border border-stone-100 dark:border-zinc-800">
-                {filteredExpenses.length} {t('expenses.transactionCount')}
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2.5rem] p-3 sm:p-6 shadow-sm border border-stone-200/50 dark:border-zinc-800/50">
+        {/* Toolbar Row 1: Select + Count */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={toggleSelectAll}
+              className="text-[9px] sm:text-[10px] font-black text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800 px-2.5 py-2 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors uppercase tracking-widest flex items-center gap-2 shadow-sm whitespace-nowrap"
+            >
+              <div className={`w-3 h-3 rounded border flex items-center justify-center ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? 'bg-stone-900 border-stone-900 dark:bg-white dark:border-white' : 'border-stone-400'}`}>
+                {selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 && <FaCheck className="text-[6px] text-white dark:text-stone-900" />}
+              </div>
+              <span className="hidden sm:inline">{selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0 ? t('common.deselectAll') : t('common.selectAll')}</span>
+            </button>
+            <span className="text-[9px] sm:text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest bg-stone-50 dark:bg-zinc-800/50 px-2.5 py-2 rounded-xl border border-stone-100 dark:border-zinc-800 whitespace-nowrap">
+              {filteredExpenses.length} {t('expenses.transactionCount')}
+            </span>
+            {selectedIds.size > 0 && (
+              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest whitespace-nowrap">
+                {selectedIds.size} Seçildi
               </span>
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            {/* Search Bar */}
-            <div className="relative group w-full sm:w-56">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-[10px]" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('common.searchPlaceholder')}
-                className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 rounded-2xl py-2.5 pl-11 pr-8 text-[11px] font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-400"
-              />
-              {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-900 dark:hover:text-white">
-                  <FaTimes className="text-[10px]" />
-                </button>
-              )}
-            </div>
-
-            {/* Sort Controls */}
-            <div className="flex bg-stone-50 dark:bg-zinc-800/50 p-1 rounded-2xl border border-stone-100 dark:border-zinc-800">
-              <button
-                onClick={() => setSortBy('date')}
-                className={`p-2 rounded-xl transition-all ${sortBy === 'date'
-                  ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-md'
-                  : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
-                  }`}
-                title={t('common.sortDate')}
-              >
-                <FaCalendarAlt className="text-[10px]" />
-              </button>
-              <button
-                onClick={() => setSortBy('amount')}
-                className={`p-2 rounded-xl transition-all ${sortBy === 'amount'
-                  ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-md'
-                  : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
-                  }`}
-                title={t('common.sortAmount')}
-              >
-                <FaWallet className="text-[10px]" />
-              </button>
-              <div className="w-[1px] h-4 bg-stone-200 dark:bg-zinc-700 mx-1 self-center" />
-              <button
-                onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                className="p-2 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-xl transition-all"
-                title={sortOrder === 'desc' ? t('common.desc') : t('common.asc')}
-              >
-                {sortOrder === 'desc' ? <FaSortAmountDown className="text-[10px]" /> : <FaSortAmountUp className="text-[10px]" />}
-              </button>
-            </div>
+          {/* Sort Controls - always visible, compact */}
+          <div className="flex bg-stone-50 dark:bg-zinc-800/50 p-1 rounded-xl border border-stone-100 dark:border-zinc-800 shrink-0">
+            <button
+              onClick={() => setSortBy('date')}
+              className={`p-1.5 rounded-lg transition-all ${sortBy === 'date'
+                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
+                }`}
+              title={t('common.sortDate')}
+            >
+              <FaCalendarAlt size={10} />
+            </button>
+            <button
+              onClick={() => setSortBy('amount')}
+              className={`p-1.5 rounded-lg transition-all ${sortBy === 'amount'
+                ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white shadow-sm'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
+                }`}
+              title={t('common.sortAmount')}
+            >
+              <FaWallet size={10} />
+            </button>
+            <div className="w-[1px] h-3.5 bg-stone-200 dark:bg-zinc-700 mx-0.5 self-center" />
+            <button
+              onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+              className="p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-lg transition-all"
+            >
+              {sortOrder === 'desc' ? <FaSortAmountDown size={10} /> : <FaSortAmountUp size={10} />}
+            </button>
           </div>
+        </div>
+
+        {/* Search Bar - full width below */}
+        <div className="relative group mb-4">
+          <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" size={11} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={t('common.searchPlaceholder')}
+            className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-8 text-[11px] font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-400"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-900 dark:hover:text-white">
+              <FaTimes size={11} />
+            </button>
+          )}
         </div>
 
         <div className="max-h-[600px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
@@ -233,12 +236,13 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className={`group p-3 sm:p-4 rounded-2xl border transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 ${selectedIds.has(expense.id)
-                      ? 'bg-stone-900 border-stone-900 dark:bg-white dark:border-white shadow-lg translate-x-1'
-                      : 'bg-stone-50/50 dark:bg-zinc-800/30 border-stone-100 dark:border-zinc-800/50 hover:bg-white dark:hover:bg-zinc-800 hover:shadow-md'
+                    className={`p-3 sm:p-4 rounded-2xl border transition-all duration-300 ${selectedIds.has(expense.id)
+                      ? 'bg-stone-900 border-stone-900 dark:bg-white dark:border-white shadow-lg'
+                      : 'bg-stone-50/50 dark:bg-zinc-800/30 border-stone-100 dark:border-zinc-800/50'
                       }`}
                   >
-                    <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-1 min-w-0">
+                    {/* Main row: checkbox + icon + info + amount + actions */}
+                    <div className="flex items-center gap-3">
                       {/* Selection Checkbox */}
                       <div
                         onClick={(e) => {
@@ -247,7 +251,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
                         }}
                         className={`w-5 h-5 shrink-0 rounded-md border-2 flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
                           ? 'bg-transparent border-white/30 dark:border-zinc-950/30'
-                          : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400 dark:hover:border-zinc-500'
+                          : 'border-stone-200 dark:border-zinc-700'
                           }`}
                       >
                         {selectedIds.has(expense.id) && (
@@ -255,50 +259,49 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
                         )}
                       </div>
 
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner transition-colors ${selectedIds.has(expense.id) ? 'bg-white/10' : 'bg-white dark:bg-zinc-900'}`}>
-                        <FaTag className={`text-[10px] sm:text-xs ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-400'}`} />
-                      </div>
+                      {/* Info block */}
                       <div className="min-w-0 flex-1">
-                        <h4 className={`text-sm font-bold truncate ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-900 dark:text-white'}`}>
-                          {expense.title}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5">
-                          <span className={`text-[10px] font-medium ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-zinc-950/60' : 'text-stone-400 dark:text-zinc-500'}`}>
-                            {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
-                          </span>
-                          <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tight ${selectedIds.has(expense.id)
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className={`text-sm font-bold truncate ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-900 dark:text-white'}`}>
+                            {expense.title}
+                          </h4>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tight shrink-0 ${selectedIds.has(expense.id)
                             ? 'bg-white/10 text-white dark:bg-zinc-950/10 dark:text-zinc-950'
                             : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
                             }`}>
                             {expense.category}
                           </span>
                         </div>
-                        {expense.installmentCount && expense.installmentCount > 1 && (
-                          <span className="text-[9px] sm:text-[10px] inline-block mt-1 font-black px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
-                            {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className={`text-[10px] font-medium ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-zinc-950/60' : 'text-stone-400 dark:text-zinc-500'}`}>
+                            {format(parseISO(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
                           </span>
-                        )}
+                          {expense.installmentCount && expense.installmentCount > 1 && (
+                            <span className="text-[9px] font-black px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-900/50">
+                              {t('expenses.installmentNote').replace('{current}', expense.installmentCurrent?.toString() || '1').replace('{total}', expense.installmentCount.toString())}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pl-8 sm:pl-0">
-                      <span className="font-black text-base sm:text-lg text-stone-900 dark:text-white mr-auto sm:mr-3">
-                        {t('expenses.currency')}{expense.amount.toLocaleString()}
-                      </span>
-                      <div className="flex items-center gap-1.5 sm:gap-2 transition-opacity shrink-0">
+                      {/* Amount + actions */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`font-black text-base ${selectedIds.has(expense.id) ? 'text-white dark:text-zinc-950' : 'text-stone-900 dark:text-white'}`}>
+                          {t('expenses.currency')}{expense.amount.toLocaleString()}
+                        </span>
                         <button
                           onClick={() => handleEditClick(expense)}
-                          className="p-2 sm:p-2.5 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-white dark:bg-zinc-800 rounded-xl sm:rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                          className={`p-2 transition-all rounded-xl ${selectedIds.has(expense.id) ? 'text-white/70 hover:text-white bg-white/10' : 'text-stone-400 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700'} shadow-sm`}
                           title={t('common.edit')}
                         >
-                          <FaEdit className="text-xs sm:text-sm" />
+                          <FaEdit size={11} />
                         </button>
                         <button
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="p-2 sm:p-2.5 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-all bg-white dark:bg-zinc-800 rounded-xl sm:rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700 hover:scale-110"
+                          className={`p-2 transition-all rounded-xl ${selectedIds.has(expense.id) ? 'text-rose-300 hover:text-rose-100 bg-rose-500/20' : 'text-stone-400 hover:text-rose-500 dark:hover:text-red-400 bg-white dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700'} shadow-sm`}
                           title={t('common.delete')}
                         >
-                          <FaTrash className="text-xs sm:text-sm" />
+                          <FaTrash size={11} />
                         </button>
                       </div>
                     </div>

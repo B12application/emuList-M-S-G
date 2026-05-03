@@ -995,7 +995,35 @@ export const translationsEN = {
             drivenKm: 'Driven KM',
             totalFuel: 'Total Fuel',
             costPerKm: 'Cost (TL/KM)',
-            analysisNeeded: 'At least 2 months of data is required for analysis.'
+            analysisNeeded: 'At least 2 months of data is required for analysis.',
+            // New Vehicle Features
+            identity: 'Vehicle Identity Information',
+            brandModel: 'Brand / Model / Year',
+            engineTransmission: 'Engine / Transmission',
+            tireStatus: 'Tire Status & Replacement',
+            summerTire: 'Summer Tires',
+            winterTire: 'Winter Tires',
+            damageHistory: 'Damage & Tramer History',
+            tramerAmount: 'Tramer Damage Amount',
+            bodyStatus: 'Body & Paint Condition',
+            changed: 'Changed',
+            painted: 'Painted',
+            original: 'Original',
+            parts: {
+                frontBumper: 'Front Bumper',
+                rearBumper: 'Rear Bumper',
+                hood: 'Hood',
+                roof: 'Roof',
+                trunk: 'Trunk',
+                frontLeftFender: 'Front Left Fender',
+                frontRightFender: 'Front Right Fender',
+                rearLeftFender: 'Rear Left Fender',
+                rearRightFender: 'Rear Right Fender',
+                frontLeftDoor: 'Front Left Door',
+                frontRightDoor: 'Front Right Door',
+                rearLeftDoor: 'Rear Left Door',
+                rearRightDoor: 'Rear Right Door',
+            }
         }
     },
 };

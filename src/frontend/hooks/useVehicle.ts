@@ -20,6 +20,20 @@ export interface VehicleData {
   mtvPaid1?: boolean;
   mtvPaid2?: boolean;
   fuelCategory?: string;
+  licensePlate?: string;
+  brand?: string;
+  model?: string;
+  year?: number;
+  engine?: string;
+  transmission?: string;
+  fuelType?: string;
+  tireSummerBrand?: string;
+  tireSummerYear?: number;
+  tireWinterBrand?: string;
+  tireWinterYear?: number;
+  tramerAmount?: number;
+  damageHistory?: string;
+  carBodyStatus?: Record<string, 'original' | 'painted' | 'changed'>;
   createdAt: number;
 }
 

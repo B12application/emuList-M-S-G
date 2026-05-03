@@ -999,7 +999,35 @@ export const translationsTR = {
             drivenKm: 'Yapılan KM',
             totalFuel: 'Toplam Yakıt',
             costPerKm: 'Maliyet (TL/KM)',
-            analysisNeeded: 'Analiz için en az 2 aylık veri gereklidir.'
+            analysisNeeded: 'Analiz için en az 2 aylık veri gereklidir.',
+            // New Vehicle Features
+            identity: 'Araç Kimlik Bilgileri',
+            brandModel: 'Marka / Model / Yıl',
+            engineTransmission: 'Motor / Şanzıman',
+            tireStatus: 'Lastik Durumu & Değişimi',
+            summerTire: 'Yazlık Lastikler',
+            winterTire: 'Kışlık Lastikler',
+            damageHistory: 'Hasar & Tramer Kaydı Geçmişi',
+            tramerAmount: 'Tramer Hasar Tutarı',
+            bodyStatus: 'Kaporta & Boya Durumu',
+            changed: 'Değişen',
+            painted: 'Boyalı',
+            original: 'Orijinal',
+            parts: {
+                frontBumper: 'Ön Tampon',
+                rearBumper: 'Arka Tampon',
+                hood: 'Kaput',
+                roof: 'Tavan',
+                trunk: 'Bagaj',
+                frontLeftFender: 'Sol Ön Çamurluk',
+                frontRightFender: 'Sağ Ön Çamurluk',
+                rearLeftFender: 'Sol Arka Çamurluk',
+                rearRightFender: 'Sağ Arka Çamurluk',
+                frontLeftDoor: 'Sol Ön Kapı',
+                frontRightDoor: 'Sağ Ön Kapı',
+                rearLeftDoor: 'Sol Arka Kapı',
+                rearRightDoor: 'Sağ Arka Kapı',
+            }
         }
     },
 };

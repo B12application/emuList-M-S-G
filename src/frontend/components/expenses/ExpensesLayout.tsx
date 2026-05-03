@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaChevronDown, FaCalendarAlt, FaPlus, FaTags } from 'react-icons/fa';
 import { useLanguage } from '../../context/LanguageContext';

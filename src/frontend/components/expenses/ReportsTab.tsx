@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaChartBar, FaFileImport, FaInfoCircle, FaFileAlt } from 'react-icons/fa';
+import { FaChartBar, FaFileImport, FaFileAlt } from 'react-icons/fa';
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
 interface ReportsTabProps {
@@ -92,20 +92,23 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
             <FaFileImport className="text-2xl text-stone-400" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-wider">{t('expenses.importStatement')}</h3>
+            <h3 className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-wider">{t('expenses.uploadPdf')}</h3>
             <p className="text-[10px] text-stone-400 dark:text-zinc-500 leading-relaxed max-w-[220px] font-bold">
-              {t('expenses.pasteStatement').split('.')[0]}.
+              {t('expenses.selectPdfFile')}
             </p>
           </div>
           <button
             onClick={onImportClick}
-            className="px-8 py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-stone-900/10 dark:shadow-white/10"
+            className="px-8 py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-stone-900/10 dark:shadow-white/10 flex items-center gap-2"
           >
-            {t('expenses.importStatement').split(' ')[0]}
+            <FaFileImport /> {t('expenses.uploadPdf')}
           </button>
-          <div className="flex items-center gap-2 text-[9px] font-black text-stone-400 uppercase tracking-wider opacity-60">
-            <FaInfoCircle size={10} />
-            PDF & JSON SUPPORT
+          <div className="flex items-center gap-2 text-[9px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-wider">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            {t('expenses.analyzeWithAi')}
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 import useExpenses from '../hooks/useExpenses';
 import type { Expense } from '../hooks/useExpenses';
@@ -209,12 +210,45 @@ const ExpensesPage: React.FC = () => {
   };
 
   const handleImportFile = () => {
-    const mockData = [
-      { title: 'STARBUCKS COFFEE', amount: 145, date: '2024-05-10', category: 'Yemek' },
-      { title: 'OPET PETROLCULUK', amount: 1250, date: '2024-05-12', category: 'Ulaşım' },
-    ];
-    setImportPreview(mockData);
-    setIsImportPreviewOpen(true);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const analyzePromise = (async () => {
+          const response = await fetch('http://localhost:3001/api/analyze-statement', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Analiz hatası');
+          }
+
+          return response.json();
+        })();
+
+        toast.promise(analyzePromise, {
+          loading: 'PDF Analiz ediliyor (Gemini AI)...',
+          success: 'Analiz tamamlandı!',
+          error: (err) => `Hata: ${err.message}`,
+        });
+
+        const data = await analyzePromise;
+        setImportPreview(data);
+        setIsImportPreviewOpen(true);
+      } catch (error: any) {
+        console.error('Import error:', error);
+      }
+    };
+    input.click();
   };
 
   const confirmImport = async () => {

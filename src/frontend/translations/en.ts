@@ -935,6 +935,9 @@ export const translationsEN = {
         confirmImport: 'Import Selected',
         importSuccess: 'Expenses imported successfully',
         noDataParsed: 'No data found to parse',
+        uploadPdf: 'Upload PDF',
+        selectPdfFile: 'Select bank statement PDF file.',
+        analyzeWithAi: 'Analyze with AI',
         // Bulk Actions
         selectedCount: 'Expenses Selected',
         totalValue: 'Total Value',

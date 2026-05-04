@@ -939,6 +939,9 @@ export const translationsTR = {
         confirmImport: 'Seçilenleri İçe Aktar',
         importSuccess: 'Harcamalar başarıyla içe aktarıldı',
         noDataParsed: 'Ayrıştırılacak veri bulunamadı',
+        uploadPdf: 'PDF Yükle',
+        selectPdfFile: 'Banka ekstresi PDF dosyasını seçin.',
+        analyzeWithAi: 'AI İle Analiz Et',
         // Bulk Actions
         selectedCount: 'Harcama Seçildi',
         totalValue: 'Toplam Değer',

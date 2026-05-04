@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import pdf from 'pdf-parse';
+import * as pdf from 'pdf-parse';
 import busboy from 'busboy';
 import { UsageService } from './utils/usageService';
 
@@ -62,7 +62,8 @@ export const handler: Handler = async (event, context): Promise<any> => {
 
       try {
         // Extract text from PDF
-        const data = await pdf(fileBuffer);
+        const pdfParser = (pdf as any).default || pdf;
+        const data = await pdfParser(fileBuffer);
         const pdfText = data.text;
 
         if (!pdfText || pdfText.trim().length === 0) {

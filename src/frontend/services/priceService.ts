@@ -31,15 +31,29 @@ export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
 
 const parseGoldData = (data: any): GoldPrice | null => {
   try {
-    // Handle different possible keys from different providers
-    const goldData = data['gram-altin'] || data['gram_altin'] || data['GA'];
+    // Handle CollectAPI format
+    if (data.success === true && Array.isArray(data.result)) {
+      const gramAltin = data.result.find((item: any) => 
+        item.name === 'Gram Altın' || item.name === 'Gram Gold' || item.text === 'Gram Altın'
+      );
+      if (gramAltin) {
+        return {
+          buy: typeof gramAltin.buying === 'number' ? gramAltin.buying : parseFloat(gramAltin.buying),
+          sell: typeof gramAltin.selling === 'number' ? gramAltin.selling : parseFloat(gramAltin.selling),
+          change: gramAltin.changerate || gramAltin.change || '0%',
+          updateDate: gramAltin.date || new Date().toLocaleString()
+        };
+      }
+    }
 
+    // Handle other providers (Truncgil, GenelPara)
+    const goldData = data['gram-altin'] || data['gram_altin'] || data['GA'];
+    
     if (!goldData) return null;
 
     const parsePrice = (priceStr: string | number) => {
       if (typeof priceStr === 'number') return priceStr;
       if (!priceStr) return 0;
-      // Handle formats like "2.850,50" or "2850.50"
       return parseFloat(priceStr.toString().replace(/\./g, '').replace(',', '.'));
     };
 

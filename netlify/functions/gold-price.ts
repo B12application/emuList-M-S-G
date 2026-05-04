@@ -3,6 +3,14 @@ import { Handler } from '@netlify/functions';
 export const handler: Handler = async (event, context) => {
   const sources = [
     {
+      name: 'CollectAPI',
+      url: 'https://api.collectapi.com/economy/goldPrice',
+      headers: {
+        'authorization': process.env.COLLECT_API_KEY || ''
+      },
+      check: (json: any) => json.success === true && Array.isArray(json.result)
+    },
+    {
       name: 'Truncgil_v3',
       url: 'https://finans.truncgil.com/v3/today.json',
       check: (json: any) => json['gram-altin'] || json['gram_altin'] || json['GA']
@@ -22,7 +30,8 @@ export const handler: Handler = async (event, context) => {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
           'Accept': 'application/json',
-          'Referer': 'https://www.google.com/'
+          'Referer': 'https://www.google.com/',
+          ...(source.headers || {})
         }
       });
 

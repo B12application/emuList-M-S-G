@@ -10,7 +10,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
-import useMediaStats from '../hooks/useMediaStats';
+
 import useMedia from '../hooks/useMedia';
 import Footer from '../components/Footer';
 import useMediaHistory from '../hooks/useMediaHistory';
@@ -22,8 +22,32 @@ export default function ProfilePage() {
     const { user } = useAuth();
     const { profile } = useUserProfile();
     const { t } = useLanguage();
-    const { stats, loading: statsLoading } = useMediaStats();
-    const { items: allItems, refetch: refetchMedia } = useMedia('all', 'all', true);
+    const { items: allItems, loading: loadingMedia, refetch: refetchMedia } = useMedia('all', 'all', true);
+    
+    // ⚡ İSTATİSTİK OPTİMİZASYONU
+    const stats = useMemo(() => {
+        const counts = {
+            movieCount: 0,
+            seriesCount: 0,
+            gameCount: 0,
+            bookCount: 0,
+            totalCount: allItems.length
+        };
+
+        allItems.forEach(item => {
+            if (item.type === 'movie') counts.movieCount++;
+            else if (item.type === 'series') counts.seriesCount++;
+            else if (item.type === 'game') counts.gameCount++;
+            else if (item.type === 'book') counts.bookCount++;
+        });
+
+        return {
+            ...counts,
+            totalCount: counts.movieCount + counts.seriesCount + counts.gameCount + counts.bookCount
+        };
+    }, [allItems]);
+
+    const statsLoading = loadingMedia;
     const { history } = useMediaHistory();
 
 

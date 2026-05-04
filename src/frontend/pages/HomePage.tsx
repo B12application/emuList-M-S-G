@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 // 1. YENİ İKONLAR EKLENDİ: FaCalendarCheck, FaHistory, FaArrowRight, FaHourglassHalf, FaStar
 import { FaFilm, FaTv, FaGamepad, FaBook, FaChartPie, FaSpinner, FaLightbulb, FaRandom, FaCalendarCheck, FaHistory, FaHeart, FaArrowRight, FaHourglassHalf, FaPlus, FaArchive, FaStar, FaChevronDown, FaChevronUp, FaCog, FaPlay, FaTimes, FaTasks } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-import useMediaStats from '../hooks/useMediaStats';
+
 import useMedia from '../hooks/useMedia';
 import RecommendationCard from '../components/RecommendationCard';
 import useUserProfile from '../hooks/useUserProfile';
@@ -62,7 +62,32 @@ export default function HomePage() {
         }
     }, [user, navigate]);
 
-    const { stats, loading: statsLoading } = useMediaStats();
+    // ⚡ İSTATİSTİK OPTİMİZASYONU: Sunucuya sayaç sorgusu (runAggregationQuery) atmak yerine
+    // zaten elimizde olan 'allItems' üzerinden hesaplama yapıyoruz.
+    // Bu sayede Firestore 429 (Resource Exhausted) hatasını engelliyoruz.
+    const stats = useMemo(() => {
+        const counts = {
+            movieCount: 0,
+            seriesCount: 0,
+            gameCount: 0,
+            bookCount: 0,
+            totalCount: allItems.length
+        };
+
+        allItems.forEach(item => {
+            if (item.type === 'movie') counts.movieCount++;
+            else if (item.type === 'series') counts.seriesCount++;
+            else if (item.type === 'game') counts.gameCount++;
+            else if (item.type === 'book') counts.bookCount++;
+        });
+
+        return {
+            ...counts,
+            totalCount: counts.movieCount + counts.seriesCount + counts.gameCount + counts.bookCount
+        };
+    }, [allItems]);
+
+    const statsLoading = allLoading;
     const { playClick } = useAppSound();
 
     // ⚡ OPTİMİZASYON: 4 ayrı Firebase sorgusu KALDIRILDI

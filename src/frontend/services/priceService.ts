@@ -12,7 +12,7 @@ export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
     // In production, we use our Netlify function proxy to avoid CORS and 404 issues
     // In development, this will also work if netlify-cli is used, or it will fallback to direct fetch
     const response = await fetch('/api/gold-price');
-    
+
     if (!response.ok) {
       console.warn('Proxy fetch failed, falling back to direct fetch');
       // Using the working GenelPara URL as fallback
@@ -20,7 +20,7 @@ export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
       if (!directResponse.ok) throw new Error('Both proxy and direct fetch failed');
       return parseGoldData(await directResponse.json());
     }
-    
+
     const data = await response.json();
     return parseGoldData(data);
   } catch (error) {
@@ -33,7 +33,7 @@ const parseGoldData = (data: any): GoldPrice | null => {
   try {
     // Handle different possible keys from different providers
     const goldData = data['gram-altin'] || data['gram_altin'] || data['GA'];
-    
+
     if (!goldData) return null;
 
     const parsePrice = (priceStr: string | number) => {

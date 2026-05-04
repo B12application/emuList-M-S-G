@@ -1,7 +1,7 @@
 // src/components/AdminRecommendationsPanel.tsx
 import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
-import { FaSearch, FaPlus, FaTrash, FaTimes, FaStar, FaLock, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaPlus, FaTrash, FaTimes, FaStar, FaLock, FaSpinner, FaAccusoft } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import type { Recommendation, RecommendationCategory, RecommendationInput } from '../../backend/types/recommendation';

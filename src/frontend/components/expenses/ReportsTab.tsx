@@ -8,7 +8,6 @@ interface ReportsTabProps {
   monthlyChartData: any[];
   monthlySummary: any[];
   onImportClick: () => void;
-  usage: { count: number; limit: number };
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({
@@ -16,8 +15,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   isDark,
   monthlyChartData,
   monthlySummary,
-  onImportClick,
-  usage
+  onImportClick
 }) => {
   return (
     <div className="space-y-6 pb-20">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
@@ -41,7 +41,6 @@ const ExpensesPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [visibleCount, setVisibleCount] = useState(10);
-  const [usage, setUsage] = useState({ count: 0, limit: 100 });
   
   // JSON Import
   const [isJsonImportModalOpen, setIsJsonImportModalOpen] = useState(false);
@@ -400,7 +399,6 @@ const ExpensesPage: React.FC = () => {
                       monthlyChartData={monthlyChartData}
                       monthlySummary={monthlySummary}
                       onImportClick={() => setIsJsonImportModalOpen(true)}
-                      usage={usage}
                     />
                   )}
                 </motion.div>

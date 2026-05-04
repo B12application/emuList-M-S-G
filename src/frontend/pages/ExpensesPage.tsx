@@ -42,9 +42,13 @@ const ExpensesPage: React.FC = () => {
   const [visibleCount, setVisibleCount] = useState(10);
   const [usage, setUsage] = useState({ count: 0, limit: 20 });
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+  const USAGE_ENDPOINT = `${API_BASE_URL}/.netlify/functions/usage`;
+  const ANALYZE_ENDPOINT = `${API_BASE_URL}/.netlify/functions/analyze-statement`;
+
   const fetchUsage = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/usage');
+      const response = await fetch(USAGE_ENDPOINT);
       if (response.ok) {
         const data = await response.json();
         setUsage(data);
@@ -239,7 +243,7 @@ const ExpensesPage: React.FC = () => {
 
       try {
         const analyzePromise = (async () => {
-          const response = await fetch('http://localhost:3001/api/analyze-statement', {
+          const response = await fetch(ANALYZE_ENDPOINT, {
             method: 'POST',
             body: formData,
           });

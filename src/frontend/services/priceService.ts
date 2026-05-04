@@ -17,37 +17,39 @@ export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
       console.warn('Proxy fetch failed, falling back to direct fetch');
       const directResponse = await fetch('https://finans.truncgil.com/today.json');
       if (!directResponse.ok) throw new Error('Both proxy and direct fetch failed');
-      return parseTruncgilData(await directResponse.json());
+      return parseGoldData(await directResponse.json());
     }
     
     const data = await response.json();
-    return parseTruncgilData(data);
+    return parseGoldData(data);
   } catch (error) {
     console.error('Error fetching gold price:', error);
     return null;
   }
 };
 
-const parseTruncgilData = (data: any): GoldPrice | null => {
+const parseGoldData = (data: any): GoldPrice | null => {
   try {
-    // Handle different possible keys from Truncgil (they change frequently)
+    // Handle different possible keys from different providers
     const goldData = data['gram-altin'] || data['gram_altin'] || data['GA'];
     
     if (!goldData) return null;
 
     const parsePrice = (priceStr: string | number) => {
       if (typeof priceStr === 'number') return priceStr;
-      return parseFloat(priceStr.replace('.', '').replace(',', '.'));
+      if (!priceStr) return 0;
+      // Handle formats like "2.850,50" or "2850.50"
+      return parseFloat(priceStr.toString().replace(/\./g, '').replace(',', '.'));
     };
 
     return {
-      buy: parsePrice(goldData['Alış'] || goldData['Buying'] || goldData['Al']),
-      sell: parsePrice(goldData['Satış'] || goldData['Selling'] || goldData['Sat']),
-      change: goldData['Değişim'] || goldData['Change'] || goldData['Deiim'] || '0%',
-      updateDate: data['Update_Date'] || new Date().toLocaleString()
+      buy: parsePrice(goldData['Alış'] || goldData['Buying'] || goldData['Al'] || goldData['alis']),
+      sell: parsePrice(goldData['Satış'] || goldData['Selling'] || goldData['Sat'] || goldData['satis']),
+      change: goldData['Değişim'] || goldData['Change'] || goldData['degisim'] || '0%',
+      updateDate: goldData['d'] || data['Update_Date'] || new Date().toLocaleString()
     };
   } catch (e) {
-    console.error('Error parsing Truncgil data:', e);
+    console.error('Error parsing gold data:', e);
     return null;
   }
 };

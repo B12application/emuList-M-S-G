@@ -5,16 +5,12 @@ export const handler: Handler = async (event, context) => {
     // Sources to try
     const sources = [
       {
+        url: 'https://api.genelpara.com/json/?list=altin',
+        parser: (json: any) => json['GA']
+      },
+      {
         url: 'https://finans.truncgil.com/v3/today.json',
         parser: (json: any) => json['gram-altin'] || json['gram_altin']
-      },
-      {
-        url: 'https://finans.truncgil.com/today.json',
-        parser: (json: any) => json['gram-altin'] || json['gram_altin']
-      },
-      {
-        url: 'https://api.genelpara.com/embed/altin.json',
-        parser: (json: any) => json['GA'] || json['gram-altin']
       }
     ];
 

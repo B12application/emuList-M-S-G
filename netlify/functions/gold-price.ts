@@ -3,25 +3,26 @@ import { Handler } from '@netlify/functions';
 export const handler: Handler = async (event, context) => {
   const sources = [
     {
-      name: 'GenelPara',
-      url: 'https://api.genelpara.com/json/?list=altin',
-      check: (json: any) => json['GA'] || json.GA
+      name: 'Truncgil_v3',
+      url: 'https://finans.truncgil.com/v3/today.json',
+      check: (json: any) => json['gram-altin'] || json['gram_altin'] || json['GA']
     },
     {
-      name: 'Truncgil',
-      url: 'https://finans.truncgil.com/v3/today.json',
-      check: (json: any) => json['gram-altin'] || json['gram_altin']
+      name: 'GenelPara_Backup',
+      url: 'https://api.genelpara.com/json/?list=altin',
+      check: (json: any) => json['GA']
     }
   ];
 
   for (const source of sources) {
     try {
-      console.log(`Checking ${source.name}: ${source.url}`);
+      console.log(`Checking ${source.name}...`);
 
       const response = await fetch(source.url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'application/json'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'application/json',
+          'Referer': 'https://www.google.com/'
         }
       });
 
@@ -32,7 +33,6 @@ export const handler: Handler = async (event, context) => {
 
       const json = await response.json();
 
-      // Kaynaktan gelen verinin yapısını kontrol et
       if (source.check(json)) {
         console.log(`${source.name} data retrieved successfully.`);
         return {
@@ -40,20 +40,19 @@ export const handler: Handler = async (event, context) => {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'Cache-Control': 'public, max-age=300'
+            'Cache-Control': 'public, max-age=60'
           },
           body: JSON.stringify(json),
         };
-      } else {
-        console.warn(`${source.name} returned unexpected format:`, JSON.stringify(json).substring(0, 100));
       }
+      console.warn(`${source.name} data key not found. Keys:`, Object.keys(json));
     } catch (e: any) {
-      console.error(`${source.name} Fetch Failed:`, e.message);
+      console.error(`${source.name} failed:`, e.message);
     }
   }
 
   return {
     statusCode: 404,
-    body: JSON.stringify({ error: 'No valid gold data found from any source' }),
+    body: JSON.stringify({ error: 'Gold data unavailable at the moment' }),
   };
 };

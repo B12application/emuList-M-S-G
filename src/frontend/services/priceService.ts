@@ -9,27 +9,45 @@ export interface GoldPrice {
 
 export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
   try {
-    const response = await fetch('https://finans.truncgil.com/today.json');
-    if (!response.ok) throw new Error('Price fetch failed');
+    // In production, we use our Netlify function proxy to avoid CORS and 404 issues
+    // In development, this will also work if netlify-cli is used, or it will fallback to direct fetch
+    const response = await fetch('/api/gold-price');
+    
+    if (!response.ok) {
+      console.warn('Proxy fetch failed, falling back to direct fetch');
+      const directResponse = await fetch('https://finans.truncgil.com/today.json');
+      if (!directResponse.ok) throw new Error('Both proxy and direct fetch failed');
+      return parseTruncgilData(await directResponse.json());
+    }
     
     const data = await response.json();
-    const goldData = data['gram-altin'];
+    return parseTruncgilData(data);
+  } catch (error) {
+    console.error('Error fetching gold price:', error);
+    return null;
+  }
+};
+
+const parseTruncgilData = (data: any): GoldPrice | null => {
+  try {
+    // Handle different possible keys from Truncgil (they change frequently)
+    const goldData = data['gram-altin'] || data['gram_altin'] || data['GA'];
     
     if (!goldData) return null;
 
-    // Prices come in format "6.633,97" - need to convert to number
-    const parsePrice = (priceStr: string) => {
+    const parsePrice = (priceStr: string | number) => {
+      if (typeof priceStr === 'number') return priceStr;
       return parseFloat(priceStr.replace('.', '').replace(',', '.'));
     };
 
     return {
-      buy: parsePrice(goldData['Alış']),
-      sell: parsePrice(goldData['Satış']),
-      change: goldData['Değişim'],
-      updateDate: data['Update_Date']
+      buy: parsePrice(goldData['Alış'] || goldData['Buying'] || goldData['Al']),
+      sell: parsePrice(goldData['Satış'] || goldData['Selling'] || goldData['Sat']),
+      change: goldData['Değişim'] || goldData['Change'] || goldData['Deiim'] || '0%',
+      updateDate: data['Update_Date'] || new Date().toLocaleString()
     };
-  } catch (error) {
-    console.error('Error fetching gold price:', error);
+  } catch (e) {
+    console.error('Error parsing Truncgil data:', e);
     return null;
   }
 };

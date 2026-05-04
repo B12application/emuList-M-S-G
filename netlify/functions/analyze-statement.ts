@@ -32,10 +32,12 @@ export const handler: Handler = async (event, context): Promise<any> => {
 
   return new Promise((resolve) => {
     const bb = busboy({ headers: event.headers });
+    let fileProcessed = false;
     let fileBuffer: Buffer | null = null;
     let fileName = '';
 
     bb.on('file', (name, file, info) => {
+      fileProcessed = true;
       const { filename, mimeType } = info;
       if (mimeType !== 'application/pdf') {
         resolve({
@@ -129,17 +131,38 @@ JSON Yapısı:
       }
     });
 
+    bb.on('finish', () => {
+      if (!fileProcessed) {
+        resolve({
+          statusCode: 400,
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ error: 'Herhangi bir dosya yüklenmedi.' }),
+        });
+      }
+    });
+
     bb.on('error', (err: any) => {
+      console.error('Busboy error:', err);
       resolve({
         statusCode: 500,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify({ error: 'Dosya işlenirken hata oluştu.', message: err.message }),
       });
     });
 
-    if (event.isBase64Encoded) {
-      bb.end(Buffer.from(event.body || '', 'base64'));
-    } else {
-      bb.end(event.body || '');
+    try {
+      if (event.isBase64Encoded) {
+        bb.end(Buffer.from(event.body || '', 'base64'));
+      } else {
+        bb.end(event.body || '');
+      }
+    } catch (e: any) {
+      console.error('Buffer processing error:', e);
+      resolve({
+        statusCode: 500,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'İstek işlenemedi.', message: e.message }),
+      });
     }
   });
 };

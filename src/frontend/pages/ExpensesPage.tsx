@@ -28,7 +28,8 @@ const ExpensesPage: React.FC = () => {
     deleteExpense,
     updateExpense,
     bulkUpdateCategory,
-    bulkDeleteExpenses
+    bulkDeleteExpenses,
+    addBulkExpenses
   } = useExpenses();
 
   const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar'>('harcamalar');
@@ -40,32 +41,20 @@ const ExpensesPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [visibleCount, setVisibleCount] = useState(10);
-  const [usage, setUsage] = useState({ count: 0, limit: 20 });
+  const [usage, setUsage] = useState({ count: 0, limit: 100 });
+  
+  // JSON Import
+  const [isJsonImportModalOpen, setIsJsonImportModalOpen] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
-  const USAGE_ENDPOINT = `${API_BASE_URL}/.netlify/functions/usage`;
-  const ANALYZE_ENDPOINT = `${API_BASE_URL}/.netlify/functions/analyze-statement`;
+  // Usage tracking is now removed as it was only for AI features
 
-  const fetchUsage = async () => {
-    try {
-      const response = await fetch(USAGE_ENDPOINT);
-      if (response.ok) {
-        const data = await response.json();
-        setUsage(data);
-      }
-    } catch (error) {
-      console.error('Usage fetch error:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsage();
-  }, []);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkCategoryModalOpen, setIsBulkCategoryModalOpen] = useState(false);
-  const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -79,7 +68,6 @@ const ExpensesPage: React.FC = () => {
   });
 
   const [bulkCategory, setBulkCategory] = useState(categories[0] || 'Genel');
-  const [importPreview, setImportPreview] = useState<any[]>([]);
 
   const dateLocale = language === 'tr' ? tr : enUS;
 
@@ -230,53 +218,42 @@ const ExpensesPage: React.FC = () => {
     setSelectedIds(new Set());
   };
 
-  const handleImportFile = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/pdf';
-    input.onchange = async (e: any) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const analyzePromise = (async () => {
-          const response = await fetch(ANALYZE_ENDPOINT, {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Analiz hatası');
-          }
-
-          return response.json();
-        })();
-
-        toast.promise(analyzePromise, {
-          loading: 'PDF Analiz ediliyor (Gemini AI)...',
-          success: 'Analiz tamamlandı!',
-          error: (err) => `Hata: ${err.message}`,
-        });
-
-        const data = await analyzePromise;
-        setImportPreview(data);
-        setIsImportPreviewOpen(true);
-        fetchUsage(); // Update usage after successful analysis
-      } catch (error: any) {
-        console.error('Import error:', error);
+  const handleJsonParse = () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+      if (!Array.isArray(parsed)) {
+        throw new Error('JSON bir liste olmalıdır.');
       }
-    };
-    input.click();
+      setImportPreview(parsed);
+      setIsJsonImportModalOpen(false);
+      setIsImportPreviewOpen(true);
+      setJsonInput('');
+    } catch (err: any) {
+      toast.error(`Geçersiz JSON: ${err.message}`);
+    }
   };
 
   const confirmImport = async () => {
-    for (const item of importPreview) await addExpense(item);
-    setIsImportPreviewOpen(false);
-    setImportPreview([]);
+    try {
+      const expensesToSave = importPreview.map(item => ({
+        title: item.title,
+        amount: Number(item.amount),
+        date: item.date || new Date().toISOString().split('T')[0],
+        category: item.category || 'Diğer',
+        installmentCount: 1
+      }));
+
+      await toast.promise(addBulkExpenses(expensesToSave), {
+        loading: 'Harcamalar kaydediliyor...',
+        success: 'Harcamalar başarıyla eklendi!',
+        error: 'Kaydedilirken bir hata oluştu.',
+      });
+
+      setIsImportPreviewOpen(false);
+      setImportPreview([]);
+    } catch (error) {
+      console.error('Import error:', error);
+    }
   };
 
   const handleDeletePreviewItem = (idx: number) => setImportPreview(prev => prev.filter((_, i) => i !== idx));
@@ -422,7 +399,7 @@ const ExpensesPage: React.FC = () => {
                       isDark={isDark}
                       monthlyChartData={monthlyChartData}
                       monthlySummary={monthlySummary}
-                      onImportClick={handleImportFile}
+                      onImportClick={() => setIsJsonImportModalOpen(true)}
                       usage={usage}
                     />
                   )}
@@ -433,8 +410,6 @@ const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-
-
       <ExpenseModals
         t={t} isDark={isDark} dateLocale={dateLocale}
         isAddModalOpen={isAddModalOpen} setIsAddModalOpen={setIsAddModalOpen}
@@ -444,6 +419,11 @@ const ExpensesPage: React.FC = () => {
         bulkCategory={bulkCategory} setBulkCategory={setBulkCategory} applyBulkCategory={applyBulkCategory}
         selectedIds={selectedIds} isImportPreviewOpen={isImportPreviewOpen} setIsImportPreviewOpen={setIsImportPreviewOpen}
         importPreview={importPreview} confirmImport={confirmImport} handleDeletePreviewItem={handleDeletePreviewItem}
+        isJsonImportModalOpen={isJsonImportModalOpen}
+        setIsJsonImportModalOpen={setIsJsonImportModalOpen}
+        jsonInput={jsonInput}
+        setJsonInput={setJsonInput}
+        handleJsonParse={handleJsonParse}
       />
     </div>
   );

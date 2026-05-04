@@ -30,6 +30,12 @@ interface ExpenseModalsProps {
   importPreview: any[];
   confirmImport: () => void;
   handleDeletePreviewItem: (idx: number) => void;
+  // JSON Import Modal
+  isJsonImportModalOpen: boolean;
+  setIsJsonImportModalOpen: (val: boolean) => void;
+  jsonInput: string;
+  setJsonInput: (val: string) => void;
+  handleJsonParse: () => void;
 }
 
 const ExpenseModals: React.FC<ExpenseModalsProps> = ({
@@ -51,7 +57,12 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   setIsImportPreviewOpen,
   importPreview,
   confirmImport,
-  handleDeletePreviewItem
+  handleDeletePreviewItem,
+  isJsonImportModalOpen,
+  setIsJsonImportModalOpen,
+  jsonInput,
+  setJsonInput,
+  handleJsonParse
 }) => {
   return (
     <>
@@ -219,6 +230,65 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
         )}
       </AnimatePresence>
 
+      {/* JSON Import Modal */}
+      <AnimatePresence>
+        {isJsonImportModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsJsonImportModalOpen(false)}
+              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
+            >
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-900 dark:text-white">{t('expenses.importStatement')}</h2>
+                    <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">
+                      JSON Script Yapıştırın
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsJsonImportModalOpen(false)}
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <p className="text-xs text-stone-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    {t('expenses.pasteStatement')}
+                  </p>
+                  
+                  <textarea
+                    value={jsonInput}
+                    onChange={(e) => setJsonInput(e.target.value)}
+                    placeholder='[{"title": "Örn Harcama", "amount": 100, "date": "2024-01-01"}]'
+                    className="w-full h-64 bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-6 text-xs font-mono text-stone-900 dark:text-zinc-300 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all custom-scrollbar resize-none"
+                  />
+
+                  <button
+                    onClick={handleJsonParse}
+                    disabled={!jsonInput.trim()}
+                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl"
+                  >
+                    {t('expenses.parseAndImport')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Import Preview Modal */}
       <AnimatePresence>
         {isImportPreviewOpen && (
@@ -239,7 +309,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
               <div className="p-8">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-xl font-black text-stone-900 dark:text-white">Ekstre Önizleme</h2>
+                    <h2 className="text-xl font-black text-stone-900 dark:text-white">İçe Aktarma Önizleme</h2>
                     <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">
                       {importPreview.length} Harcama Bulundu
                     </p>

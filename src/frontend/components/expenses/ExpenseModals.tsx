@@ -36,6 +36,13 @@ interface ExpenseModalsProps {
   jsonInput: string;
   setJsonInput: (val: string) => void;
   handleJsonParse: () => void;
+  // Investment Modal
+  isInvestmentModalOpen: boolean;
+  setIsInvestmentModalOpen: (val: boolean) => void;
+  newInvestment: any;
+  setNewInvestment: React.Dispatch<React.SetStateAction<any>>;
+  handleAddInvestment: () => void;
+  isInvestmentEditing?: boolean;
 }
 
 const ExpenseModals: React.FC<ExpenseModalsProps> = ({
@@ -62,7 +69,13 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   setIsJsonImportModalOpen,
   jsonInput,
   setJsonInput,
-  handleJsonParse
+  handleJsonParse,
+  isInvestmentModalOpen,
+  setIsInvestmentModalOpen,
+  newInvestment,
+  setNewInvestment,
+  handleAddInvestment,
+  isInvestmentEditing
 }) => {
   return (
     <>
@@ -354,6 +367,121 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                     className="flex-1 py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-stone-900/10 dark:shadow-white/10 hover:scale-[1.02] transition-all"
                   >
                     Hepsini Kaydet
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Investment Modal */}
+      <AnimatePresence>
+        {isInvestmentModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsInvestmentModalOpen(false)}
+              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
+            >
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-900 dark:text-white">
+                      {isInvestmentEditing ? 'Yatırımı Düzenle' : 'Yeni Yatırım Ekle'}
+                    </h2>
+                    <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">
+                      Altın Varlığı
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsInvestmentModalOpen(false)}
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Yatırım Başlığı</label>
+                    <input
+                      type="text"
+                      value={newInvestment.title}
+                      onChange={(e) => setNewInvestment({ ...newInvestment, title: e.target.value })}
+                      placeholder="Örn: Şubat Birikimi"
+                      className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Alış Fiyatı (1g)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newInvestment.buyPrice || ''}
+                        onChange={(e) => {
+                          const price = parseFloat(e.target.value) || 0;
+                          setNewInvestment({ ...newInvestment, buyPrice: price });
+                        }}
+                        placeholder="0.00"
+                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Toplam Tutar (TL)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newInvestment.buyPrice > 0 && newInvestment.amount > 0 ? (newInvestment.buyPrice * newInvestment.amount).toFixed(2) : ''}
+                        onChange={(e) => {
+                          const total = parseFloat(e.target.value) || 0;
+                          if (newInvestment.buyPrice > 0) {
+                            const calculatedAmount = total / newInvestment.buyPrice;
+                            setNewInvestment({ ...newInvestment, amount: Number(calculatedAmount.toFixed(4)) });
+                          }
+                        }}
+                        placeholder="0.00"
+                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Miktar (Gram)</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={newInvestment.amount || ''}
+                      onChange={(e) => setNewInvestment({ ...newInvestment, amount: parseFloat(e.target.value) || 0 })}
+                      placeholder="0.0000"
+                      className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Tarih</label>
+                    <CalendarPicker
+                      selectedDate={newInvestment.date || ''}
+                      onChange={(date) => setNewInvestment({ ...newInvestment, date })}
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleAddInvestment}
+                    disabled={!newInvestment.title || !newInvestment.amount || !newInvestment.buyPrice}
+                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl"
+                  >
+                    {isInvestmentEditing ? 'Güncelle' : 'Yatırımı Kaydet'}
                   </button>
                 </div>
               </div>

@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar } from 'react-icons/fa';
+import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 import useExpenses from '../hooks/useExpenses';
 import type { Expense } from '../hooks/useExpenses';
+import useInvestments from '../hooks/useInvestments';
 import { useTheme } from '../context/ThemeContext';
+import { useExpenseMigration } from '../hooks/useExpenseMigration';
 
 // Modular Components
 import CategorySidebar from '../components/expenses/CategorySidebar';
@@ -16,6 +18,7 @@ import ExpensesLayout from '../components/expenses/ExpensesLayout';
 import ExpensesHomeView from '../components/expenses/ExpensesHomeView';
 import ReportsTab from '../components/expenses/ReportsTab';
 import VehicleTab from '../components/expenses/VehicleTab';
+import InvestmentsTab from '../components/expenses/InvestmentsTab';
 import ExpenseModals from '../components/expenses/ExpenseModals';
 
 const ExpensesPage: React.FC = () => {
@@ -25,6 +28,7 @@ const ExpensesPage: React.FC = () => {
     expenses,
     categories,
     addExpense,
+    addCategory,
     deleteExpense,
     updateExpense,
     bulkUpdateCategory,
@@ -32,7 +36,17 @@ const ExpensesPage: React.FC = () => {
     addBulkExpenses
   } = useExpenses();
 
-  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar'>('harcamalar');
+  const {
+    investments,
+    addInvestment,
+    updateInvestment,
+    deleteInvestment,
+    isLoading: isLoadingInvestments
+  } = useInvestments();
+
+  const { runMigration, isMigrating } = useExpenseMigration();
+
+  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar'>('harcamalar');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -41,7 +55,9 @@ const ExpensesPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [visibleCount, setVisibleCount] = useState(10);
-  
+  const [isInvestmentEditing, setIsInvestmentEditing] = useState(false);
+  const [editingInvestmentId, setEditingInvestmentId] = useState<string | null>(null);
+
   // JSON Import
   const [isJsonImportModalOpen, setIsJsonImportModalOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
@@ -67,6 +83,16 @@ const ExpensesPage: React.FC = () => {
   });
 
   const [bulkCategory, setBulkCategory] = useState(categories[0] || 'Genel');
+
+  // Investment Modal
+  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  const [newInvestment, setNewInvestment] = useState({
+    title: '',
+    amount: 0,
+    buyPrice: 0,
+    type: 'gold' as const,
+    date: format(new Date(), 'yyyy-MM-dd')
+  });
 
   const dateLocale = language === 'tr' ? tr : enUS;
 
@@ -159,6 +185,16 @@ const ExpensesPage: React.FC = () => {
     if (monthlySummary.length === 0) return 0;
     return totalLifetimeAmount / monthlySummary.length;
   }, [totalLifetimeAmount, monthlySummary]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    expenses.forEach(e => {
+      counts[e.category] = (counts[e.category] || 0) + 1;
+    });
+    return counts;
+  }, [expenses]);
+
+  const totalCount = expenses.length;
 
   // Handlers
   const toggleSelect = useCallback((id: string) => {
@@ -257,6 +293,72 @@ const ExpensesPage: React.FC = () => {
 
   const handleDeletePreviewItem = (idx: number) => setImportPreview(prev => prev.filter((_, i) => i !== idx));
 
+  const handleAddInvestment = async () => {
+    if (!newInvestment.title || !newInvestment.amount || !newInvestment.buyPrice) {
+      toast.error('Lütfen tüm alanları doldurun.');
+      return;
+    }
+    try {
+      if (isInvestmentEditing && editingInvestmentId) {
+        await updateInvestment({
+          id: editingInvestmentId,
+          title: newInvestment.title,
+          amount: Number(newInvestment.amount),
+          buyPrice: Number(newInvestment.buyPrice),
+          date: newInvestment.date
+        });
+        toast.success('Yatırım başarıyla güncellendi!');
+      } else {
+        await addInvestment({
+          title: newInvestment.title,
+          amount: Number(newInvestment.amount),
+          buyPrice: Number(newInvestment.buyPrice),
+          date: newInvestment.date,
+          type: 'gold'
+        } as any);
+        toast.success('Yatırım başarıyla eklendi!');
+      }
+
+      setIsInvestmentModalOpen(false);
+      setIsInvestmentEditing(false);
+      setEditingInvestmentId(null);
+      setNewInvestment({
+        title: '',
+        amount: 0,
+        buyPrice: 0,
+        type: 'gold' as const,
+        date: format(new Date(), 'yyyy-MM-dd')
+      });
+    } catch (error) {
+      console.error('Yatırım hatası:', error);
+      toast.error('Yatırım kaydedilirken bir hata oluştu.');
+    }
+  };
+
+  const handleEditInvestmentClick = (inv: any) => {
+    setNewInvestment({
+      title: inv.title,
+      amount: inv.amount,
+      buyPrice: inv.buyPrice,
+      date: inv.date,
+      type: inv.type
+    });
+    setIsInvestmentEditing(true);
+    setEditingInvestmentId(inv.id);
+    setIsInvestmentModalOpen(true);
+  };
+
+  const handleConvertToInvestment = (expense: Expense) => {
+    setNewInvestment({
+      title: expense.title,
+      amount: 0,
+      buyPrice: expense.amount,
+      date: expense.date,
+      type: 'gold'
+    });
+    setIsInvestmentModalOpen(true);
+  };
+
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
       <div className="mb-8 flex items-center justify-center sm:justify-end overflow-x-auto pb-2 scrollbar-hide">
@@ -264,11 +366,12 @@ const ExpensesPage: React.FC = () => {
           {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
             { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
+            { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
             { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') }
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'harcamalar' | 'raporlar' | 'araclar')}
+              onClick={() => setActiveTab(tab.id as 'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar')}
               className={`relative flex items-center gap-2.5 px-4 sm:px-6 py-2.5 sm:py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
                 ? 'text-white dark:text-stone-900'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
@@ -300,6 +403,37 @@ const ExpensesPage: React.FC = () => {
             <VehicleTab />
           </motion.div>
         </AnimatePresence>
+      ) : activeTab === 'yatirimlar' ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="yatirimlar-view"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <InvestmentsTab
+              t={t}
+              isDark={isDark}
+              investments={investments}
+              isLoading={isLoadingInvestments}
+              onAddClick={() => {
+                setIsInvestmentEditing(false);
+                setEditingInvestmentId(null);
+                setNewInvestment({
+                  title: '',
+                  amount: 0,
+                  buyPrice: 0,
+                  type: 'gold' as const,
+                  date: format(new Date(), 'yyyy-MM-dd')
+                });
+                setIsInvestmentModalOpen(true);
+              }}
+              onEdit={handleEditInvestmentClick}
+              onDelete={deleteInvestment}
+            />
+          </motion.div>
+        </AnimatePresence>
       ) : (
         <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
           <CategorySidebar
@@ -310,6 +444,14 @@ const ExpensesPage: React.FC = () => {
             categories={categories}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
+            categoryCounts={categoryCounts}
+            totalCount={totalCount}
+            onAddCategory={() => {
+              const name = window.prompt(t('expenses.newCategoryPlaceholder'));
+              if (name) addCategory(name);
+            }}
+            onRunMigration={runMigration}
+            isMigrating={isMigrating}
           />
 
           <div className="flex-1">
@@ -390,6 +532,7 @@ const ExpensesPage: React.FC = () => {
                       handleDeleteExpense={handleDeleteExpense}
                       visibleCount={visibleCount}
                       setVisibleCount={setVisibleCount}
+                      onConvertToInvestment={handleConvertToInvestment}
                     />
                   )}
                   {activeTab === 'raporlar' && (
@@ -422,6 +565,18 @@ const ExpensesPage: React.FC = () => {
         jsonInput={jsonInput}
         setJsonInput={setJsonInput}
         handleJsonParse={handleJsonParse}
+        isInvestmentModalOpen={isInvestmentModalOpen}
+        setIsInvestmentModalOpen={(open) => {
+          setIsInvestmentModalOpen(open);
+          if (!open) {
+            setIsInvestmentEditing(false);
+            setEditingInvestmentId(null);
+          }
+        }}
+        newInvestment={newInvestment}
+        setNewInvestment={setNewInvestment}
+        handleAddInvestment={handleAddInvestment}
+        isInvestmentEditing={isInvestmentEditing}
       />
     </div>
   );

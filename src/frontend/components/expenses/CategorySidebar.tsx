@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaFilter, FaTags, FaCircle } from 'react-icons/fa';
+import { FaFilter, FaTags, FaCircle, FaPlus } from 'react-icons/fa';
 
 interface CategorySidebarProps {
   t: (key: string) => string;
@@ -10,6 +10,11 @@ interface CategorySidebarProps {
   categories: string[];
   activeCategory: string;
   setActiveCategory: (val: string) => void;
+  categoryCounts: Record<string, number>;
+  totalCount: number;
+  onAddCategory: () => void;
+  onRunMigration?: () => void;
+  isMigrating?: boolean;
 }
 
 const CategorySidebar: React.FC<CategorySidebarProps> = ({
@@ -19,7 +24,12 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   setIsSidebarOpen,
   categories,
   activeCategory,
-  setActiveCategory
+  setActiveCategory,
+  categoryCounts,
+  totalCount,
+  onAddCategory,
+  onRunMigration,
+  isMigrating
 }) => {
   return (
     <motion.aside
@@ -46,13 +56,25 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
               <FaFilter className="text-white dark:text-stone-900 text-[10px]" />
             </div>
             {isSidebarOpen && (
-              <motion.h3
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-[10px] font-black text-stone-900 dark:text-white uppercase tracking-widest whitespace-nowrap"
-              >
-                {t('expenses.categoriesTitle') || 'KATEGORİLER'}
-              </motion.h3>
+              <div className="flex items-center justify-between w-full">
+                <motion.h3
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-[10px] font-black text-stone-900 dark:text-white uppercase tracking-widest whitespace-nowrap"
+                >
+                  {t('expenses.categoriesTitle') || 'KATEGORİLER'}
+                </motion.h3>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddCategory();
+                  }}
+                  className="p-1.5 rounded-lg bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                  title={t('expenses.addCategory')}
+                >
+                  <FaPlus size={8} />
+                </button>
+              </div>
             )}
           </div>
 
@@ -65,6 +87,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 onClick={() => setActiveCategory('all')}
                 isOpen={isSidebarOpen}
                 isDark={isDark}
+                count={totalCount}
               />
 
               {categories.map((category) => (
@@ -76,10 +99,28 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                   onClick={() => setActiveCategory(category)}
                   isOpen={isSidebarOpen}
                   isDark={isDark}
+                  count={categoryCounts[category] || 0}
                 />
               ))}
             </div>
           </div>
+
+          {isSidebarOpen && onRunMigration && (
+            <div className="pt-4 mt-auto border-t border-stone-100 dark:border-zinc-800">
+              <button
+                onClick={onRunMigration}
+                disabled={isMigrating}
+                className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  isMigrating
+                    ? 'bg-stone-50 text-stone-300 dark:bg-zinc-800 dark:text-zinc-600'
+                    : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 hover:bg-stone-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 shadow-sm'
+                }`}
+              >
+                <FaCircle className={isMigrating ? 'animate-pulse' : ''} size={6} />
+                {isMigrating ? 'Temizleniyor...' : 'Verileri Temizle'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </motion.aside>
@@ -93,33 +134,44 @@ interface SidebarItemProps {
   onClick: () => void;
   isOpen: boolean;
   isDark: boolean;
+  count: number;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClick, isOpen }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClick, isOpen, count }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group ${isActive
+    className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 group ${isActive
       ? 'bg-stone-900 dark:bg-white shadow-md'
       : 'hover:bg-stone-50 dark:hover:bg-zinc-800/50'
       }`}
   >
-    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isActive
-      ? 'bg-white/10 dark:bg-black/10'
-      : 'bg-stone-50 dark:bg-zinc-800'
-      }`}>
-      <span className={isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-600'}>
-        {icon}
-      </span>
+    <div className="flex items-center gap-3">
+      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isActive
+        ? 'bg-white/10 dark:bg-black/10'
+        : 'bg-stone-50 dark:bg-zinc-800'
+        }`}>
+        <span className={isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-600'}>
+          {icon}
+        </span>
+      </div>
+      {isOpen && (
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className={`text-[11px] font-bold uppercase tracking-wide truncate ${isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-900 dark:hover:text-white'
+            }`}
+        >
+          {label}
+        </motion.span>
+      )}
     </div>
-    {isOpen && (
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className={`text-[11px] font-bold uppercase tracking-wide truncate ${isActive ? 'text-white dark:text-black' : 'text-stone-400 group-hover:text-stone-900 dark:hover:text-white'
-          }`}
-      >
-        {label}
-      </motion.span>
+    {isOpen && count > 0 && (
+      <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${isActive
+        ? 'bg-white/20 text-white dark:bg-black/10 dark:text-black'
+        : 'bg-stone-100 dark:bg-zinc-800 text-stone-400'
+        }`}>
+        {count}
+      </span>
     )}
   </button>
 );

@@ -957,6 +957,9 @@ export const translationsEN = {
         categoriesTitle: 'Categories',
         monthlyAverageLabel: 'MONTHLY AVERAGE',
         dailyTrend: 'DAILY SPENDING FLOW',
+        categoryDistribution: 'Category Distribution',
+        editTitle: 'Edit Expense',
+        addTitle: 'Add Expense',
         // Vehicle Section
         vehicle: {
             title: 'My Vehicle',

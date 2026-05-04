@@ -961,6 +961,9 @@ export const translationsTR = {
         categoriesTitle: 'Kategoriler',
         monthlyAverageLabel: 'AYLIK ORTALAMA',
         dailyTrend: 'GÜNLÜK HARCAMA AKIŞI',
+        categoryDistribution: 'Kategori Dağılımı',
+        editTitle: 'Harcamayı Düzenle',
+        addTitle: 'Harcama Ekle',
         // Vehicle Section
         vehicle: {
             title: 'Aracım',

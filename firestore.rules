@@ -134,5 +134,11 @@ service cloud.firestore {
       allow update: if isOwnerByResource() || isOwnerByRequest();
       allow create: if isOwnerByRequest();
     }
+
+    // Investments
+    match /investments/{investmentId} {
+      allow read, delete, update: if isOwnerByResource();
+      allow create: if isOwnerByRequest();
+    }
   }
 }

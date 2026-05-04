@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
+import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp, FaGem } from 'react-icons/fa';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import type { Expense } from '../../hooks/useExpenses';
 
@@ -29,6 +29,7 @@ interface ExpensesHomeViewProps {
   handleDeleteExpense: (id: string) => void;
   visibleCount: number;
   setVisibleCount: React.Dispatch<React.SetStateAction<number>>;
+  onConvertToInvestment: (expense: Expense) => void;
 }
 
 const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
@@ -54,7 +55,8 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
   handleEditClick,
   handleDeleteExpense,
   visibleCount,
-  setVisibleCount
+  setVisibleCount,
+  onConvertToInvestment
 }) => {
   return (
     <div className="space-y-6">
@@ -282,6 +284,13 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                       <span className={`text-sm font-black tracking-tighter ${selectedIds.has(expense.id) ? 'text-white dark:text-black' : 'text-stone-900 dark:text-white'}`}>
                         {t('expenses.currency')}{expense.amount.toLocaleString()}
                       </span>
+                      <button
+                        onClick={() => onConvertToInvestment(expense)}
+                        className={`p-2 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-amber-300 hover:text-amber-100 hover:bg-amber-500/20' : 'text-stone-400 hover:text-amber-500 bg-white dark:bg-zinc-800 border border-stone-100 dark:border-zinc-700'}`}
+                        title="Yatırıma Dönüştür"
+                      >
+                        <FaGem size={11} />
+                      </button>
                       <button
                         onClick={() => handleEditClick(expense)}
                         className={`p-2 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-stone-400 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-zinc-800 border border-stone-100 dark:border-zinc-700'}`}

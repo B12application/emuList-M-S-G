@@ -5,6 +5,30 @@ import { collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, w
 import { useAuth } from '../context/AuthContext';
 import { format, addMonths, parseISO } from 'date-fns';
 
+const CATEGORY_MAP: Record<string, string[]> = {
+  'Yeme İçme': ['Yemek', 'Yeme-İçme', 'Kafe', 'Restoran', 'Cafe', 'Gıda', 'Market', 'Bakkal', 'Atıştırmalık'],
+  'Alışveriş': ['Alışveriş', 'Giyim', 'Teknoloji', 'Kozmetik', 'Aksesuar', 'Ayakkabı', 'Elektronik', 'Alışveriş / Teknoloji'],
+  'Akaryakıt': ['Akaryakıt', 'Yakıt'],
+  'Araba Harcamaları': ['Araba Harcamaları', 'Araç', 'Otopark', 'HGS', 'Bakım', 'Tamir', 'Yıkama'],
+  'Ulaşım': ['Ulaşım', 'Taksi', 'Otobüs', 'Metro', 'Yolculuk', 'Bilet', 'Uçak'],
+  'Fatura': ['Fatura', 'Abonelik', 'Elektrik', 'Su', 'Doğalgaz', 'İnternet', 'Telefon', 'Netflix', 'Spotify'],
+  'Sağlık': ['Sağlık', 'Eczane', 'Hastane', 'Muayene', 'İlaç', 'Diş'],
+  'Finans & Vergi': ['Vergi', 'Kamu', 'Ceza', 'Sigorta', 'BES', 'Yatırım', 'Kredi', 'Faiz', 'Kamu / Vergi', 'Vergi / Ceza', 'Vergi ve Ödemeler', 'Sigorta / BES', 'Sigorta ve Yatırım'],
+  'Eğlence': ['Eğlence', 'Oyun', 'Sinema', 'Konser', 'Tiyatro', 'Hobi', 'Oyun / Eğlence', 'Eğlence/Cafe'],
+  'Diğer': ['Diğer', 'Genel', 'Bağış', 'Hizmet', 'Seyahat', 'Konaklama', 'Yol Üstü Tesis']
+};
+
+const normalizeCategory = (name: string): string => {
+  if (!name) return 'Diğer';
+  const trimmed = name.trim();
+  for (const [standard, aliases] of Object.entries(CATEGORY_MAP)) {
+    if (standard.toLowerCase() === trimmed.toLowerCase() || aliases.some(a => a.toLowerCase() === trimmed.toLowerCase())) {
+      return standard;
+    }
+  }
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+};
+
 export interface Expense {
   id: string;
   userId: string;
@@ -66,15 +90,17 @@ export default function useExpenses() {
   const addExpenseMutation = useMutation({
     mutationFn: async (newExpense: NewExpense) => {
       if (!user) throw new Error('User not authenticated');
-      
+
       const installmentCount = newExpense.installmentCount || 1;
       const installmentGroupId = installmentCount > 1 ? crypto.randomUUID() : undefined;
-      const perInstallmentAmount = installmentCount > 1 
-        ? Math.round((newExpense.amount / installmentCount) * 100) / 100 
+      const perInstallmentAmount = installmentCount > 1
+        ? Math.round((newExpense.amount / installmentCount) * 100) / 100
         : newExpense.amount;
 
       const batch = writeBatch(db);
       const expensesRef = collection(db, 'expenses');
+
+      const normalizedCategoryName = normalizeCategory(newExpense.category);
 
       for (let i = 0; i < installmentCount; i++) {
         const installmentDate = installmentCount > 1
@@ -83,7 +109,7 @@ export default function useExpenses() {
 
         const expenseData = {
           title: newExpense.title,
-          category: newExpense.category,
+          category: normalizedCategoryName,
           amount: perInstallmentAmount,
           date: installmentDate,
           description: newExpense.description || '',
@@ -101,10 +127,10 @@ export default function useExpenses() {
       }
 
       // Auto-create category if it doesn't exist
-      if (!dbCategories.find(c => c.name === newExpense.category)) {
+      if (!dbCategories.find(c => c.name === normalizedCategoryName)) {
         const catRef = doc(collection(db, 'categories'));
         batch.set(catRef, {
-          name: newExpense.category,
+          name: normalizedCategoryName,
           userId: user.uid,
           createdAt: Date.now(),
         });
@@ -133,7 +159,7 @@ export default function useExpenses() {
   const addBulkExpensesMutation = useMutation({
     mutationFn: async (newExpenses: NewExpense[]) => {
       if (!user) throw new Error('User not authenticated');
-      
+
       // Firestore batch limit is 500, chunk if needed
       const chunks: NewExpense[][] = [];
       for (let i = 0; i < newExpenses.length; i += 450) {
@@ -141,14 +167,15 @@ export default function useExpenses() {
       }
 
       const categoriesToCreate = new Set<string>();
-      
+
       for (const chunk of chunks) {
         const batch = writeBatch(db);
-        
+
         for (const expense of chunk) {
+          const normalizedCategoryName = normalizeCategory(expense.category);
           const expenseData = {
             title: expense.title,
-            category: expense.category,
+            category: normalizedCategoryName,
             amount: expense.amount,
             date: expense.date,
             description: expense.description || '',
@@ -157,12 +184,12 @@ export default function useExpenses() {
           };
           const newDocRef = doc(collection(db, 'expenses'));
           batch.set(newDocRef, expenseData);
-          
-          if (!dbCategories.find(c => c.name === expense.category)) {
-            categoriesToCreate.add(expense.category);
+
+          if (!dbCategories.find(c => c.name === normalizedCategoryName)) {
+            categoriesToCreate.add(normalizedCategoryName);
           }
         }
-        
+
         // Create missing categories
         for (const catName of categoriesToCreate) {
           const catRef = doc(collection(db, 'categories'));
@@ -172,7 +199,7 @@ export default function useExpenses() {
             createdAt: Date.now(),
           });
         }
-        
+
         await batch.commit();
       }
     },
@@ -234,19 +261,19 @@ export default function useExpenses() {
     mutationFn: async (categoryName: string) => {
       if (!user) throw new Error('User not authenticated');
       const batch = writeBatch(db);
-      
+
       // Delete expenses in category
       const expensesToDelete = expenses.filter(e => e.category === categoryName);
       expensesToDelete.forEach((exp) => {
         batch.delete(doc(db, 'expenses', exp.id));
       });
-      
+
       // Delete category doc
       const catDoc = dbCategories.find(c => c.name === categoryName);
       if (catDoc) {
         batch.delete(doc(db, 'categories', catDoc.id));
       }
-      
+
       await batch.commit();
     },
     onSuccess: () => {

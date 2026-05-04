@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import { PDFParse } from 'pdf-parse';
+import { UsageService } from '../services/usageService.js';
 
 dotenv.config();
 
@@ -12,6 +13,15 @@ export const analyzeStatement = async (req: Request, res: Response): Promise<voi
   try {
     if (!req.file) {
       res.status(400).json({ error: 'Lütfen bir PDF dosyası yükleyin.' });
+      return;
+    }
+
+    // Check usage limit
+    if (UsageService.isLimitReached()) {
+      res.status(429).json({ 
+        error: 'Günlük analiz limitine ulaştınız (20/20).', 
+        message: 'Lütfen yarın tekrar deneyin veya farklı bir API anahtarı kullanın.' 
+      });
       return;
     }
 
@@ -81,6 +91,10 @@ JSON Yapısı:
       // Clean up markdown code blocks if present
       const cleanJson = text.replace(/```json|```/g, '').trim();
       const parsedData = JSON.parse(cleanJson);
+      
+      // Increment usage count on success
+      UsageService.incrementUsage();
+      
       res.status(200).json(parsedData);
     } catch (parseError) {
       console.error('Gemini response parse error:', parseError);
@@ -95,4 +109,8 @@ JSON Yapısı:
       details: error.stack
     });
   }
+};
+
+export const getUsage = (_req: Request, res: Response): void => {
+  res.json(UsageService.getUsage());
 };

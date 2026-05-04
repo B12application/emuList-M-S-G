@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
@@ -39,7 +39,24 @@ const ExpensesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [visibleCount, setVisibleCount] = useState(50);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const [usage, setUsage] = useState({ count: 0, limit: 20 });
+
+  const fetchUsage = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/usage');
+      if (response.ok) {
+        const data = await response.json();
+        setUsage(data);
+      }
+    } catch (error) {
+      console.error('Usage fetch error:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsage();
+  }, []);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -244,6 +261,7 @@ const ExpensesPage: React.FC = () => {
         const data = await analyzePromise;
         setImportPreview(data);
         setIsImportPreviewOpen(true);
+        fetchUsage(); // Update usage after successful analysis
       } catch (error: any) {
         console.error('Import error:', error);
       }
@@ -401,6 +419,7 @@ const ExpensesPage: React.FC = () => {
                       monthlyChartData={monthlyChartData}
                       monthlySummary={monthlySummary}
                       onImportClick={handleImportFile}
+                      usage={usage}
                     />
                   )}
                 </motion.div>

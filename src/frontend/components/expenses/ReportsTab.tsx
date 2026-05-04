@@ -8,6 +8,7 @@ interface ReportsTabProps {
   monthlyChartData: any[];
   monthlySummary: any[];
   onImportClick: () => void;
+  usage: { count: number; limit: number };
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({
@@ -15,7 +16,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   isDark,
   monthlyChartData,
   monthlySummary,
-  onImportClick
+  onImportClick,
+  usage
 }) => {
   return (
     <div className="space-y-6 pb-20">
@@ -99,10 +101,33 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
           <button
             onClick={onImportClick}
-            className="px-8 py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-stone-900/10 dark:shadow-white/10 flex items-center gap-2"
+            disabled={usage.count >= usage.limit}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg ${
+              usage.count >= usage.limit 
+              ? 'bg-stone-200 dark:bg-zinc-800 text-stone-400 cursor-not-allowed' 
+              : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:scale-105 active:scale-95 shadow-stone-900/10 dark:shadow-white/10'
+            }`}
           >
             <FaFileImport /> {t('expenses.uploadPdf')}
           </button>
+          
+          <div className="w-full max-w-[200px] space-y-2">
+            <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-stone-400">
+              <span>Günlük Limit</span>
+              <span className={usage.count >= usage.limit ? 'text-red-500' : 'text-stone-600 dark:text-stone-300'}>
+                {usage.count} / {usage.limit}
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-500 rounded-full ${
+                  usage.count >= usage.limit ? 'bg-red-500' : 'bg-stone-900 dark:bg-white'
+                }`}
+                style={{ width: `${Math.min((usage.count / usage.limit) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+
           <div className="flex items-center gap-2 text-[9px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-wider">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

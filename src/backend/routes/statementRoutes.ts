@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { analyzeStatement } from '../controllers/statementController';
+import { analyzeStatement, getUsage } from '../controllers/statementController';
 
 const router = Router();
 
@@ -15,5 +15,8 @@ const upload = multer({
 
 // POST /api/analyze-statement
 router.post('/analyze-statement', upload.single('file'), analyzeStatement);
+
+// GET /api/usage
+router.get('/usage', getUsage);
 
 export default router;

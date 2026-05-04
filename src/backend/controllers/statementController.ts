@@ -73,7 +73,7 @@ JSON Yapısı:
   }
 };
 
-export const getUsage = async (req: Request, res: Response) => {
+export const getUsage = async (_req: Request, res: Response) => {
   try {
     const usage = await UsageService.getUsage();
     res.status(200).json(usage);

@@ -5,16 +5,16 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, serverTimestamp, writeBatch, doc } from 'firebase/firestore'; 
 
 // 2. Kendi UID'n
-const YOUR_USER_ID = "ZKU7SObBkeNzMicltUKJjo6ybHH2";
+const YOUR_USER_ID = "YOUR_USER_ID_HERE";
 
 // 3. Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyDbxNvt8gT5VUQjb1I0MS6sLTQaTTh9f_0",
-  authDomain: "emucalendarbinbin.firebaseapp.com",
-  projectId: "emucalendarbinbin",
-  storageBucket: "emucalendarbinbin.firebasestorage.app",
-  messagingSenderId: "851837361679",
-  appId: "1:851837361679:web:84643d98dbe5edf6a5cd7a"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // --- Script Başlangıcı ---

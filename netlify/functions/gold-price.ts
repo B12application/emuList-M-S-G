@@ -49,7 +49,8 @@ export const handler: Handler = async (event, context) => {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'Cache-Control': 'public, max-age=60'
+            // Cache for 24 hours on Netlify CDN (86400 seconds)
+            'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=3600'
           },
           body: JSON.stringify(json),
         };

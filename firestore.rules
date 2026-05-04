@@ -18,35 +18,39 @@ service cloud.firestore {
       return !(resource.data.userId is string);
     }
 
-    // Media Items - GÜNCELLEME: Herkes okuyabilir (public profiles için), sadece sahibi yazabilir
+    // AI Usage tracking - Needed for serverless functions
+    match /ai_usage/{date} {
+      allow read, write: if true; // Public access for limit tracking
+    }
+
+    // Media Items
     match /mediaItems/{itemId} {
-      allow read: if request.auth != null; // ✅ Public read for viewing other users' libraries
+      allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
     
-    // Users Collection - GÜNCELLEME: Herkes okuyabilir (public profiles için), sadece sahibi yazabilir
+    // Users Collection
     match /users/{userId} {
-      allow read: if request.auth != null; // ✅ Public read for viewing user profiles
+      allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // User Profiles - kullanıcılar kendi profillerini yazabilir, herkesi okuyabilir
+    // User Profiles
     match /userProfiles/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Recommendations - herkes okuyabilir, sadece admin yazabilir
+    // Recommendations
     match /recommendations/{recId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == 'ZKU7SObBkeNzMicltUKJjo6ybHH2';
     }
     
-    // Activities - ALL authenticated users can read (for social feed), users can only create/delete their own
-    // Exception: Any authenticated user can delete activities older than 10 days
+    // Activities
     match /activities/{activityId} {
-      allow read: if request.auth != null; // Anyone logged in can see all activities
+      allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
       allow delete: if request.auth != null && (
         request.auth.uid == resource.data.userId || 
@@ -54,81 +58,77 @@ service cloud.firestore {
       );
     }
     
-    // Notifications - recipients can read their notifications, anyone can create
+    // Notifications
     match /notifications/{notificationId} {
       allow read: if request.auth != null && request.auth.uid == resource.data.recipientId;
       allow create: if request.auth != null;
       allow update,delete: if request.auth != null && request.auth.uid == resource.data.recipientId;
     }
     
-    // Activity Likes - users can like/unlike activities
-    // Exception: Any authenticated user can delete likes on activities older than 10 days
+    // Activity Likes
     match /activityLikes/{likeId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow delete: if request.auth != null;  // Allow deletion for old activity cleanup
+      allow delete: if request.auth != null;
     }
     
-    // Activity Comments - users can comment on activities
-    // Exception: Any authenticated user can delete comments on activities older than 10 days
+    // Activity Comments
     match /activityComments/{commentId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow delete: if request.auth != null;  // Allow deletion for old activity cleanup
+      allow delete: if request.auth != null;
     }
     
-    // Custom Lists - kullanıcılar kendi listelerini oluşturabilir/okuyabilir, herkese açık listeler herkes tarafından okunabilir
+    // Custom Lists
     match /customLists/{listId} {
       allow read: if request.auth != null && (resource.data.isPublic == true || request.auth.uid == resource.data.userId);
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
-    // Planner Meetings - sadece kullanıcının kendi toplantılarına erişimi var
+    // Planner Meetings
     match /meetings/{meetingId} {
       allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // Calendar Alerts - özel takvim uyarıları, sadece sahibi erişebilir
+    // Calendar Alerts
     match /calendarAlerts/{alertId} {
       allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // Expenses - Sadece kullanıcı kendi harcamalarına erişebilir
+    // Expenses
     match /expenses/{expenseId} {
-      // Legacy compatibility: old docs may not have userId.
       allow read: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
       allow update: if isOwnerByResource() || (isLegacyWithoutUserId() && isOwnerByRequest());
       allow delete: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
       allow create: if isOwnerByRequest();
     }
 
-    // Categories - Harcama kategorileri
+    // Categories
     match /categories/{categoryId} {
-      // Legacy compatibility: old docs may not have userId.
       allow read: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
       allow update: if isOwnerByResource() || (isLegacyWithoutUserId() && isOwnerByRequest());
       allow delete: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
       allow create: if isOwnerByRequest();
     }
 
-    // Vehicles - Sadece kullanıcı kendi araçlarına erişebilir
+    // Vehicles
     match /vehicles/{vehicleId} {
       allow read, delete: if isOwnerByResource();
       allow update: if isOwnerByResource() || isOwnerByRequest();
       allow create: if isOwnerByRequest();
     }
 
-    // Vehicle Logs - Yakıt ve diğer kayıtlar
+    // Vehicle Logs
     match /vehicle_logs/{logId} {
       allow read, delete: if isOwnerByResource();
       allow update: if isOwnerByResource() || isOwnerByRequest();
       allow create: if isOwnerByRequest();
     }
 
-    // Vehicle Maintenance - Bakım kayıtları
+    // Vehicle Maintenance
     match /vehicle_maintenance/{maintenanceId} {
       allow read, delete: if isOwnerByResource();
       allow update: if isOwnerByResource() || isOwnerByRequest();

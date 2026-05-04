@@ -15,7 +15,8 @@ export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
     
     if (!response.ok) {
       console.warn('Proxy fetch failed, falling back to direct fetch');
-      const directResponse = await fetch('https://finans.truncgil.com/today.json');
+      // Using the working GenelPara URL as fallback
+      const directResponse = await fetch('https://api.genelpara.com/json/?list=altin');
       if (!directResponse.ok) throw new Error('Both proxy and direct fetch failed');
       return parseGoldData(await directResponse.json());
     }

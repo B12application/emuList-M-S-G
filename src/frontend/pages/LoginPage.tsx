@@ -9,7 +9,8 @@ import { auth, db } from '../../backend/config/firebaseConfig';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { FaGoogle, FaArrowLeft } from 'react-icons/fa';
+import { FaGoogle, FaArrowLeft, FaPlay } from 'react-icons/fa';
+import { seedDemoData } from '../utils/demoSeeder';
 import '../index.css';
 
 export default function LoginPage() {
@@ -71,6 +72,33 @@ export default function LoginPage() {
       setError(t('auth.googleError') || 'Google ile giriş başarısız.');
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Use hardcoded demo credentials
+      const demoEmail = 'demo@emulist.com';
+      const demoPassword = 'demouser123';
+      
+      const result = await signInWithEmailAndPassword(auth, demoEmail, demoPassword);
+      const user = result.user;
+
+      // Seed data if first time
+      await seedDemoData(user.uid);
+      
+      navigate('/');
+    } catch (err: any) {
+      console.error('Demo Login Error:', err);
+      // Fallback if user doesn't exist - for this specific demo flow, 
+      // we assume the user exists or we show a friendly error
+      setError(err.code === 'auth/user-not-found' 
+        ? 'Demo hesabı bulunamadı. Lütfen yöneticiye danışın.' 
+        : (t('auth.loginError') || 'Giriş yapılamadı.'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,6 +186,24 @@ export default function LoginPage() {
               >
                 <FaGoogle className="text-base" /> Google ile Devam Et
             </button>
+
+            <div className="pt-4">
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={loading || googleLoading}
+                className="w-full relative group overflow-hidden rounded-[4px] p-[1px] transition-all hover:scale-[1.01] active:scale-95"
+              >
+                <div className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2E2E2_0%,#000000_50%,#E2E2E2_100%)] dark:bg-[conic-gradient(from_90deg_at_50%_50%,#2D2D2D_0%,#FFFFFF_50%,#2D2D2D_100%)]" />
+                <div className="inline-flex h-full w-full items-center justify-center gap-3 bg-white dark:bg-black px-6 py-3 text-sm font-bold text-black dark:text-white backdrop-blur-3xl rounded-[3px] relative z-10">
+                  <FaPlay className="text-xs animate-pulse" />
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] uppercase tracking-widest opacity-60 mb-1">{t('auth.inspectPage') || 'Sistemi İncelemek İçin'}</span>
+                    <span className="text-sm">{t('auth.demoLogin') || 'Demo Girişi'}</span>
+                  </div>
+                </div>
+              </button>
+            </div>
           </form>
         </div>
       </div>

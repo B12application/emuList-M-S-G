@@ -64,6 +64,8 @@ export const translationsTR = {
         weakPassword: 'Şifre çok zayıf. En az 6 karakter olmalı.',
         signupError: 'Kayıt sırasında bir hata oluştu.',
         nameRequired: 'Ad ve Soyad alanları zorunludur.',
+        demoLogin: 'Demo Girişi',
+        inspectPage: 'Sistemi İncelemek İçin Tıklayın',
     },
 
     // Media Types

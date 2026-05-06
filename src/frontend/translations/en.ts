@@ -64,6 +64,8 @@ export const translationsEN = {
         weakPassword: 'Password is too weak. Min 6 characters.',
         signupError: 'An error occurred during signup.',
         nameRequired: 'Name and Surname are required.',
+        demoLogin: 'Demo Login',
+        inspectPage: 'Click to Inspect the System',
     },
 
     // Media Types

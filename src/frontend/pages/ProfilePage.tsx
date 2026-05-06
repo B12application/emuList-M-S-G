@@ -52,8 +52,9 @@ export default function ProfilePage() {
 
 
     const [isEditing, setIsEditing] = useState(false);
-    const [displayName, setDisplayName] = useState(user?.displayName || '');
-    const [bio, setBio] = useState('');
+    const isDemo = user?.email === 'demo@emulist.com';
+    const [displayName, setDisplayName] = useState(isDemo ? 'Demo Kullanıcı' : (user?.displayName || ''));
+    const [bio, setBio] = useState(isDemo ? 'Sistemi incelemek için oluşturulmuş misafir hesabı.' : '');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [socialLinks, setSocialLinks] = useState<{
@@ -83,6 +84,10 @@ export default function ProfilePage() {
     }, [profile]);
 
     useEffect(() => {
+        if (isDemo) {
+            setDisplayName('Demo Kullanıcı');
+            return;
+        }
         if (user?.displayName) setDisplayName(user.displayName);
         // Only use photoURL if it's a custom one (not our default avatars)
         if (user?.photoURL &&
@@ -96,6 +101,10 @@ export default function ProfilePage() {
 
     const handleSave = async () => {
         if (!user) return;
+        if (isDemo) {
+            toast.error('Demo modunda profil güncellenemez!');
+            return;
+        }
         setLoading(true);
         try {
             // Determine final photoURL to save

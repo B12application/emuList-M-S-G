@@ -74,26 +74,26 @@ export const seedDemoData = async (userId: string) => {
     });
   }
 
-  // 4. Seed Vehicles (Hyundai Getz)
+  // 4. Seed Vehicles (Toyota Corolla)
   const vehicleRef = doc(collection(db, 'vehicles'));
   batch.set(vehicleRef, {
-    brand: 'Hyundai',
-    model: 'Getz',
-    year: 2007,
-    licensePlate: '38ANY590',
-    currentKm: 185000,
+    brand: 'Toyota',
+    model: 'Corolla',
+    year: 2022,
+    licensePlate: '34DEMO123',
+    currentKm: 45000,
     purchaseDate: '2023-01-01',
-    purchaseKm: 170000,
+    purchaseKm: 30000,
     lastMaintenanceDate: '2024-02-15',
-    lastMaintenanceKm: 182000,
-    nextMaintenanceKm: 192000,
+    lastMaintenanceKm: 42000,
+    nextMaintenanceKm: 52000,
     insuranceDate: '2025-01-01',
     inspectionDate: '2025-06-01',
     mtvDate: '2024-07-01',
-    tireSummerBrand: 'Michelin',
+    tireSummerBrand: 'Bridgestone',
     tireSummerYear: 2023,
-    tireSummerTotalKm: 15000,
-    tireWinterTotalKm: 12000,
+    tireSummerTotalKm: 12000,
+    tireWinterTotalKm: 8000,
     userId,
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -120,6 +120,22 @@ export const seedDemoData = async (userId: string) => {
       createdAt: serverTimestamp()
     });
   }
+
+  // 6. Seed User Profile for Demo
+  const userRef = doc(db, 'users', userId);
+  batch.set(userRef, {
+    uid: userId,
+    email: 'demo@emulist.com',
+    displayName: 'Demo Kullanıcı',
+    bio: 'Sistemi incelemek için oluşturulmuş misafir hesabı. Tüm veriler jeneriktir.',
+    gender: 'male',
+    photoURL: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png',
+    socialLinks: {
+      github: 'emulist',
+      website: 'emulist.com'
+    },
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 
   await batch.commit();
   console.log('Demo data seeded successfully!');

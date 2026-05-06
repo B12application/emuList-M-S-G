@@ -305,7 +305,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   <div className="absolute top-full right-0 mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
                     <div className="px-5 py-3 border-b border-stone-100 dark:border-zinc-800 mb-1">
                       <span className="block text-sm font-bold text-stone-900 dark:text-white truncate">
-                        {user.displayName || 'Kullanıcı'}
+                        {user.email === 'demo@emulist.com' ? 'Demo Kullanıcı' : (user.displayName || 'Kullanıcı')}
                       </span>
                       <span className="block text-xs text-stone-500 dark:text-zinc-400 truncate mt-0.5">
                         {user.email}

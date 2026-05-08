@@ -111,19 +111,19 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen w-full bg-white dark:bg-black text-black dark:text-white font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      
+
       {/* MOBILE-ONLY TOP HEADER */}
       <div className="lg:hidden absolute top-0 w-full p-6 flex justify-between items-center z-50">
         <h1 className="text-xl font-bold tracking-widest font-[Orbitron]">B12</h1>
         <div className="flex items-center gap-5">
-            <button onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')} className="text-sm font-semibold uppercase opacity-60 hover:opacity-100 transition-opacity">{language}</button>
-            <Link to="/" className="text-xl opacity-60 hover:opacity-100 transition-opacity"><FaArrowLeft /></Link>
+          <button onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')} className="text-sm font-semibold uppercase opacity-60 hover:opacity-100 transition-opacity">{language}</button>
+          <Link to="/" className="text-xl opacity-60 hover:opacity-100 transition-opacity"><FaArrowLeft /></Link>
         </div>
       </div>
 
       {/* LEFT SIDE - FORM CONTENT */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-16 lg:p-24 relative z-10 overflow-y-auto">
-        
+
         {/* DESKTOP HEADER */}
         <div className="hidden lg:flex w-full justify-between items-center absolute top-12 left-12 right-12 pr-24">
           <Link to="/" className="flex items-center gap-3 text-sm font-semibold opacity-60 hover:opacity-100 transition-opacity"><FaArrowLeft /> {t('common.back') || 'Geri'}</Link>
@@ -228,12 +228,12 @@ export default function SignupPage() {
             </div>
 
             <button
-                type="button"
-                disabled={loading || googleLoading}
-                onClick={handleGoogleLogin}
-                className="w-full py-3.5 border border-black dark:border-white flex justify-center items-center gap-2 font-semibold text-sm hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all rounded-[4px] group"
-              >
-                <FaGoogle className="text-base" /> Google ile Devam Et
+              type="button"
+              disabled={loading || googleLoading}
+              onClick={handleGoogleLogin}
+              className="w-full py-3.5 border border-black dark:border-white flex justify-center items-center gap-2 font-semibold text-sm hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all rounded-[4px] group"
+            >
+              <FaGoogle className="text-base" /> Google ile Devam Et
             </button>
           </form>
         </div>
@@ -249,7 +249,7 @@ export default function SignupPage() {
             <span className="font-bold font-[Orbitron] tracking-wider">B12</span>
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">
-            B12 Sistemine <br/>
+            B12 Sistemine <br />
             <span className="opacity-50">Hemen Adım Atın</span>
           </h2>
           <div className="w-8 h-1 bg-black/20 dark:bg-white/20 my-6 rounded-full"></div>

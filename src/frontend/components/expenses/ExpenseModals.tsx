@@ -43,6 +43,11 @@ interface ExpenseModalsProps {
   setNewInvestment: React.Dispatch<React.SetStateAction<any>>;
   handleAddInvestment: () => void;
   isInvestmentEditing?: boolean;
+  // Delete Confirmation Modal
+  isDeleteConfirmModalOpen: boolean;
+  setIsDeleteConfirmModalOpen: (val: boolean) => void;
+  confirmDeleteAction: () => void;
+  deleteItemTitle: string;
 }
 
 const ExpenseModals: React.FC<ExpenseModalsProps> = ({
@@ -75,11 +80,16 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   newInvestment,
   setNewInvestment,
   handleAddInvestment,
-  isInvestmentEditing
+  isInvestmentEditing,
+  isDeleteConfirmModalOpen,
+  setIsDeleteConfirmModalOpen,
+  confirmDeleteAction,
+  deleteItemTitle
 }) => {
   return (
     <>
       {/* Add/Edit Modal */}
+      {/* ... previous modals content ... */}
       <AnimatePresence>
         {isAddModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -146,6 +156,36 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">İşlem Yönü</label>
+                      <div className="flex bg-stone-50 dark:bg-zinc-800 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50">
+                        <button 
+                          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${newExpense.direction !== 'gelen' ? 'bg-white dark:bg-stone-900 shadow-md text-rose-500' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                          onClick={() => setNewExpense({...newExpense, direction: 'giden'})}
+                        >
+                          Giden
+                        </button>
+                        <button 
+                          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${newExpense.direction === 'gelen' ? 'bg-white dark:bg-stone-900 shadow-md text-emerald-500' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                          onClick={() => setNewExpense({...newExpense, direction: 'gelen'})}
+                        >
+                          Gelen
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Kaynak</label>
+                      <input
+                        type="text"
+                        value={newExpense.source || ''}
+                        onChange={(e) => setNewExpense({ ...newExpense, source: e.target.value })}
+                        placeholder="Örn: Vadesiz Hesap, Kredi Kartı"
+                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Kategori</label>
                       <CustomSelect
                         value={newExpense.category || ''}
@@ -155,6 +195,19 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                       />
                     </div>
                     <div>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">İşlem Tipi</label>
+                      <input
+                        type="text"
+                        value={newExpense.type || ''}
+                        onChange={(e) => setNewExpense({ ...newExpense, type: e.target.value })}
+                        placeholder="Örn: Havale, Kredi Kartı Ödemesi"
+                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Taksit Sayısı</label>
                       <input
                         type="number"
@@ -162,6 +215,16 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                         value={newExpense.installmentCount || 1}
                         onChange={(e) => setNewExpense({ ...newExpense, installmentCount: parseInt(e.target.value) || 1 })}
                         className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Açıklama</label>
+                      <input
+                        type="text"
+                        value={newExpense.description || ''}
+                        onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+                        placeholder="Opsiyonel detaylı açıklama"
+                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
                       />
                     </div>
                   </div>
@@ -484,6 +547,54 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                     {isInvestmentEditing ? 'Güncelle' : 'Yatırımı Kaydet'}
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteConfirmModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDeleteConfirmModalOpen(false)}
+              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl p-8 border border-stone-200/50 dark:border-zinc-800/50 text-center"
+            >
+              <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <FaExclamationTriangle className="text-rose-500 text-2xl" />
+              </div>
+              
+              <h3 className="text-xl font-black text-stone-900 dark:text-white mb-2 uppercase tracking-tight">Kalıcı Olarak Silinsin mi?</h3>
+              <p className="text-xs font-medium text-stone-500 dark:text-zinc-400 mb-8 leading-relaxed">
+                <span className="font-black text-stone-900 dark:text-white">"{deleteItemTitle}"</span> kalıcı olarak silinecek. Bu işlem geri alınamaz.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsDeleteConfirmModalOpen(false)}
+                  className="flex-1 py-4 bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  onClick={() => {
+                    confirmDeleteAction();
+                    setIsDeleteConfirmModalOpen(false);
+                  }}
+                  className="flex-1 py-4 bg-rose-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                >
+                  Evet, Sil
+                </button>
               </div>
             </motion.div>
           </div>

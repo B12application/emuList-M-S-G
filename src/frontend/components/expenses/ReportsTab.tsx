@@ -1,6 +1,7 @@
-import React from 'react';
-import { FaChartBar, FaFileImport, FaFileAlt } from 'react-icons/fa';
+import React, { useState, useCallback, useRef } from 'react';
+import { FaChartBar, FaFileImport, FaFileAlt, FaFilePdf, FaCloudUploadAlt, FaSpinner, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import { parsePdfFiles, type ParsedTransaction, type PdfParseProgress } from '../../utils/pdfParserService';
 
 interface ReportsTabProps {
   t: (key: string) => string;
@@ -8,6 +9,7 @@ interface ReportsTabProps {
   monthlyChartData: any[];
   monthlySummary: any[];
   onImportClick: () => void;
+  onPdfImport: (transactions: ParsedTransaction[]) => void;
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({
@@ -15,8 +17,75 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   isDark,
   monthlyChartData,
   monthlySummary,
-  onImportClick
+  onImportClick,
+  onPdfImport
 }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState<PdfParseProgress | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = useCallback(async (files: File[]) => {
+    const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if (pdfFiles.length === 0) return;
+
+    setSelectedFiles(pdfFiles);
+    setIsProcessing(true);
+
+    try {
+      const transactions = await parsePdfFiles(pdfFiles, (p) => {
+        setProgress(p);
+      });
+
+      console.log('[ReportsTab] PDF parsed, transaction count:', transactions.length);
+      if (transactions.length > 0) {
+        console.log('[ReportsTab] First transaction:', transactions[0]);
+        onPdfImport(transactions);
+      } else {
+        console.warn('[ReportsTab] No transactions found in PDF files');
+      }
+    } catch (error) {
+      console.error('PDF parse error:', error);
+    } finally {
+      setIsProcessing(false);
+      setProgress(null);
+      setSelectedFiles([]);
+    }
+  }, [onPdfImport]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  }, [handleFiles]);
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      handleFiles(files);
+    }
+  }, [handleFiles]);
+
+  const progressPercent = progress
+    ? Math.round(((progress.currentIndex + (progress.status === 'parsing' ? 0.5 : 0)) / progress.totalFiles) * 100)
+    : 0;
+
   return (
     <div className="space-y-6 pb-20">
       {/* Monthly Chart */}
@@ -24,7 +93,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
         <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-8 flex items-center gap-2 uppercase tracking-widest">
           <FaChartBar className="text-stone-400 dark:text-zinc-500" /> {t('expenses.monthlyChartTitle')}
         </h3>
-        <ResponsiveContainer width="100%" height="80%">
+        <ResponsiveContainer width="100%" height="80%" minHeight={200}>
           <BarChart data={monthlyChartData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#27272a' : '#f0f0f0'} />
             <XAxis
@@ -86,27 +155,97 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
         </div>
 
-        {/* Import Module Card */}
-        <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-8 border border-stone-100 dark:border-zinc-800 flex flex-col justify-center items-center text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-stone-50 dark:bg-zinc-800 flex items-center justify-center shadow-inner">
-            <FaFileImport className="text-2xl text-stone-400" />
+        {/* PDF Import Card */}
+        <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 sm:p-8 border border-stone-100 dark:border-zinc-800 flex flex-col">
+          <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
+            <FaFilePdf className="text-stone-400 dark:text-zinc-500" /> PDF EKSTRE YÜKLEME
+          </h3>
+
+          {/* Drop Zone */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => !isProcessing && fileInputRef.current?.click()}
+            className={`
+              relative flex-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer min-h-[180px]
+              ${isProcessing
+                ? 'border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-900/50 cursor-wait'
+                : isDragging
+                  ? 'border-stone-900 dark:border-white bg-stone-100/80 dark:bg-zinc-800/60 scale-[1.02]'
+                  : 'border-stone-200 dark:border-zinc-800 bg-stone-50/30 dark:bg-zinc-900/20 hover:border-stone-400 dark:hover:border-zinc-600 hover:bg-stone-100/50 dark:hover:bg-zinc-800/30'
+              }
+            `}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
+            {isProcessing ? (
+              /* Processing State */
+              <div className="flex flex-col items-center gap-4 px-6">
+                <div className="relative">
+                  <FaSpinner className="text-3xl text-stone-400 dark:text-zinc-500 animate-spin" />
+                </div>
+                <div className="text-center space-y-2 w-full">
+                  <p className="text-[10px] font-black text-stone-600 dark:text-zinc-400 uppercase tracking-widest">
+                    {progress?.status === 'extracting' ? 'PDF Okunuyor...' : progress?.status === 'parsing' ? 'İşleniyor...' : 'Tamamlandı'}
+                  </p>
+                  <p className="text-[9px] font-bold text-stone-400 dark:text-zinc-500 truncate max-w-[200px]">
+                    {progress?.currentFile}
+                  </p>
+                  {/* Progress Bar */}
+                  <div className="w-full max-w-[200px] mx-auto h-1.5 bg-stone-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-stone-900 dark:bg-white rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  <p className="text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase">
+                    {progress?.currentIndex || 0} / {progress?.totalFiles || 0}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* Default Upload State */
+              <div className="flex flex-col items-center gap-3 px-6">
+                <div className="w-14 h-14 rounded-2xl bg-stone-100 dark:bg-zinc-800 flex items-center justify-center shadow-inner group-hover:shadow-md transition-shadow">
+                  <FaCloudUploadAlt className="text-2xl text-stone-400 dark:text-zinc-500" />
+                </div>
+                <div className="text-center space-y-1.5">
+                  <p className="text-xs font-black text-stone-700 dark:text-zinc-300 uppercase tracking-wider">
+                    PDF Dosyalarını Sürükle & Bırak
+                  </p>
+                  <p className="text-[10px] text-stone-400 dark:text-zinc-500 font-bold leading-relaxed">
+                    Enpara kredi kartı veya vadesiz hesap ekstrelerini yükleyin
+                  </p>
+                  <p className="text-[9px] text-stone-300 dark:text-zinc-600 font-bold">
+                    Birden fazla dosya seçilebilir • Otomatik tür algılama
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="space-y-2">
-            <h3 className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-wider">{t('expenses.importStatement')}</h3>
-            <p className="text-[10px] text-stone-400 dark:text-zinc-500 leading-relaxed max-w-[220px] font-bold">
-              {t('expenses.pasteStatement')}
-            </p>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-[1px] bg-stone-200/60 dark:bg-zinc-800/60" />
+            <span className="text-[8px] font-black text-stone-300 dark:text-zinc-700 uppercase tracking-widest">veya</span>
+            <div className="flex-1 h-[1px] bg-stone-200/60 dark:bg-zinc-800/60" />
           </div>
+
+          {/* JSON Import Button */}
           <button
             onClick={onImportClick}
-            className="px-8 py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 shadow-stone-900/10 dark:shadow-white/10"
+            className="w-full px-6 py-3 bg-stone-100 dark:bg-zinc-800/60 text-stone-600 dark:text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:bg-stone-200 dark:hover:bg-zinc-800 border border-stone-200/50 dark:border-zinc-700/50"
           >
-            <FaFileImport /> {t('expenses.importStatement')}
+            <FaFileImport size={11} /> JSON İLE İÇE AKTAR
           </button>
-          
-          <div className="flex items-center gap-2 text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-wider">
-            JSON SCRIPT İLE HIZLI EKLEME
-          </div>
         </div>
       </div>
     </div>

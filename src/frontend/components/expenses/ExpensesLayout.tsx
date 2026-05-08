@@ -5,7 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from '@headlessui/react';
 
 interface ExpensesLayoutProps {
-  activeTab: 'harcamalar' | 'raporlar';
+  activeTab: 'harcamalar' | 'raporlar' | 'silinenler';
   isSidebarOpen: boolean;
   setIsSidebarOpen: (open: boolean) => void;
   children: React.ReactNode;
@@ -62,7 +62,7 @@ const ExpensesLayout: React.FC<ExpensesLayoutProps> = ({
 
             <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-stone-200/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 px-2 sm:px-3 py-1 sm:py-1.5 shrink-0">
               <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-stone-400 dark:text-zinc-500 whitespace-nowrap">
-                {activeTab === 'harcamalar' ? t('expenses.expensesTab') : t('expenses.reportsTab')}
+                {activeTab === 'harcamalar' ? t('expenses.expensesTab') : activeTab === 'silinenler' ? 'ÇÖP KUTUSU' : t('expenses.reportsTab')}
               </span>
             </div>
           </div>

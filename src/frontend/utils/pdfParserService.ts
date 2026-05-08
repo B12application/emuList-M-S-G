@@ -9,8 +9,14 @@
  */
 
 // Polyfill: Math.sumPrecise henüz çoğu tarayıcıda yok, pdfjs-dist v4+ kullanıyor
-if (typeof (Math as any).sumPrecise !== 'function') {
-  (Math as any).sumPrecise = function (numbers: Iterable<number>) {
+declare global {
+  interface Math {
+    sumPrecise(numbers: Iterable<number>): number;
+  }
+}
+
+if (typeof Math.sumPrecise !== 'function') {
+  Math.sumPrecise = function (numbers: Iterable<number>) {
     return Array.from(numbers).reduce((sum, n) => sum + n, 0);
   };
 }

@@ -3,14 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem } from 'react-icons/fa';
+import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 import useExpenses from '../hooks/useExpenses';
 import type { Expense } from '../hooks/useExpenses';
 import useInvestments from '../hooks/useInvestments';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useExpenseMigration } from '../hooks/useExpenseMigration';
+import expensesData from '../../../expenses_data.json';
+import type { ParsedTransaction } from '../utils/pdfParserService';
 
 // Modular Components
 import CategorySidebar from '../components/expenses/CategorySidebar';
@@ -26,15 +29,22 @@ const ExpensesPage: React.FC = () => {
   const { isDark } = useTheme();
   const {
     expenses,
+    deletedExpenses,
     categories,
+    isLoading: isLoadingExpenses,
     addExpense,
     addCategory,
     deleteExpense,
+    restoreExpense,
+    hardDeleteExpense,
     updateExpense,
     bulkUpdateCategory,
     bulkDeleteExpenses,
+    deleteCategory,
     addBulkExpenses
   } = useExpenses();
+
+  const { user } = useAuth();
 
   const {
     investments,
@@ -46,7 +56,7 @@ const ExpensesPage: React.FC = () => {
 
   const { runMigration, isMigrating } = useExpenseMigration();
 
-  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar'>('harcamalar');
+  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler'>('harcamalar');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -67,11 +77,15 @@ const ExpensesPage: React.FC = () => {
   // Usage tracking is now removed as it was only for AI features
 
 
-  // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkCategoryModalOpen, setIsBulkCategoryModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Delete Confirmation Modal
+  const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
+  const [deleteItemTitle, setDeleteItemTitle] = useState('');
+  const [confirmDeleteAction, setConfirmDeleteAction] = useState<() => void>(() => () => { });
 
   const [newExpense, setNewExpense] = useState<Partial<Expense>>({
     title: '',
@@ -79,7 +93,11 @@ const ExpensesPage: React.FC = () => {
     category: categories[0] || 'Genel',
     date: format(new Date(), 'yyyy-MM-dd'),
     installmentCount: 1,
-    installmentCurrent: 1
+    installmentCurrent: 1,
+    direction: 'giden',
+    type: '',
+    source: '',
+    description: ''
   });
 
   const [bulkCategory, setBulkCategory] = useState(categories[0] || 'Genel');
@@ -110,8 +128,10 @@ const ExpensesPage: React.FC = () => {
   }, [dateLocale, t]);
 
   const filteredExpenses = useMemo(() => {
-    let result = [...expenses];
-    if (activeCategory !== 'all') result = result.filter(e => e.category === activeCategory);
+    let result = activeCategory === 'deleted' ? [...deletedExpenses] : [...expenses];
+    if (activeCategory !== 'all' && activeCategory !== 'deleted') {
+      result = result.filter(e => e.category === activeCategory);
+    }
     if (selectedMonth !== 'all') {
       const [year, month] = selectedMonth.split('-').map(Number);
       const start = startOfMonth(new Date(year, month - 1));
@@ -137,8 +157,8 @@ const ExpensesPage: React.FC = () => {
     return result;
   }, [expenses, activeCategory, selectedMonth, searchTerm, sortBy, sortOrder]);
 
-  const totalFilteredAmount = useMemo(() => filteredExpenses.reduce((sum, e) => sum + e.amount, 0), [filteredExpenses]);
-  const totalLifetimeAmount = useMemo(() => expenses.reduce((sum, e) => sum + e.amount, 0), [expenses]);
+  const totalFilteredAmount = useMemo(() => filteredExpenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0), [filteredExpenses]);
+  const totalLifetimeAmount = useMemo(() => expenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0), [expenses]);
 
   const dailyTrendData = useMemo(() => {
     if (selectedMonth === 'all') return [];
@@ -148,7 +168,7 @@ const ExpensesPage: React.FC = () => {
     for (let i = 1; i <= daysInMonth; i++) {
       const dayStr = `${year}-${month.toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
       const amount = filteredExpenses
-        .filter(e => e.date === dayStr)
+        .filter(e => e.date === dayStr && e.direction !== 'gelen')
         .reduce((sum, e) => sum + e.amount, 0);
       data.push({ day: i, amount });
     }
@@ -157,7 +177,7 @@ const ExpensesPage: React.FC = () => {
 
   const categoryBreakdownData = useMemo(() => {
     const data: Record<string, number> = {};
-    filteredExpenses.forEach(e => { data[e.category] = (data[e.category] || 0) + e.amount; });
+    filteredExpenses.filter(e => e.direction !== 'gelen').forEach(e => { data[e.category] = (data[e.category] || 0) + e.amount; });
     return Object.entries(data)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
@@ -165,7 +185,7 @@ const ExpensesPage: React.FC = () => {
 
   const monthlyChartData = useMemo(() => {
     const data: Record<string, number> = {};
-    expenses.forEach(e => {
+    expenses.filter(e => e.direction !== 'gelen').forEach(e => {
       const month = format(parseISO(e.date), 'MMM yy', { locale: dateLocale });
       data[month] = (data[month] || 0) + e.amount;
     });
@@ -174,7 +194,7 @@ const ExpensesPage: React.FC = () => {
 
   const monthlySummary = useMemo(() => {
     const summary: Record<string, number> = {};
-    expenses.forEach(e => {
+    expenses.filter(e => e.direction !== 'gelen').forEach(e => {
       const month = format(parseISO(e.date), 'MMMM yyyy', { locale: dateLocale });
       summary[month] = (summary[month] || 0) + e.amount;
     });
@@ -224,20 +244,62 @@ const ExpensesPage: React.FC = () => {
       setEditingId(null);
       setNewExpense({
         title: '', amount: 0, category: categories[0] || 'Genel',
-        date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1
+        date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1,
+        direction: 'giden', type: '', source: '', description: ''
       });
     } catch (error) { console.error('Error handling expense:', error); }
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (window.confirm(t('common.confirmDelete'))) await deleteExpense(id);
+    await deleteExpense(id);
+    toast.success('Harcama silindi. "Silinenler" kısmından geri alabilirsiniz.', {
+      icon: '🗑️',
+      duration: 3000
+    });
+  };
+
+  const handleRestoreExpense = async (id: string) => {
+    await restoreExpense(id);
+    toast.success('Harcama geri yüklendi.', { icon: '🔄' });
+  };
+
+  const handleHardDeleteExpense = async (id: string) => {
+    const expense = deletedExpenses.find(e => e.id === id);
+    if (!expense) return;
+
+    setDeleteItemTitle(expense.title);
+    setConfirmDeleteAction(() => async () => {
+      await hardDeleteExpense(id);
+      toast.success('Harcama kalıcı olarak silindi.');
+      setIsDeleteConfirmModalOpen(false);
+    });
+    setIsDeleteConfirmModalOpen(true);
+  };
+
+  const handleDeleteCategory = async (categoryName: string) => {
+    setDeleteItemTitle(categoryName);
+    setConfirmDeleteAction(() => async () => {
+      try {
+        await deleteCategory(categoryName);
+        toast.success(`${categoryName} kategorisi ve içeriği silindi.`);
+        if (activeCategory === categoryName) setActiveCategory('all');
+        setIsDeleteConfirmModalOpen(false);
+      } catch (error) {
+        toast.error('Kategori silinirken bir hata oluştu.');
+      }
+    });
+    setIsDeleteConfirmModalOpen(true);
   };
 
   const handleBulkDelete = async () => {
-    if (window.confirm(`${selectedIds.size} harcamayı silmek istediğinize emin misiniz?`)) {
+    setDeleteItemTitle(`${selectedIds.size} harcama`);
+    setConfirmDeleteAction(() => async () => {
       await bulkDeleteExpenses(Array.from(selectedIds));
       setSelectedIds(new Set());
-    }
+      setIsDeleteConfirmModalOpen(false);
+      toast.success(`${selectedIds.size} harcama silindi.`);
+    });
+    setIsDeleteConfirmModalOpen(true);
   };
 
   const handleEditClick = (expense: Expense) => {
@@ -275,6 +337,10 @@ const ExpensesPage: React.FC = () => {
         amount: Number(item.amount),
         date: item.date || new Date().toISOString().split('T')[0],
         category: item.category || 'Diğer',
+        direction: item.direction || 'giden',
+        source: item.source || '',
+        type: item.type || '',
+        description: item.description || '',
         installmentCount: 1
       }));
 
@@ -292,6 +358,11 @@ const ExpensesPage: React.FC = () => {
   };
 
   const handleDeletePreviewItem = (idx: number) => setImportPreview(prev => prev.filter((_, i) => i !== idx));
+
+  const handlePdfImport = useCallback((transactions: ParsedTransaction[]) => {
+    setImportPreview(transactions);
+    setIsImportPreviewOpen(true);
+  }, []);
 
   const handleAddInvestment = async () => {
     if (!newInvestment.title || !newInvestment.amount || !newInvestment.buyPrice) {
@@ -359,19 +430,60 @@ const ExpensesPage: React.FC = () => {
     setIsInvestmentModalOpen(true);
   };
 
+  const runInitialMigration = async () => {
+    try {
+      if (!user) {
+        toast.error('Oturum açmanız gerekiyor.');
+        return;
+      }
+      
+      const expensesToSave = (expensesData as any[]).map(item => ({
+        title: item.title,
+        amount: Number(item.amount),
+        date: item.date || new Date().toISOString().split('T')[0],
+        category: item.category || 'Diğer',
+        direction: item.direction || 'giden',
+        source: item.source || '',
+        type: item.type || '',
+        description: item.description || '',
+        installmentCount: 1,
+        userId: user.uid
+      }));
+
+      await toast.promise(addBulkExpenses(expensesToSave), {
+        loading: 'JSON Verileri expensedata koleksiyonuna aktarılıyor...',
+        success: 'Tüm veriler başarıyla eklendi!',
+        error: 'Aktarım sırasında bir hata oluştu.',
+      });
+    } catch (error) {
+      console.error('Migration error:', error);
+    }
+  };
+
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
       <div className="mb-8 flex items-center justify-center sm:justify-end overflow-x-auto pb-2 scrollbar-hide">
+        <button onClick={runInitialMigration} className="mr-4 px-4 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors">
+          İçe Aktar (JSON)
+        </button>
         <div className="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50 backdrop-blur-sm min-w-max">
           {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
             { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
             { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
-            { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') }
+            { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
+            { id: 'silinenler', icon: FaHistory, label: 'Silinenler' }
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar')}
+              onClick={() => {
+                setActiveTab(tab.id as any);
+                if (tab.id === 'silinenler') {
+                  setActiveCategory('deleted');
+                } else if (tab.id === 'harcamalar' && activeCategory === 'deleted') {
+                  setActiveCategory('all');
+                }
+              }}
               className={`relative flex items-center gap-2.5 px-4 sm:px-6 py-2.5 sm:py-3 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
                 ? 'text-white dark:text-stone-900'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300'
@@ -435,7 +547,22 @@ const ExpensesPage: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       ) : (
-        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
+        <div className="flex flex-col md:flex-row gap-6 lg:gap-8 relative">
+          <AnimatePresence>
+            {isLoadingExpenses && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm rounded-[2.5rem]"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-10 h-10 border-4 border-stone-200 dark:border-zinc-800 border-t-stone-900 dark:border-t-white rounded-full animate-spin" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-stone-500">{t('common.loading') || 'Yükleniyor...'}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <CategorySidebar
             t={t}
             isDark={isDark}
@@ -446,10 +573,12 @@ const ExpensesPage: React.FC = () => {
             setActiveCategory={setActiveCategory}
             categoryCounts={categoryCounts}
             totalCount={totalCount}
+            deletedCount={deletedExpenses.length}
             onAddCategory={() => {
               const name = window.prompt(t('expenses.newCategoryPlaceholder'));
               if (name) addCategory(name);
             }}
+            onDeleteCategory={handleDeleteCategory}
             onRunMigration={runMigration}
             isMigrating={isMigrating}
           />
@@ -501,24 +630,24 @@ const ExpensesPage: React.FC = () => {
 
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={activeTab}
+                  key={activeTab === 'harcamalar' ? activeCategory : activeTab}
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {activeTab === 'harcamalar' && (
+                  {(activeTab === 'harcamalar' || activeTab === 'silinenler') && (
                     <ExpensesHomeView
                       t={t}
                       isDark={isDark}
                       dateLocale={dateLocale}
                       filteredExpenses={filteredExpenses}
-                      totalFilteredAmount={totalFilteredAmount}
-                      totalLifetimeAmount={totalLifetimeAmount}
-                      monthlyAverage={monthlyAverage}
+                      totalFilteredAmount={activeCategory === 'deleted' || activeTab === 'silinenler' ? 0 : totalFilteredAmount}
+                      totalLifetimeAmount={activeCategory === 'deleted' || activeTab === 'silinenler' ? 0 : totalLifetimeAmount}
+                      monthlyAverage={activeCategory === 'deleted' || activeTab === 'silinenler' ? 0 : monthlyAverage}
                       selectedMonth={selectedMonth}
-                      dailyTrendData={dailyTrendData}
-                      categoryBreakdownData={categoryBreakdownData}
+                      dailyTrendData={activeCategory === 'deleted' || activeTab === 'silinenler' ? [] : dailyTrendData}
+                      categoryBreakdownData={activeCategory === 'deleted' || activeTab === 'silinenler' ? [] : categoryBreakdownData}
                       searchTerm={searchTerm}
                       setSearchTerm={setSearchTerm}
                       sortBy={sortBy}
@@ -528,11 +657,12 @@ const ExpensesPage: React.FC = () => {
                       selectedIds={selectedIds}
                       toggleSelect={toggleSelect}
                       toggleSelectAll={toggleSelectAll}
-                      handleEditClick={handleEditClick}
-                      handleDeleteExpense={handleDeleteExpense}
+                      handleEditClick={activeCategory === 'deleted' || activeTab === 'silinenler' ? (e: Expense) => handleRestoreExpense(e.id) : handleEditClick}
+                      handleDeleteExpense={activeCategory === 'deleted' || activeTab === 'silinenler' ? handleHardDeleteExpense : handleDeleteExpense}
                       visibleCount={visibleCount}
                       setVisibleCount={setVisibleCount}
                       onConvertToInvestment={handleConvertToInvestment}
+                      isTrashView={activeCategory === 'deleted' || activeTab === 'silinenler'}
                     />
                   )}
                   {activeTab === 'raporlar' && (
@@ -542,6 +672,7 @@ const ExpensesPage: React.FC = () => {
                       monthlyChartData={monthlyChartData}
                       monthlySummary={monthlySummary}
                       onImportClick={() => setIsJsonImportModalOpen(true)}
+                      onPdfImport={handlePdfImport}
                     />
                   )}
                 </motion.div>
@@ -577,6 +708,10 @@ const ExpensesPage: React.FC = () => {
         setNewInvestment={setNewInvestment}
         handleAddInvestment={handleAddInvestment}
         isInvestmentEditing={isInvestmentEditing}
+        isDeleteConfirmModalOpen={isDeleteConfirmModalOpen}
+        setIsDeleteConfirmModalOpen={setIsDeleteConfirmModalOpen}
+        deleteItemTitle={deleteItemTitle}
+        confirmDeleteAction={confirmDeleteAction}
       />
     </div>
   );

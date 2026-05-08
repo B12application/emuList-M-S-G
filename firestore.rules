@@ -106,6 +106,14 @@ service cloud.firestore {
       allow create: if isOwnerByRequest();
     }
 
+    // ExpenseData (Transactions)
+    match /expensedata/{expenseId} {
+      allow read: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow update: if isOwnerByResource() || (isLegacyWithoutUserId() && isOwnerByRequest());
+      allow delete: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow create: if isOwnerByRequest();
+    }
+
     // Categories
     match /categories/{categoryId} {
       allow read: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());

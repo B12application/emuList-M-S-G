@@ -38,10 +38,15 @@ export interface Expense {
   date: string; // ISO date string
   description?: string;
   createdAt: number;
+  direction?: 'gelen' | 'giden';
+  source?: string;
+  type?: string;
   // Installment fields
   installmentCount?: number;
   installmentCurrent?: number;
   installmentGroupId?: string;
+  isDeleted?: boolean;
+  deletedAt?: number;
 }
 
 export type NewExpense = Omit<Expense, 'id' | 'userId' | 'createdAt'> & {
@@ -56,12 +61,29 @@ export interface Category {
 }
 
 const fetchExpenses = async (userId: string): Promise<Expense[]> => {
-  const expensesRef = collection(db, 'expenses');
-  const q = query(expensesRef, where('userId', '==', userId));
+  const expensesRef = collection(db, 'expensedata');
+  const q = query(
+    expensesRef, 
+    where('userId', '==', userId)
+  );
   const snapshot = await getDocs(q);
   return snapshot.docs
     .map(doc => ({ id: doc.id, ...doc.data() } as Expense))
+    .filter(e => !e.isDeleted)
     .sort((a, b) => b.date.localeCompare(a.date));
+};
+
+const fetchDeletedExpenses = async (userId: string): Promise<Expense[]> => {
+  const expensesRef = collection(db, 'expensedata');
+  const q = query(
+    expensesRef,
+    where('userId', '==', userId),
+    where('isDeleted', '==', true)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() } as Expense))
+    .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
 };
 
 const fetchCategories = async (userId: string): Promise<Category[]> => {
@@ -78,6 +100,12 @@ export default function useExpenses() {
   const { data: expenses = [], isLoading: isLoadingExpenses } = useQuery({
     queryKey: ['expenses', user?.uid],
     queryFn: () => fetchExpenses(user!.uid),
+    enabled: !!user?.uid,
+  });
+
+  const { data: deletedExpenses = [], isLoading: isLoadingDeleted } = useQuery({
+    queryKey: ['deletedExpenses', user?.uid],
+    queryFn: () => fetchDeletedExpenses(user!.uid),
     enabled: !!user?.uid,
   });
 
@@ -98,7 +126,7 @@ export default function useExpenses() {
         : newExpense.amount;
 
       const batch = writeBatch(db);
-      const expensesRef = collection(db, 'expenses');
+      const expensesRef = collection(db, 'expensedata');
 
       const normalizedCategoryName = normalizeCategory(newExpense.category);
 
@@ -113,6 +141,9 @@ export default function useExpenses() {
           amount: perInstallmentAmount,
           date: installmentDate,
           description: newExpense.description || '',
+          direction: newExpense.direction || 'giden',
+          source: newExpense.source || '',
+          type: newExpense.type || '',
           userId: user.uid,
           createdAt: Date.now() + i, // ensure unique ordering
           ...(installmentCount > 1 ? {
@@ -179,10 +210,13 @@ export default function useExpenses() {
             amount: expense.amount,
             date: expense.date,
             description: expense.description || '',
+            direction: expense.direction || 'giden',
+            source: expense.source || '',
+            type: expense.type || '',
             userId: user.uid,
             createdAt: Date.now(),
           };
-          const newDocRef = doc(collection(db, 'expenses'));
+          const newDocRef = doc(collection(db, 'expensedata'));
           batch.set(newDocRef, expenseData);
 
           if (!dbCategories.find(c => c.name === normalizedCategoryName)) {
@@ -211,16 +245,44 @@ export default function useExpenses() {
 
   const deleteExpenseMutation = useMutation({
     mutationFn: async (expenseId: string) => {
-      await deleteDoc(doc(db, 'expenses', expenseId));
+      const expenseRef = doc(db, 'expensedata', expenseId);
+      await updateDoc(expenseRef, {
+        isDeleted: true,
+        deletedAt: Date.now()
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['deletedExpenses', user?.uid] });
+    },
+  });
+
+  const restoreExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const expenseRef = doc(db, 'expensedata', expenseId);
+      await updateDoc(expenseRef, {
+        isDeleted: false,
+        deletedAt: null
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['deletedExpenses', user?.uid] });
+    },
+  });
+
+  const hardDeleteExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      await deleteDoc(doc(db, 'expensedata', expenseId));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deletedExpenses', user?.uid] });
     },
   });
 
   const updateExpenseMutation = useMutation({
     mutationFn: async ({ id, ...updateData }: Partial<Expense> & { id: string }) => {
-      const expenseRef = doc(db, 'expenses', id);
+      const expenseRef = doc(db, 'expensedata', id);
       await updateDoc(expenseRef, updateData);
     },
     onSuccess: () => {
@@ -233,7 +295,7 @@ export default function useExpenses() {
       if (!user) throw new Error('User not authenticated');
       const batch = writeBatch(db);
       ids.forEach(id => {
-        const ref = doc(db, 'expenses', id);
+        const ref = doc(db, 'expensedata', id);
         batch.update(ref, { category });
       });
       await batch.commit();
@@ -248,12 +310,17 @@ export default function useExpenses() {
       if (!user) throw new Error('User not authenticated');
       const batch = writeBatch(db);
       ids.forEach(id => {
-        batch.delete(doc(db, 'expenses', id));
+        const ref = doc(db, 'expensedata', id);
+        batch.update(ref, {
+          isDeleted: true,
+          deletedAt: Date.now()
+        });
       });
       await batch.commit();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['deletedExpenses', user?.uid] });
     },
   });
 
@@ -265,7 +332,7 @@ export default function useExpenses() {
       // Delete expenses in category
       const expensesToDelete = expenses.filter(e => e.category === categoryName);
       expensesToDelete.forEach((exp) => {
-        batch.delete(doc(db, 'expenses', exp.id));
+        batch.delete(doc(db, 'expensedata', exp.id));
       });
 
       // Delete category doc
@@ -290,18 +357,22 @@ export default function useExpenses() {
 
   return {
     expenses,
+    deletedExpenses,
     categories,
-    isLoading: isLoadingExpenses || isLoadingCategories,
+    isLoading: isLoadingExpenses || isLoadingCategories || isLoadingDeleted,
     addExpense: addExpenseMutation.mutateAsync,
     addCategory: addCategoryMutation.mutateAsync,
     addBulkExpenses: addBulkExpensesMutation.mutateAsync,
     deleteExpense: deleteExpenseMutation.mutateAsync,
+    restoreExpense: restoreExpenseMutation.mutateAsync,
+    hardDeleteExpense: hardDeleteExpenseMutation.mutateAsync,
     updateExpense: updateExpenseMutation.mutateAsync,
     bulkUpdateCategory: bulkUpdateCategoryMutation.mutateAsync,
     bulkDeleteExpenses: bulkDeleteExpensesMutation.mutateAsync,
     deleteCategory: deleteCategoryMutation.mutateAsync,
     isAdding: addExpenseMutation.isPending,
     isDeleting: deleteExpenseMutation.isPending,
+    isRestoring: restoreExpenseMutation.isPending,
     isUpdating: updateExpenseMutation.isPending,
     isDeletingCategory: deleteCategoryMutation.isPending,
     isBulkAdding: addBulkExpensesMutation.isPending,

@@ -121,72 +121,72 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
             {/* --- CENTER SECTION: Navigation --- */}
             <div className="pointer-events-none flex-1 flex items-center justify-start ml-16 md:ml-24 lg:ml-62 overflow-visible">              {user && (
-                <nav className="pointer-events-auto hidden md:flex items-center gap-2 overflow-visible">
-                  <NavLink to="/" end className={getNavCls}>{t('nav.home')}</NavLink>
+              <nav className="pointer-events-auto hidden md:flex items-center gap-2 overflow-visible">
+                <NavLink to="/" end className={getNavCls}>{t('nav.home')}</NavLink>
 
-                  <div
-                    ref={listsDropdownRef}
-                    className="relative group"
-                    onMouseEnter={() => setShowListsDropdown(true)}
-                    onMouseLeave={() => setShowListsDropdown(false)}
+                <div
+                  ref={listsDropdownRef}
+                  className="relative group"
+                  onMouseEnter={() => setShowListsDropdown(true)}
+                  onMouseLeave={() => setShowListsDropdown(false)}
+                >
+                  <button
+                    onClick={() => setShowListsDropdown((prev) => !prev)}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border border-transparent ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
+                      ? "text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800/80 shadow-sm border-stone-200/50 dark:border-zinc-700/50"
+                      : "text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-zinc-800/40"
+                      }`}
                   >
-                    <button
-                      onClick={() => setShowListsDropdown((prev) => !prev)}
-                      className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border border-transparent ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
-                        ? "text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800/80 shadow-sm border-stone-200/50 dark:border-zinc-700/50"
-                        : "text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-zinc-800/40"
-                        }`}
+                    <span>{getListTitle()}</span>
+                    <motion.div
+                      animate={{ rotate: showListsDropdown ? 180 : 0 }}
+                      className="flex items-center justify-center"
                     >
-                      <span>{getListTitle()}</span>
+                      <FaChevronDown className="w-2.5 h-2.5" />
+                    </motion.div>
+                  </button>
+
+                  <AnimatePresence>
+                    {showListsDropdown && (
                       <motion.div
-                        animate={{ rotate: showListsDropdown ? 180 : 0 }}
-                        className="flex items-center justify-center"
+                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute top-full mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
                       >
-                        <FaChevronDown className="w-2.5 h-2.5" />
+                        <div className="flex flex-col">
+                          <NavLink to="/my-shows" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                            <FaTv className="text-sm opacity-70" />
+                            {t('myShows.title')}
+                          </NavLink>
+                          <div className="h-px bg-stone-100 dark:bg-zinc-800 my-1 mx-3" />
+                          <NavLink to="/movie" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                            <FaFilm className="text-sm opacity-70" />
+                            {t('nav.movies')}
+                          </NavLink>
+                          <NavLink to="/series" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                            <FaTv className="text-sm opacity-70" />
+                            {t('nav.series')}
+                          </NavLink>
+                          <NavLink to="/game" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                            <FaGamepad className="text-sm opacity-70" />
+                            {t('nav.games')}
+                          </NavLink>
+                          <NavLink to="/book" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                            <FaBook className="text-sm opacity-70" />
+                            {t('nav.books')}
+                          </NavLink>
+                        </div>
                       </motion.div>
-                    </button>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-                    <AnimatePresence>
-                      {showListsDropdown && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="absolute top-full mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
-                        >
-                          <div className="flex flex-col">
-                            <NavLink to="/my-shows" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaTv className="text-sm opacity-70" />
-                              {t('myShows.title')}
-                            </NavLink>
-                            <div className="h-px bg-stone-100 dark:bg-zinc-800 my-1 mx-3" />
-                            <NavLink to="/movie" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaFilm className="text-sm opacity-70" />
-                              {t('nav.movies')}
-                            </NavLink>
-                            <NavLink to="/series" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaTv className="text-sm opacity-70" />
-                              {t('nav.series')}
-                            </NavLink>
-                            <NavLink to="/game" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaGamepad className="text-sm opacity-70" />
-                              {t('nav.games')}
-                            </NavLink>
-                            <NavLink to="/book" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaBook className="text-sm opacity-70" />
-                              {t('nav.books')}
-                            </NavLink>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <NavLink to="/planner" className={getNavCls}>{t('nav.calendar')}</NavLink>
-                  <NavLink to="/expenses" className={getNavCls}>{t('expenses.title')}</NavLink>
-                </nav>
-              )}
+                <NavLink to="/planner" className={getNavCls}>{t('nav.calendar')}</NavLink>
+                <NavLink to="/expenses" className={getNavCls}>{t('expenses.title')}</NavLink>
+              </nav>
+            )}
             </div>
 
             {/* --- RIGHT SECTION: Actions & Profile --- */}
@@ -224,7 +224,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                     >
                       <FaPlus className="w-4 h-4" />
                     </button>
-                    
+
                     <AnimatePresence>
                       {showAddDropdown && (
                         <motion.div
@@ -235,15 +235,15 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                           className="absolute top-full right-0 md:-right-12 mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top-right"
                         >
                           <div className="flex flex-col">
-                            <Link 
-                              to="/create" 
+                            <Link
+                              to="/create"
                               className="flex items-center gap-3 px-5 py-2.5 text-sm text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium transition-colors"
                               onClick={() => setShowAddDropdown(false)}
                             >
                               <FaPlus className="text-sm opacity-70" />
                               {t('create.title')}
                             </Link>
-                            <button 
+                            <button
                               onClick={() => {
                                 setShowAddDropdown(false);
                                 setIsQuickAddOpen(true);
@@ -305,7 +305,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   <div className="absolute top-full right-0 mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
                     <div className="px-5 py-3 border-b border-stone-100 dark:border-zinc-800 mb-1">
                       <span className="block text-sm font-bold text-stone-900 dark:text-white truncate">
-                        {user.email === 'demo@emulist.com' ? 'Demo Kullanıcı' : (user.displayName || 'Kullanıcı')}
+                        {user.displayName || 'Kullanıcı'}
                       </span>
                       <span className="block text-xs text-stone-500 dark:text-zinc-400 truncate mt-0.5">
                         {user.email}
@@ -361,9 +361,9 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
           </div>
         </motion.header>
       </div>
-      
+
       {isQuickAddOpen && (
-        <QuickAddModal 
+        <QuickAddModal
           isOpen={isQuickAddOpen}
           onClose={() => setIsQuickAddOpen(false)}
           selectedDate={new Date()}

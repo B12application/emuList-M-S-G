@@ -1,22 +1,22 @@
 import { db } from '../../backend/config/firebaseConfig';
-import { 
-  collection, 
-  writeBatch, 
-  doc, 
-  getDocs, 
-  query, 
-  where, 
+import {
+  collection,
+  writeBatch,
+  doc,
+  getDocs,
+  query,
+  where,
   serverTimestamp,
 } from 'firebase/firestore';
 
 export const seedDemoData = async (userId: string) => {
   const batch = writeBatch(db);
-  
+
   // Check if data already exists to avoid duplication
   const mediaRef = collection(db, 'mediaItems');
   const q = query(mediaRef, where('userId', '==', userId));
   const snapshot = await getDocs(q);
-  
+
   if (!snapshot.empty) {
     console.log('Demo data already exists for this user.');
     return;
@@ -28,7 +28,7 @@ export const seedDemoData = async (userId: string) => {
   const mediaItems = [
     { title: 'Inception', type: 'movie', watched: true, rating: '8.8', genre: 'Sci-Fi, Action', image: 'https://image.tmdb.org/t/p/w500/edv5CZvR0rEk49vMNwYKABhwYVa.jpg', myRating: 9, myNote: 'Mind-bending masterpiece.' },
     { title: 'The Dark Knight', type: 'movie', watched: true, rating: '9.0', genre: 'Action, Crime', image: 'https://image.tmdb.org/t/p/w500/qJ2tW6qR7qZ1c9UnreNExdn38n.jpg', myRating: 10, myNote: 'Best Batman movie ever.' },
-    { title: 'Breaking Bad', type: 'series', watched: true, rating: '9.5', genre: 'Crime, Drama', image: 'https://image.tmdb.org/t/p/w500/ggfJA9InInS8M6mc9Y691B6AsyW.jpg', myRating: 10, totalSeasons: 5, watchedSeasons: [1,2,3,4,5] },
+    { title: 'Breaking Bad', type: 'series', watched: true, rating: '9.5', genre: 'Crime, Drama', image: 'https://image.tmdb.org/t/p/w500/ggfJA9InInS8M6mc9Y691B6AsyW.jpg', myRating: 10, totalSeasons: 5, watchedSeasons: [1, 2, 3, 4, 5] },
     { title: 'The Last of Us Part II', type: 'game', watched: true, rating: '9.3', genre: 'Action, Adventure', image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1vcf.png', myRating: 9.5 },
     { title: '1984', type: 'book', watched: true, rating: '8.5', genre: 'Dystopian, Political', author: 'George Orwell', image: 'https://images-na.ssl-images-amazon.com/images/I/71k0s6mE%2BL._AC_UL600_SR600,600_.jpg', myRating: 9 },
     { title: 'Interstellar', type: 'movie', watched: true, rating: '8.7', genre: 'Sci-Fi, Drama', image: 'https://image.tmdb.org/t/p/w500/gEU2QniE6EwfVDxCzs25a2pY6vB.jpg', myRating: 9.5 },
@@ -74,26 +74,26 @@ export const seedDemoData = async (userId: string) => {
     });
   }
 
-  // 4. Seed Vehicles (Toyota Corolla)
+  // 4. Seed Vehicles (Hyundai Getz)
   const vehicleRef = doc(collection(db, 'vehicles'));
   batch.set(vehicleRef, {
-    brand: 'Toyota',
-    model: 'Corolla',
-    year: 2022,
-    licensePlate: '34DEMO123',
-    currentKm: 45000,
+    brand: 'Hyundai',
+    model: 'Getz',
+    year: 2007,
+    licensePlate: '38ANY590',
+    currentKm: 185000,
     purchaseDate: '2023-01-01',
-    purchaseKm: 30000,
+    purchaseKm: 170000,
     lastMaintenanceDate: '2024-02-15',
-    lastMaintenanceKm: 42000,
-    nextMaintenanceKm: 52000,
+    lastMaintenanceKm: 182000,
+    nextMaintenanceKm: 192000,
     insuranceDate: '2025-01-01',
     inspectionDate: '2025-06-01',
     mtvDate: '2024-07-01',
-    tireSummerBrand: 'Bridgestone',
+    tireSummerBrand: 'Michelin',
     tireSummerYear: 2023,
-    tireSummerTotalKm: 12000,
-    tireWinterTotalKm: 8000,
+    tireSummerTotalKm: 15000,
+    tireWinterTotalKm: 12000,
     userId,
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -120,22 +120,6 @@ export const seedDemoData = async (userId: string) => {
       createdAt: serverTimestamp()
     });
   }
-
-  // 6. Seed User Profile for Demo
-  const userRef = doc(db, 'users', userId);
-  batch.set(userRef, {
-    uid: userId,
-    email: 'demo@emulist.com',
-    displayName: 'Demo Kullanıcı',
-    bio: 'Sistemi incelemek için oluşturulmuş misafir hesabı. Tüm veriler jeneriktir.',
-    gender: 'male',
-    photoURL: 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png',
-    socialLinks: {
-      github: 'emulist',
-      website: 'emulist.com'
-    },
-    updatedAt: serverTimestamp()
-  }, { merge: true });
 
   await batch.commit();
   console.log('Demo data seeded successfully!');

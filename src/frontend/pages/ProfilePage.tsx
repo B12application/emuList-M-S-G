@@ -23,7 +23,7 @@ export default function ProfilePage() {
     const { profile } = useUserProfile();
     const { t } = useLanguage();
     const { items: allItems, loading: loadingMedia, refetch: refetchMedia } = useMedia('all', 'all', true);
-    
+
     // ⚡ İSTATİSTİK OPTİMİZASYONU
     const stats = useMemo(() => {
         const counts = {
@@ -52,9 +52,8 @@ export default function ProfilePage() {
 
 
     const [isEditing, setIsEditing] = useState(false);
-    const isDemo = user?.email === 'demo@emulist.com';
-    const [displayName, setDisplayName] = useState(isDemo ? 'Demo Kullanıcı' : (user?.displayName || ''));
-    const [bio, setBio] = useState(isDemo ? 'Sistemi incelemek için oluşturulmuş misafir hesabı.' : '');
+    const [displayName, setDisplayName] = useState(user?.displayName || '');
+    const [bio, setBio] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [socialLinks, setSocialLinks] = useState<{
@@ -84,10 +83,6 @@ export default function ProfilePage() {
     }, [profile]);
 
     useEffect(() => {
-        if (isDemo) {
-            setDisplayName('Demo Kullanıcı');
-            return;
-        }
         if (user?.displayName) setDisplayName(user.displayName);
         // Only use photoURL if it's a custom one (not our default avatars)
         if (user?.photoURL &&
@@ -101,10 +96,6 @@ export default function ProfilePage() {
 
     const handleSave = async () => {
         if (!user) return;
-        if (isDemo) {
-            toast.error('Demo modunda profil güncellenemez!');
-            return;
-        }
         setLoading(true);
         try {
             // Determine final photoURL to save
@@ -467,8 +458,8 @@ export default function ProfilePage() {
                         {favorites.length > 0 ? (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 {favorites.map((item) => (
-                                    <div 
-                                        key={item.id} 
+                                    <div
+                                        key={item.id}
                                         onClick={() => setSelectedItem(item as MediaItem)}
                                         className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1"
                                     >
@@ -513,8 +504,8 @@ export default function ProfilePage() {
                         {recentlyWatched.length > 0 ? (
                             <div className="space-y-3">
                                 {recentlyWatched.map((item) => (
-                                    <div 
-                                        key={item.id} 
+                                    <div
+                                        key={item.id}
                                         onClick={() => setSelectedItem(item as MediaItem)}
                                         className="block group cursor-pointer"
                                     >

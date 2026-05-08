@@ -17,12 +17,6 @@ import toast from 'react-hot-toast';
 import img1 from '../../assets/IMG_1143.jpg';
 import img2 from '../../assets/IMG_1150.jpg';
 
-const DEMO_USER_EMAIL = 'demo@emulist.com';
-const GENERIC_CAR_IMAGES = [
-  'https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=2070&auto=format&fit=crop'
-];
-
 const COMMON_PARTS = [
   { name: 'Motor Yağı ve Filtresi', km: 10000, months: 12 },
   { name: 'Hava Filtresi', km: 10000, months: 12 },
@@ -56,34 +50,41 @@ export default function VehicleTab() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<VehicleData>>({
-    purchaseDate: format(new Date(), 'yyyy-MM-dd'),
-    purchaseKm: 0,
-    currentKm: 0,
-    nextMaintenanceKm: 0,
+    purchaseDate: '2024-05-15', // Default purchase date example
+    purchaseKm: 140000,
+    currentKm: 155000,
+    nextMaintenanceKm: 160000,
     insuranceDate: '',
     inspectionDate: '',
     mtvYear: new Date().getFullYear(),
     mtvPaid1: false,
     mtvPaid2: false,
     fuelCategory: 'Yakıt',
-    licensePlate: '34ABC123',
-    brand: 'Marka',
-    model: 'Model',
-    year: new Date().getFullYear(),
-    engine: '',
-    transmission: '',
-    fuelType: '',
-    tireSummerBrand: '',
-    tireSummerYear: new Date().getFullYear(),
-    tireSummerPurchaseDate: '',
-    tireWinterBrand: '',
-    tireWinterYear: new Date().getFullYear(),
-    tireLastChangeDate: '',
-    tireLastChangeKm: 0,
-    tireHistory: [],
-    tramerAmount: 0,
-    damageHistory: '',
-    carBodyStatus: {}
+    licensePlate: '38ANY590',
+    brand: 'Hyundai',
+    model: 'Getz',
+    year: 2007,
+    engine: '1.4 DOHC',
+    transmission: 'Manuel',
+    fuelType: 'Benzin/LPG',
+    tireSummerBrand: 'Kumho',
+    tireSummerYear: 2025,
+    tireSummerPurchaseDate: '2025-07-01',
+    tireWinterBrand: 'Saetta',
+    tireWinterYear: 2025,
+    tireLastChangeDate: '2026-05-05',
+    tireLastChangeKm: 154500,
+    tireHistory: [
+      { type: 'purchase', date: '2025-07-01', km: 148000, brand: 'Kumho (Yazlık)' },
+      { type: 'winter', date: '2025-12-25', km: 151000 },
+      { type: 'summer', date: '2026-05-05', km: 154500 }
+    ],
+    tramerAmount: 1100,
+    damageHistory: 'Sağ ön çamurluk değişen, sağ ön kapı boyalı.',
+    carBodyStatus: {
+      frontRightFender: 'changed',
+      frontRightDoor: 'painted'
+    }
   });
 
   const [newLog, setNewLog] = useState({ month: format(new Date(), 'yyyy-MM'), km: '' });
@@ -372,21 +373,13 @@ export default function VehicleTab() {
       {/* Header Images */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group">
-          <img 
-            src={user?.email === DEMO_USER_EMAIL ? GENERIC_CAR_IMAGES[0] : img1} 
-            alt="Vehicle 1" 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-          />
+          <img src={img1} alt="Vehicle 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
             <h2 className="text-white text-xl font-black drop-shadow-md tracking-tight uppercase">{t('expenses.vehicle.title')}</h2>
           </div>
         </div>
         <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block">
-          <img 
-            src={user?.email === DEMO_USER_EMAIL ? GENERIC_CAR_IMAGES[1] : img2} 
-            alt="Vehicle 2" 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-          />
+          <img src={img2} alt="Vehicle 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 import useMedia from '../hooks/useMedia';
 import Footer from '../components/Footer';
@@ -21,6 +22,7 @@ import type { MediaItem } from '../../backend/types/media';
 export default function ProfilePage() {
     const { user } = useAuth();
     const { profile } = useUserProfile();
+    const queryClient = useQueryClient();
     const { t } = useLanguage();
     const { items: allItems, loading: loadingMedia, refetch: refetchMedia } = useMedia('all', 'all', true);
 
@@ -127,11 +129,11 @@ export default function ProfilePage() {
                 gender: profile?.gender // Keep gender synced
             }, { merge: true });
 
+            // Invalidate cache instead of reload
+            await queryClient.invalidateQueries({ queryKey: ['userProfile', user.uid] });
+            
             toast.success(t('profile.saveSuccess') || 'Profil güncellendi!');
             setIsEditing(false);
-
-            // Force reload to show updated avatar
-            window.location.reload();
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error(t('profile.saveError') || 'Hata oluştu.');

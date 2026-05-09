@@ -38,13 +38,14 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
   );
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 md:hidden">
-      <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden shadow-lg shadow-black/10">
+    <div className="fixed bottom-0 inset-x-0 z-[100] md:hidden">
+      {/* Container with safe area padding and a bit extra for Android */}
+      <div className="relative mx-3 mb-4 rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 border border-white/20 dark:border-zinc-800/50" style={{ marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
 
-        {/* Background */}
-        <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/85 backdrop-blur-xl border border-white/30 dark:border-zinc-700/40 rounded-2xl" />
+        {/* Background - Glassmorphism */}
+        <div className="absolute inset-0 bg-white/90 dark:bg-zinc-900/95 backdrop-blur-2xl" />
 
-        <div className="relative flex items-center justify-around px-2 py-2">
+        <div className="relative flex items-center justify-around px-2 py-3">
           {navItems.map((item) => {
             const Icon = item.icon;
 
@@ -62,18 +63,13 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
                   <motion.div
                     whileTap={{ scale: 0.92 }}
                     whileHover={{ scale: 1.05 }}
-                    className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-md"
-                    style={{
-                      backgroundColor: '#573433',
-                      boxShadow: '0 6px 18px rgba(87,52,51,0.25)',
-                    }}
+                    className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg bg-stone-900 dark:bg-white"
                   >
-                    <FaPlus className="text-white text-sm" />
+                    <FaPlus className="text-white dark:text-stone-900 text-sm" />
                   </motion.div>
 
                   <span
-                    className="text-[10px] mt-1"
-                    style={{ color: '#5A4D43' }}
+                    className="text-[9px] font-black uppercase tracking-tighter mt-1 text-stone-400"
                   >
                     {item.label}
                   </span>
@@ -90,13 +86,13 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
                   className="flex flex-col items-center min-w-[52px]"
                 >
                   <motion.div
-                    className="flex flex-col items-center gap-0.5"
+                    className="flex flex-col items-center gap-1"
                     whileTap={{ scale: 0.9 }}
                   >
-                    <div className="flex items-center justify-center w-10 h-8">
-                      <FaBars className="text-base text-zinc-400 dark:text-zinc-500" />
+                    <div className="flex items-center justify-center w-10 h-10">
+                      <FaBars className="text-lg text-stone-400 dark:text-zinc-500" />
                     </div>
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                    <span className="text-[9px] font-black uppercase tracking-tighter text-stone-400 dark:text-zinc-500">
                       {item.label}
                     </span>
                   </motion.div>
@@ -112,43 +108,33 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
                 className="flex flex-col items-center min-w-[52px]"
               >
                 <motion.div
-                  className="flex flex-col items-center gap-0.5"
+                  className="flex flex-col items-center gap-1"
                   whileTap={{ scale: 0.9 }}
                 >
                   <div className="relative">
                     <motion.div
                       animate={isActive ? { scale: [1, 1.1, 1] } : { scale: 1 }}
                       transition={{ duration: 0.25 }}
-                      className="flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-300"
-                      style={{
-                        backgroundColor: isActive ? '#F2ECE8' : 'transparent',
-                        color: isActive ? '#573433' : undefined,
-                      }}
+                      className={`flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-stone-900 dark:bg-white' 
+                          : 'bg-transparent'
+                      }`}
                     >
-                      <Icon className="text-base text-zinc-400 dark:text-zinc-500" />
+                      <Icon className={`text-lg transition-colors duration-300 ${
+                        isActive 
+                          ? 'text-white dark:text-stone-900' 
+                          : 'text-stone-400 dark:text-zinc-500'
+                      }`} />
                     </motion.div>
 
-                    {/* ACTIVE DOT */}
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.span
-                          key="dot"
-                          layoutId="bottomNavDot"
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: '#573433' }}
-                        />
-                      )}
-                    </AnimatePresence>
+                    {/* ACTIVE DOT REMOVED IN FAVOR OF BUTTON BG */}
                   </div>
 
                   <span
-                    className="text-[10px]"
-                    style={{
-                      color: isActive ? '#5A4D43' : '',
-                    }}
+                    className={`text-[9px] font-black uppercase tracking-tighter transition-colors duration-300 ${
+                      isActive ? 'text-stone-900 dark:text-white' : 'text-stone-400 dark:text-zinc-500'
+                    }`}
                   >
                     {item.label}
                   </span>

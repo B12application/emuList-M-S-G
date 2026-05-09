@@ -299,7 +299,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
                         <button
                           onClick={() => handleDeleteExpense(expense.id)}
                           className={`p-2 transition-all rounded-xl ${selectedIds.has(expense.id) ? 'text-rose-300 hover:text-rose-100 bg-rose-500/20' : 'text-stone-400 hover:text-rose-500 dark:hover:text-red-400 bg-white dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700'} shadow-sm`}
-                          title={t('common.delete')}
+                          title={t('actions.delete')}
                         >
                           <FaTrash size={11} />
                         </button>
@@ -315,7 +315,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
                     onClick={() => setVisibleCount(prev => prev + 50)}
                     className="px-6 py-3 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-600 dark:text-zinc-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
                   >
-                    {t('common.loadMore') || 'Daha Fazla Yükle'}
+                    {t('actions.loadMore')}
                   </button>
                 </div>
               )}

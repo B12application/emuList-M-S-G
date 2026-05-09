@@ -169,30 +169,37 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
           </div>
 
           {isSidebarOpen && (
-            <div className="pt-4 mt-auto border-t border-stone-100 dark:border-zinc-800 flex gap-2">
+            <div className="pt-6 mt-auto border-t border-stone-100 dark:border-zinc-800 flex flex-col gap-3">
               <button
                 onClick={onAddCategory}
-                className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-[10px] font-black uppercase tracking-widest hover:bg-stone-800 dark:hover:bg-stone-100 transition-all shadow-sm"
+                className="group relative flex items-center justify-center gap-2.5 p-4 rounded-2xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-stone-900/10 dark:hover:shadow-white/10 active:scale-[0.98] overflow-hidden"
               >
-                <FaPlus size={7} />
-                Kategori Ekle
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <FaPlus size={8} className="relative z-10 group-hover:rotate-90 transition-transform duration-500" />
+                <span className="relative z-10">Kategori Ekle</span>
               </button>
+              
               {onRunMigration && (
                 <button
                   onClick={onRunMigration}
                   disabled={isMigrating}
-                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isMigrating
-                      ? 'bg-stone-50 text-stone-300 dark:bg-zinc-800 dark:text-zinc-600'
-                      : 'bg-stone-50 dark:bg-zinc-800 text-stone-500 hover:bg-stone-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 shadow-sm'
-                    }`}
+                  className={`group relative flex items-center justify-center gap-2.5 p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border overflow-hidden ${
+                    isMigrating
+                      ? 'bg-stone-50 border-stone-100 text-stone-300 dark:bg-zinc-800/50 dark:border-zinc-800 dark:text-zinc-600'
+                      : 'bg-white border-stone-100 text-stone-400 hover:text-red-500 hover:border-red-500/50 hover:bg-red-50/30 dark:bg-zinc-900/40 dark:border-zinc-800 dark:text-zinc-500 dark:hover:text-red-400 dark:hover:border-red-500/30 dark:hover:bg-red-950/20 shadow-sm'
+                  }`}
                 >
+                  <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <motion.div
                     animate={isMigrating ? { rotate: 360 } : {}}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                    className="shrink-0 relative z-10"
                   >
-                    <FaCircle size={6} />
+                    <FaCircle size={6} className={isMigrating ? 'text-stone-300' : 'opacity-40 group-hover:opacity-100 group-hover:text-red-500 transition-all duration-300'} />
                   </motion.div>
-                  {isMigrating ? 'Temizleniyor...' : 'Verileri Temizle'}
+                  <span className="truncate relative z-10">
+                    {isMigrating ? 'Temizleniyor...' : 'Verileri Temizle'}
+                  </span>
                 </button>
               )}
             </div>

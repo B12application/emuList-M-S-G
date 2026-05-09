@@ -355,7 +355,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                   onClick={() => setVisibleCount(prev => prev + 50)}
                   className="w-full py-6 text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.3em] hover:text-stone-900 dark:hover:text-white transition-all"
                 >
-                  {t('common.loadMore')}
+                  {t('actions.loadMore')}
                 </button>
               )}
             </div>

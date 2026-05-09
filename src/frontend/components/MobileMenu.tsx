@@ -119,7 +119,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                    {user.displayName || 'Kullanıcı'}
+                    {profile?.displayName || user.displayName || 'Kullanıcı'}
                   </h3>
                   <p className="text-[11px] font-medium text-stone-500 dark:text-zinc-500 truncate">
                     {user.email}

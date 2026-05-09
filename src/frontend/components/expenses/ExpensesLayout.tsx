@@ -17,6 +17,7 @@ interface ExpensesLayoutProps {
   categories?: string[];
   activeCategory?: string;
   setActiveCategory?: (val: string) => void;
+  onAddCategory?: () => void;
 }
 
 const ExpensesLayout: React.FC<ExpensesLayoutProps> = ({
@@ -29,7 +30,8 @@ const ExpensesLayout: React.FC<ExpensesLayoutProps> = ({
   showAddButton = false,
   categories = [],
   activeCategory = 'all',
-  setActiveCategory
+  setActiveCategory,
+  onAddCategory
 }) => {
   const { t } = useLanguage();
 
@@ -117,50 +119,62 @@ const ExpensesLayout: React.FC<ExpensesLayoutProps> = ({
             </Listbox>
 
             {/* Category Filter (Mobile Only or Integrated) */}
-            <div className="flex-1 min-w-0 md:hidden">
-              <Listbox
-                value={activeCategory}
-                onChange={(val: string) => setActiveCategory?.(val)}
-              >
-                <div className="relative w-full">
-                  <ListboxButton className="relative w-full cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 text-left border border-stone-200/50 dark:border-zinc-800/50 focus:outline-none focus-within:ring-2 focus-within:ring-stone-900 dark:focus-within:ring-white transition-all shadow-sm py-2.5 pl-10 pr-9">
-                    <span className="block truncate text-[11px] font-black uppercase tracking-wider leading-5 text-stone-900 dark:text-white">
-                      {selectedCategoryLabel}
-                    </span>
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-400">
-                      <FaTags size={12} />
-                    </div>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-stone-400">
-                      <FaChevronDown size={10} aria-hidden="true" />
-                    </div>
-                  </ListboxButton>
-                  <Transition
-                    as={React.Fragment}
-                    leave="transition ease-in duration-100"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <ListboxOptions className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white dark:bg-zinc-900 py-2 text-base shadow-2xl ring-1 ring-black/5 dark:ring-white/5 focus:outline-none sm:text-sm custom-scrollbar">
-                      {categoryOptions.map((cat) => (
-                        <ListboxOption
-                          key={cat.value}
-                          className={({ active }) =>
-                            `relative cursor-pointer select-none py-3 px-6 transition-colors ${active ? 'bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white' : 'text-stone-500 dark:text-zinc-400'
-                            }`
-                          }
-                          value={cat.value}
-                        >
-                          {({ selected }) => (
-                            <span className={`block truncate text-[10px] font-black uppercase tracking-widest ${selected ? 'text-stone-900 dark:text-white' : ''}`}>
-                              {cat.label}
-                            </span>
-                          )}
-                        </ListboxOption>
-                      ))}
-                    </ListboxOptions>
-                  </Transition>
-                </div>
-              </Listbox>
+            <div className="flex items-center gap-2 md:hidden flex-1">
+              <div className="flex-1 min-w-0">
+                <Listbox
+                  value={activeCategory}
+                  onChange={(val: string) => setActiveCategory?.(val)}
+                >
+                  <div className="relative w-full">
+                    <ListboxButton className="relative w-full cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 text-left border border-stone-200/50 dark:border-zinc-800/50 focus:outline-none focus-within:ring-2 focus-within:ring-stone-900 dark:focus-within:ring-white transition-all shadow-sm py-2.5 pl-10 pr-9">
+                      <span className="block truncate text-[11px] font-black uppercase tracking-wider leading-5 text-stone-900 dark:text-white">
+                        {selectedCategoryLabel}
+                      </span>
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-400">
+                        <FaTags size={12} />
+                      </div>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-stone-400">
+                        <FaChevronDown size={10} aria-hidden="true" />
+                      </div>
+                    </ListboxButton>
+                    <Transition
+                      as={React.Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                    >
+                      <ListboxOptions className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white dark:bg-zinc-900 py-2 text-base shadow-2xl ring-1 ring-black/5 dark:ring-white/5 focus:outline-none sm:text-sm custom-scrollbar">
+                        {categoryOptions.map((cat) => (
+                          <ListboxOption
+                            key={cat.value}
+                            className={({ active }) =>
+                              `relative cursor-pointer select-none py-3 px-6 transition-colors ${active ? 'bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white' : 'text-stone-500 dark:text-zinc-400'
+                              }`
+                            }
+                            value={cat.value}
+                          >
+                            {({ selected }) => (
+                              <span className={`block truncate text-[10px] font-black uppercase tracking-widest ${selected ? 'text-stone-900 dark:text-white' : ''}`}>
+                                {cat.label}
+                              </span>
+                            )}
+                          </ListboxOption>
+                        ))}
+                      </ListboxOptions>
+                    </Transition>
+                  </div>
+                </Listbox>
+              </div>
+              
+              {onAddCategory && (
+                <button
+                  onClick={onAddCategory}
+                  className="p-2.5 rounded-2xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-sm transition-all active:scale-95"
+                  title="Yeni Kategori"
+                >
+                  <FaPlus size={12} />
+                </button>
+              )}
             </div>
 
             {/* Add Button - Mobile Full Width or Desktop Compact */}

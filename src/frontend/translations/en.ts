@@ -445,6 +445,7 @@ export const translationsEN = {
         sortAmount: 'Amount',
         asc: 'Ascending',
         desc: 'Descending',
+        loadMore: 'Load More',
     },
 
     // Search

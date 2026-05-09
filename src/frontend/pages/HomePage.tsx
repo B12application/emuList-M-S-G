@@ -239,7 +239,7 @@ export default function HomePage() {
     }
 
     // Profil
-    const displayName = user?.displayName || user?.email?.split('@')[0] || "Kullanıcı";
+    const displayName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || "Kullanıcı";
     const getAvatar = () => {
         // Önce kullanıcının özel fotoğrafını kontrol et (varsayılan avatarlar hariç)
         if (user.photoURL &&

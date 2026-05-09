@@ -12,6 +12,15 @@
   --ui-light-softness: 0.022;
 }
 
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
 html:not(.dark) body {
   filter: brightness(var(--ui-light-brightness, 1)) sepia(var(--ui-light-softness, 0));
   transition: filter 200ms ease;

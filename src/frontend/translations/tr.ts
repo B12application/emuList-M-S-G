@@ -445,6 +445,7 @@ export const translationsTR = {
         sortAmount: 'Miktar',
         asc: 'Artan',
         desc: 'Azalan',
+        loadMore: 'Daha Fazla Yükle',
     },
 
     // Search

@@ -10,6 +10,8 @@ interface UserProfile {
   bio?: string;
   avatarUrl?: string;
   location?: string;
+  displayName?: string;
+  photoURL?: string;
   socialLinks?: {
     github?: string;
     linkedin?: string;
@@ -36,7 +38,7 @@ export default function useUserProfile() {
     queryKey: ['userProfile', user?.uid],
     queryFn: () => fetchUserProfile(user!.uid),
     enabled: !!user?.uid,
-    staleTime: 1000 * 60 * 10, // 10 dakika - profil daha az değişir
+    staleTime: 1000 * 30, // 30 saniye - profil güncellendiğinde daha hızlı yansısın
   });
 
   return {

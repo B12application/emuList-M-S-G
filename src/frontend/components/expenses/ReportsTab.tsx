@@ -8,7 +8,6 @@ interface ReportsTabProps {
   isDark: boolean;
   monthlyChartData: any[];
   monthlySummary: any[];
-  onImportClick: () => void;
   onPdfImport: (transactions: ParsedTransaction[]) => void;
 }
 
@@ -17,7 +16,6 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   isDark,
   monthlyChartData,
   monthlySummary,
-  onImportClick,
   onPdfImport
 }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -232,20 +230,6 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
             )}
           </div>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-[1px] bg-stone-200/60 dark:bg-zinc-800/60" />
-            <span className="text-[8px] font-black text-stone-300 dark:text-zinc-700 uppercase tracking-widest">veya</span>
-            <div className="flex-1 h-[1px] bg-stone-200/60 dark:bg-zinc-800/60" />
-          </div>
-
-          {/* JSON Import Button */}
-          <button
-            onClick={onImportClick}
-            className="w-full px-6 py-3 bg-stone-100 dark:bg-zinc-800/60 text-stone-600 dark:text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:bg-stone-200 dark:hover:bg-zinc-800 border border-stone-200/50 dark:border-zinc-700/50"
-          >
-            <FaFileImport size={11} /> JSON İLE İÇE AKTAR
-          </button>
         </div>
       </div>
     </div>

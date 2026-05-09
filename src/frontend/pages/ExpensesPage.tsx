@@ -11,8 +11,6 @@ import type { Expense } from '../hooks/useExpenses';
 import useInvestments from '../hooks/useInvestments';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useExpenseMigration } from '../hooks/useExpenseMigration';
-import expensesData from '../../../expenses_data.json';
 import type { ParsedTransaction } from '../utils/pdfParserService';
 
 // Modular Components
@@ -23,6 +21,7 @@ import ReportsTab from '../components/expenses/ReportsTab';
 import VehicleTab from '../components/expenses/VehicleTab';
 import InvestmentsTab from '../components/expenses/InvestmentsTab';
 import ExpenseModals from '../components/expenses/ExpenseModals';
+import { useExpenseMigration } from '../hooks/useExpenseMigration';
 
 const ExpensesPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -68,19 +67,16 @@ const ExpensesPage: React.FC = () => {
   const [isInvestmentEditing, setIsInvestmentEditing] = useState(false);
   const [editingInvestmentId, setEditingInvestmentId] = useState<string | null>(null);
 
-  // JSON Import
-  const [isJsonImportModalOpen, setIsJsonImportModalOpen] = useState(false);
-  const [jsonInput, setJsonInput] = useState('');
-  const [importPreview, setImportPreview] = useState<any[]>([]);
-  const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
-
-  // Usage tracking is now removed as it was only for AI features
-
-
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkCategoryModalOpen, setIsBulkCategoryModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Missing States Added Here
+  const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
+  const [importPreview, setImportPreview] = useState<ParsedTransaction[]>([]);
+  const [isJsonImportModalOpen, setIsJsonImportModalOpen] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
 
   // Delete Confirmation Modal
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
@@ -315,21 +311,6 @@ const ExpensesPage: React.FC = () => {
     setSelectedIds(new Set());
   };
 
-  const handleJsonParse = () => {
-    try {
-      const parsed = JSON.parse(jsonInput);
-      if (!Array.isArray(parsed)) {
-        throw new Error('JSON bir liste olmalıdır.');
-      }
-      setImportPreview(parsed);
-      setIsJsonImportModalOpen(false);
-      setIsImportPreviewOpen(true);
-      setJsonInput('');
-    } catch (err: any) {
-      toast.error(`Geçersiz JSON: ${err.message}`);
-    }
-  };
-
   const confirmImport = async () => {
     try {
       const expensesToSave = importPreview.map(item => ({
@@ -363,6 +344,19 @@ const ExpensesPage: React.FC = () => {
     setImportPreview(transactions);
     setIsImportPreviewOpen(true);
   }, []);
+
+  const handleJsonParse = () => {
+    try {
+      const parsedData = JSON.parse(jsonInput);
+      const dataArray = Array.isArray(parsedData) ? parsedData : [parsedData];
+      setImportPreview(dataArray);
+      setIsJsonImportModalOpen(false);
+      setIsImportPreviewOpen(true);
+      setJsonInput('');
+    } catch (error) {
+      toast.error('Geçersiz JSON formatı. Lütfen kontrol edip tekrar deneyin.');
+    }
+  };
 
   const handleAddInvestment = async () => {
     if (!newInvestment.title || !newInvestment.amount || !newInvestment.buyPrice) {
@@ -430,49 +424,15 @@ const ExpensesPage: React.FC = () => {
     setIsInvestmentModalOpen(true);
   };
 
-  const runInitialMigration = async () => {
-    try {
-      if (!user) {
-        toast.error('Oturum açmanız gerekiyor.');
-        return;
-      }
-      
-      const expensesToSave = (expensesData as any[]).map(item => ({
-        title: item.title,
-        amount: Number(item.amount),
-        date: item.date || new Date().toISOString().split('T')[0],
-        category: item.category || 'Diğer',
-        direction: item.direction || 'giden',
-        source: item.source || '',
-        type: item.type || '',
-        description: item.description || '',
-        installmentCount: 1,
-        userId: user.uid
-      }));
-
-      await toast.promise(addBulkExpenses(expensesToSave), {
-        loading: 'JSON Verileri expensedata koleksiyonuna aktarılıyor...',
-        success: 'Tüm veriler başarıyla eklendi!',
-        error: 'Aktarım sırasında bir hata oluştu.',
-      });
-    } catch (error) {
-      console.error('Migration error:', error);
-    }
-  };
-
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
       <div className="mb-8 flex items-center justify-center sm:justify-end overflow-x-auto pb-2 scrollbar-hide">
-        <button onClick={runInitialMigration} className="mr-4 px-4 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors">
-          İçe Aktar (JSON)
-        </button>
         <div className="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50 backdrop-blur-sm min-w-max">
           {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
             { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
             { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
             { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
-            { id: 'silinenler', icon: FaHistory, label: 'Silinenler' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -595,6 +555,10 @@ const ExpensesPage: React.FC = () => {
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
               showAddButton={activeTab === 'harcamalar'}
+              onAddCategory={() => {
+                const name = window.prompt(t('expenses.newCategoryPlaceholder'));
+                if (name) addCategory(name);
+              }}
               onAddClick={() => {
                 setIsEditing(false);
                 setNewExpense({
@@ -671,7 +635,6 @@ const ExpensesPage: React.FC = () => {
                       isDark={isDark}
                       monthlyChartData={monthlyChartData}
                       monthlySummary={monthlySummary}
-                      onImportClick={() => setIsJsonImportModalOpen(true)}
                       onPdfImport={handlePdfImport}
                     />
                   )}
@@ -691,11 +654,6 @@ const ExpensesPage: React.FC = () => {
         bulkCategory={bulkCategory} setBulkCategory={setBulkCategory} applyBulkCategory={applyBulkCategory}
         selectedIds={selectedIds} isImportPreviewOpen={isImportPreviewOpen} setIsImportPreviewOpen={setIsImportPreviewOpen}
         importPreview={importPreview} confirmImport={confirmImport} handleDeletePreviewItem={handleDeletePreviewItem}
-        isJsonImportModalOpen={isJsonImportModalOpen}
-        setIsJsonImportModalOpen={setIsJsonImportModalOpen}
-        jsonInput={jsonInput}
-        setJsonInput={setJsonInput}
-        handleJsonParse={handleJsonParse}
         isInvestmentModalOpen={isInvestmentModalOpen}
         setIsInvestmentModalOpen={(open) => {
           setIsInvestmentModalOpen(open);
@@ -712,6 +670,11 @@ const ExpensesPage: React.FC = () => {
         setIsDeleteConfirmModalOpen={setIsDeleteConfirmModalOpen}
         deleteItemTitle={deleteItemTitle}
         confirmDeleteAction={confirmDeleteAction}
+        isJsonImportModalOpen={isJsonImportModalOpen}
+        setIsJsonImportModalOpen={setIsJsonImportModalOpen}
+        jsonInput={jsonInput}
+        setJsonInput={setJsonInput}
+        handleJsonParse={handleJsonParse}
       />
     </div>
   );

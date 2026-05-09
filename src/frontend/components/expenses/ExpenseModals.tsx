@@ -70,11 +70,6 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   importPreview,
   confirmImport,
   handleDeletePreviewItem,
-  isJsonImportModalOpen,
-  setIsJsonImportModalOpen,
-  jsonInput,
-  setJsonInput,
-  handleJsonParse,
   isInvestmentModalOpen,
   setIsInvestmentModalOpen,
   newInvestment,
@@ -158,15 +153,15 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                     <div>
                       <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">İşlem Yönü</label>
                       <div className="flex bg-stone-50 dark:bg-zinc-800 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50">
-                        <button 
+                        <button
                           className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${newExpense.direction !== 'gelen' ? 'bg-white dark:bg-stone-900 shadow-md text-rose-500' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
-                          onClick={() => setNewExpense({...newExpense, direction: 'giden'})}
+                          onClick={() => setNewExpense({ ...newExpense, direction: 'giden' })}
                         >
                           Giden
                         </button>
-                        <button 
+                        <button
                           className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${newExpense.direction === 'gelen' ? 'bg-white dark:bg-stone-900 shadow-md text-emerald-500' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
-                          onClick={() => setNewExpense({...newExpense, direction: 'gelen'})}
+                          onClick={() => setNewExpense({ ...newExpense, direction: 'gelen' })}
                         >
                           Gelen
                         </button>
@@ -306,64 +301,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
         )}
       </AnimatePresence>
 
-      {/* JSON Import Modal */}
-      <AnimatePresence>
-        {isJsonImportModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsJsonImportModalOpen(false)}
-              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
-            >
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-xl font-black text-stone-900 dark:text-white">{t('expenses.importStatement')}</h2>
-                    <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">
-                      JSON Script Yapıştırın
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setIsJsonImportModalOpen(false)}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
-                  >
-                    <FaTimes />
-                  </button>
-                </div>
 
-                <div className="space-y-6">
-                  <p className="text-xs text-stone-500 dark:text-zinc-400 font-medium leading-relaxed">
-                    {t('expenses.pasteStatement')}
-                  </p>
-                  
-                  <textarea
-                    value={jsonInput}
-                    onChange={(e) => setJsonInput(e.target.value)}
-                    placeholder='[{"title": "Örn Harcama", "amount": 100, "date": "2024-01-01"}]'
-                    className="w-full h-64 bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-6 text-xs font-mono text-stone-900 dark:text-zinc-300 focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all custom-scrollbar resize-none"
-                  />
-
-                  <button
-                    onClick={handleJsonParse}
-                    disabled={!jsonInput.trim()}
-                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl"
-                  >
-                    {t('expenses.parseAndImport')}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Import Preview Modal */}
       <AnimatePresence>
@@ -573,7 +511,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
               <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <FaExclamationTriangle className="text-rose-500 text-2xl" />
               </div>
-              
+
               <h3 className="text-xl font-black text-stone-900 dark:text-white mb-2 uppercase tracking-tight">Kalıcı Olarak Silinsin mi?</h3>
               <p className="text-xs font-medium text-stone-500 dark:text-zinc-400 mb-8 leading-relaxed">
                 <span className="font-black text-stone-900 dark:text-white">"{deleteItemTitle}"</span> kalıcı olarak silinecek. Bu işlem geri alınamaz.

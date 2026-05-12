@@ -25,6 +25,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('meeting');
   const [title, setTitle] = useState('');
+  const [itemDate, setItemDate] = useState(format(selectedDate, 'yyyy-MM-dd')); // Yeni eklenen State
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('09:30');
   const [notes, setNotes] = useState('');
@@ -57,6 +58,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
     if (initialData) {
       setActiveTab(initialData.itemType as TabType || 'meeting');
       setTitle(initialData.title);
+      setItemDate(initialData.date || format(selectedDate, 'yyyy-MM-dd')); // Tarihi doldur
       setStartTime(initialData.startTime || '09:00');
       setEndTime(initialData.endTime || '09:30');
       setNotes(initialData.notes || '');
@@ -69,6 +71,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
     } else {
       // Reset for New
       setTitle('');
+      setItemDate(format(selectedDate, 'yyyy-MM-dd')); // Seçili tarihi varsayılan yap
       setStartTime('09:00');
       setNotes('');
       setIsRecurring(false);
@@ -78,7 +81,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setCategoryColor('');
       setPriority('medium');
     }
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, selectedDate]);
 
   // Auto-duration logic: When startTime changes, set endTime to +30 mins
   useEffect(() => {
@@ -106,7 +109,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       const meetingData = {
         userId: user.uid,
         title,
-        date: initialData?.date || format(selectedDate, 'yyyy-MM-dd'),
+        date: itemDate, // Artık yeni state'i gönderiyoruz
         startTime: activeTab === 'meeting' ? startTime : '',
         endTime: activeTab === 'meeting' ? endTime : '',
         notes: notes.trim(),
@@ -191,16 +194,20 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
           )}
 
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
-            {!isEditMode && (
-              <div>
-                <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
-                  {t('planner.date')}
-                </label>
-                <div className="w-full px-4 py-2.5 bg-stone-100 dark:bg-zinc-800 rounded-xl text-sm font-medium">
-                  {format(selectedDate, 'dd.MM.yyyy')}
-                </div>
-              </div>
-            )}
+            
+            {/* Tarih seçimi artık hem eklemede hem düzenlemede çalışacak şekilde değiştirildi */}
+            <div>
+              <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
+                {t('planner.date')}
+              </label>
+              <input
+                type="date"
+                value={itemDate}
+                onChange={(e) => setItemDate(e.target.value)}
+                className="w-full px-4 py-2.5 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all block text-sm"
+                required
+              />
+            </div>
 
             {activeTab === 'meeting' && (
               <motion.div

@@ -38,9 +38,9 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
   );
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[100] md:hidden">
-      {/* Container with safe area padding and a bit extra for Android */}
-      <div className="relative mx-3 mb-4 rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 border border-white/20 dark:border-zinc-800/50" style={{ marginBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
+    <div className="fixed bottom-0 inset-x-0 z-[100] md:hidden pb-3 pt-1">
+      {/* Container with universal safe margin */}
+      <div className="relative mx-3 mb-1 rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 border border-white/20 dark:border-zinc-800/50">
 
         {/* Background - Glassmorphism */}
         <div className="absolute inset-0 bg-white/90 dark:bg-zinc-900/95 backdrop-blur-2xl" />

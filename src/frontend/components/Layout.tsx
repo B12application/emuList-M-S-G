@@ -11,7 +11,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased">
-      <MobileTopBar />
+      <MobileTopBar onMenuOpen={() => setIsMobileMenuOpen(true)} />
       <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
 
       <MobileMenu

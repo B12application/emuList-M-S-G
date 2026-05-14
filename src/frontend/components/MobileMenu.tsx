@@ -85,7 +85,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] md:hidden">
+        <div className="fixed inset-0 z-[120] md:hidden">
           {/* Backdrop */}
           <motion.div
             variants={backdropVariants}
@@ -181,7 +181,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             </div>
 
             {/* Footer Actions */}
-            <div className="p-4 bg-stone-50 dark:bg-zinc-950/50 border-t border-stone-100 dark:border-zinc-800 shrink-0">
+            <div className="p-4 pb-8 bg-stone-50 dark:bg-zinc-950/50 border-t border-stone-100 dark:border-zinc-800 shrink-0">
               <Link
                 to="/settings"
                 onClick={onClose}

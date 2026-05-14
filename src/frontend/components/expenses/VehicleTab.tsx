@@ -369,9 +369,22 @@ export default function VehicleTab() {
     >
       {/* Header Images */}
       {(() => {
-        const isEmuPersonalCar = vehicle?.licensePlate === '38ANY590' || vehicle?.brand === 'Hyundai';
-        const displayImg1 = formData.imageUrl1 || (isEmuPersonalCar ? img1 : 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80');
-        const displayImg2 = formData.imageUrl2 || (isEmuPersonalCar ? img2 : 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80');
+        const isDemoUser = user?.email === 'demo@emulist.com';
+        const isEmuPersonalCar = !isDemoUser && (vehicle?.licensePlate === '38ANY590' || vehicle?.licensePlate === '38 ANY 590');
+        
+        let displayImg1 = isEmuPersonalCar ? img1 : (formData.imageUrl1 || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80');
+        let displayImg2 = isEmuPersonalCar ? img2 : (formData.imageUrl2 || 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80');
+
+        // Prevent leaking personal images if stored URL matches personal assets
+        if (!isEmuPersonalCar) {
+          if (displayImg1 === img1 || displayImg1?.includes('IMG_1143')) {
+            displayImg1 = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80';
+          }
+          if (displayImg2 === img2 || displayImg2?.includes('IMG_1150')) {
+            displayImg2 = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80';
+          }
+        }
+
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group">

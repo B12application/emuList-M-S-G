@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaMap, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
@@ -40,6 +41,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { user } = useAuth();
   const { profile } = useUserProfile();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!user) return null;
 
@@ -93,7 +105,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             animate="visible"
             exit="exit"
             onClick={onClose}
-            className="absolute inset-0 bg-stone-900/40 dark:bg-black/60 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-stone-900/40 dark:bg-black/60 backdrop-blur-[2px] cursor-pointer"
           />
 
           {/* Drawer */}

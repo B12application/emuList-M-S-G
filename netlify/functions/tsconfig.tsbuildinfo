@@ -1,1 +1,1 @@
-{"root":["./analyze-statement.ts","./gold-price.ts","./usage.ts","./utils/types.d.ts","./utils/usageservice.ts"],"errors":true,"version":"5.9.3"}
+{"root":["./analyze-statement.ts","./gold-price.ts","./usage.ts","./utils/types.d.ts","./utils/usageservice.ts"],"version":"5.9.3"}

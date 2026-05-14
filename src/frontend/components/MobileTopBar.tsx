@@ -21,7 +21,8 @@ export default function MobileTopBar({ onMenuOpen }: MobileTopBarProps) {
   if (!user) return null;
 
   const getPageTitle = () => {
-    if (location.pathname === '/') return 'EmuList';
+    const defaultName = profile?.displayName || user.displayName || 'EmuList';
+    if (location.pathname === '/') return defaultName;
     if (location.pathname.startsWith('/movie')) return t('nav.movies');
     if (location.pathname.startsWith('/series')) return t('nav.series');
     if (location.pathname.startsWith('/game')) return t('nav.games');
@@ -33,7 +34,7 @@ export default function MobileTopBar({ onMenuOpen }: MobileTopBarProps) {
     if (location.pathname.startsWith('/lists')) return t('lists.title');
     if (location.pathname.startsWith('/map')) return t('nav.map');
     if (location.pathname.startsWith('/feed')) return t('nav.feed');
-    return 'EmuList';
+    return defaultName;
   };
 
   const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';

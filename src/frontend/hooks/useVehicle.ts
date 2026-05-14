@@ -41,6 +41,8 @@ export interface VehicleData {
   tramerAmount?: number;
   damageHistory?: string;
   carBodyStatus?: Record<string, 'original' | 'painted' | 'changed'>;
+  imageUrl1?: string;
+  imageUrl2?: string;
   createdAt: number;
   updatedAt?: number;
 }

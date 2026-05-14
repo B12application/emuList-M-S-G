@@ -74,30 +74,36 @@ export const seedDemoData = async (userId: string) => {
     });
   }
 
-  // 4. Seed Vehicles (Hyundai Getz)
+  // 4. Seed Vehicles (Generic Premium Car)
   const vehicleRef = doc(collection(db, 'vehicles'));
   batch.set(vehicleRef, {
-    brand: 'Hyundai',
-    model: 'Getz',
-    year: 2007,
-    licensePlate: '38ANY590',
-    currentKm: 185000,
-    purchaseDate: '2023-01-01',
-    purchaseKm: 170000,
-    lastMaintenanceDate: '2024-02-15',
-    lastMaintenanceKm: 182000,
-    nextMaintenanceKm: 192000,
-    insuranceDate: '2025-01-01',
-    inspectionDate: '2025-06-01',
-    mtvDate: '2024-07-01',
-    tireSummerBrand: 'Michelin',
-    tireSummerYear: 2023,
-    tireSummerTotalKm: 15000,
-    tireWinterTotalKm: 12000,
+    brand: 'Premium Car',
+    model: 'GT',
+    year: 2024,
+    engine: '2.0 Turbo',
+    transmission: 'Otomatik',
+    fuelType: 'Benzin',
+    licensePlate: '34 DEMO 01',
+    currentKm: 15000,
+    purchaseDate: '2024-01-01',
+    purchaseKm: 10000,
+    lastMaintenanceDate: '2025-01-15',
+    lastMaintenanceKm: 14500,
+    nextMaintenanceKm: 25000,
+    insuranceDate: '2026-01-01',
+    inspectionDate: '2026-06-01',
+    mtvDate: '2025-07-01',
+    tireSummerBrand: 'Pirelli',
+    tireSummerYear: 2024,
+    tireSummerTotalKm: 10000,
+    tireWinterTotalKm: 5000,
+    imageUrl1: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+    imageUrl2: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80',
     userId,
     createdAt: Date.now(),
     updatedAt: Date.now()
   });
+
 
   // 5. Seed Planner Meetings (10 items)
   const plannerTypes: Array<'meeting' | 'todo' | 'jira' | 'match'> = ['meeting', 'todo', 'jira'];

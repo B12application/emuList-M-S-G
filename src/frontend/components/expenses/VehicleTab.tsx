@@ -50,41 +50,38 @@ export default function VehicleTab() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<VehicleData>>({
-    purchaseDate: '2024-05-15', // Default purchase date example
-    purchaseKm: 140000,
-    currentKm: 155000,
-    nextMaintenanceKm: 160000,
+    purchaseDate: '2024-01-01',
+    purchaseKm: 10000,
+    currentKm: 15000,
+    nextMaintenanceKm: 25000,
     insuranceDate: '',
     inspectionDate: '',
     mtvYear: new Date().getFullYear(),
     mtvPaid1: false,
     mtvPaid2: false,
     fuelCategory: 'Yakıt',
-    licensePlate: '38ANY590',
-    brand: 'Hyundai',
-    model: 'Getz',
-    year: 2007,
-    engine: '1.4 DOHC',
-    transmission: 'Manuel',
-    fuelType: 'Benzin/LPG',
-    tireSummerBrand: 'Kumho',
-    tireSummerYear: 2025,
-    tireSummerPurchaseDate: '2025-07-01',
-    tireWinterBrand: 'Saetta',
-    tireWinterYear: 2025,
-    tireLastChangeDate: '2026-05-05',
-    tireLastChangeKm: 154500,
+    licensePlate: '34 DEMO 01',
+    brand: 'Premium Car',
+    model: 'GT',
+    year: 2024,
+    engine: '2.0 Turbo',
+    transmission: 'Otomatik',
+    fuelType: 'Benzin',
+    tireSummerBrand: 'Pirelli',
+    tireSummerYear: 2024,
+    tireSummerPurchaseDate: '2024-03-01',
+    tireWinterBrand: 'Michelin',
+    tireWinterYear: 2024,
+    tireLastChangeDate: '2025-11-01',
+    tireLastChangeKm: 14000,
     tireHistory: [
-      { type: 'purchase', date: '2025-07-01', km: 148000, brand: 'Kumho (Yazlık)' },
-      { type: 'winter', date: '2025-12-25', km: 151000 },
-      { type: 'summer', date: '2026-05-05', km: 154500 }
+      { type: 'purchase', date: '2024-03-01', km: 10000, brand: 'Pirelli (Yazlık)' }
     ],
-    tramerAmount: 1100,
-    damageHistory: 'Sağ ön çamurluk değişen, sağ ön kapı boyalı.',
-    carBodyStatus: {
-      frontRightFender: 'changed',
-      frontRightDoor: 'painted'
-    }
+    tramerAmount: 0,
+    damageHistory: 'Tamamen orijinal, hatasız.',
+    imageUrl1: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+    imageUrl2: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80',
+    carBodyStatus: {}
   });
 
   const [newLog, setNewLog] = useState({ month: format(new Date(), 'yyyy-MM'), km: '' });
@@ -371,17 +368,24 @@ export default function VehicleTab() {
       className="space-y-6 pb-20"
     >
       {/* Header Images */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group">
-          <img src={img1} alt="Vehicle 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-            <h2 className="text-white text-xl font-black drop-shadow-md tracking-tight uppercase">{t('expenses.vehicle.title')}</h2>
+      {(() => {
+        const isEmuPersonalCar = vehicle?.licensePlate === '38ANY590' || vehicle?.brand === 'Hyundai';
+        const displayImg1 = formData.imageUrl1 || (isEmuPersonalCar ? img1 : 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80');
+        const displayImg2 = formData.imageUrl2 || (isEmuPersonalCar ? img2 : 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80');
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group">
+              <img src={displayImg1} alt="Vehicle 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                <h2 className="text-white text-xl font-black drop-shadow-md tracking-tight uppercase">{t('expenses.vehicle.title')}</h2>
+              </div>
+            </div>
+            <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block">
+              <img src={displayImg2} alt="Vehicle 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
           </div>
-        </div>
-        <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block">
-          <img src={img2} alt="Vehicle 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Profile Section Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
@@ -582,6 +586,30 @@ export default function VehicleTab() {
                   </div>
                 </div>
               </div>
+
+              {/* Photo URLs for editing */}
+              {isEditing && (
+                <div className="pt-2 border-t border-stone-200/50 dark:border-zinc-800/50 space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">Ana Araç Fotoğrafı URL</label>
+                    <input
+                      placeholder="https://..."
+                      value={formData.imageUrl1 || ''}
+                      onChange={e => setFormData({ ...formData, imageUrl1: e.target.value })}
+                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-black text-stone-700 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">İkincil Araç Fotoğrafı URL</label>
+                    <input
+                      placeholder="https://..."
+                      value={formData.imageUrl2 || ''}
+                      onChange={e => setFormData({ ...formData, imageUrl2: e.target.value })}
+                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-black text-stone-700 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

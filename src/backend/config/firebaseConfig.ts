@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from 'firebase/storage';
 
 
 
@@ -23,3 +24,6 @@ export const auth = getAuth(app);
 
 // Veritabanını 'db' olarak dışa aktar
 export const db = getFirestore(app);
+
+// Firebase Storage
+export const storage = getStorage(app);

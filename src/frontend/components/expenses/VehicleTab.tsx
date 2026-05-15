@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -16,6 +16,8 @@ import toast from 'react-hot-toast';
 // Import local images directly
 import img1 from '../../assets/IMG_1143.jpg';
 import img2 from '../../assets/IMG_1150.jpg';
+import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../../backend/config/firebaseConfig';
 
 const COMMON_PARTS = [
   { name: 'Motor Yağı ve Filtresi', km: 10000, months: 12 },
@@ -49,6 +51,8 @@ export default function VehicleTab() {
   const { expenses, categories } = useExpenses();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState<string | number>('');
   const [formData, setFormData] = useState<Partial<VehicleData>>({
     purchaseDate: '2024-01-01',
     purchaseKm: 10000,
@@ -94,6 +98,180 @@ export default function VehicleTab() {
     replacedKm: vehicle?.currentKm || 0,
     replacedDate: format(new Date(), 'yyyy-MM-dd')
   });
+
+  // Image upload states for profile photos
+  const [imageFiles, setImageFiles] = useState<Record<'image1' | 'image2', File | null>>({ image1: null, image2: null });
+  const [imagePreviews, setImagePreviews] = useState<Record<'image1' | 'image2', string | null>>({ image1: null, image2: null });
+  const [uploadProgress, setUploadProgress] = useState<Record<'image1' | 'image2', number>>({ image1: 0, image2: 0 });
+  const [isUploading, setIsUploading] = useState<Record<'image1' | 'image2', boolean>>({ image1: false, image2: false });
+  const fileInputRef1 = useRef<HTMLInputElement | null>(null);
+  const fileInputRef2 = useRef<HTMLInputElement | null>(null);
+
+  const uploadImageFile = async (file: File, slot: 'image1' | 'image2') => {
+    if (!user) {
+      toast.error('Oturum bulunamadı, tekrar giriş yapın');
+      return null;
+    }
+
+    try {
+      setIsUploading(prev => ({ ...prev, [slot]: true }));
+      toast.loading('Görsel yükleniyor...');
+      const fileName = `${slot}_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+      const path = `users/${user.uid}/vehicles/${vehicle?.id || 'default'}/${fileName}`;
+      const ref = storageRef(storage, path);
+      const uploadTask = uploadBytesResumable(ref, file);
+
+      return await new Promise<string>((resolve, reject) => {
+        uploadTask.on('state_changed', snapshot => {
+          const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setUploadProgress(prev => ({ ...prev, [slot]: pct }));
+        }, err => {
+          setIsUploading(prev => ({ ...prev, [slot]: false }));
+          console.error('Upload failed', err);
+          toast.dismiss();
+          toast.error('Yükleme başarısız');
+          reject(err);
+        }, async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          setIsUploading(prev => ({ ...prev, [slot]: false }));
+          setUploadProgress(prev => ({ ...prev, [slot]: 100 }));
+          toast.dismiss();
+          toast.success('Yükleme tamamlandı');
+          resolve(url);
+        });
+      });
+    } catch (err: any) {
+      setIsUploading(prev => ({ ...prev, [slot]: false }));
+      console.error('Upload exception', err);
+      toast.dismiss();
+      toast.error(err?.message || 'Yükleme başarısız');
+      return null;
+    }
+  };
+
+  const handleFileChange = (e: any, slot: 'image1' | 'image2') => {
+    const f = e.target.files?.[0] ?? null;
+    if (f) {
+      setImageFiles(prev => ({ ...prev, [slot]: f }));
+      setImagePreviews(prev => ({ ...prev, [slot]: URL.createObjectURL(f) }));
+      toast.success('Fotoğraf seçildi — kaydetmek için butona basın');
+      console.log(`Selected file for ${slot}:`, f.name, f.size);
+    }
+  };
+
+  const handleUploadAndSave = async (slot: 'image1' | 'image2') => {
+    const file = imageFiles[slot];
+    if (!file) {
+      toast.error('Lütfen önce bir dosya seçin');
+      return;
+    }
+
+    const url = await uploadImageFile(file, slot);
+    if (url) {
+      const key = slot === 'image1' ? 'imageUrl1' : 'imageUrl2';
+      try {
+        toast.loading('Bilgiler kaydediliyor...');
+        await saveVehicle({ ...formData, [key]: url });
+        setFormData(prev => ({ ...prev, [key]: url }));
+        setImageFiles(prev => ({ ...prev, [slot]: null }));
+        setImagePreviews(prev => ({ ...prev, [slot]: null }));
+        toast.dismiss();
+        toast.success('Fotoğraf başarıyla kaydedildi');
+      } catch (err: any) {
+        toast.dismiss();
+        console.error('Save vehicle failed', err);
+        toast.error(err?.message || 'Fotoğraf kaydedilemedi');
+      }
+    }
+  };
+
+  // Free option: convert image to a compressed base64 data URL and save in Firestore as text
+  const convertImageToDataUrl = (file: File, initialMaxWidth = 800, initialQuality = 0.55, maxBytes = 200 * 1024): Promise<string> => {
+    // Converts and compresses an image to a base64 data URL. It will try progressively
+    // smaller sizes/qualities until the resulting string is under `maxBytes`.
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = (err) => reject(err);
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = async () => {
+          try {
+            const tryConvert = (width: number, quality: number): string => {
+              const ratio = img.width / img.height || 1;
+              const w = Math.min(width, img.width);
+              const h = Math.round(w / ratio);
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) throw new Error('Canvas context not available');
+              ctx.drawImage(img, 0, 0, w, h);
+              return canvas.toDataURL('image/jpeg', quality);
+            };
+
+            const approxBytes = (dataUrl: string) => {
+              const comma = dataUrl.indexOf(',');
+              const b64 = dataUrl.substring(comma + 1);
+              // approximate byte size from base64 length
+              return Math.ceil((b64.length * 3) / 4);
+            };
+
+            // Settings to try: reduce width and quality progressively
+            const widths = [initialMaxWidth, Math.floor(initialMaxWidth * 0.75), Math.floor(initialMaxWidth * 0.5), 400, 300];
+            const qualities = [initialQuality, 0.5, 0.45, 0.4, 0.35, 0.3];
+
+            for (const w of widths) {
+              for (const q of qualities) {
+                const dataUrl = tryConvert(w, q);
+                const size = approxBytes(dataUrl);
+                if (size <= maxBytes) return resolve(dataUrl);
+              }
+            }
+
+            // Last attempt: very small thumbnail
+            try {
+              const tiny = tryConvert(240, 0.25);
+              if (approxBytes(tiny) <= maxBytes) return resolve(tiny);
+            } catch (e) {
+              // ignore
+            }
+
+            return reject(new Error('Görsel çok büyük; lütfen daha küçük bir fotoğraf seçin veya çözünürlüğünü düşürün'));
+          } catch (err) {
+            reject(err);
+          }
+        };
+        img.onerror = (err) => reject(err);
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSaveAsDataUrl = async (slot: 'image1' | 'image2') => {
+    const file = imageFiles[slot];
+    if (!file) {
+      toast.error('Lütfen önce bir dosya seçin');
+      return;
+    }
+
+    try {
+      toast.loading('Görsel işleniyor...');
+      const dataUrl = await convertImageToDataUrl(file, 800, 0.55, 150 * 1024);
+      const key = slot === 'image1' ? 'imageUrl1' : 'imageUrl2';
+      toast.loading('Bilgiler kaydediliyor...');
+      await saveVehicle({ ...formData, [key]: dataUrl });
+      setFormData(prev => ({ ...prev, [key]: dataUrl }));
+      setImageFiles(prev => ({ ...prev, [slot]: null }));
+      setImagePreviews(prev => ({ ...prev, [slot]: null }));
+      toast.dismiss();
+      toast.success('Görsel metin olarak kaydedildi');
+    } catch (err: any) {
+      toast.dismiss();
+      console.error('Save as dataUrl failed', err);
+      toast.error(err?.message || 'Veri URL olarak kaydedilemedi');
+    }
+  };
 
   const [confirmingMaintenance, setConfirmingMaintenance] = useState<{
     id: string;
@@ -170,6 +348,40 @@ export default function VehicleTab() {
       toast.success(t('expenses.vehicle.add') + ' ' + t('common.success'));
     } catch (err: any) {
       toast.error(err?.message || t('common.error'));
+    }
+  };
+
+  const startFieldEdit = (key: string, value: any) => {
+    setEditingField(key);
+    setEditingValue(value ?? '');
+    // ensure the view scrolls a bit if needed (optional)
+  };
+
+  const cancelFieldEdit = () => {
+    setEditingField(null);
+    setEditingValue('');
+  };
+
+  const saveFieldEdit = async (key: string) => {
+    if (!user) {
+      toast.error('Oturum bulunamadı, tekrar giriş yapın');
+      return;
+    }
+    let valueToSave: any = editingValue;
+    // coerce to number when original is numeric
+    const orig = (formData as any)[key];
+    if (typeof orig === 'number') {
+      valueToSave = Number(editingValue) || 0;
+    }
+
+    try {
+      await saveVehicle({ ...formData, [key]: valueToSave });
+      setFormData(prev => ({ ...prev, [key]: valueToSave }));
+      setEditingField(null);
+      setEditingValue('');
+      toast.success('Kaydedildi');
+    } catch (err: any) {
+      toast.error(err?.message || 'Kaydetme başarısız');
     }
   };
 
@@ -392,9 +604,45 @@ export default function VehicleTab() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                 <h2 className="text-white text-xl font-black drop-shadow-md tracking-tight uppercase">{t('expenses.vehicle.title')}</h2>
               </div>
+              {isEditing && (
+                <>
+                  <div className="absolute left-4 bottom-4 flex items-center gap-2">
+                    <button onClick={() => fileInputRef1.current?.click()} className="py-2 px-3 bg-white/90 text-stone-900 rounded-lg text-[12px] font-black">Fotoğraf Seç</button>
+                  </div>
+                  {/* Action panel when a file is selected for image1 */}
+                  {(imagePreviews.image1 || imageFiles.image1) && (
+                    <div className="absolute right-4 bottom-4 bg-white/95 dark:bg-zinc-900/90 rounded-xl p-2 flex items-center gap-2">
+                      <button onClick={() => handleUploadAndSave('image1')} disabled={isUploading.image1} className="py-1 px-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg text-[12px] font-black">
+                        {isUploading.image1 ? `Yükleniyor ${uploadProgress.image1 || 0}%` : 'Yükle'}
+                      </button>
+                      <button onClick={() => handleSaveAsDataUrl('image1')} disabled={isUploading.image1} className="py-1 px-2 bg-amber-500 text-white rounded-lg text-[12px] font-black">Kaydet (Base64)</button>
+                      <button onClick={() => { setImageFiles(prev => ({ ...prev, image1: null })); setImagePreviews(prev => ({ ...prev, image1: null })); toast('Seçim iptal edildi'); }} className="py-1 px-2 bg-stone-200 dark:bg-zinc-700 rounded-lg text-[12px] font-black">İptal</button>
+                    </div>
+                  )}
+                </>
+              )}
+              <input ref={fileInputRef1} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image1')} />
             </div>
+
             <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block">
               <img src={displayImg2} alt="Vehicle 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              {isEditing && (
+                <>
+                  <div className="absolute left-4 bottom-4 flex items-center gap-2">
+                    <button onClick={() => fileInputRef2.current?.click()} className="py-2 px-3 bg-white/90 text-stone-900 rounded-lg text-[12px] font-black">Fotoğraf Seç</button>
+                  </div>
+                  {(imagePreviews.image2 || imageFiles.image2) && (
+                    <div className="absolute right-4 bottom-4 bg-white/95 dark:bg-zinc-900/90 rounded-xl p-2 flex items-center gap-2">
+                      <button onClick={() => handleUploadAndSave('image2')} disabled={isUploading.image2} className="py-1 px-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg text-[12px] font-black">
+                        {isUploading.image2 ? `Yükleniyor ${uploadProgress.image2 || 0}%` : 'Yükle'}
+                      </button>
+                      <button onClick={() => handleSaveAsDataUrl('image2')} disabled={isUploading.image2} className="py-1 px-2 bg-amber-500 text-white rounded-lg text-[12px] font-black">Kaydet (Base64)</button>
+                      <button onClick={() => { setImageFiles(prev => ({ ...prev, image2: null })); setImagePreviews(prev => ({ ...prev, image2: null })); toast('Seçim iptal edildi'); }} className="py-1 px-2 bg-stone-200 dark:bg-zinc-700 rounded-lg text-[12px] font-black">İptal</button>
+                    </div>
+                  )}
+                </>
+              )}
+              <input ref={fileInputRef2} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image2')} />
             </div>
           </div>
         );
@@ -423,7 +671,13 @@ export default function VehicleTab() {
             </div>
           )}
           <button
-            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            onClick={() => {
+              if (isEditing) handleSave();
+              else {
+                setIsEditing(true);
+                toast('Düzenleme moduna geçildi');
+              }
+            }}
             disabled={isSaving}
             className={`flex items-center justify-center gap-2 px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all shadow-sm ${isEditing
               ? 'bg-rose-500 hover:bg-rose-600 text-white'
@@ -445,17 +699,28 @@ export default function VehicleTab() {
         ].map((stat, i) => (
           <div key={i} className="bg-stone-50/50 dark:bg-zinc-800/30 p-5 rounded-3xl border border-stone-100 dark:border-zinc-800 flex flex-col justify-center relative overflow-hidden">
             <p className="text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{stat.label}</p>
-            {isEditing && stat.isEdit ? (
-              <input
-                type="number"
-                value={stat.value || 0}
-                onChange={e => setFormData({ ...formData, [stat.key!]: Number(e.target.value) })}
-                className="text-lg font-black bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg p-1.5 outline-none w-full"
-              />
+            {editingField === stat.key ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={String(editingValue)}
+                  onChange={e => setEditingValue(e.target.value)}
+                  className="text-lg font-black bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg p-1.5 outline-none w-full"
+                />
+                <button onClick={() => saveFieldEdit(stat.key!)} className="p-2 bg-emerald-600 text-white rounded-lg">Kaydet</button>
+                <button onClick={cancelFieldEdit} className="p-2 bg-stone-200 dark:bg-zinc-700 rounded-lg">İptal</button>
+              </div>
             ) : (
-              <h4 className={`text-xl font-black ${stat.color || 'text-stone-900 dark:text-white'}`}>
-                {(stat.value || 0).toLocaleString()} <span className="text-xs text-stone-400 font-bold ml-1">{stat.sub}</span>
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className={`text-xl font-black ${stat.color || 'text-stone-900 dark:text-white'}`}>
+                  {(stat.value || 0).toLocaleString()} <span className="text-xs text-stone-400 font-bold ml-1">{stat.sub}</span>
+                </h4>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => startFieldEdit(stat.key!, stat.value)} title="Düzenle" className="p-1 bg-stone-100 dark:bg-zinc-800 rounded-lg">
+                    <FaEdit size={12} />
+                  </button>
+                </div>
+              </div>
             )}
             {!isEditing && stat.key === 'nextMaintenanceKm' && (
               <p className="text-[9px] font-bold text-stone-500 mt-1 uppercase tracking-tighter">
@@ -484,15 +749,18 @@ export default function VehicleTab() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">Plaka</label>
-                  {isEditing ? (
-                    <input
-                      value={formData.licensePlate}
-                      onChange={e => setFormData({ ...formData, licensePlate: e.target.value })}
-                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-2 font-black text-stone-700 dark:text-white outline-none focus:ring-2 focus:ring-stone-900/5 transition-all"
-                    />
+                  {editingField === 'licensePlate' ? (
+                    <div className="flex gap-2">
+                      <input value={String(editingValue)} onChange={e => setEditingValue(e.target.value)} className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-2 font-black text-stone-700 dark:text-white outline-none" />
+                      <button onClick={() => saveFieldEdit('licensePlate')} className="py-2 px-3 bg-emerald-600 text-white rounded-xl">Kaydet</button>
+                      <button onClick={cancelFieldEdit} className="py-2 px-3 bg-stone-200 dark:bg-zinc-700 rounded-xl">İptal</button>
+                    </div>
                   ) : (
                     <div className="inline-flex bg-white dark:bg-zinc-900 border-2 border-stone-900 dark:border-white rounded-xl px-6 py-2.5 shadow-sm">
                       <span className="text-2xl font-black text-stone-900 dark:text-white tracking-[0.2em]">{formData.licensePlate || '---'}</span>
+                      <button onClick={() => startFieldEdit('licensePlate', formData.licensePlate)} className="ml-3 p-1 bg-stone-100 dark:bg-zinc-800 rounded-lg">
+                        <FaEdit size={12} />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -603,23 +871,54 @@ export default function VehicleTab() {
               {/* Photo URLs for editing */}
               {isEditing && (
                 <div className="pt-2 border-t border-stone-200/50 dark:border-zinc-800/50 space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">Ana Araç Fotoğrafı URL</label>
-                    <input
-                      placeholder="https://..."
-                      value={formData.imageUrl1 || ''}
-                      onChange={e => setFormData({ ...formData, imageUrl1: e.target.value })}
-                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-black text-stone-700 dark:text-white outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">İkincil Araç Fotoğrafı URL</label>
-                    <input
-                      placeholder="https://..."
-                      value={formData.imageUrl2 || ''}
-                      onChange={e => setFormData({ ...formData, imageUrl2: e.target.value })}
-                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-black text-stone-700 dark:text-white outline-none"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Image 1 */}
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">Ana Araç Fotoğrafı</label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 h-16 bg-stone-100 dark:bg-zinc-800 rounded-lg overflow-hidden border">
+                          <img src={imagePreviews.image1 || formData.imageUrl1 || img1} alt="Ana" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <input type="file" accept="image/*" capture="environment" onChange={e => handleFileChange(e, 'image1')} className="text-xs" />
+                          <div className="flex gap-2">
+                            <button onClick={() => handleUploadAndSave('image1')} disabled={isUploading.image1} className="py-2 px-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black">
+                              {isUploading.image1 ? `Yükleniyor ${uploadProgress.image1 || 0}%` : 'Yükle ve Kaydet'}
+                            </button>
+                            <button onClick={() => handleSaveAsDataUrl('image1')} disabled={isUploading.image1} className="py-2 px-3 bg-amber-500 text-white rounded-xl text-[10px] font-black">
+                              Kaydet (Base64)
+                            </button>
+                            <button onClick={() => setFormData(prev => ({ ...prev, imageUrl1: '' }))} className="py-2 px-3 bg-stone-200 dark:bg-zinc-700 text-stone-700 rounded-xl text-[10px] font-black">
+                              Temizle
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Image 2 */}
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-stone-400 uppercase tracking-tighter">İkincil Araç Fotoğrafı</label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 h-16 bg-stone-100 dark:bg-zinc-800 rounded-lg overflow-hidden border">
+                          <img src={imagePreviews.image2 || formData.imageUrl2 || img2} alt="İkincil" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <input type="file" accept="image/*" capture="environment" onChange={e => handleFileChange(e, 'image2')} className="text-xs" />
+                          <div className="flex gap-2">
+                            <button onClick={() => handleUploadAndSave('image2')} disabled={isUploading.image2} className="py-2 px-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black">
+                              {isUploading.image2 ? `Yükleniyor ${uploadProgress.image2 || 0}%` : 'Yükle ve Kaydet'}
+                            </button>
+                            <button onClick={() => handleSaveAsDataUrl('image2')} disabled={isUploading.image2} className="py-2 px-3 bg-amber-500 text-white rounded-xl text-[10px] font-black">
+                              Kaydet (Base64)
+                            </button>
+                            <button onClick={() => setFormData(prev => ({ ...prev, imageUrl2: '' }))} className="py-2 px-3 bg-stone-200 dark:bg-zinc-700 text-stone-700 rounded-xl text-[10px] font-black">
+                              Temizle
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

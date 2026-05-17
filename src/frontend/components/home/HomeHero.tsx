@@ -136,16 +136,16 @@ export default function HomeHero({
                         className="mt-5 w-full grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
                     >
                         <Link
-                            to="/create"
-                            className="group relative flex items-center justify-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-white shadow-md shadow-amber-600/20 transition hover:-translate-y-0.5"
-                        >
+                                to="/create"
+                                className="group relative w-full flex items-center justify-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-white shadow-md shadow-amber-600/20 transition hover:-translate-y-0.5"
+                            >
                             <span className="absolute inset-0 bg-white/20 opacity-0 transition group-hover:opacity-100" />
                             <FaPlus className="shrink-0 transition group-hover:rotate-90 text-[10px]" />
                             <span className="truncate">{t('home.addNew')}</span>
                         </Link>
                         <Link
                             to="/all"
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-300/80 bg-white/90 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-slate-900 shadow-2xs transition hover:-translate-y-0.5 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-slate-300/80 bg-white/90 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-slate-900 shadow-2xs transition hover:-translate-y-0.5 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                         >
                             <FaArchive className="shrink-0 text-[10px]" />
                             <span className="truncate">{t('home.viewCollection')}</span>
@@ -153,14 +153,14 @@ export default function HomeHero({
                         <button
                             type="button"
                             onClick={onRandom}
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-900/10 bg-slate-900 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-white shadow-md transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-zinc-100 dark:text-zinc-900"
+                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-slate-900/10 bg-slate-900 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-white shadow-md transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-zinc-100 dark:text-zinc-900"
                         >
                             <FaRandom className="shrink-0 text-[10px]" />
                             <span className="truncate">{t('home.randomButton')}</span>
                         </button>
                         <Link
                             to="/planner?todo=true"
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-emerald-800 transition hover:-translate-y-0.5 dark:text-emerald-300"
+                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-xs font-bold text-emerald-800 transition hover:-translate-y-0.5 dark:text-emerald-300"
                         >
                             <FaTasks className="shrink-0 text-[10px]" />
                             <span className="truncate">{t('home.myTasks')}</span>

@@ -18,14 +18,17 @@ const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Mal
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
 
 const drawerVariants = {
-  hidden: { x: '100%', opacity: 0 },
+  // Enter from right with a slight vertical motion so users see up/down movement on mobile
+  hidden: { x: '100%', y: 12, opacity: 0 },
   visible: {
     x: 0,
+    y: 0,
     opacity: 1,
     transition: { type: 'spring' as const, damping: 25, stiffness: 200 }
   },
   exit: {
     x: '100%',
+    y: 12,
     opacity: 0,
     transition: { type: 'tween' as const, duration: 0.25, ease: 'easeInOut' as const }
   }

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory } from 'react-icons/fa';
+import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory, FaReceipt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 import useExpenses from '../hooks/useExpenses';
@@ -19,6 +19,7 @@ import ExpensesLayout from '../components/expenses/ExpensesLayout';
 import ExpensesHomeView from '../components/expenses/ExpensesHomeView';
 import ReportsTab from '../components/expenses/ReportsTab';
 import VehicleTab from '../components/expenses/VehicleTab';
+import InvoiceTab from '../components/expenses/InvoiceTab';
 import InvestmentsTab from '../components/expenses/InvestmentsTab';
 import ExpenseModals from '../components/expenses/ExpenseModals';
 import { useExpenseMigration } from '../hooks/useExpenseMigration';
@@ -428,11 +429,12 @@ const ExpensesPage: React.FC = () => {
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
       <div className="mb-8 flex items-center justify-center sm:justify-end overflow-x-auto pb-2 scrollbar-hide">
         <div className="flex items-center gap-1 bg-white/50 dark:bg-zinc-900/50 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50 backdrop-blur-sm min-w-max">
-          {[
+            {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
             { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
             { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
             { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
+            { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -473,6 +475,18 @@ const ExpensesPage: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             <VehicleTab />
+          </motion.div>
+        </AnimatePresence>
+      ) : activeTab === 'faturalar' ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="faturalar-view"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <InvoiceTab />
           </motion.div>
         </AnimatePresence>
       ) : activeTab === 'yatirimlar' ? (

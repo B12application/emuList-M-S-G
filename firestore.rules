@@ -148,5 +148,11 @@ service cloud.firestore {
       allow read, delete, update: if isOwnerByResource();
       allow create: if isOwnerByRequest();
     }
+
+    // Invoice Subscriptions (Fatura & Abonelikler)
+    match /invoiceSubscriptions/{subscriptionId} {
+      allow read, delete, update: if isOwnerByResource();
+      allow create: if isOwnerByRequest();
+    }
   }
 }

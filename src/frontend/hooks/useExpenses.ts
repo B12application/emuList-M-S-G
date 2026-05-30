@@ -41,6 +41,12 @@ export interface Expense {
   direction?: 'gelen' | 'giden';
   source?: string;
   type?: string;
+  contractStart?: string;
+  contractYears?: number;
+  notifyBeforeDays?: number;
+  contractEndDate?: string;
+  reminderDate?: string;
+  billingCycle?: 'monthly' | 'yearly';
   // Installment fields
   installmentCount?: number;
   installmentCurrent?: number;

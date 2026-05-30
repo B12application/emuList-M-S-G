@@ -5,8 +5,8 @@ import {
 import { tr, enUS } from 'date-fns/locale';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useShift } from '../../context/ShiftContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getShiftInfo } from '../../utils/shiftLogic';
 import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
@@ -28,6 +28,7 @@ interface Arrow {
 }
 
 export default function MonthlyView({ currentMonth, onMonthChange, meetings, onSelectDate, calendarAlerts = [] }: MonthlyViewProps) {
+  const { getShiftInfo } = useShift();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -42,7 +43,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const dateFormat = 'd';
 
-  // 'days' i memoize et; yoksa her render'da yeni dizi oluşup sonsuz döngüye giriyor
   const days = useMemo(
     () => eachDayOfInterval({ start: startDate, end: endDate }),
     [startDate.getTime(), endDate.getTime()]
@@ -52,8 +52,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
 
   const weekDays = language === 'tr' ? ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  // ─── Calendar Alert Helpers ───
-  // Her gün için, o güne denk gelen alert bilgisini hesapla
   const getAlertInfoForDay = (day: Date, dayIndex: number) => {
     const dateStr = format(day, 'yyyy-MM-dd');
     const results: {
@@ -68,9 +66,9 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
       if (dateStr >= alert.startDate && dateStr <= alert.endDate) {
         const isStart = dateStr === alert.startDate;
         const isEnd = dateStr === alert.endDate;
-        const colInWeek = dayIndex % 7; // 0=Pzt, 6=Paz
-        const isRowStart = isStart || colInWeek === 0; // Satır başı veya alert başlangıcı
-        const isRowEnd = isEnd || colInWeek === 6; // Satır sonu veya alert bitişi
+        const colInWeek = dayIndex % 7;
+        const isRowStart = isStart || colInWeek === 0;
+        const isRowEnd = isEnd || colInWeek === 6;
         results.push({ alert, isStart, isEnd, isRowStart, isRowEnd });
       }
     });
@@ -119,7 +117,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
     setArrows(newArrows);
   };
 
-  // showMatches veya ay değiştiğinde okları hesapla ya da sıfırla
   useEffect(() => {
     if (!showMatches) { setArrows([]); return; }
     const timer = setTimeout(calculateArrows, 450);
@@ -127,11 +124,8 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
   }, [showMatches, currentMonth.getTime()]);
 
   return (
-    // Wrapper: tam genişlik, takvim + sidebar yan yana
     <div ref={wrapperRef} className="relative">
       <div className="flex items-start gap-0">
-
-        {/* TAKVİM — showMatches açıkken flex-1 ile daralır, kapalıyken tam genişlik */}
         <motion.div
           ref={calendarRef}
           layout
@@ -191,14 +185,45 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
               const hasMatch = dayMeetings.some(m => m.itemType === 'match');
               const match = dayMeetings.find(m => m.itemType === 'match');
 
-              let shiftBg = 'bg-stone-100 dark:bg-zinc-700/50';
-              if (shift.type === 'Sabah') shiftBg = 'bg-amber-400 border border-amber-500';
-              if (shift.type === 'Akşam') shiftBg = 'bg-indigo-500 border border-indigo-600';
-
               const isCurrentMonth = isSameMonth(day, monthStart);
               const isToday = isSameDay(day, new Date());
 
-              // Alert bilgisi
+              // Define cell decoration based on shift type
+              let cellClass = 'border-l-[3px] border-l-transparent';
+              let shiftBadge = null;
+
+              if (isCurrentMonth) {
+                if (shift.type === 'Sabah') {
+                  cellClass = 'border-l-[3px] border-l-amber-500 bg-amber-500/[0.03] dark:bg-amber-500/[0.02]';
+                  shiftBadge = (
+                    <div className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40 w-fit shadow-sm">
+                      {language === 'tr' ? 'Sabah' : 'Morning'}
+                    </div>
+                  );
+                } else if (shift.type === 'Akşam') {
+                  cellClass = 'border-l-[3px] border-l-indigo-500 bg-indigo-500/[0.03] dark:bg-indigo-500/[0.02]';
+                  shiftBadge = (
+                    <div className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-100/80 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-900/40 w-fit shadow-sm">
+                      {language === 'tr' ? 'Akşam' : 'Evening'}
+                    </div>
+                  );
+                } else if (shift.type === 'Nöbet') {
+                  cellClass = 'border-l-[3px] border-l-rose-500 bg-rose-500/[0.03] dark:bg-rose-500/[0.02]';
+                  shiftBadge = (
+                    <div className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-100/80 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300 border border-rose-200/50 dark:border-rose-900/40 w-fit shadow-sm">
+                      {language === 'tr' ? 'Nöbet' : 'On-call'}
+                    </div>
+                  );
+                } else if (shift.type === 'Tatil') {
+                  cellClass = 'border-l-[3px] border-l-stone-300 dark:border-l-zinc-700 bg-stone-500/[0.01]';
+                  shiftBadge = (
+                    <div className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 w-fit">
+                      {language === 'tr' ? 'Tatil' : 'Off'}
+                    </div>
+                  );
+                }
+              }
+
               const alertInfos = getAlertInfoForDay(day, idx);
 
               return (
@@ -206,15 +231,16 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   key={day.toString()}
                   data-date={dateStr}
                   onClick={() => onSelectDate(day)}
-                  className={`min-h-[60px] sm:min-h-[110px] p-1.5 sm:p-2 border-r border-b border-stone-100 dark:border-zinc-800/80 cursor-pointer transition-all hover:bg-stone-50 dark:hover:bg-zinc-800/50 relative
-                    ${!isCurrentMonth ? 'opacity-40' : ''}
+                  className={`min-h-[65px] sm:min-h-[115px] p-2 border-r border-b border-stone-100 dark:border-zinc-800/80 cursor-pointer transition-all hover:bg-stone-50/50 dark:hover:bg-zinc-800/20 relative hover:scale-[1.02] hover:shadow-md hover:z-10 rounded-lg
+                    ${!isCurrentMonth ? 'opacity-30 pointer-events-none' : ''}
+                    ${cellClass}
                     ${(idx + 1) % 7 === 0 ? 'border-r-0' : ''}
                     ${hasMatch && showMatches ? 'ring-1 ring-inset ring-red-400/40 bg-red-50/30 dark:bg-red-900/10' : ''}
                   `}
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1">
-                      <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-bold ${isToday ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20' : 'text-stone-700 dark:text-zinc-300'}`}>
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5">
+                      <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-black italic ${isToday ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20' : 'text-stone-700 dark:text-zinc-300'}`}>
                         {format(day, dateFormat)}
                       </span>
                       {hasMatch && match && (
@@ -229,9 +255,27 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       )}
                     </div>
                     {isCurrentMonth && (
-                      <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full mt-1.5 sm:mt-0 shadow-sm ${shiftBg}`} title={shift.type} />
+                      <div className="flex items-center gap-1">
+                        {shift.isOverride && (
+                          <span className="text-[10px]" title={language === 'tr' ? 'Manuel Vardiya' : 'Manual Override'}>
+                            ⚙️
+                          </span>
+                        )}
+                        <div className={`sm:hidden w-2 h-2 rounded-full shadow-sm ${
+                          shift.type === 'Sabah' ? 'bg-amber-400 border border-amber-500' :
+                          shift.type === 'Akşam' ? 'bg-indigo-500 border border-indigo-600' :
+                          shift.type === 'Nöbet' ? 'bg-rose-500 border border-rose-600' :
+                          'bg-stone-300 dark:bg-zinc-750'
+                        }`} title={shift.type} />
+                      </div>
                     )}
                   </div>
+
+                  {isCurrentMonth && (
+                    <div className="hidden sm:block mb-1.5">
+                      {shiftBadge}
+                    </div>
+                  )}
 
                   {/* Masaüstü Görünüm İçin Etkinlik Metinleri */}
                   <div className="hidden sm:block mt-1.5 space-y-1">
@@ -296,7 +340,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                           className="relative"
                           style={{ marginBottom: aIdx * 14 }}
                         >
-                          {/* Kırmızı çizgi bandı */}
                           <div
                             className="h-[3px] absolute bottom-3"
                             style={{
@@ -308,7 +351,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                             }}
                           />
 
-                          {/* Başlangıç noktası */}
                           {info.isStart && (
                             <div
                               className="absolute bottom-[9px] w-[9px] h-[9px] rounded-full shadow-sm"
@@ -319,7 +361,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                             />
                           )}
 
-                          {/* Bitiş noktası */}
                           {info.isEnd && (
                             <div
                               className="absolute bottom-[9px] w-[9px] h-[9px] rounded-full shadow-sm"
@@ -330,7 +371,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                             />
                           )}
 
-                          {/* Etiket — her satır segment'inin sonunda (isRowEnd) göster */}
                           {info.isRowEnd && (
                             <div
                               className="absolute bottom-5 pointer-events-auto"
@@ -360,7 +400,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
           </div>
         </motion.div>
 
-        {/* FİKSTÜR SIDEBAR — showMatches=true olunca sağdan kayarak açılır */}
+        {/* FİKSTÜR SIDEBAR */}
         <AnimatePresence>
           {showMatches && monthMatches.length > 0 && (
             <motion.div
@@ -400,7 +440,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
         </AnimatePresence>
       </div>
 
-      {/* SVG OKLAR — Takvim hücresi sağ kenarından sidebar kartına */}
+      {/* SVG OKLAR */}
       <AnimatePresence>
         {showMatches && arrows.length > 0 && (
           <motion.svg

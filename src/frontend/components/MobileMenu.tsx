@@ -7,7 +7,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../../backend/config/firebaseConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
-import { getShiftInfo } from '../utils/shiftLogic';
+import { useShift } from '../context/ShiftContext';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -18,7 +18,6 @@ const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Mal
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
 
 const drawerVariants = {
-  // Enter from right with a slight vertical motion so users see up/down movement on mobile
   hidden: { x: '100%', y: 12, opacity: 0 },
   visible: {
     x: 0,
@@ -44,6 +43,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { user } = useAuth();
   const { profile } = useUserProfile();
   const { t } = useLanguage();
+  const { getShiftInfo } = useShift();
 
   useEffect(() => {
     if (isOpen) {
@@ -146,11 +146,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               {todayShift && (
                 <div className="mt-4 px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
                   <span className="text-xs font-semibold text-stone-600 dark:text-zinc-300">Günün Vardiyası</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${todayShift.type === 'Sabah' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                      todayShift.type === 'Akşam' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
-                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    }`}>
-                    {todayShift.type}
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    todayShift.type === 'Sabah' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                    todayShift.type === 'Akşam' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                    todayShift.type === 'Nöbet' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  }`}>
+                    {todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type}
                   </span>
                 </div>
               )}
@@ -207,7 +209,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-650 dark:text-red-450 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium transition-colors"
               >
                 <FaSignOutAlt className="text-base opacity-70" />
                 <span className="text-sm">Çıkış Yap</span>

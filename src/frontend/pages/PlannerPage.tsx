@@ -16,6 +16,7 @@ import RecurringManagerModal from '../components/planner/RecurringManagerModal';
 import TodoManagerModal from '../components/planner/TodoManagerModal';
 import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
 import CalendarAlertModal from '../components/planner/CalendarAlertModal';
+import ShiftSettingsModal from '../components/planner/ShiftSettingsModal';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
@@ -40,6 +41,7 @@ export default function PlannerPage() {
   const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [calendarAlerts, setCalendarAlerts] = useState<CalendarAlert[]>([]);
   // Mobilde daily, desktop'ta monthly başlat
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira'>(() =>
@@ -260,6 +262,7 @@ export default function PlannerPage() {
         <PlannerHeader
           selectedDate={selectedDate}
           meetingCount={currentDayMeetings.length}
+          onEditShifts={() => setIsShiftModalOpen(true)}
         />
 
         <HorizontalTimeline
@@ -455,6 +458,12 @@ export default function PlannerPage() {
         onClose={() => setIsAlertModalOpen(false)}
         onAdded={loadData}
         existingAlerts={calendarAlerts}
+      />
+
+      <ShiftSettingsModal
+        isOpen={isShiftModalOpen}
+        onClose={() => setIsShiftModalOpen(false)}
+        initialDate={selectedDate}
       />
     </motion.div>
   );

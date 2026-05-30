@@ -2,15 +2,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaBell, FaUser, FaHeart, FaComment, FaCalendarDay, FaSun, FaMoon, FaCoffee } from 'react-icons/fa';
+import { FaBell, FaUser, FaHeart, FaComment, FaCalendarDay, FaSun, FaMoon, FaCoffee, FaUserShield } from 'react-icons/fa';
 import { useNotifications } from '../context/NotificationContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getShiftInfo } from '../utils/shiftLogic';
+import { useShift } from '../context/ShiftContext';
 
 export default function NotificationDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const { notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useNotifications();
     const { t } = useLanguage();
+    const { getShiftInfo } = useShift();
     const navigate = useNavigate();
 
     // Get today's shift info
@@ -74,6 +75,15 @@ export default function NotificationDropdown() {
         return `${diffDays} ${t('feed.daysAgo')}`;
     };
 
+    let shiftBg = 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400';
+    if (todayShift.type === 'Sabah') {
+        shiftBg = 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400';
+    } else if (todayShift.type === 'Akşam') {
+        shiftBg = 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400';
+    } else if (todayShift.type === 'Nöbet') {
+        shiftBg = 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400';
+    }
+
     return (
         <div className="relative">
             <button
@@ -123,21 +133,19 @@ export default function NotificationDropdown() {
 
                             {/* TODAY STATUS CARD */}
                             <div className="p-3 bg-white dark:bg-zinc-900/30 border-b border-stone-200 dark:border-zinc-700/50">
-                                <div className={`p-3 rounded-xl flex items-center gap-3 border ${todayShift.type === 'Sabah' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' :
-                                    todayShift.type === 'Akşam' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400' :
-                                        'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                                    }`}>
+                                <div className={`p-3 rounded-xl flex items-center gap-3 border ${shiftBg}`}>
                                     <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-zinc-800 shadow-sm border border-inherit">
-                                        {todayShift.type === 'Sabah' && <FaSun className="w-5 h-5" />}
-                                        {todayShift.type === 'Akşam' && <FaMoon className="w-5 h-5" />}
-                                        {todayShift.type === 'Tatil' && <FaCoffee className="w-5 h-5" />}
+                                        {todayShift.type === 'Sabah' && <FaSun className="w-5 h-5 text-amber-500" />}
+                                        {todayShift.type === 'Akşam' && <FaMoon className="w-5 h-5 text-indigo-400" />}
+                                        {todayShift.type === 'Nöbet' && <FaUserShield className="w-5 h-5 text-rose-500" />}
+                                        {todayShift.type === 'Tatil' && <FaCoffee className="w-5 h-5 text-emerald-500" />}
                                     </div>
                                     <div className="flex-1">
                                         <div className="text-[10px] uppercase tracking-wider font-bold opacity-70">
                                             {t('planner.today')}
                                         </div>
                                         <div className="text-sm font-bold flex items-center gap-2">
-                                            {todayShift.type === 'Tatil' ? 'Tatil Günü' : `${todayShift.type} Vardiyası`}
+                                            {todayShift.type === 'Tatil' ? 'Tatil Günü' : todayShift.type === 'Nöbet' ? 'Nöbet Vardiyası' : `${todayShift.type} Vardiyası`}
                                             {todayShift.dayIndex && (
                                                 <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/50 dark:bg-black/20 border border-inherit">
                                                     {todayShift.dayIndex}. Gün

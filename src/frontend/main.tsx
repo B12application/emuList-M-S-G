@@ -5,6 +5,7 @@ import './index.css';
 import { ThemeProvider } from './context/ThemeContext.tsx';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext.tsx'
+import { ShiftProvider } from './context/ShiftContext.tsx';
 import { MarqueeToastContainer } from './components/MarqueeToast.tsx';
 
 
@@ -12,8 +13,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <App />
-        <MarqueeToastContainer />
+        <ShiftProvider>
+          <App />
+          <MarqueeToastContainer />
         <Toaster
           position="top-center"
           gutter={10}
@@ -65,6 +67,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             },
           }}
         />
+        </ShiftProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>

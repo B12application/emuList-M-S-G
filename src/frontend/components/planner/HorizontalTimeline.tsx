@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { addDays, format, isSameDay } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../context/LanguageContext';
-import { getShiftInfo } from '../../utils/shiftLogic';
+import { useShift } from '../../context/ShiftContext';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface HorizontalTimelineProps {
@@ -14,22 +14,19 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const { language } = useLanguage();
+  const { getShiftInfo } = useShift();
   const dateLocale = language === 'tr' ? tr : enUS;
 
-  // Generate 15 days around the selected date (7 before, 1 after? Or just 15 days starting from today - 3)
   const today = new Date();
-
-  // We'll show a window of 45 days
   const startDate = addDays(today, -10);
   const days = Array.from({ length: 90 }).map((_, i) => addDays(startDate, i));
 
-  // Sayda açıldığında veya tarih değiştiğinde aktif öğeye kaydır
   useEffect(() => {
     if (activeRef.current) {
       activeRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
-        inline: 'center' // Use center for better focus
+        inline: 'center'
       });
     }
   }, [selectedDate]);
@@ -44,7 +41,6 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
 
   return (
     <div className="relative group">
-      {/* Navigation Buttons - Only visible or prominent on hover/active but let's keep them accessible */}
       <button
         onClick={() => scroll('left')}
         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md 
@@ -63,9 +59,10 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
             const shift = getShiftInfo(date);
             const isSelected = isSameDay(date, selectedDate);
 
-            let shiftIndicator = 'bg-stone-300 dark:bg-zinc-600'; // Tatil
+            let shiftIndicator = 'bg-stone-300 dark:bg-zinc-650'; // Tatil
             if (shift.type === 'Sabah') shiftIndicator = 'bg-amber-400';
             if (shift.type === 'Akşam') shiftIndicator = 'bg-indigo-500';
+            if (shift.type === 'Nöbet') shiftIndicator = 'bg-rose-500';
 
             return (
               <button

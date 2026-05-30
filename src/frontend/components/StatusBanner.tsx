@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { getShiftInfo } from '../utils/shiftLogic';
-import { FaGift, FaTasks, FaSun, FaMoon, FaClock } from 'react-icons/fa';
+import { useShift } from '../context/ShiftContext';
+import { FaGift, FaTasks, FaSun, FaMoon, FaClock, FaUserShield } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings } from '../../backend/services/plannerService';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ShiftDisplay {
   icon: React.ReactNode;
-  label: string;       // Kısa: "Sabah" / "Akşam" / "Tatil"
+  label: string;       // Kısa: "Sabah" / "Akşam" / "Tatil" / "Nöbet"
   hours: string;       // "06:30–16:30" ya da "2. Gün"
   pillColor: string;   // Tailwind classes
   dotColor: string;    // Canlı nokta rengi
@@ -15,6 +15,7 @@ interface ShiftDisplay {
 
 export default function StatusBanner() {
   const { user } = useAuth();
+  const { getShiftInfo } = useShift();
   const [shiftDisplay, setShiftDisplay] = useState<ShiftDisplay | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isActive, setIsActive] = useState(false); // Vardiya aktif mi?
@@ -67,7 +68,7 @@ export default function StatusBanner() {
         setShiftDisplay({
           icon: <FaGift className="text-emerald-500" />,
           label: 'Tatil',
-          hours: `${shift.dayIndex}. Gün`,
+          hours: shift.dayIndex ? `${shift.dayIndex}. Gün` : 'Tatil',
           pillColor: 'bg-emerald-500/15 border-emerald-400/40 text-emerald-700 dark:text-emerald-300',
           dotColor: 'bg-emerald-400',
         });
@@ -76,7 +77,6 @@ export default function StatusBanner() {
         return;
       }
 
-      const isMorning = shift.type === 'Sabah';
       const [startH, startM] = shift.startTime!.split(':').map(Number);
       const [endH, endM] = shift.endTime!.split(':').map(Number);
 
@@ -91,16 +91,29 @@ export default function StatusBanner() {
       const diffStartMs = shiftStart.getTime() - now.getTime();
       const diffEndMs = shiftEnd.getTime() - now.getTime();
 
+      let icon = <FaSun className="text-amber-500" />;
+      let label = 'Sabah';
+      let pillColor = 'bg-amber-500/15 border-amber-400/40 text-amber-700 dark:text-amber-300';
+      let dotColor = 'bg-amber-400';
+
+      if (shift.type === 'Akşam') {
+        icon = <FaMoon className="text-indigo-400" />;
+        label = 'Akşam';
+        pillColor = 'bg-indigo-500/15 border-indigo-400/40 text-indigo-700 dark:text-indigo-300';
+        dotColor = 'bg-indigo-400';
+      } else if (shift.type === 'Nöbet') {
+        icon = <FaUserShield className="text-rose-500" />;
+        label = 'Nöbet';
+        pillColor = 'bg-rose-500/15 border-rose-400/40 text-rose-700 dark:text-rose-300';
+        dotColor = 'bg-rose-400';
+      }
+
       setShiftDisplay({
-        icon: isMorning
-          ? <FaSun className="text-amber-500" />
-          : <FaMoon className="text-indigo-400" />,
-        label: isMorning ? 'Sabah' : 'Akşam',
+        icon,
+        label,
         hours: `${shift.startTime}–${shift.endTime}`,
-        pillColor: isMorning
-          ? 'bg-amber-500/15 border-amber-400/40 text-amber-700 dark:text-amber-300'
-          : 'bg-indigo-500/15 border-indigo-400/40 text-indigo-700 dark:text-indigo-300',
-        dotColor: isMorning ? 'bg-amber-400' : 'bg-indigo-400',
+        pillColor,
+        dotColor,
       });
 
       if (diffStartMs > 0) {
@@ -122,7 +135,7 @@ export default function StatusBanner() {
     update();
     const id = setInterval(update, 60000);
     return () => clearInterval(id);
-  }, []);
+  }, [getShiftInfo]);
 
   if (!shiftDisplay) return null;
 

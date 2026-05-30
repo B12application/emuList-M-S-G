@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
 import NotificationDropdown from './NotificationDropdown';
@@ -13,7 +13,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { isAdmin } from '../../backend/config/adminConfig';
-import { getShiftInfo } from '../utils/shiftLogic';
+import { useShift } from '../context/ShiftContext';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -43,6 +43,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
   const [scrolled, setScrolled] = useState(false);
   const listsDropdownRef = useRef<HTMLDivElement | null>(null);
   const addDropdownRef = useRef<HTMLDivElement | null>(null);
+  const { getShiftInfo } = useShift();
   const todayShift = getShiftInfo(new Date(), true);
 
   // Gender-based avatar URLs
@@ -194,22 +195,32 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
               {/* Theme & Language & Notifications */}
               <div className="flex items-center gap-1.5 sm:gap-2 bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-full border border-stone-200/50 dark:border-zinc-700/50 shadow-inner">
-                {user && (
-                  <div
-                    className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${todayShift.type === 'Sabah'
-                      ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800'
-                      : todayShift.type === 'Akşam'
-                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
-                      }`}
-                    title={todayShift.type === 'Tatil' ? 'Tatil Günü' : `${todayShift.type} Vardiyası`}
-                  >
-                    {todayShift.type === 'Sabah' && <FaSun className="w-3.5 h-3.5" />}
-                    {todayShift.type === 'Akşam' && <FaMoon className="w-3.5 h-3.5" />}
-                    {todayShift.type === 'Tatil' && <FaCoffee className="w-3.5 h-3.5" />}
-                    <span>{todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type}</span>
-                  </div>
-                )}
+                {user && (() => {
+                  let badgeCls = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800';
+                  let IconComp = FaCoffee;
+                  let label = todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type;
+
+                  if (todayShift.type === 'Sabah') {
+                    badgeCls = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800';
+                    IconComp = FaSun;
+                  } else if (todayShift.type === 'Akşam') {
+                    badgeCls = 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800';
+                    IconComp = FaMoon;
+                  } else if (todayShift.type === 'Nöbet') {
+                    badgeCls = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800';
+                    IconComp = FaUserShield;
+                  }
+
+                  return (
+                    <div
+                      className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${badgeCls}`}
+                      title={todayShift.type === 'Tatil' ? 'Tatil Günü' : todayShift.type === 'Nöbet' ? 'Nöbet Vardiyası' : `${todayShift.type} Vardiyası`}
+                    >
+                      <IconComp className="w-3.5 h-3.5" />
+                      <span>{label}</span>
+                    </div>
+                  );
+                })()}
 
                 {user && (
                   <div

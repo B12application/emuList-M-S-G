@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaTimes, FaArrowRight } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useMedia from '../hooks/useMedia';
 import useUserProfile from '../hooks/useUserProfile';
@@ -23,7 +22,7 @@ import HomeStatsBento from '../components/home/HomeStatsBento';
 import HomeContinueWatching from '../components/home/HomeContinueWatching';
 import HomeFavoritesRail from '../components/home/HomeFavoritesRail';
 import HomeActivityFeed from '../components/home/HomeActivityFeed';
-import HomeInsightsStack from '../components/home/HomeInsightsStack';
+import HomeInsightsStrip from '../components/home/HomeInsightsStrip';
 import HomeCategoryBento from '../components/home/HomeCategoryBento';
 import HomeBestRecommendations from '../components/home/HomeBestRecommendations';
 import HomeCollectionPicks from '../components/home/HomeCollectionPicks';
@@ -49,7 +48,6 @@ export default function HomePage() {
     const [recsExpanded, setRecsExpanded] = useState(true);
     const [showAdminPanel, setShowAdminPanel] = useState(false);
     const [collectionRecsExpanded, setCollectionRecsExpanded] = useState(true);
-    const [isProfilePreviewOpen, setIsProfilePreviewOpen] = useState(false);
 
     const [recFilmPage, setRecFilmPage] = useState(1);
     const [recSeriesPage, setRecSeriesPage] = useState(1);
@@ -104,7 +102,7 @@ export default function HomePage() {
             [...allItems]
                 .filter((item) => !item.watched && item.createdAt)
                 .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0))
-                .slice(0, 4),
+                .slice(0, 6),
         [allItems]
     );
 
@@ -198,15 +196,6 @@ export default function HomePage() {
         loadRecommendations();
     }, []);
 
-    useEffect(() => {
-        if (!isProfilePreviewOpen) return;
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') setIsProfilePreviewOpen(false);
-        };
-        window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
-    }, [isProfilePreviewOpen]);
-
     const loadRecommendations = async () => {
         setRecsLoading(true);
         const recs = await fetchRecommendations();
@@ -291,62 +280,68 @@ export default function HomePage() {
 
     return (
         <div className="relative min-h-screen overflow-x-hidden pb-6">
+            {/* Background gradient */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(251,191,36,0.22),transparent),radial-gradient(ellipse_50%_40%_at_100%_0%,rgba(139,92,246,0.18),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(251,191,36,0.12),transparent),radial-gradient(ellipse_50%_40%_at_100%_0%,rgba(139,92,246,0.15),transparent)]" />
 
             <section className="relative mx-auto max-w-[1600px] px-4 pb-12 pt-6 sm:px-6 lg:px-8 lg:pt-8">
+                {/* Hero */}
                 <HomeHero
                     displayName={displayName}
                     avatarUrl={getAvatar()}
-                    onAvatarClick={() => setIsProfilePreviewOpen(true)}
                     onRandom={handleRandomPick}
                     t={t}
-                    previewItems={heroPreviewItems}
-                />
+                    previewItems={heroPreviewItems} onAvatarClick={function (): void {
+                        throw new Error('Function not implemented.');
+                    } }                />
 
+                {/* Pulse Stats */}
                 <HomeCommandLayer pulse={pulseStats} t={t} />
 
-                <div className="mt-4 grid grid-cols-1 gap-10 xl:grid-cols-12 xl:gap-12">
-                    <div className="space-y-12 xl:col-span-8">
-                        <HomeStatsBento stats={stats} loading={statsLoading} t={t} />
-                        <HomeContinueWatching
-                            shows={continueWatchingShows}
-                            t={t}
-                            getNextEpisode={getNextEpisode}
-                            onQuickMark={handleQuickMarkHome}
-                        />
-                        <HomeFavoritesRail
-                            loading={allLoading}
-                            items={allItems}
-                            page={favoritesPage}
-                            perPage={FAVORITES_PER_PAGE}
-                            onPageChange={setFavoritesPage}
-                            onSelect={setSelectedRecentItem}
-                            onRemoveFavorite={handleRemoveFavorite}
-                            t={t}
-                        />
-                        <HomeActivityFeed
-                            loading={allLoading}
-                            items={recentActivity}
-                            onSelect={setSelectedRecentItem}
-                            formatDate={formatDate}
-                            t={t}
-                        />
-                        <HomeCategoryBento t={t} />
-                    </div>
+                {/* ─── Insights Strip - Tam genişlik yatay ─── */}
+                <HomeInsightsStrip
+                    t={t}
+                    totalCount={stats.totalCount}
+                    stats={stats}
+                    spotlight={spotlightPick}
+                    dustyItems={dustyItems}
+                    onSelect={setSelectedRecentItem}
+                    formatDate={formatDate}
+                />
 
-                    <aside className="space-y-8 xl:col-span-4 xl:sticky xl:top-24 xl:self-start">
-                        <HomeInsightsStack
-                            t={t}
-                            totalCount={stats.totalCount}
-                            stats={stats}
-                            spotlight={spotlightPick}
-                            dustyItems={dustyItems}
-                            onSelect={setSelectedRecentItem}
-                            formatDate={formatDate}
-                        />
-                    </aside>
+                {/* Ana grid - tek kolon */}
+                <div className="mt-10 space-y-12">
+                    <HomeStatsBento stats={stats} loading={statsLoading} t={t} />
+
+                    <HomeContinueWatching
+                        shows={continueWatchingShows}
+                        t={t}
+                        getNextEpisode={getNextEpisode}
+                        onQuickMark={handleQuickMarkHome}
+                    />
+
+                    <HomeFavoritesRail
+                        loading={allLoading}
+                        items={allItems}
+                        page={favoritesPage}
+                        perPage={FAVORITES_PER_PAGE}
+                        onPageChange={setFavoritesPage}
+                        onSelect={setSelectedRecentItem}
+                        onRemoveFavorite={handleRemoveFavorite}
+                        t={t}
+                    />
+
+                    <HomeActivityFeed
+                        loading={allLoading}
+                        items={recentActivity}
+                        onSelect={setSelectedRecentItem}
+                        formatDate={formatDate}
+                        t={t}
+                    />
+
+                    <HomeCategoryBento t={t} />
                 </div>
 
+                {/* Best Recommendations */}
                 <HomeBestRecommendations
                     recommendations={recommendations}
                     recsLoading={recsLoading}
@@ -364,6 +359,7 @@ export default function HomePage() {
                     t={t}
                 />
 
+                {/* Collection Picks */}
                 <HomeCollectionPicks
                     expanded={collectionRecsExpanded}
                     onToggle={() => setCollectionRecsExpanded(!collectionRecsExpanded)}
@@ -376,52 +372,30 @@ export default function HomePage() {
                     t={t}
                 />
 
+                {/* Closing CTA */}
                 <HomeClosingCta t={t} />
             </section>
 
-            <AdminRecommendationsPanel isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} onUpdate={loadRecommendations} />
+            {/* Admin Panel */}
+            <AdminRecommendationsPanel
+                isOpen={showAdminPanel}
+                onClose={() => setShowAdminPanel(false)}
+                onUpdate={loadRecommendations}
+            />
 
-            {isProfilePreviewOpen && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-                    onClick={() => setIsProfilePreviewOpen(false)}
-                >
-                    <div
-                        className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-zinc-800">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t('nav.myProfile')}</h3>
-                            <button
-                                type="button"
-                                onClick={() => setIsProfilePreviewOpen(false)}
-                                className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                            >
-                                <FaTimes />
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <img
-                                src={getAvatar()}
-                                alt=""
-                                className="mx-auto h-64 max-h-[50vh] w-64 max-w-full rounded-full border-4 border-slate-200 object-cover shadow-xl dark:border-zinc-700"
-                            />
-                            <p className="mt-5 text-center text-sm text-slate-600 dark:text-zinc-300">{displayName}</p>
-                            <Link
-                                to="/profile"
-                                onClick={() => setIsProfilePreviewOpen(false)}
-                                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-5 py-3 font-bold text-white transition hover:bg-amber-700"
-                            >
-                                {t('home.profileModalCta')}
-                                <FaArrowRight className="text-xs" />
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <LuckyDipModal isOpen={!!randomItem} onClose={() => setRandomItem(null)} item={randomItem} onSpinAgain={handleRandomPick} />
-            <DetailModal isOpen={!!selectedRecentItem} onClose={() => setSelectedRecentItem(null)} item={selectedRecentItem} refetch={allRefetch} />
+            {/* Modals */}
+            <LuckyDipModal
+                isOpen={!!randomItem}
+                onClose={() => setRandomItem(null)}
+                item={randomItem}
+                onSpinAgain={handleRandomPick}
+            />
+            <DetailModal
+                isOpen={!!selectedRecentItem}
+                onClose={() => setSelectedRecentItem(null)}
+                item={selectedRecentItem}
+                refetch={allRefetch}
+            />
         </div>
     );
 }

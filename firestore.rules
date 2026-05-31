@@ -154,5 +154,9 @@ service cloud.firestore {
       allow read, delete, update: if isOwnerByResource();
       allow create: if isOwnerByRequest();
     }
+    // Budget Plans
+    match /budgetPlans/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
   }
 }

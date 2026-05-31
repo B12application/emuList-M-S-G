@@ -56,7 +56,7 @@ const ExpensesPage: React.FC = () => {
 
   const { runMigration, isMigrating } = useExpenseMigration();
 
-  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler'>('harcamalar');
+  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar'>('harcamalar');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

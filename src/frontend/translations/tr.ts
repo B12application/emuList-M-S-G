@@ -863,7 +863,7 @@ export const translationsTR = {
         alertDeleted: 'Uyarı silindi',
         customCalendarAlert: 'Özel Takvim Uyarısı',
         existingAlerts: 'Mevcut Uyarılar',
-        addNewAlert: '+ Yeni Uyarı Ekle',
+        addNewAlert: 'Yeni Uyarı Ekle',
         titleDescription: 'Başlık / Açıklama',
         alertPlaceholder: 'Örn: İstanbul Yolculuğu',
         start: 'Başlangıç',

@@ -859,7 +859,7 @@ export const translationsEN = {
         alertDeleted: 'Alert deleted',
         customCalendarAlert: 'Custom Calendar Alert',
         existingAlerts: 'Existing Alerts',
-        addNewAlert: '+ Add New Alert',
+        addNewAlert: 'Add New Alert',
         titleDescription: 'Title / Description',
         alertPlaceholder: 'e.g., Istanbul Trip',
         start: 'Start',

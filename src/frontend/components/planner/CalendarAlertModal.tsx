@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaMapMarkerAlt, FaTrash } from 'react-icons/fa';
+import { FaTimes, FaTrash, FaPlus, FaCalendarPlus, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { addCalendarAlert, deleteCalendarAlert, updateCalendarAlert } from '../../../backend/services/plannerService';
 import { showMarqueeToast } from '../MarqueeToast';
@@ -18,11 +18,11 @@ interface CalendarAlertModalProps {
 }
 
 const COLOR_OPTIONS = [
-  { value: '#ef4444', labelKey: 'planner.colorRed', bg: 'bg-red-500' },
-  { value: '#f97316', labelKey: 'planner.colorOrange', bg: 'bg-orange-500' },
-  { value: '#3b82f6', labelKey: 'planner.colorBlue', bg: 'bg-blue-500' },
-  { value: '#8b5cf6', labelKey: 'planner.colorPurple', bg: 'bg-violet-500' },
-  { value: '#10b981', labelKey: 'planner.colorGreen', bg: 'bg-emerald-500' },
+  { value: '#ef4444', labelKey: 'planner.colorRed', bg: 'bg-red-500', ring: 'ring-red-500' },
+  { value: '#f97316', labelKey: 'planner.colorOrange', bg: 'bg-orange-500', ring: 'ring-orange-500' },
+  { value: '#3b82f6', labelKey: 'planner.colorBlue', bg: 'bg-blue-500', ring: 'ring-blue-500' },
+  { value: '#8b5cf6', labelKey: 'planner.colorPurple', bg: 'bg-violet-500', ring: 'ring-violet-500' },
+  { value: '#10b981', labelKey: 'planner.colorGreen', bg: 'bg-emerald-500', ring: 'ring-emerald-500' },
 ];
 
 export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingAlerts }: CalendarAlertModalProps) {
@@ -30,15 +30,24 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
   const { playSuccess } = useAppSound();
   const { language, t } = useLanguage();
   const dateLocale = language === 'tr' ? tr : enUS;
+  
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [label, setLabel] = useState('');
   const [color, setColor] = useState('#ef4444');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(existingAlerts.length === 0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'list' | 'form'>('form');
 
   if (!isOpen) return null;
+
+  const resetForm = () => {
+    setStartDate('');
+    setEndDate('');
+    setLabel('');
+    setColor('#ef4444');
+    setEditingId(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,32 +61,16 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
     setIsSubmitting(true);
     try {
       if (editingId) {
-        await updateCalendarAlert(editingId, {
-          startDate,
-          endDate,
-          label: label.trim(),
-          color
-        });
+        await updateCalendarAlert(editingId, { startDate, endDate, label: label.trim(), color });
         showMarqueeToast({ message: t('planner.alertUpdated'), type: 'success' });
       } else {
-        await addCalendarAlert({
-          userId: user.uid,
-          startDate,
-          endDate,
-          label: label.trim(),
-          color
-        });
+        await addCalendarAlert({ userId: user.uid, startDate, endDate, label: label.trim(), color });
         showMarqueeToast({ message: t('planner.alertAdded'), type: 'success' });
       }
       playSuccess();
-      setStartDate('');
-      setEndDate('');
-      setLabel('');
-      setColor('#ef4444');
-      setEditingId(null);
-      setShowForm(false);
+      resetForm();
+      setActiveTab('list');
       onAdded();
-      onClose();
     } catch (err) {
       console.error(err);
       showMarqueeToast({ message: t('planner.operationFailed'), type: 'error' });
@@ -92,18 +85,12 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
     setStartDate(alert.startDate);
     setEndDate(alert.endDate);
     setColor(alert.color || '#ef4444');
-    setShowForm(true);
+    setActiveTab('form');
   };
 
   const handleCancelEdit = () => {
-    setEditingId(null);
-    setLabel('');
-    setStartDate('');
-    setEndDate('');
-    setColor('#ef4444');
-    if (existingAlerts.length > 0) {
-      setShowForm(false);
-    }
+    resetForm();
+    setActiveTab('list');
   };
 
   const handleDeleteAlert = async (alertId: string) => {
@@ -125,64 +112,101 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
     }
   };
 
+  const hasAlerts = existingAlerts.length > 0;
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800"
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          transition={{ duration: 0.2 }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-md bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col"
+          style={{ maxHeight: 'calc(100vh - 2rem)' }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800">
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <FaMapMarkerAlt className="text-red-500" />
-              <span>{t('planner.customCalendarAlert')}</span>
-            </h3>
-            <button onClick={onClose} className="p-2 text-stone-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 transition-colors">
-              <FaTimes />
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100 text-red-500 dark:bg-red-950 dark:text-red-400">
+                <FaCalendarPlus className="text-sm" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {t('planner.customCalendarAlert')}
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition"
+            >
+              <FaTimes className="text-sm" />
             </button>
           </div>
 
-          <div className="max-h-[70vh] overflow-y-auto">
-            {/* Existing Alerts */}
-            {existingAlerts.length > 0 && (
-              <div className="p-4 border-b border-stone-100 dark:border-zinc-800/50 space-y-2">
-                <p className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                  {t('planner.existingAlerts')}
-                </p>
+          {/* Tab switcher - sadece alert varsa */}
+          {hasAlerts && (
+            <div className="flex gap-1 px-5 pt-4 shrink-0">
+              <button
+                onClick={() => { setActiveTab('list'); resetForm(); }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'list'
+                    ? 'bg-slate-100 text-slate-900 dark:bg-zinc-800 dark:text-white'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+              >
+                📋 {t('planner.existingAlerts')} ({existingAlerts.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('form')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'form'
+                    ? 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+              >
+                <FaPlus className="inline mr-1 text-[10px]" />
+                {editingId ? t('planner.edit') : t('planner.addNewAlert')}
+              </button>
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="overflow-y-auto flex-1">
+            {/* LIST TAB */}
+            {activeTab === 'list' && hasAlerts && (
+              <div className="px-5 py-4 space-y-2">
                 {existingAlerts.map(alert => (
                   <div
                     key={alert.id}
-                    className="flex items-center gap-3 p-3 bg-stone-50 dark:bg-zinc-800/50 rounded-xl group"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 group hover:border-slate-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 transition"
                   >
                     <div
-                      className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: alert.color || '#ef4444' }}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-stone-800 dark:text-zinc-200 truncate">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200 truncate">
                         {alert.label}
-                      </div>
-                      <div className="text-[10px] text-stone-500 dark:text-zinc-400">
+                      </p>
+                      <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5">
                         {formatDateLabel(alert.startDate)} → {formatDateLabel(alert.endDate)}
-                      </div>
+                      </p>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleEditAlert(alert)}
-                        className="p-1.5 text-stone-400 hover:text-blue-500 dark:hover:text-blue-400"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-blue-500 dark:hover:bg-zinc-800 dark:hover:text-blue-400 transition"
                         title={t('planner.edit')}
                       >
-                        {t('planner.edit')}
+                        <FaEdit className="text-[10px]" />
                       </button>
                       <button
                         onClick={() => handleDeleteAlert(alert.id!)}
-                        className="p-1.5 text-stone-400 hover:text-red-500 dark:hover:text-red-400"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-red-500 dark:hover:bg-zinc-800 dark:hover:text-red-400 transition"
                         title={t('planner.delete')}
                       >
-                        <FaTrash size={12} />
+                        <FaTrash className="text-[10px]" />
                       </button>
                     </div>
                   </div>
@@ -190,24 +214,12 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
               </div>
             )}
 
-            {/* Toggle between list and form */}
-            {existingAlerts.length > 0 && !showForm && (
-              <div className="p-4">
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="w-full py-3 text-sm font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
-                >
-                  {t('planner.addNewAlert')}
-                </button>
-              </div>
-            )}
-
-            {/* Add Form */}
-            {showForm && (
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+            {/* FORM TAB */}
+            {(activeTab === 'form' || !hasAlerts) && (
+              <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
                 {/* Label */}
-                <div>
-                  <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                     {t('planner.titleDescription')}
                   </label>
                   <input
@@ -215,42 +227,42 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                     value={label}
                     onChange={(e) => setLabel(e.target.value)}
                     placeholder={t('planner.alertPlaceholder')}
-                    className="w-full px-4 py-2.5 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500 dark:focus:border-red-700 dark:focus:ring-red-950 transition"
                     required
                   />
                 </div>
 
                 {/* Dates */}
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                       {t('planner.start')}
                     </label>
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:focus:border-red-700 dark:focus:ring-red-950 transition"
                       required
                     />
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-1 uppercase tracking-wider">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                       {t('planner.end')}
                     </label>
                     <input
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:focus:border-red-700 dark:focus:ring-red-950 transition"
                       required
                     />
                   </div>
                 </div>
 
                 {/* Color */}
-                <div>
-                  <label className="block text-xs font-semibold text-stone-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                     {t('planner.color')}
                   </label>
                   <div className="flex gap-2">
@@ -259,9 +271,9 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                         key={opt.value}
                         type="button"
                         onClick={() => setColor(opt.value)}
-                        className={`w-8 h-8 rounded-full transition-all ${opt.bg} ${
+                        className={`w-9 h-9 rounded-xl transition-all ${opt.bg} ${
                           color === opt.value
-                            ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 scale-110 shadow-lg'
+                            ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950 scale-110 shadow-lg'
                             : 'opacity-50 hover:opacity-80'
                         }`}
                         style={{ '--tw-ring-color': opt.value } as React.CSSProperties}
@@ -274,30 +286,30 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                 {/* Preview */}
                 {label && startDate && endDate && (
                   <motion.div
-                    initial={{ opacity: 0, y: 5 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl"
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-900"
                   >
-                    <p className="text-[10px] font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">{t('planner.preview')}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.6 }} />
-                    </div>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-xs text-stone-600 dark:text-zinc-300 font-semibold">{label}</span>
-                      <span className="text-[10px] text-stone-400 dark:text-zinc-500">
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
+                      {t('planner.preview')}
+                    </p>
+                    <div className="w-full h-1 rounded-full mb-2" style={{ backgroundColor: color, opacity: 0.5 }} />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{label}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-zinc-500">
                         {formatDateLabel(startDate)} → {formatDateLabel(endDate)}
                       </span>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Submit */}
-                <div className="pt-2 flex gap-3">
-                  {existingAlerts.length > 0 && (
+                {/* Actions */}
+                <div className="flex gap-2 pt-1">
+                  {(hasAlerts || editingId) && (
                     <button
                       type="button"
                       onClick={handleCancelEdit}
-                      className="flex-1 text-stone-600 dark:text-zinc-300 font-bold py-3 px-4 rounded-xl bg-stone-100 dark:bg-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
+                      className="flex-1 py-2.5 text-sm font-bold text-slate-600 dark:text-zinc-300 rounded-xl border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 transition"
                     >
                       {t('planner.cancel')}
                     </button>
@@ -305,9 +317,9 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                   <button
                     type="submit"
                     disabled={isSubmitting || !label.trim() || !startDate || !endDate}
-                    className="flex-[2] text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:active:scale-100 active:scale-95 bg-red-600 hover:bg-red-700 shadow-red-600/20"
+                    className="flex-[2] py-2.5 text-sm font-bold text-white rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition active:scale-[0.98] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
                   >
-                    {isSubmitting ? t('planner.processing') : editingId ? t('planner.update') : t('planner.addAlert')}
+                    {isSubmitting ? '...' : editingId ? t('planner.update') : t('planner.addAlert')}
                   </button>
                 </div>
               </form>

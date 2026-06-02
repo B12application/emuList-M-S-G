@@ -296,9 +296,10 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       return (
                         <div key={m.id || i} className={`text-[10px] truncate pr-1.5 pl-2 py-0.5 rounded font-semibold border transition-all relative overflow-hidden
                           ${isPast ? 'opacity-40 grayscale-[0.5]' : ''}
-                          ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' :
-                            m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
-                              'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
+                           ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' :
+                             m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
+                             m.itemType === 'sport' ? 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-900/50' :
+                               'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
                         >
                           {m.itemType === 'jira' && (
                             <div className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusAccent(m.status || 'todo')}`} />
@@ -322,6 +323,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                         className={`w-1.5 h-1.5 rounded-full ${new Date(`${m.date}T${m.startTime}`) < now ? 'opacity-40' : ''
                           } ${m.itemType === 'jira' ? 'bg-blue-500' :
                             m.itemType === 'todo' ? 'bg-emerald-500' :
+                            m.itemType === 'sport' ? 'bg-orange-500' :
                               'bg-rose-500'
                           }`}
                       />

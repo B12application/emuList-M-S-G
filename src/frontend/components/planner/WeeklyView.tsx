@@ -4,7 +4,7 @@ import { tr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
-import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle } from 'react-icons/fa';
+import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle, FaDumbbell } from 'react-icons/fa';
 import { SiJira } from 'react-icons/si';
 
 interface WeeklyViewProps {
@@ -42,6 +42,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
       case 'todo': return <FaCheckCircle size={10} />;
       case 'jira': return <SiJira size={10} />;
       case 'match': return <FaFutbol size={10} />;
+      case 'sport': return <FaDumbbell size={10} />;
       default: return <FaTasks size={10} />;
     }
   };
@@ -52,6 +53,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
       case 'todo': return 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50';
       case 'jira': return 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50';
       case 'match': return 'bg-yellow-50 text-red-600 border-red-200 dark:bg-yellow-900/20 dark:text-red-400 dark:border-red-900/50'; // GS colors
+      case 'sport': return 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-900/50';
       default: return 'bg-stone-50 text-stone-600 border-stone-200 dark:bg-zinc-900/50 dark:text-zinc-400 dark:border-zinc-800';
     }
   };

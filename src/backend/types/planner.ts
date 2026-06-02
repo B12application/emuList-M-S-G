@@ -9,7 +9,7 @@ export interface PlannerMeeting {
   notes?: string;   // For detailed meeting notes
   isGoogleSheet?: boolean; // True if it came from the external sync
   createdAt?: Date | any;
-  itemType?: 'meeting' | 'todo' | 'jira' | 'match';
+  itemType?: 'meeting' | 'todo' | 'jira' | 'match' | 'sport';
   isCompleted?: boolean;
   dueDate?: string; // used specifically for tasks/jira
   externalLink?: string; // Link to jira ticket / match info

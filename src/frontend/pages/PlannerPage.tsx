@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks } from 'react-icons/fa';
+import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks, FaDumbbell } from 'react-icons/fa';
 import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
 import ShiftLegend from '../components/planner/ShiftLegend';
@@ -17,6 +17,8 @@ import TodoManagerModal from '../components/planner/TodoManagerModal';
 import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
 import CalendarAlertModal from '../components/planner/CalendarAlertModal';
 import ShiftSettingsModal from '../components/planner/ShiftSettingsModal';
+import SportAddModal from '../components/planner/SportAddModal';
+import SportTrackingModal from '../components/planner/SportTrackingModal';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
@@ -42,6 +44,8 @@ export default function PlannerPage() {
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [isSportAddModalOpen, setIsSportAddModalOpen] = useState(false);
+  const [isSportTrackingModalOpen, setIsSportTrackingModalOpen] = useState(false);
   const [calendarAlerts, setCalendarAlerts] = useState<CalendarAlert[]>([]);
   // Mobilde daily, desktop'ta monthly başlat
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira'>(() =>
@@ -299,6 +303,21 @@ export default function PlannerPage() {
                     <FaTasks />
                   </button>
                   <button
+                    onClick={() => setIsSportTrackingModalOpen(true)}
+                    className="p-2 text-stone-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                    title="Spor Takibi"
+                  >
+                    <FaDumbbell />
+                  </button>
+                  <button
+                    onClick={() => setIsSportAddModalOpen(true)}
+                    className="flex items-center gap-1.5 px-2 py-1.5 bg-orange-100/50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 
+                               rounded-lg text-sm font-bold hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors border border-orange-200 dark:border-orange-900/50"
+                  >
+                    <FaDumbbell />
+                    <span className="hidden sm:inline">Spor Ekle</span>
+                  </button>
+                  <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-rose-100/50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 
                                rounded-lg text-sm font-bold hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors border border-rose-200 dark:border-rose-900/50"
@@ -464,6 +483,20 @@ export default function PlannerPage() {
         isOpen={isShiftModalOpen}
         onClose={() => setIsShiftModalOpen(false)}
         initialDate={selectedDate}
+      />
+
+      <SportAddModal
+        isOpen={isSportAddModalOpen}
+        onClose={() => setIsSportAddModalOpen(false)}
+        selectedDate={selectedDate}
+        onAdded={loadData}
+      />
+
+      <SportTrackingModal
+        isOpen={isSportTrackingModalOpen}
+        onClose={() => setIsSportTrackingModalOpen(false)}
+        meetings={meetings}
+        onUpdated={loadData}
       />
     </motion.div>
   );

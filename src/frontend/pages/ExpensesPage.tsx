@@ -759,6 +759,8 @@ const ExpensesPage: React.FC = () => {
                       monthlyChartData={monthlyChartData}
                       monthlySummary={monthlySummary}
                       onPdfImport={handlePdfImport}
+                      expenses={expenses}
+                      categories={categories}
                     />
                   )}
                 </motion.div>

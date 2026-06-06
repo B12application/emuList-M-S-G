@@ -22,7 +22,39 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<PdfParseProgress | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [jsonInput, setJsonInput] = useState('');
+  const [jsonError, setJsonError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleJsonSubmit = useCallback(() => {
+    try {
+      if (!jsonInput.trim()) return;
+      const parsed = JSON.parse(jsonInput);
+      if (!Array.isArray(parsed)) throw new Error('JSON bir dizi (array) olmalıdır. (Köşeli parantez ile başlamalıdır)');
+      
+      const valid = parsed.every(t => t.title && t.amount !== undefined && t.date && t.direction);
+      if (!valid) throw new Error('Geçersiz format. title, amount, date ve direction alanları zorunludur.');
+
+      onPdfImport(parsed as ParsedTransaction[]);
+      setJsonInput('');
+      setJsonError('');
+    } catch (err: any) {
+      setJsonError(err.message || 'Geçersiz JSON formatı');
+    }
+  }, [jsonInput, onPdfImport]);
+
+  const exampleJson = `[
+  {
+    "title": "N11 Online Alışveriş",
+    "amount": 250.20,
+    "date": "2026-05-05",
+    "direction": "giden",
+    "type": "Encard Harcaması",
+    "category": "Alışveriş",
+    "source": "Vadesiz Hesap",
+    "description": "Encard Harcaması, 102400000114827-n11"
+  }
+]`;
 
   const handleFiles = useCallback(async (files: File[]) => {
     const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
@@ -230,6 +262,42 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
             )}
           </div>
 
+        </div>
+      </div>
+
+      {/* JSON Import Section */}
+      <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 sm:p-8 border border-stone-100 dark:border-zinc-800">
+        <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
+          <FaFileImport className="text-stone-400 dark:text-zinc-500" /> MANUEL JSON İLE EKLEME
+        </h3>
+        <p className="text-xs text-stone-500 dark:text-zinc-400 mb-4">
+          PDF ayrıştırıcının desteklemediği raporları (örneğin "Tüm Hesaplarınızın Özeti" veya farklı bankalar) JSON formatında manuel olarak ekleyebilirsiniz. 
+          Aşağıdaki formata uygun bir JSON dizisi girin:
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <pre className="text-[10px] bg-stone-100 dark:bg-zinc-900 p-4 rounded-xl text-stone-600 dark:text-zinc-400 overflow-x-auto border border-stone-200 dark:border-zinc-800">
+              <code>{exampleJson}</code>
+            </pre>
+          </div>
+          <div className="flex flex-col gap-3">
+            <textarea
+              value={jsonInput}
+              onChange={(e) => { setJsonInput(e.target.value); setJsonError(''); }}
+              placeholder="JSON verisini buraya yapıştırın..."
+              className="flex-1 w-full p-4 text-xs rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 min-h-[150px] resize-y"
+            />
+            {jsonError && (
+              <p className="text-xs text-red-500 font-bold">{jsonError}</p>
+            )}
+            <button
+              onClick={handleJsonSubmit}
+              disabled={!jsonInput.trim()}
+              className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-xs font-black rounded-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              JSON VERİLERİNİ AKTAR
+            </button>
+          </div>
         </div>
       </div>
     </div>

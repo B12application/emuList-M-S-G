@@ -58,12 +58,12 @@ const ExpensesPage: React.FC = () => {
 
   const { runMigration, isMigrating } = useExpenseMigration();
 
-  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce'>('harcamalar');
+  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>('harcamalar');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [searchTerm, setSearchTerm] = useState(''); 
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [visibleCount, setVisibleCount] = useState(10);
@@ -142,10 +142,19 @@ const ExpensesPage: React.FC = () => {
     }
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      result = result.filter(e =>
-        e.title.toLowerCase().includes(lowerSearch) ||
-        e.category.toLowerCase().includes(lowerSearch)
-      );
+      result = result.filter(e => {
+        const dateObj = parseISO(e.date);
+        const dateStr1 = format(dateObj, 'd MMMM yyyy', { locale: dateLocale }).toLowerCase(); // e.g. "18 haziran 2025"
+        const dateStr2 = format(dateObj, 'dd.MM.yyyy'); // e.g. "18.06.2025"
+        const dateStr3 = format(dateObj, 'dd/MM/yyyy'); // e.g. "18/06/2025"
+
+        return e.title.toLowerCase().includes(lowerSearch) ||
+          e.category.toLowerCase().includes(lowerSearch) ||
+          dateStr1.includes(lowerSearch) ||
+          dateStr2.includes(lowerSearch) ||
+          dateStr3.includes(lowerSearch) ||
+          e.date.includes(lowerSearch);
+      });
     }
     result.sort((a, b) => {
       if (sortBy === 'date') {
@@ -218,16 +227,16 @@ const ExpensesPage: React.FC = () => {
 
   const totalCount = expenses.length;
   const mainTabs = [
-  { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
-  { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
-] as const;
+    { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
+    { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
+  ] as const;
 
-const menuTabs = [
-  { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
-  { id: 'butce', icon: FaHistory, label: 'Bütçe' },
-  { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
-  { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') },
-] as const;
+  const menuTabs = [
+    { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
+    { id: 'butce', icon: FaHistory, label: 'Bütçe' },
+    { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
+    { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') },
+  ] as const;
   // Handlers
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -443,114 +452,111 @@ const menuTabs = [
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
       <div className="mb-8 flex items-center justify-center sm:justify-end">
-  <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-    {/* Ana sekmeler - her zaman görünür */}
-    {[
-      { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
-      { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
-    ].map((tab: any) => (
-      <button
-        key={tab.id}
-        onClick={() => {
-          setActiveTab(tab.id);
-          setIsMenuOpen(false);
-          if (tab.id === 'harcamalar' && activeCategory === 'deleted') {
-            setActiveCategory('all');
-          }
-        }}
-        className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-          activeTab === tab.id
-            ? 'text-white'
-            : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200'
-        }`}
-      >
-        {activeTab === tab.id && (
-          <motion.div
-            layoutId="activeTabBg"
-            className="absolute inset-0 bg-slate-900 dark:bg-white rounded-xl"
-            transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-          />
-        )}
-        <tab.icon className="relative z-10 text-sm" />
-        <span className="relative z-10 hidden sm:inline">{tab.label}</span>
-      </button>
-    ))}
+        <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
+          {/* Ana sekmeler - her zaman görünür */}
+          {[
+            { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },
+            { id: 'araclar', icon: FaCar, label: t('expenses.vehicleTab') },
+          ].map((tab: any) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setIsMenuOpen(false);
+                if (tab.id === 'harcamalar' && activeCategory === 'deleted') {
+                  setActiveCategory('all');
+                }
+              }}
+              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
+                ? 'text-white'
+                : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+            >
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTabBg"
+                  className="absolute inset-0 bg-slate-900 dark:bg-white rounded-xl"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+              <tab.icon className="relative z-10 text-sm" />
+              <span className="relative z-10 hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
 
-    {/* Ayraç */}
-    <div className="w-px h-6 bg-slate-200 dark:bg-zinc-800 mx-1" />
+          {/* Ayraç */}
+          <div className="w-px h-6 bg-slate-200 dark:bg-zinc-800 mx-1" />
 
-    {/* Hamburger menü */}
-    <div className="relative">
-     <button
-  onClick={() => setIsMenuOpen(!isMenuOpen)}
-  className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-    isMenuOpen || ['raporlar', 'butce', 'yatirimlar', 'faturalar'].includes(activeTab)
-      ? 'bg-slate-900 text-white dark:bg-white dark:text-zinc-900'
-      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800'
-  }`}
->
-  {isMenuOpen ? (
-    <FaTimes className="text-sm" />
-  ) : (
-    <FaBars className="text-sm" />
-  )}
-  <span className="hidden sm:inline">Diğer</span>
-</button>
+          {/* Hamburger menü */}
+          <div className="relative">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isMenuOpen || ['raporlar', 'butce', 'yatirimlar', 'faturalar', 'mukerrer'].includes(activeTab)
+                ? 'bg-slate-900 text-white dark:bg-white dark:text-zinc-900'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800'
+                }`}
+            >
+              {isMenuOpen ? (
+                <FaTimes className="text-sm" />
+              ) : (
+                <FaBars className="text-sm" />
+              )}
+              <span className="hidden sm:inline">Diğer</span>
+            </button>
 
-      {/* Dropdown */}
+            {/* Dropdown */}
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xl p-2 z-50"
+                >
+                  {[
+                    { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
+                    { id: 'butce', icon: FaHistory, label: 'Bütçe' },
+                    { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
+                    { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') },
+                  ].map((tab: any) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setIsMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
+                        ? 'bg-slate-100 text-slate-900 dark:bg-zinc-800 dark:text-white'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
+                        }`}
+                    >
+                      <tab.icon className="text-sm" />
+                      <span>{tab.label}</span>
+                      {activeTab === tab.id && (
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      )}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xl p-2 z-50"
-          >
-            {[
-              { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
-              { id: 'butce', icon: FaHistory, label: 'Bütçe' },
-              { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
-              { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') },
-            ].map((tab: any) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setIsMenuOpen(false);
-                }}
-                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-slate-100 text-slate-900 dark:bg-zinc-800 dark:text-white'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
-                }`}
-              >
-                <tab.icon className="text-sm" />
-                <span>{tab.label}</span>
-                {activeTab === tab.id && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-500" />
-                )}
-              </button>
-            ))}
-          </motion.div>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMenuOpen(false)}
+            className="fixed inset-0 z-40"
+          />
         )}
       </AnimatePresence>
-    </div>
-  </div>
-</div>
-
-{/* Overlay */}
-<AnimatePresence>
-  {isMenuOpen && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={() => setIsMenuOpen(false)}
-      className="fixed inset-0 z-40"
-    />
-  )}
-</AnimatePresence>
       {activeTab === 'araclar' ? (
         <AnimatePresence mode="wait">
           <motion.div
@@ -576,23 +582,23 @@ const menuTabs = [
           </motion.div>
         </AnimatePresence>
       ) : activeTab === 'butce' ? (
-  <AnimatePresence mode="wait">
-    <motion.div
-      key="butce-view"
-      initial={{ opacity: 0, x: 10 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -10 }}
-      transition={{ duration: 0.2 }}
-    >
-      <BudgetPlanner
-        t={t}
-        isDark={isDark}
-        expenses={expenses}
-        selectedMonth={selectedMonth}
-      />
-    </motion.div>
-  </AnimatePresence>
-) : activeTab === 'yatirimlar' ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="butce-view"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <BudgetPlanner
+              t={t}
+              isDark={isDark}
+              expenses={expenses}
+              selectedMonth={selectedMonth}
+            />
+          </motion.div>
+        </AnimatePresence>
+      ) : activeTab === 'yatirimlar' ? (
         <AnimatePresence mode="wait">
           <motion.div
             key="yatirimlar-view"
@@ -662,7 +668,7 @@ const menuTabs = [
 
           <div className="flex-1">
             <ExpensesLayout
-              activeTab={activeTab as 'harcamalar' | 'raporlar'}
+              activeTab={activeTab as 'harcamalar' | 'raporlar' | 'silinenler'}
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
               selectedMonth={selectedMonth}

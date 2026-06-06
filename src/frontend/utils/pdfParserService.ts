@@ -304,7 +304,7 @@ export function parseVadesiz(text: string): ParsedTransaction[] {
   const lines = text.split('\n');
 
   const MOVE_TYPES = [
-    'Gelen Transfer', 'Giden Transfer', 'Ödeme',
+    'Gelen Transfer', 'Giden Transfer', 'Ödeme', 'Encard Harcaması',
     'Para Yatırma', 'Para Çekme', 'Diğer', 'İptal/İade', 'Alış/Satış',
     'Vergi Kesintisi', 'Masraf/Ücret'
   ];
@@ -322,20 +322,21 @@ export function parseVadesiz(text: string): ParsedTransaction[] {
       (line.includes('Hareket tipi') && line.includes(':')) ||
       line.includes('İşlem tutarı:') || line.includes('Başlangıç tarihi') ||
       line.includes('Bitiş tarihi') || line.includes('Açıklamada aranan') ||
-      line.includes('TarihHareket tipi') || line.includes('Vadesiz TL') ||
+      line.includes('TarihHareket tipi') || line.includes('Tarih Açıklama Tutar Bakiye') || line.includes('Vadesiz TL') ||
       line.includes('Tümü') || line === 'Γ' || line === '62' ||
       /^\d{8}$/.test(line) || line.startsWith(':') ||
       line.includes('Bu belge') || line.includes('kodu ile')) continue;
 
-    // Match date DD.MM.YYYY
-    const dateMatch = line.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+    // Match date DD.MM.YYYY or DD/MM/YY(YY)
+    const dateMatch = line.match(/^(\d{2})[./](\d{2})[./](\d{2,4})/);
     if (!dateMatch) continue;
 
     const day = dateMatch[1];
     const month = dateMatch[2];
-    const year = dateMatch[3];
+    let year = dateMatch[3];
+    if (year.length === 2) year = '20' + year;
     const date = `${year}-${month}-${day}`;
-    const rest = line.substring(10).trim();
+    const rest = line.substring(dateMatch[0].length).trim();
 
     let moveType = '';
     let description = '';
@@ -359,22 +360,25 @@ export function parseVadesiz(text: string): ParsedTransaction[] {
       for (const t of MOVE_TYPES) {
         if (rest.startsWith(t)) {
           moveType = t;
-          const afterType = rest.substring(t.length).trim();
+          let afterType = rest.substring(t.length).trim();
+          if (afterType.startsWith(',')) {
+            afterType = afterType.substring(1).trim();
+          }
 
-          const amtMatch = afterType.match(/(.+?)([-]?(?:\d{1,3}\.)*\d{1,3},\d{2} TL)((?:\d{1,3}\.)*\d{1,3},\d{2} TL)$/);
+          const amtMatch = afterType.match(/(.+?)([-]?(?:\d{1,3}\.)*\d{1,3},\d{2}\s*TL)((?:\d{1,3}\.)*\d{1,3},\d{2}\s*TL)$/);
           if (amtMatch) {
             description = amtMatch[1].trim();
-            const amtStr = amtMatch[2].replace(' TL', '').replace(/\./g, '').replace(',', '.');
+            const amtStr = amtMatch[2].replace(' TL', '').replace('TL', '').replace(/\./g, '').replace(',', '.');
             amount = parseFloat(amtStr);
           } else {
             let fullDesc = afterType;
             for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
               const nextLine = lines[j].trim();
               if (!nextLine) continue;
-              const endMatch = nextLine.match(/^(.*?)([-]?(?:\d{1,3}\.)*\d{1,3},\d{2} TL)((?:\d{1,3}\.)*\d{1,3},\d{2} TL)$/);
+              const endMatch = nextLine.match(/^(.*?)([-]?(?:\d{1,3}\.)*\d{1,3},\d{2}\s*TL)((?:\d{1,3}\.)*\d{1,3},\d{2}\s*TL)$/);
               if (endMatch) {
                 fullDesc += ' ' + endMatch[1].trim();
-                const amtStr = endMatch[2].replace(' TL', '').replace(/\./g, '').replace(',', '.');
+                const amtStr = endMatch[2].replace(' TL', '').replace('TL', '').replace(/\./g, '').replace(',', '.');
                 amount = parseFloat(amtStr);
                 i = j;
                 break;
@@ -386,6 +390,10 @@ export function parseVadesiz(text: string): ParsedTransaction[] {
           break;
         }
       }
+    }
+
+    if (description.startsWith(',')) {
+      description = description.substring(1).trim();
     }
 
     if (!moveType) continue;

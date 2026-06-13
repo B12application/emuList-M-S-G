@@ -1,20 +1,22 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
     FaPlus,
     FaArchive,
     FaRandom,
     FaTasks,
-    FaBolt,
-    FaCloud,
-    FaLayerGroup,
-    FaHeart,
+    FaRegHeart,
     FaTimes,
     FaArrowRight,
+    FaRegPlayCircle,
+    FaCloud,
+    FaLayerGroup,
 } from 'react-icons/fa';
 import type { MediaItem } from '../../../backend/types/media';
 import ImageWithFallback from '../ui/ImageWithFallback';
+import DetailModal from '../../components/DetailModal'; // <-- Kendi klasör yapınıza göre bu yolu düzenleyin
 
 type TFn = (key: string) => string;
 
@@ -27,12 +29,19 @@ interface HomeHeroProps {
     previewItems: MediaItem[];
 }
 
-const fadeUp = {
-    hidden: { opacity: 0, y: 20 },
+const bentoItem: Variants = {
+    hidden: { opacity: 0, y: 30, scale: 0.98 },
     show: (i: number) => ({
         opacity: 1,
         y: 0,
-        transition: { delay: 0.05 * i, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+        scale: 1,
+        transition: {
+            delay: i * 0.1,
+            type: 'spring' as const,
+            stiffness: 100,
+            damping: 20,
+            mass: 1,
+        },
     }),
 };
 
@@ -45,243 +54,266 @@ export default function HomeHero({
     previewItems,
 }: HomeHeroProps) {
     const [isExpanded, setIsExpanded] = useState(false);
+    // Tıklanan içeriği DetailModal'a göndermek için state
+    const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
     const chips = [
-        { icon: FaBolt, label: t('home.heroFeatureSmart') },
+        { icon: FaPlus, label: t('home.heroFeatureSmart') },
         { icon: FaCloud, label: t('home.heroFeatureSync') },
         { icon: FaLayerGroup, label: t('home.heroFeatureDepth') },
     ];
 
     return (
         <>
-            <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
-            >
-                {/* Subtle top accent line */}
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500" />
+            {/* Bento Grid Düzeni */}
+            <div className="relative mb-8 grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
 
-                <div className="relative z-10 flex flex-col gap-0 lg:flex-row">
-                    {/* ── Left: Content ── */}
-                    <div className="flex flex-1 flex-col justify-center p-6 sm:p-8 lg:p-10">
-                        {/* Eyebrow */}
-                        <motion.div
-                            custom={0}
-                            variants={fadeUp}
-                            initial="hidden"
-                            animate="show"
-                            className="mb-4 inline-flex items-center gap-2 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                        >
-                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            {t('home.heroEyebrow')}
-                        </motion.div>
+                {/* ── BENTO KUTUSU 1: Ana Karşılama ── */}
+                <motion.div
+                    custom={0}
+                    variants={bentoItem}
+                    initial="hidden"
+                    animate="show"
+                    className="relative col-span-1 overflow-hidden rounded-[2.5rem] border border-white/40 bg-gradient-to-br from-slate-100 to-slate-50 p-8 shadow-sm dark:border-white/10 dark:from-zinc-900 dark:to-black lg:col-span-8 lg:p-12"
+                >
+                    <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-amber-400/20 mix-blend-multiply blur-3xl dark:bg-amber-600/20" />
+                    <div className="absolute -bottom-32 -right-10 h-80 w-80 rounded-full bg-violet-400/20 mix-blend-multiply blur-3xl dark:bg-fuchsia-600/20" />
 
-                        {/* Greeting */}
-                        <motion.h1
-                            custom={1}
-                            variants={fadeUp}
-                            initial="hidden"
-                            animate="show"
-                            className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl"
-                        >
-                            {t('home.welcome')},{' '}
-                            <span className="text-amber-600 dark:text-amber-400">{displayName}</span>
-                        </motion.h1>
-
-                        {/* Tagline */}
-                        <motion.p
-                            custom={2}
-                            variants={fadeUp}
-                            initial="hidden"
-                            animate="show"
-                            className="mt-2 max-w-lg text-sm leading-relaxed text-slate-500 dark:text-zinc-400 sm:text-base"
-                        >
-                            {t('home.heroTagline')}
-                        </motion.p>
-
-                        {/* Feature chips */}
-                        <motion.div
-                            custom={3}
-                            variants={fadeUp}
-                            initial="hidden"
-                            animate="show"
-                            className="mt-5 flex flex-wrap gap-2"
-                        >
-                            {chips.map(({ icon: Icon, label }) => (
-                                <span
-                                    key={label}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
-                                >
-                                    <Icon className="text-amber-500 text-xs shrink-0" />
-                                    {label}
+                    <div className="relative z-10 flex h-full flex-col justify-between gap-8">
+                        <div>
+                            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200/50 bg-white/60 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-zinc-600 backdrop-blur-md dark:border-zinc-800/50 dark:bg-zinc-900/60 dark:text-zinc-300">
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
                                 </span>
-                            ))}
-                        </motion.div>
+                                {t('home.heroEyebrow')}
+                            </div>
 
-                        {/* Actions - responsive grid */}
-                        <motion.div
-                            custom={4}
-                            variants={fadeUp}
-                            initial="hidden"
-                            animate="show"
-                            className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
-                        >
+                            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
+                                {t('home.welcome')},{' '}
+                                <span className="bg-gradient-to-r from-amber-500 to-rose-500 bg-clip-text text-transparent dark:from-amber-400 dark:to-rose-400">
+                                    {displayName}
+                                </span>
+                            </h1>
+
+                            <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-slate-500 dark:text-zinc-400 sm:text-lg">
+                                {t('home.heroTagline')}
+                            </p>
+
+                            <div className="mt-6 flex flex-wrap gap-3">
+                                {chips.map(({ icon: Icon, label }) => (
+                                    <span
+                                        key={label}
+                                        className="flex items-center gap-2 rounded-xl bg-white/50 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                    >
+                                        <Icon className="text-amber-500" />
+                                        {label}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
                             <Link
                                 to="/create"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-amber-700 active:scale-[0.98] sm:px-5"
+                                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                             >
-                                <FaPlus className="shrink-0 text-xs" />
-                                <span className="truncate">{t('home.addNew')}</span>
+                                <span className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/20 to-amber-400/0 translate-x-[-100%] transition-transform duration-500 group-hover:translate-x-[100%]" />
+                                <FaPlus />
+                                {t('home.addNew')}
                             </Link>
                             <Link
                                 to="/all"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 sm:px-5"
+                                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/50 px-6 py-3.5 text-sm font-bold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:shadow-sm active:scale-95 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:bg-zinc-800"
                             >
-                                <FaArchive className="shrink-0 text-xs" />
-                                <span className="truncate">{t('home.viewCollection')}</span>
+                                <FaArchive className="text-slate-400 dark:text-zinc-500" />
+                                {t('home.viewCollection')}
                             </Link>
-                            <button
-                                type="button"
-                                onClick={onRandom}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 sm:px-5"
-                            >
-                                <FaRandom className="shrink-0 text-xs" />
-                                <span className="truncate">{t('home.randomButton')}</span>
-                            </button>
-                            <Link
-                                to="/planner?todo=true"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-all hover:bg-emerald-100 active:scale-[0.98] dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 dark:hover:bg-emerald-900 sm:px-5"
-                            >
-                                <FaTasks className="shrink-0 text-xs" />
-                                <span className="truncate">{t('home.myTasks')}</span>
-                            </Link>
-                        </motion.div>
-                    </div>
 
-                    {/* ── Right: Profile & Preview ── */}
-                    <motion.div
-                        custom={5}
-                        variants={fadeUp}
-                        initial="hidden"
-                        animate="show"
-                        className="flex flex-col items-center justify-center gap-4 border-t border-slate-100 bg-slate-50/50 p-6 sm:p-8 lg:w-[340px] lg:shrink-0 lg:border-l lg:border-t-0 dark:border-zinc-800 dark:bg-zinc-950/50"
-                    >
-                        {/* Avatar - tıklanınca yerinde büyür */}
-                        <button
-                            type="button"
-                            onClick={() => setIsExpanded(true)}
-                            className="group relative"
-                        >
-                            <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-amber-400 to-rose-400 opacity-0 blur transition-opacity group-hover:opacity-60" />
-                            <div className="relative">
-                                <img
-                                    src={avatarUrl}
-                                    alt=""
-                                    className="h-24 w-24 rounded-2xl object-cover ring-2 ring-white transition-transform duration-300 group-hover:scale-105 dark:ring-zinc-800 sm:h-28 sm:w-28"
-                                />
-                                <div className="absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md ring-2 ring-white dark:ring-zinc-950">
-                                    <FaHeart className="h-3 w-3" />
-                                </div>
-                            </div>
-                        </button>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
-                            {t('home.memoryCenter')}
-                        </p>
-
-                        {/* Recent items strip - cleaner */}
-                        <div className="w-full max-w-[280px] overflow-hidden rounded-xl border border-slate-200 bg-white py-2.5 dark:border-zinc-800 dark:bg-zinc-900">
-                            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-                                {t('home.liveRibbon')}
-                            </p>
-                            {previewItems.length > 0 ? (
-                                <div className="flex flex-wrap gap-1.5 px-3">
-                                    {previewItems.slice(0, 8).map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-slate-50 dark:border-zinc-800 dark:bg-zinc-800 sm:h-8 sm:w-8"
-                                            title={item.title}
-                                        >
-                                            <ImageWithFallback
-                                                src={item.image}
-                                                alt={item.title}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </div>
-                                    ))}
-                                    {previewItems.length > 8 && (
-                                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-200 text-[10px] font-bold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-8 sm:w-8">
-                                            +{previewItems.length - 8}
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <p className="px-3 text-xs text-slate-400 dark:text-zinc-500">
-                                    {t('home.noRecent')}
-                                </p>
-                            )}
-                        </div>
-                    </motion.div>
-                </div>
-            </motion.div>
-
-            {/* ── Expanded Profile Overlay ── */}
-            <AnimatePresence>
-                {isExpanded && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-                        onClick={() => setIsExpanded(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.4, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.4, opacity: 0 }}
-                            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                            className="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Header */}
-                            <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-zinc-800">
-                                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
-                                    {t('nav.myProfile')}
-                                </h3>
+                            <div className="ml-auto flex items-center gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => setIsExpanded(false)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                                    onClick={onRandom}
+                                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 transition-all hover:bg-amber-200 hover:shadow-sm active:scale-95 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
+                                    title={t('home.randomButton')}
                                 >
-                                    <FaTimes className="text-sm" />
+                                    <FaRandom className="text-lg" />
                                 </button>
-                            </div>
-
-                            {/* Body */}
-                            <div className="flex flex-col items-center p-6">
-                                <img
-                                    src={avatarUrl}
-                                    alt=""
-                                    className="h-28 w-28 rounded-2xl border-2 border-slate-100 object-cover shadow-md dark:border-zinc-800 sm:h-32 sm:w-32"
-                                />
-                                <p className="mt-4 text-sm font-semibold text-slate-800 dark:text-zinc-200">
-                                    {displayName}
-                                </p>
                                 <Link
-                                    to="/profile"
-                                    onClick={() => setIsExpanded(false)}
-                                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 active:scale-[0.98]"
+                                    to="/planner?todo=true"
+                                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 transition-all hover:bg-emerald-200 hover:shadow-sm active:scale-95 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+                                    title={t('home.myTasks')}
                                 >
-                                    {t('home.profileModalCta')}
-                                    <FaArrowRight className="text-xs" />
+                                    <FaTasks className="text-lg" />
                                 </Link>
                             </div>
-                        </motion.div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* ── SAĞ SÜTUN ── */}
+                <div className="col-span-1 flex flex-col gap-4 lg:col-span-4 lg:gap-6">
+
+                    {/* BENTO KUTUSU 2: Profil Kartı */}
+                    <motion.div
+                        custom={1}
+                        variants={bentoItem}
+                        initial="hidden"
+                        animate="show"
+                        onClick={() => setIsExpanded(true)}
+                        className="group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/40 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-zinc-900"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-950/50" />
+
+                        <div className="relative mb-3 h-28 w-28">
+                            <div className="absolute -inset-2 animate-spin rounded-full bg-gradient-to-tr from-amber-400 to-rose-400 opacity-20 blur-md duration-[3000ms]" />
+                            <img
+                                src={avatarUrl}
+                                alt="Profile"
+                                className="relative h-full w-full rounded-full object-cover ring-4 ring-white transition-transform duration-500 group-hover:scale-105 dark:ring-zinc-950"
+                            />
+                            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-white bg-rose-500 text-white dark:border-zinc-950">
+                                <FaRegHeart className="h-3 w-3" />
+                            </div>
+                        </div>
+
+                        <h3 className="relative z-10 text-lg font-bold text-slate-900 dark:text-white">
+                            {t('home.memoryCenter')}
+                        </h3>
+                        <p className="relative z-10 text-xs font-medium text-slate-400 dark:text-zinc-500">
+                            {t('nav.myProfile')}'ne Git
+                        </p>
                     </motion.div>
-                )}
-            </AnimatePresence>
+
+                    {/* BENTO KUTUSU 3: Live Ribbon (Taşma Sorunu Çözüldü) */}
+                    <motion.div
+                        custom={2}
+                        variants={bentoItem}
+                        initial="hidden"
+                        animate="show"
+                        className="flex flex-1 flex-col justify-center rounded-[2.5rem] border border-white/40 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900"
+                    >
+                        <div className="mb-4 flex items-center justify-between">
+                            <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                <FaRegPlayCircle className="text-amber-500" />
+                                {t('home.liveRibbon')}
+                            </h4>
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                {previewItems.length}
+                            </span>
+                        </div>
+
+                        {previewItems.length > 0 ? (
+                            /* Taşmayı önleyen akıllı grid yapısı (aspect-square sayesinde her ekrana tam sığar) */
+                            <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 sm:gap-2.5">
+                                {previewItems.slice(0, 7).map((item) => (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={() => setSelectedItem(item)} // Tıklanınca DetailModal'ı açacak veriyi set et
+                                        className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-150 transition-all hover:scale-105 hover:shadow-md active:scale-95 dark:border-zinc-800 dark:bg-zinc-800"
+                                        title={item.title}
+                                    >
+                                        <ImageWithFallback
+                                            src={item.image}
+                                            alt={item.title}
+                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                        />
+                                    </button>
+                                ))}
+                                {/* +X Fazlalık Sayacı Butonu */}
+                                {previewItems.length > 7 && (
+                                    <div className="flex aspect-square w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-xs font-extrabold text-slate-500 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                                        +{previewItems.length - 7}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+                                <p className="text-center text-xs font-medium text-slate-400 dark:text-zinc-500">
+                                    {t('home.noRecent')}
+                                </p>
+                            </div>
+                        )}
+                    </motion.div>
+                </div>
+            </div>
+
+            {/* ── İÇERİK DETAY MODALI (DetailModal) ── */}
+            {selectedItem && (
+                <DetailModal
+                    item={selectedItem}
+                    isOpen={!!selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
+            )}
+
+            {/* ── GENİŞLETİLMİŞ PROFİL MODALI ── */}
+            {typeof window !== 'undefined' && createPortal(
+                <AnimatePresence>
+                    {isExpanded && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xl dark:bg-black/60"
+                            onClick={() => setIsExpanded(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] bg-white p-1 shadow-2xl dark:bg-zinc-900"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="rounded-[1.8rem] border border-slate-100 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                                            {t('nav.myProfile')}
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsExpanded(false)}
+                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                                        >
+                                            <FaTimes className="text-sm" />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-col items-center">
+                                        <div className="relative mb-4 p-2">
+                                            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-amber-400 to-rose-500 opacity-20 blur-xl" />
+                                            <img
+                                                src={avatarUrl}
+                                                alt=""
+                                                className="relative h-32 w-32 rounded-full border-4 border-white object-cover shadow-lg dark:border-zinc-800 sm:h-40 sm:w-40"
+                                            />
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                                            {displayName}
+                                        </h2>
+                                        <p className="mt-1 text-sm font-medium text-slate-500 dark:text-zinc-400">
+                                            {t('home.memoryCenter')} Yönetimi
+                                        </p>
+
+                                        <Link
+                                            to="/profile"
+                                            onClick={() => setIsExpanded(false)}
+                                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-zinc-950"
+                                        >
+                                            {t('home.profileModalCta')}
+                                            <FaArrowRight className="text-xs" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </>
     );
 }

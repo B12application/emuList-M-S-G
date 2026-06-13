@@ -25,6 +25,7 @@ import InvestmentsTab from '../components/expenses/InvestmentsTab';
 import BudgetPlanner from '../components/expenses/BudgetPlanner';
 import ExpenseModals from '../components/expenses/ExpenseModals';
 import { useExpenseMigration } from '../hooks/useExpenseMigration';
+import { useCategoryV2Migration } from '../hooks/useCategoryV2Migration';
 
 const ExpensesPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -57,6 +58,18 @@ const ExpensesPage: React.FC = () => {
   } = useInvestments();
 
   const { runMigration, isMigrating } = useExpenseMigration();
+  const { runV2Migration, isMigrating: isMigratingV2 } = useCategoryV2Migration();
+
+  // Categories 2.0: version toggle
+  const [categoryVersion, setCategoryVersion] = useState<'v1' | 'v2'>('v2');
+
+  // Check if v2 data exists
+  const hasV2Data = useMemo(() => expenses.some(e => !!e.category2), [expenses]);
+
+  // Active category field based on version
+  const getCategoryField = useCallback((e: Expense) => {
+    return categoryVersion === 'v2' && e.category2 ? e.category2 : e.category;
+  }, [categoryVersion]);
 
   const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>('harcamalar');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -132,7 +145,8 @@ const ExpensesPage: React.FC = () => {
   const filteredExpenses = useMemo(() => {
     let result = activeCategory === 'deleted' ? [...deletedExpenses] : [...expenses];
     if (activeCategory !== 'all' && activeCategory !== 'deleted') {
-      result = result.filter(e => e.category === activeCategory);
+      // v2 modunda category2 alanına göre filtrele
+      result = result.filter(e => getCategoryField(e) === activeCategory);
     }
     if (selectedMonth !== 'all') {
       const [year, month] = selectedMonth.split('-').map(Number);
@@ -144,12 +158,13 @@ const ExpensesPage: React.FC = () => {
       const lowerSearch = searchTerm.toLowerCase();
       result = result.filter(e => {
         const dateObj = parseISO(e.date);
-        const dateStr1 = format(dateObj, 'd MMMM yyyy', { locale: dateLocale }).toLowerCase(); // e.g. "18 haziran 2025"
-        const dateStr2 = format(dateObj, 'dd.MM.yyyy'); // e.g. "18.06.2025"
-        const dateStr3 = format(dateObj, 'dd/MM/yyyy'); // e.g. "18/06/2025"
+        const dateStr1 = format(dateObj, 'd MMMM yyyy', { locale: dateLocale }).toLowerCase();
+        const dateStr2 = format(dateObj, 'dd.MM.yyyy');
+        const dateStr3 = format(dateObj, 'dd/MM/yyyy');
+        const catField = getCategoryField(e);
 
         return e.title.toLowerCase().includes(lowerSearch) ||
-          e.category.toLowerCase().includes(lowerSearch) ||
+          catField.toLowerCase().includes(lowerSearch) ||
           dateStr1.includes(lowerSearch) ||
           dateStr2.includes(lowerSearch) ||
           dateStr3.includes(lowerSearch) ||
@@ -166,7 +181,7 @@ const ExpensesPage: React.FC = () => {
       }
     });
     return result;
-  }, [expenses, activeCategory, selectedMonth, searchTerm, sortBy, sortOrder]);
+  }, [expenses, activeCategory, selectedMonth, searchTerm, sortBy, sortOrder, getCategoryField]);
 
   const totalFilteredAmount = useMemo(() => filteredExpenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0), [filteredExpenses]);
   const totalLifetimeAmount = useMemo(() => expenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0), [expenses]);
@@ -188,11 +203,14 @@ const ExpensesPage: React.FC = () => {
 
   const categoryBreakdownData = useMemo(() => {
     const data: Record<string, number> = {};
-    filteredExpenses.filter(e => e.direction !== 'gelen').forEach(e => { data[e.category] = (data[e.category] || 0) + e.amount; });
+    filteredExpenses.filter(e => e.direction !== 'gelen').forEach(e => {
+      const cat = getCategoryField(e);
+      data[cat] = (data[cat] || 0) + e.amount;
+    });
     return Object.entries(data)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
-  }, [filteredExpenses]);
+  }, [filteredExpenses, getCategoryField]);
 
   const monthlyChartData = useMemo(() => {
     const data: Record<string, number> = {};
@@ -220,10 +238,24 @@ const ExpensesPage: React.FC = () => {
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     expenses.forEach(e => {
-      counts[e.category] = (counts[e.category] || 0) + 1;
+      const cat = getCategoryField(e);
+      counts[cat] = (counts[cat] || 0) + 1;
     });
     return counts;
-  }, [expenses]);
+  }, [expenses, getCategoryField]);
+
+  // v2 modunda category2 alanlarından unique kategori listesi oluştur
+  // getCategoryField ile aynı fallback mantığını kullan: category2 varsa onu, yoksa category'yi al
+  const v2Categories = useMemo(() => {
+    if (categoryVersion !== 'v2') return categories;
+    const cats = new Set<string>();
+    expenses.forEach(e => {
+      cats.add(getCategoryField(e));
+    });
+    return Array.from(cats).sort();
+  }, [expenses, categoryVersion, categories, getCategoryField]);
+
+  const activeCategories = categoryVersion === 'v2' ? v2Categories : categories;
 
   const totalCount = expenses.length;
   const mainTabs = [
@@ -264,7 +296,7 @@ const ExpensesPage: React.FC = () => {
       setIsEditing(false);
       setEditingId(null);
       setNewExpense({
-        title: '', amount: 0, category: categories[0] || 'Genel',
+        title: '', amount: 0, category: activeCategories[0] || 'Genel',
         date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1,
         direction: 'giden', type: '', source: '', description: ''
       });
@@ -651,7 +683,7 @@ const ExpensesPage: React.FC = () => {
             isDark={isDark}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
-            categories={categories}
+            categories={activeCategories}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
             categoryCounts={categoryCounts}
@@ -664,6 +696,18 @@ const ExpensesPage: React.FC = () => {
             onDeleteCategory={handleDeleteCategory}
             onRunMigration={runMigration}
             isMigrating={isMigrating}
+            categoryVersion={categoryVersion}
+            setCategoryVersion={(v) => {
+              setCategoryVersion(v);
+              setActiveCategory('all');
+            }}
+            onRunV2Migration={async () => {
+              await runV2Migration();
+              // After migration, invalidate queries to refetch data
+              // The hook handles this internally
+            }}
+            isMigratingV2={isMigratingV2}
+            hasV2Data={hasV2Data}
           />
 
           <div className="flex-1">
@@ -674,7 +718,7 @@ const ExpensesPage: React.FC = () => {
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               monthOptions={monthOptions}
-              categories={categories}
+              categories={activeCategories}
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
               showAddButton={activeTab === 'harcamalar'}
@@ -685,7 +729,7 @@ const ExpensesPage: React.FC = () => {
               onAddClick={() => {
                 setIsEditing(false);
                 setNewExpense({
-                  title: '', amount: 0, category: categories[0] || 'Genel',
+                  title: '', amount: 0, category: activeCategories[0] || 'Genel',
                   date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1
                 });
                 setIsAddModalOpen(true);
@@ -750,6 +794,7 @@ const ExpensesPage: React.FC = () => {
                       setVisibleCount={setVisibleCount}
                       onConvertToInvestment={handleConvertToInvestment}
                       isTrashView={activeCategory === 'deleted' || activeTab === 'silinenler'}
+                      getCategoryField={getCategoryField}
                     />
                   )}
                   {activeTab === 'raporlar' && (
@@ -760,7 +805,7 @@ const ExpensesPage: React.FC = () => {
                       monthlySummary={monthlySummary}
                       onPdfImport={handlePdfImport}
                       expenses={expenses}
-                      categories={categories}
+                      categories={activeCategories}
                     />
                   )}
                 </motion.div>
@@ -774,7 +819,7 @@ const ExpensesPage: React.FC = () => {
         t={t} isDark={isDark} dateLocale={dateLocale}
         isAddModalOpen={isAddModalOpen} setIsAddModalOpen={setIsAddModalOpen}
         isEditing={isEditing} newExpense={newExpense} setNewExpense={setNewExpense}
-        handleAddExpense={handleAddExpense} categories={categories}
+        handleAddExpense={handleAddExpense} categories={activeCategories}
         isBulkCategoryModalOpen={isBulkCategoryModalOpen} setIsBulkCategoryModalOpen={setIsBulkCategoryModalOpen}
         bulkCategory={bulkCategory} setBulkCategory={setBulkCategory} applyBulkCategory={applyBulkCategory}
         selectedIds={selectedIds} isImportPreviewOpen={isImportPreviewOpen} setIsImportPreviewOpen={setIsImportPreviewOpen}

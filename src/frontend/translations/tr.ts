@@ -255,7 +255,7 @@ export const translationsTR = {
         onboardingBody: 'Birkaç başlık ekle; trendler, tozlu raflar ve canlı özetler daha anlamlı hale gelir.',
         onboardingCta: 'İlk içeriklerini ekle',
         spotlightTitle: 'Sırada ne var?',
-        spotlightHint: 'En yüksek puanlı izlenmemiş öneri',
+        spotlightHint: 'Yarıda kalan diziler',
         noRecsTitle: 'Henüz kürasyon yok',
         noRecsBody: 'Yönetici önerileri yayınlandığında burada görünecek.',
         profileModalCta: 'Profil sayfasına git',
@@ -478,6 +478,8 @@ export const translationsTR = {
         asc: 'Artan',
         desc: 'Azalan',
         loadMore: 'Daha Fazla Yükle',
+        description: 'Açıklama',
+
     },
 
     // Search
@@ -911,6 +913,9 @@ export const translationsTR = {
         holidayMsg: 'Tatildesin. Dinlenmene bak!',
         itemsFound: 'Bu güne ait {count} toplantı/not bulundu.',
         noItems: 'Bugün için planlanmış bir kayıt yok.',
+        task: 'Görev',
+        meeting: 'Toplantı',
+        note: 'Not',
     },
 
     // Expenses

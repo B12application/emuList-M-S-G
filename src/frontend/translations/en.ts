@@ -1,3 +1,5 @@
+import { Description } from "@headlessui/react";
+
 // src/translations/en.ts
 export const translationsEN = {
     // Navigation
@@ -255,7 +257,7 @@ export const translationsEN = {
         onboardingBody: 'Add a handful of titles to unlock richer trends, smarter resurfacing, and a homepage that feels alive.',
         onboardingCta: 'Add your first items',
         spotlightTitle: 'Next in your queue',
-        spotlightHint: 'Highest rated unwatched pick',
+        spotlightHint: 'Unfinished series',
         noRecsTitle: 'No curated picks yet',
         noRecsBody: 'Curated lists will appear here once they are published.',
         profileModalCta: 'Go to profile',
@@ -478,6 +480,7 @@ export const translationsEN = {
         asc: 'Ascending',
         desc: 'Descending',
         loadMore: 'Load More',
+        description: 'Description',
     },
 
     // Search
@@ -907,6 +910,9 @@ export const translationsEN = {
         holidayMsg: 'On holiday. Enjoy your rest!',
         itemsFound: '{count} meetings/notes found for this day.',
         noItems: 'No items planned for today.',
+        task: 'Task',
+        meeting: 'Meeting',
+        note: 'Note',
     },
 
     // Expenses

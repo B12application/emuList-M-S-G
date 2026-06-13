@@ -12,6 +12,8 @@ export type FilterStatus = 'all' | 'watched' | 'not-watched' | 'in-progress' | '
 
 // Veritabanı objemizin arayüzü
 export interface MediaItem {
+  platform: any;
+  addedAt: any;
   id: string;
   title: string;
   image?: string;

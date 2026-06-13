@@ -13,6 +13,7 @@ import {
     FaGamepad,
     FaBook,
     FaTrophy,
+    FaCheck,
 } from 'react-icons/fa';
 import { groupRecommendationsByCategory } from '../../../backend/services/recommendationService';
 import type { Recommendation } from '../../../backend/types/recommendation';
@@ -36,7 +37,7 @@ interface HomeBestRecommendationsProps {
     t: TFn;
 }
 
-// Mini kart component - tekrar eden yapıyı soyutluyoruz
+// ─── Mini Kart (Most Watched listeleri için) ───
 function RecCard({
     rec,
     onAdd,
@@ -48,13 +49,38 @@ function RecCard({
     accentColor: string;
     t: TFn;
 }) {
+    const [status, setStatus] = useState<'idle' | 'adding' | 'added' | 'exists'>('idle');
+
+    const handleClick = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (status !== 'idle') return;
+
+        setStatus('adding');
+        try {
+            await onAdd(rec);
+            setStatus('added');
+            setTimeout(() => setStatus('idle'), 2000);
+        } catch (error: any) {
+            if (error?.message === 'already_exists') {
+                setStatus('exists');
+                setTimeout(() => setStatus('idle'), 2000);
+            } else {
+                setStatus('idle');
+            }
+        }
+    };
+
     return (
         <button
             type="button"
-            onClick={() => onAdd(rec)}
-            className="group w-full text-left"
+            onClick={handleClick}
+            disabled={status !== 'idle'}
+            className="group w-full text-left cursor-pointer transition-transform active:scale-[0.98]"
         >
-            <div className={`flex gap-3 rounded-xl border border-slate-200 bg-white p-3 transition-all hover:border-${accentColor}-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-${accentColor}-700`}>
+            <div
+                className={`flex gap-3 rounded-xl border border-slate-200 bg-white p-3 transition-all hover:border-${accentColor}-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-${accentColor}-700`}
+            >
                 {/* Thumbnail */}
                 <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-zinc-800">
                     {rec.image ? (
@@ -68,9 +94,18 @@ function RecCard({
                             <FaFilm className="text-lg" />
                         </div>
                     )}
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition group-hover:opacity-100">
-                        <FaPlus className="text-white text-sm" />
+                    {/* Hover overlay & Status */}
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center transition ${status !== 'idle' ? 'bg-black/70 opacity-100' : 'bg-black/60 opacity-0 group-hover:opacity-100'}`}
+                    >
+                        {status === 'idle' && <FaPlus className="text-white text-sm" />}
+                        {status === 'adding' && <FaSpinner className="text-white text-sm animate-spin" />}
+                        {status === 'added' && <FaCheck className="text-emerald-400 text-sm" />}
+                        {status === 'exists' && (
+                            <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider text-center leading-tight">
+                                Zaten<br />Var
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -99,7 +134,7 @@ function RecCard({
     );
 }
 
-// Poster kart - yatay scroll için
+// ─── Poster Kart (yatay scroll kategorileri için) ───
 function PosterCard({
     rec,
     onAdd,
@@ -113,11 +148,34 @@ function PosterCard({
     badgeColor?: string;
     t: TFn;
 }) {
+    const [status, setStatus] = useState<'idle' | 'adding' | 'added' | 'exists'>('idle');
+
+    const handleClick = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (status !== 'idle') return;
+
+        setStatus('adding');
+        try {
+            await onAdd(rec);
+            setStatus('added');
+            setTimeout(() => setStatus('idle'), 2000);
+        } catch (error: any) {
+            if (error?.message === 'already_exists') {
+                setStatus('exists');
+                setTimeout(() => setStatus('idle'), 2000);
+            } else {
+                setStatus('idle');
+            }
+        }
+    };
+
     return (
         <button
             type="button"
-            onClick={() => onAdd(rec)}
-            className="group w-40 shrink-0 text-left"
+            onClick={handleClick}
+            disabled={status !== 'idle'}
+            className="group w-40 shrink-0 text-left cursor-pointer transition-transform active:scale-[0.98]"
         >
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:-translate-y-1 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950">
                 {/* Poster */}
@@ -142,17 +200,37 @@ function PosterCard({
 
                     {/* Award badge */}
                     {badge && (
-                        <div className={`absolute top-2 left-2 rounded-lg ${badgeColor || 'bg-amber-500'} px-1.5 py-0.5 text-[10px] font-bold text-white`}>
+                        <div
+                            className={`absolute top-2 left-2 rounded-lg ${badgeColor || 'bg-amber-500'} px-1.5 py-0.5 text-[10px] font-bold text-white`}
+                        >
                             {badge}
                         </div>
                     )}
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition group-hover:opacity-100">
-                        <span className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
-                            <FaPlus className="inline mr-1 text-[10px]" />
-                            {t('home.add')}
-                        </span>
+                    {/* Hover overlay & Status */}
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center transition ${status !== 'idle' ? 'bg-black/70 opacity-100' : 'bg-black/60 opacity-0 group-hover:opacity-100'}`}
+                    >
+                        {status === 'added' ? (
+                            <span className="rounded-lg bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm shadow-lg shadow-emerald-500/20">
+                                <FaCheck className="inline mr-1.5 text-[10px]" />
+                                Eklendi
+                            </span>
+                        ) : status === 'exists' ? (
+                            <span className="rounded-lg bg-amber-500/90 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur-sm shadow-lg shadow-amber-500/20">
+                                Zaten Ekli
+                            </span>
+                        ) : status === 'adding' ? (
+                            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+                                <FaSpinner className="inline mr-1.5 text-[10px] animate-spin" />
+                                Ekleniyor...
+                            </span>
+                        ) : (
+                            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+                                <FaPlus className="inline mr-1 text-[10px]" />
+                                {t('home.add')}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -167,6 +245,7 @@ function PosterCard({
     );
 }
 
+// ─── Ana Bileşen ───
 export default function HomeBestRecommendations(props: HomeBestRecommendationsProps) {
     const {
         recommendations,
@@ -237,8 +316,12 @@ export default function HomeBestRecommendations(props: HomeBestRecommendationsPr
                     ) : recommendations.length === 0 ? (
                         <div className="py-12 text-center">
                             <FaStar className="mx-auto text-3xl text-slate-300 dark:text-zinc-600" />
-                            <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">{t('home.noRecsTitle')}</h3>
-                            <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">{t('home.noRecsBody')}</p>
+                            <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
+                                {t('home.noRecsTitle')}
+                            </h3>
+                            <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+                                {t('home.noRecsBody')}
+                            </p>
                             {isAdmin && (
                                 <button
                                     type="button"
@@ -256,84 +339,156 @@ export default function HomeBestRecommendations(props: HomeBestRecommendationsPr
                             return (
                                 <div className="space-y-8">
                                     {/* ── Most Watched 2025 ── */}
-                                    {grouped['most-watched-2025'].length > 0 && (() => {
-                                        const allFilms = grouped['most-watched-2025'].filter((rec) => rec.type === 'movie');
-                                        const allSeries = grouped['most-watched-2025'].filter((rec) => rec.type === 'series');
-                                        const totalFilmPages = Math.ceil(allFilms.length / recsPerPage);
-                                        const totalSeriesPages = Math.ceil(allSeries.length / recsPerPage);
-                                        const films = allFilms.slice((recFilmPage - 1) * recsPerPage, recFilmPage * recsPerPage);
-                                        const series = allSeries.slice((recSeriesPage - 1) * recsPerPage, recSeriesPage * recsPerPage);
+                                    {grouped['most-watched-2025'].length > 0 &&
+                                        (() => {
+                                            const allFilms = grouped['most-watched-2025'].filter(
+                                                (rec) => rec.type === 'movie'
+                                            );
+                                            const allSeries = grouped['most-watched-2025'].filter(
+                                                (rec) => rec.type === 'series'
+                                            );
+                                            const totalFilmPages = Math.ceil(allFilms.length / recsPerPage);
+                                            const totalSeriesPages = Math.ceil(allSeries.length / recsPerPage);
+                                            const films = allFilms.slice(
+                                                (recFilmPage - 1) * recsPerPage,
+                                                recFilmPage * recsPerPage
+                                            );
+                                            const series = allSeries.slice(
+                                                (recSeriesPage - 1) * recsPerPage,
+                                                recSeriesPage * recsPerPage
+                                            );
 
-                                        return (
-                                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                                                {/* Films */}
-                                                {allFilms.length > 0 && (
-                                                    <div>
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <FaFilm className="text-sky-500 text-sm" />
-                                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t('nav.movies')}</h4>
-                                                            <span className="text-[11px] text-slate-400 dark:text-zinc-500">({allFilms.length})</span>
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            {films.map((rec) => (
-                                                                <RecCard key={rec.id} rec={rec} onAdd={handleAddToCollection} accentColor="sky" t={t} />
-                                                            ))}
-                                                        </div>
-                                                        {totalFilmPages > 1 && (
-                                                            <div className="flex items-center justify-center gap-3 mt-3">
-                                                                <button onClick={() => setRecFilmPage((p) => Math.max(1, p - 1))} disabled={recFilmPage === 1} className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800">
-                                                                    <FaChevronLeft className="text-[10px]" />
-                                                                </button>
-                                                                <span className="text-xs text-slate-400 tabular-nums">{recFilmPage}/{totalFilmPages}</span>
-                                                                <button onClick={() => setRecFilmPage((p) => Math.min(totalFilmPages, p + 1))} disabled={recFilmPage === totalFilmPages} className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800">
-                                                                    <FaChevronRight className="text-[10px]" />
-                                                                </button>
+                                            return (
+                                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                                    {/* Films */}
+                                                    {allFilms.length > 0 && (
+                                                        <div>
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <FaFilm className="text-sky-500 text-sm" />
+                                                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                    {t('nav.movies')}
+                                                                </h4>
+                                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+                                                                    ({allFilms.length})
+                                                                </span>
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                            <div className="space-y-2">
+                                                                {films.map((rec) => (
+                                                                    <RecCard
+                                                                        key={rec.id}
+                                                                        rec={rec}
+                                                                        onAdd={handleAddToCollection}
+                                                                        accentColor="sky"
+                                                                        t={t}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                            {totalFilmPages > 1 && (
+                                                                <div className="flex items-center justify-center gap-3 mt-3">
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            setRecFilmPage((p) => Math.max(1, p - 1))
+                                                                        }
+                                                                        disabled={recFilmPage === 1}
+                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
+                                                                    >
+                                                                        <FaChevronLeft className="text-[10px]" />
+                                                                    </button>
+                                                                    <span className="text-xs text-slate-400 tabular-nums">
+                                                                        {recFilmPage}/{totalFilmPages}
+                                                                    </span>
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            setRecFilmPage((p) =>
+                                                                                Math.min(totalFilmPages, p + 1)
+                                                                            )
+                                                                        }
+                                                                        disabled={recFilmPage === totalFilmPages}
+                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
+                                                                    >
+                                                                        <FaChevronRight className="text-[10px]" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
 
-                                                {/* Series */}
-                                                {allSeries.length > 0 && (
-                                                    <div>
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <FaTv className="text-rose-500 text-sm" />
-                                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t('nav.series')}</h4>
-                                                            <span className="text-[11px] text-slate-400 dark:text-zinc-500">({allSeries.length})</span>
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            {series.map((rec) => (
-                                                                <RecCard key={rec.id} rec={rec} onAdd={handleAddToCollection} accentColor="rose" t={t} />
-                                                            ))}
-                                                        </div>
-                                                        {totalSeriesPages > 1 && (
-                                                            <div className="flex items-center justify-center gap-3 mt-3">
-                                                                <button onClick={() => setRecSeriesPage((p) => Math.max(1, p - 1))} disabled={recSeriesPage === 1} className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800">
-                                                                    <FaChevronLeft className="text-[10px]" />
-                                                                </button>
-                                                                <span className="text-xs text-slate-400 tabular-nums">{recSeriesPage}/{totalSeriesPages}</span>
-                                                                <button onClick={() => setRecSeriesPage((p) => Math.min(totalSeriesPages, p + 1))} disabled={recSeriesPage === totalSeriesPages} className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800">
-                                                                    <FaChevronRight className="text-[10px]" />
-                                                                </button>
+                                                    {/* Series */}
+                                                    {allSeries.length > 0 && (
+                                                        <div>
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <FaTv className="text-rose-500 text-sm" />
+                                                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                    {t('nav.series')}
+                                                                </h4>
+                                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+                                                                    ({allSeries.length})
+                                                                </span>
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })()}
+                                                            <div className="space-y-2">
+                                                                {series.map((rec) => (
+                                                                    <RecCard
+                                                                        key={rec.id}
+                                                                        rec={rec}
+                                                                        onAdd={handleAddToCollection}
+                                                                        accentColor="rose"
+                                                                        t={t}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                            {totalSeriesPages > 1 && (
+                                                                <div className="flex items-center justify-center gap-3 mt-3">
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            setRecSeriesPage((p) => Math.max(1, p - 1))
+                                                                        }
+                                                                        disabled={recSeriesPage === 1}
+                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
+                                                                    >
+                                                                        <FaChevronLeft className="text-[10px]" />
+                                                                    </button>
+                                                                    <span className="text-xs text-slate-400 tabular-nums">
+                                                                        {recSeriesPage}/{totalSeriesPages}
+                                                                    </span>
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            setRecSeriesPage((p) =>
+                                                                                Math.min(totalSeriesPages, p + 1)
+                                                                            )
+                                                                        }
+                                                                        disabled={recSeriesPage === totalSeriesPages}
+                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
+                                                                    >
+                                                                        <FaChevronRight className="text-[10px]" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
 
                                     {/* ── Best Movies ── */}
                                     {grouped['best-movies'].length > 0 && (
                                         <div>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <FaTrophy className="text-amber-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('home.bestRecsBestMovies')}</h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">({grouped['best-movies'].length})</span>
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {t('home.bestRecsBestMovies')}
+                                                </h3>
+                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+                                                    ({grouped['best-movies'].length})
+                                                </span>
                                             </div>
                                             <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                                 {grouped['best-movies'].map((rec) => (
-                                                    <PosterCard key={rec.id} rec={rec} onAdd={handleAddToCollection} t={t} />
+                                                    <PosterCard
+                                                        key={rec.id}
+                                                        rec={rec}
+                                                        onAdd={handleAddToCollection}
+                                                        t={t}
+                                                    />
                                                 ))}
                                             </div>
                                         </div>
@@ -344,8 +499,12 @@ export default function HomeBestRecommendations(props: HomeBestRecommendationsPr
                                         <div>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <FaStar className="text-amber-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('home.bestRecsAwardWinning')}</h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">({grouped['award-winning'].length})</span>
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {t('home.bestRecsAwardWinning')}
+                                                </h3>
+                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+                                                    ({grouped['award-winning'].length})
+                                                </span>
                                             </div>
                                             <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                                 {grouped['award-winning'].map((rec) => (
@@ -367,12 +526,21 @@ export default function HomeBestRecommendations(props: HomeBestRecommendationsPr
                                         <div>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <FaTv className="text-rose-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('home.bestRecsTopSeries')}</h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">({grouped['top-series'].length})</span>
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {t('home.bestRecsTopSeries')}
+                                                </h3>
+                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+                                                    ({grouped['top-series'].length})
+                                                </span>
                                             </div>
                                             <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                                 {grouped['top-series'].map((rec) => (
-                                                    <PosterCard key={rec.id} rec={rec} onAdd={handleAddToCollection} t={t} />
+                                                    <PosterCard
+                                                        key={rec.id}
+                                                        rec={rec}
+                                                        onAdd={handleAddToCollection}
+                                                        t={t}
+                                                    />
                                                 ))}
                                             </div>
                                         </div>
@@ -383,8 +551,12 @@ export default function HomeBestRecommendations(props: HomeBestRecommendationsPr
                                         <div>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <FaBook className="text-violet-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('home.bestRecsTopBooks')}</h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">({grouped['top-books'].length})</span>
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {t('home.bestRecsTopBooks')}
+                                                </h3>
+                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+                                                    ({grouped['top-books'].length})
+                                                </span>
                                             </div>
                                             <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                                 {grouped['top-books'].map((rec) => (

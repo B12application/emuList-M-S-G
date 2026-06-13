@@ -206,14 +206,13 @@ export default function HomePage() {
     const handleAddToCollection = async (rec: Recommendation) => {
         if (!user) {
             toast.error(t('create.loginRequired'));
-            return;
+            throw new Error('login_required');
         }
         try {
             const q = query(collection(db, 'mediaItems'), where('userId', '==', user.uid), where('title', '==', rec.title));
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {
-                toast.error(t('home.alreadyInCollection'));
-                return;
+                throw new Error('already_exists');
             }
             await addDoc(collection(db, 'mediaItems'), {
                 userId: user.uid,
@@ -226,11 +225,13 @@ export default function HomePage() {
                 isFavorite: false,
                 createdAt: Timestamp.now(),
             });
-            toast.success(t('home.addedToCollection'));
             allRefetch();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding to collection:', error);
-            toast.error(t('home.adminRecError'));
+            if (error.message !== 'already_exists' && error.message !== 'login_required') {
+                toast.error(t('home.adminRecError'));
+            }
+            throw error;
         }
     };
 

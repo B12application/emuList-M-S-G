@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaFilter, FaTags, FaCircle, FaPlus, FaChevronDown, FaHistory, FaTrash } from 'react-icons/fa';
+import { FaFilter, FaTags, FaPlus, FaChevronDown, FaHistory, FaTrash } from 'react-icons/fa';
 
 interface CategorySidebarProps {
   t: (key: string) => string;
@@ -17,6 +17,11 @@ interface CategorySidebarProps {
   onDeleteCategory: (category: string) => void;
   onRunMigration?: () => void;
   isMigrating?: boolean;
+  categoryVersion: 'v1' | 'v2';
+  setCategoryVersion: (v: 'v1' | 'v2') => void;
+  onRunV2Migration?: () => void;
+  isMigratingV2?: boolean;
+  hasV2Data?: boolean;
 }
 
 const CategorySidebar: React.FC<CategorySidebarProps> = ({
@@ -33,7 +38,12 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onAddCategory,
   onDeleteCategory,
   onRunMigration,
-  isMigrating
+  isMigrating,
+  categoryVersion,
+  setCategoryVersion,
+  onRunV2Migration,
+  isMigratingV2,
+  hasV2Data
 }) => {
   const [isCategoriesCollapsed, setIsCategoriesCollapsed] = React.useState(false);
   const [categorySort, setCategorySort] = React.useState<'name' | 'count'>('name');
@@ -60,7 +70,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
     >
       <div className="sticky top-24 h-[calc(100vh-120px)] bg-white dark:bg-zinc-900 rounded-[2rem] shadow-sm border border-stone-200/50 dark:border-zinc-800/50 overflow-hidden flex flex-col transition-colors duration-300">
 
-        {/* Toggle Button - Sleek and integrated */}
+        {/* Toggle Button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="absolute right-0 top-0 bottom-0 w-3 hover:bg-stone-50 dark:hover:bg-zinc-800/50 flex items-center justify-center group transition-colors"
@@ -69,6 +79,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
         </button>
 
         <div className="p-5 flex flex-col h-full">
+          {/* Header */}
           <div className="flex items-center gap-3 mb-8 px-1">
             <div className={`w-8 h-8 rounded-xl bg-stone-900 dark:bg-white flex items-center justify-center shrink-0 shadow-lg shadow-stone-900/10 transition-all ${!isSidebarOpen ? 'mx-auto' : ''}`}>
               <FaFilter className="text-white dark:text-stone-900 text-[10px]" />
@@ -84,44 +95,52 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
             )}
           </div>
 
+          {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
             <div className="space-y-1">
+
+              {/* Tümü */}
               <SidebarItem
                 icon={<FaTags size={10} />}
                 label={t('expenses.allCategories')}
                 isActive={activeCategory === 'all'}
                 onClick={() => setActiveCategory('all')}
                 isOpen={isSidebarOpen}
-                isDark={isDark}
                 count={totalCount}
               />
 
-              <div className="pt-6 pb-2 px-1">
+              {/* Kategori Header */}
+              <div className="pt-4 pb-2 px-1">
                 <div
                   className="flex items-center justify-between group cursor-pointer"
                   onClick={() => setIsCategoriesCollapsed(!isCategoriesCollapsed)}
                 >
                   {isSidebarOpen && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <FaChevronDown
                         size={8}
-                        className={`text-stone-400 transition-transform duration-300 ${isCategoriesCollapsed ? '-rotate-90' : ''}`}
+                        className={`text-stone-400 shrink-0 transition-transform duration-300 ${isCategoriesCollapsed ? '-rotate-90' : ''}`}
                       />
-                      <span className="text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em]">
-                        Kategorilerim
+                      <span className="text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em] truncate">
+                        {categoryVersion === 'v2' ? 'Kategoriler 2.0' : 'Kategorilerim'}
                       </span>
+                      {categoryVersion === 'v2' && (
+                        <span className="text-[7px] font-black bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-1.5 py-0.5 rounded-md shrink-0">
+                          NEW
+                        </span>
+                      )}
                     </div>
                   )}
                   {isSidebarOpen && (
-                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setCategorySort(categorySort === 'name' ? 'count' : 'name');
                         }}
                         className={`p-1 rounded-md transition-all ${categorySort === 'count'
-                            ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
-                            : 'bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                          ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+                          : 'bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white'
                           }`}
                         title={categorySort === 'name' ? 'Sayıya göre sırala' : 'İsme göre sırala'}
                       >
@@ -133,6 +152,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 {!isSidebarOpen && <div className="h-[1px] bg-stone-100 dark:bg-zinc-800 mx-2" />}
               </div>
 
+              {/* Kategori Listesi */}
               <motion.div
                 initial={false}
                 animate={{ height: isCategoriesCollapsed ? 0 : 'auto', opacity: isCategoriesCollapsed ? 0 : 1 }}
@@ -141,18 +161,18 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 {sortedCategories.map((category) => (
                   <SidebarItem
                     key={category}
-                    icon={<FaCircle size={6} />}
+                    icon={null}
                     label={category}
                     isActive={activeCategory === category}
                     onClick={() => setActiveCategory(category)}
                     onDelete={() => onDeleteCategory(category)}
                     isOpen={isSidebarOpen}
-                    isDark={isDark}
                     count={categoryCounts[category] || 0}
                   />
                 ))}
               </motion.div>
 
+              {/* Silinenler + Version */}
               <div className="pt-2">
                 <SidebarItem
                   icon={<FaHistory size={10} />}
@@ -160,34 +180,48 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                   isActive={activeCategory === 'deleted'}
                   onClick={() => setActiveCategory('deleted')}
                   isOpen={isSidebarOpen}
-                  isDark={isDark}
                   count={deletedCount}
                   variant="danger"
                 />
+
+                {isSidebarOpen && (
+                  <div className="mt-2 flex justify-center">
+                    <button
+                      onClick={() => setCategoryVersion(categoryVersion === 'v1' ? 'v2' : 'v1')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${categoryVersion === 'v1'
+                        ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-sm'
+                        : 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
+                        }`}
+                    >
+                      <FaHistory size={8} />
+                      {categoryVersion === 'v1' ? 'V2\'ye Dön' : 'V1\'e Dön (Eski Veriler)'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Bottom Buttons */}
           {isSidebarOpen && (
             <div className="pt-6 mt-auto border-t border-stone-100 dark:border-zinc-800 flex flex-col gap-3">
               <button
                 onClick={onAddCategory}
-                className="group relative flex items-center justify-center gap-2.5 p-4 rounded-2xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-stone-900/10 dark:hover:shadow-white/10 active:scale-[0.98] overflow-hidden"
+                className="group relative flex items-center justify-center gap-2.5 p-3 rounded-2xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-stone-900/10 dark:hover:shadow-white/10 active:scale-[0.98] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <FaPlus size={8} className="relative z-10 group-hover:rotate-90 transition-transform duration-500" />
                 <span className="relative z-10">Kategori Ekle</span>
               </button>
-              
+
               {onRunMigration && (
                 <button
                   onClick={onRunMigration}
                   disabled={isMigrating}
-                  className={`group relative flex items-center justify-center gap-2.5 p-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border overflow-hidden ${
-                    isMigrating
-                      ? 'bg-stone-50 border-stone-100 text-stone-300 dark:bg-zinc-800/50 dark:border-zinc-800 dark:text-zinc-600'
-                      : 'bg-white border-stone-100 text-stone-400 hover:text-red-500 hover:border-red-500/50 hover:bg-red-50/30 dark:bg-zinc-900/40 dark:border-zinc-800 dark:text-zinc-500 dark:hover:text-red-400 dark:hover:border-red-500/30 dark:hover:bg-red-950/20 shadow-sm'
-                  }`}
+                  className={`group relative flex items-center justify-center gap-2.5 p-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border overflow-hidden ${isMigrating
+                    ? 'bg-stone-50 border-stone-100 text-stone-300 dark:bg-zinc-800/50 dark:border-zinc-800 dark:text-zinc-600'
+                    : 'bg-white border-stone-100 text-stone-400 hover:text-red-500 hover:border-red-500/50 hover:bg-red-50/30 dark:bg-zinc-900/40 dark:border-zinc-800 dark:text-zinc-500 dark:hover:text-red-400 dark:hover:border-red-500/30 dark:hover:bg-red-950/20 shadow-sm'
+                    }`}
                 >
                   <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <motion.div
@@ -195,7 +229,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                     transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
                     className="shrink-0 relative z-10"
                   >
-                    <FaCircle size={6} className={isMigrating ? 'text-stone-300' : 'opacity-40 group-hover:opacity-100 group-hover:text-red-500 transition-all duration-300'} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${isMigrating ? 'bg-stone-300' : 'bg-stone-300 group-hover:bg-red-500 transition-all duration-300'}`} />
                   </motion.div>
                   <span className="truncate relative z-10">
                     {isMigrating ? 'Temizleniyor...' : 'Verileri Temizle'}
@@ -210,6 +244,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   );
 };
 
+// ═══ SIDEBAR ITEM ═══
 interface SidebarItemProps {
   icon: React.ReactNode;
   label: string;
@@ -217,7 +252,6 @@ interface SidebarItemProps {
   onClick: () => void;
   onDelete?: () => void;
   isOpen: boolean;
-  isDark: boolean;
   count: number;
   variant?: 'default' | 'danger';
 }
@@ -233,24 +267,29 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClic
         onClick();
       }
     }}
+    title={isOpen ? label : undefined}
     className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 group relative cursor-pointer ${isActive
       ? variant === 'danger' ? 'bg-red-500 text-white shadow-md' : 'bg-stone-900 dark:bg-white shadow-md'
       : 'hover:bg-stone-50 dark:hover:bg-zinc-800/50'
       }`}
   >
     <div className="flex items-center gap-3 min-w-0 flex-1">
-      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isActive
-        ? 'bg-white/10 dark:bg-black/10'
-        : variant === 'danger' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-stone-50 dark:bg-zinc-800'
-        }`}>
-        <span className={isActive ? 'text-white dark:text-black' : variant === 'danger' ? 'text-red-400' : 'text-stone-400 group-hover:text-stone-600'}>
-          {icon}
-        </span>
-      </div>
+      {/* Icon - sadece varsa göster */}
+      {icon && (
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isActive
+          ? 'bg-white/10 dark:bg-black/10'
+          : variant === 'danger' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-stone-50 dark:bg-zinc-800'
+          }`}>
+          <span className={isActive ? 'text-white dark:text-black' : variant === 'danger' ? 'text-red-400' : 'text-stone-400 group-hover:text-stone-600'}>
+            {icon}
+          </span>
+        </div>
+      )}
       {isOpen && (
         <span
-          className={`text-[11px] font-bold uppercase tracking-wide truncate flex-1 text-left ${isActive ? 'text-white dark:text-black' : variant === 'danger' ? 'text-red-400' : 'text-stone-400 group-hover:text-stone-900 dark:hover:text-white'
-            }`}
+          className={`text-[11px] font-bold tracking-wide truncate flex-1 text-left max-w-[110px] ${isActive ? 'text-white dark:text-black' : variant === 'danger' ? 'text-red-400' : 'text-stone-400 group-hover:text-stone-900 dark:hover:text-white'
+            } ${!icon ? 'pl-2' : ''}`}
+          title={label}
         >
           {label}
         </span>
@@ -265,7 +304,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClic
               e.stopPropagation();
               onDelete();
             }}
-            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500 hover:text-white text-red-400 rounded-lg transition-all transform hover:scale-110 shadow-sm"
+            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500 hover:text-white text-red-400 rounded-lg transition-all"
             title="Kategoriyi Sil"
           >
             <FaTrash size={8} />
@@ -285,4 +324,3 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, isActive, onClic
 );
 
 export default CategorySidebar;
-

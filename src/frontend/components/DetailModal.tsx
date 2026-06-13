@@ -2,7 +2,7 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import type { MediaItem } from '../../backend/types/media';
-import MediaCard from './MediaCard';
+import DetailContent from './DetailContent';
 import SeasonSelector from './SeasonSelector';
 import EpisodeTracker from './EpisodeTracker';
 import { FaTimes } from 'react-icons/fa';
@@ -22,7 +22,6 @@ interface DetailModalProps {
 export default function DetailModal({ isOpen = true, onClose, item, refetch = () => { }, readOnly = false }: DetailModalProps) {
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState(false);
-
   const [localWatchedSeasons, setLocalWatchedSeasons] = useState<number[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -66,7 +65,7 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleClose}>
+      <Dialog as="div" className="relative z-[9999]" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -80,49 +79,56 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-4 py-8 sm:p-6">
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95 translate-y-4"
+              enter="ease-out duration-300 transform"
+              enterFrom="opacity-0 scale-95 translate-y-8"
               enterTo="opacity-100 scale-100 translate-y-0"
-              leave="ease-in duration-200"
+              leave="ease-in duration-200 transform"
               leaveFrom="opacity-100 scale-100 translate-y-0"
-              leaveTo="opacity-0 scale-95 translate-y-4"
+              leaveTo="opacity-0 scale-95 translate-y-8"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-transparent text-left align-middle shadow-xl transition-all relative">
+              {/* ⬅️ max-w-2xl ile geniş modal */}
+              <Dialog.Panel className="w-full max-w-2xl transform text-left align-middle transition-all relative">
+
+                {/* KAPATMA BUTONU */}
                 <button
                   onClick={handleClose}
-                  className="absolute top-2 right-2 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors cursor-pointer hover:scale-110 shadow-lg border border-white/20"
+                  className="absolute -top-3 -right-3 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-xl border-2 border-white/30 hover:scale-110 hover:bg-slate-800 transition-all cursor-pointer"
                   title={t('common.close') || 'Kapat'}
                 >
-                  <FaTimes />
+                  <FaTimes size={16} />
                 </button>
 
-                {/* MediaCard */}
-                <MediaCard item={item} refetch={refetch} isModal={true} readOnly={readOnly} />
+                <div className="flex flex-col gap-4">
 
-                {/* Bölüm Takip — episodesPerSeason varsa EpisodeTracker */}
-                {hasEpisodeData && !readOnly && (
-                  <div className="mt-2 p-4 bg-stone-50 dark:bg-zinc-900 rounded-2xl border border-teal-200 dark:border-teal-800/50">
-                    <EpisodeTracker
-                      item={item}
-                      onUpdate={() => { setHasChanges(true); refetch(); }}
-                    />
-                  </div>
-                )}
+                  {/* DETAY İÇERİK */}
+                  <DetailContent item={item} refetch={refetch} readOnly={readOnly} />
 
-                {/* Sezon seçici — episodesPerSeason yoksa basit sezon işaretleme */}
-                {hasSeasons && !hasEpisodeData && (
-                  <div className="mt-2 p-4 bg-stone-50 dark:bg-zinc-900 rounded-2xl border border-stone-300 dark:border-zinc-800">
-                    <SeasonSelector
-                      totalSeasons={item.totalSeasons!}
-                      watchedSeasons={localWatchedSeasons}
-                      onChange={handleSeasonChange}
-                      disabled={readOnly || isUpdating}
-                    />
-                  </div>
-                )}
+                  {/* BÖLÜM TAKİBİ */}
+                  {hasEpisodeData && !readOnly && (
+                    <div className="p-4 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-zinc-800 shadow-xl">
+                      <EpisodeTracker
+                        item={item}
+                        onUpdate={() => { setHasChanges(true); refetch(); }}
+                      />
+                    </div>
+                  )}
+
+                  {/* SEZON TAKİBİ */}
+                  {hasSeasons && !hasEpisodeData && (
+                    <div className="p-4 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-zinc-800 shadow-xl">
+                      <SeasonSelector
+                        totalSeasons={item.totalSeasons!}
+                        watchedSeasons={localWatchedSeasons}
+                        onChange={handleSeasonChange}
+                        disabled={readOnly || isUpdating}
+                      />
+                    </div>
+                  )}
+
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

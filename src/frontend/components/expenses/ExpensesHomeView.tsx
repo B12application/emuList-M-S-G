@@ -31,6 +31,7 @@ interface ExpensesHomeViewProps {
   setVisibleCount: React.Dispatch<React.SetStateAction<number>>;
   onConvertToInvestment?: (expense: Expense) => void;
   isTrashView?: boolean;
+  getCategoryField?: (e: Expense) => string;
 }
 
 const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
@@ -58,7 +59,8 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
   visibleCount,
   setVisibleCount,
   onConvertToInvestment,
-  isTrashView = false
+  isTrashView = false,
+  getCategoryField
 }) => {
   const totalIncomeAmount = filteredExpenses.filter(e => e.direction === 'gelen').reduce((sum, e) => sum + e.amount, 0);
   const totalExpenseAmount = filteredExpenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0);
@@ -289,7 +291,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                           ? 'bg-white/10 text-white dark:bg-black/10 dark:text-black'
                           : 'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
                           }`}>
-                          {expense.category}
+                          {getCategoryField ? getCategoryField(expense) : expense.category}
                         </span>
                       </div>
                       <span className={`text-[9px] font-black uppercase tracking-wider mt-0.5 block ${selectedIds.has(expense.id) ? 'text-white/60 dark:text-black/60' : 'text-stone-400 dark:text-zinc-500'}`}>

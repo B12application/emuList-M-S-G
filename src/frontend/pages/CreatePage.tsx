@@ -1,12 +1,14 @@
 // src/frontend/pages/CreatePage.tsx
-// Refactored: Simplified and modern design
-
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../../backend/config/firebaseConfig';
 import { addDoc, collection, serverTimestamp, Timestamp, getDocs, query, where } from 'firebase/firestore';
 import type { MediaItem, MediaType } from '../../backend/types/media';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaStar, FaCheck } from 'react-icons/fa';
+import {
+  FaFilm, FaTv, FaGamepad, FaBook, FaStar, FaCheck,
+  FaSearch, FaChevronDown, FaPen, FaTags
+} from 'react-icons/fa';
+import { Listbox, Transition } from '@headlessui/react';
 import MediaCard from '../components/MediaCard';
 import SearchInput from '../components/create/SearchInput';
 import Slider from 'rc-slider';
@@ -18,7 +20,7 @@ import { createActivity } from '../../backend/services/activityService';
 import { getAllSeriesEpisodeCounts } from '../../backend/services/omdbApi';
 import { saveEpisodesPerSeason } from '../../backend/services/episodeTrackingService';
 
-// Predefined genres for each type
+// Predefined genres
 const GENRES = {
   movie: ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Fantasy'],
   series: ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Fantasy'],
@@ -29,15 +31,22 @@ const GENRES = {
 // Suggested tags
 const SUGGESTED_TAGS = ['favorim', 'tekrar-izle', 'klasik', 'keşfet'];
 
+// Type Configuration for Dropdown (Kompakt versiyon)
+const TYPE_CONFIG = {
+  movie: { id: 'movie' as MediaType, icon: FaFilm, color: 'text-sky-500', label: 'Film' },
+  series: { id: 'series' as MediaType, icon: FaTv, color: 'text-emerald-500', label: 'Dizi' },
+  game: { id: 'game' as MediaType, icon: FaGamepad, color: 'text-amber-500', label: 'Oyun' },
+  book: { id: 'book' as MediaType, icon: FaBook, color: 'text-rose-500', label: 'Kitap' },
+};
+
 export default function CreatePage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultType = searchParams.get('type') as MediaType | null;
 
-  // Form state
-  const [type, setType] = useState<MediaType | null>(defaultType || 'movie');
+  const [type, setType] = useState<MediaType>(defaultType || 'movie');
   const [title, setTitle] = useState('');
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
@@ -52,9 +61,9 @@ export default function CreatePage() {
   const [runtime, setRuntime] = useState<string | undefined>(undefined);
   const [imdbId, setImdbId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(true); // Accordion state
 
-  // Handle search result selection
+  const currentType = TYPE_CONFIG[type];
+
   const handleSearchSelect = (details: { title: string; image: string; description: string; rating: string; author?: string; genres: string[]; totalSeasons?: number; releaseDate?: string; runtime?: string; imdbId?: string }) => {
     setTitle(details.title);
     setImage(details.image);
@@ -62,42 +71,33 @@ export default function CreatePage() {
     setRating(details.rating);
     if (details.author) setAuthor(details.author);
     if (details.genres.length) setGenres(details.genres);
-    // Diziler için toplam sezon sayısını kaydet
     if (details.totalSeasons) setTotalSeasons(details.totalSeasons);
-    // Çıkış tarihi bilgisini kaydet
     if (details.releaseDate) setReleaseDate(details.releaseDate);
-    // Süre bilgisini kaydet
     if (details.runtime) setRuntime(details.runtime);
-    // IMDb ID'yi kaydet
     if (details.imdbId) setImdbId(details.imdbId);
+
+    toast.success(`${details.title} başarıyla aktarıldı`);
   };
 
-  // Toggle genre
   const toggleGenre = (g: string) => {
     setGenres(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
   };
 
-  // Add tag
   const addTag = (tag: string) => {
     const normalized = tag.trim().toLowerCase().replace(/\s+/g, '-');
-    if (normalized && !tags.includes(normalized)) {
-      setTags([...tags, normalized]);
-    }
+    if (normalized && !tags.includes(normalized)) setTags([...tags, normalized]);
   };
 
-  // Remove tag
   const removeTag = (idx: number) => setTags(tags.filter((_, i) => i !== idx));
 
-  // Rating color
   const ratingColor = useMemo(() => {
     const r = parseFloat(rating);
-    if (r >= 8) return '#22c55e';
+    if (r >= 8) return '#10b981';
     if (r >= 6) return '#eab308';
     if (r >= 4) return '#f97316';
-    return '#ef4444';
+    return '#f43f5e';
   }, [rating]);
 
-  // Preview item
   const previewItem: MediaItem = {
     id: 'preview',
     title: title || t('create.titlePlaceholder'),
@@ -105,7 +105,7 @@ export default function CreatePage() {
     description: description || '',
     rating,
     watched,
-    type: type || 'movie',
+    type,
     createdAt: Timestamp.now(),
     author: type === 'book' ? author : undefined,
     genre: genres.join(', ') || '',
@@ -113,9 +113,10 @@ export default function CreatePage() {
     releaseDate: releaseDate || '',
     runtime: runtime || '',
     imdbId: imdbId || '',
+    platform: undefined,
+    addedAt: undefined
   };
 
-  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { toast.error(t('create.loginRequired')); return; }
@@ -123,292 +124,277 @@ export default function CreatePage() {
 
     setIsLoading(true);
     try {
-      // Check for duplicates
       const q = query(collection(db, 'mediaItems'), where('userId', '==', user.uid));
       const snap = await getDocs(q);
-      const isDuplicate = snap.docs.some(doc =>
-        doc.data().title?.trim().toLowerCase() === title.trim().toLowerCase()
-      );
+      const isDuplicate = snap.docs.some(doc => doc.data().title?.trim().toLowerCase() === title.trim().toLowerCase());
+
       if (isDuplicate) {
         toast.error(t('create.alreadyExists'));
         setIsLoading(false);
         return;
       }
 
-      // Create item
       const newItem: any = {
         title, type, rating, image, description, watched,
-        createdAt: serverTimestamp(),
-        userId: user.uid
+        createdAt: serverTimestamp(), userId: user.uid
       };
+
       if (author && type === 'book') newItem.author = author;
       if (genres.length) newItem.genre = genres.join(', ');
       if (tags.length) newItem.tags = tags;
-      // Diziler için sezon bilgisini ekle
-      if (type === 'series' && totalSeasons) {
-        newItem.totalSeasons = totalSeasons;
-        newItem.watchedSeasons = [];
-      }
-      // Çıkış tarihi bilgisini ekle
+      if (type === 'series' && totalSeasons) { newItem.totalSeasons = totalSeasons; newItem.watchedSeasons = []; }
       if (releaseDate) newItem.releaseDate = releaseDate;
-      // Süre bilgisini ekle
       if (runtime) newItem.runtime = runtime;
-      // IMDb ID'yi ekle
       if (imdbId) newItem.imdbId = imdbId;
 
       const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
 
-      // Dizi ise OMDB'den bölüm sayılarını arka planda çek ve kaydet
       if (type === 'series' && imdbId && totalSeasons) {
         getAllSeriesEpisodeCounts(imdbId, totalSeasons)
           .then(episodesPerSeason => {
-            if (Object.keys(episodesPerSeason).length > 0) {
-              saveEpisodesPerSeason(docRef.id, episodesPerSeason);
-              console.log(`📺 ${title}: ${Object.values(episodesPerSeason).reduce((a, b) => a + b, 0)} bölüm verisi kaydedildi`);
-            }
-          })
-          .catch(err => console.warn('Bölüm verisi çekilemedi:', err));
+            if (Object.keys(episodesPerSeason).length > 0) saveEpisodesPerSeason(docRef.id, episodesPerSeason);
+          }).catch(err => console.warn('Bölüm verisi çekilemedi:', err));
       }
 
-      // Create activity
-      await createActivity(user.uid, user.displayName || 'User', user.photoURL || '', 'media_added', {
-        ...newItem, id: docRef.id
-      });
+      await createActivity(user.uid, user.displayName || 'User', user.photoURL || '', 'media_added', { ...newItem, id: docRef.id });
 
       toast.success(t('create.addSuccess'));
       navigate(`/${type}`);
     } catch (err) {
       toast.error(t('create.errorAdding'));
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Type config
-  const typeConfig = {
-    movie: { icon: FaFilm, color: 'blue', label: t('media.movie') },
-    series: { icon: FaTv, color: 'emerald', label: t('media.series') },
-    game: { icon: FaGamepad, color: 'amber', label: t('media.game') },
-    book: { icon: FaBook, color: 'rose', label: t('media.book') },
-  };
-
   return (
-    <section className="py-8 px-4 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-stone-900 dark:text-white mb-6">{t('create.title')}</h1>
+    <section className="py-6 px-4 max-w-5xl mx-auto min-h-screen">
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
+      <div className="flex items-center gap-2.5 mb-6">
+        <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center shadow-sm">
+          <FaPen className="text-white dark:text-slate-900 text-sm" />
+        </div>
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+          {t('create.title') || 'İçerik Ekle'}
+        </h1>
+      </div>
 
-          {/* Step 1: Type Selection */}
-          <div className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm border border-stone-200 dark:border-zinc-700">
-            <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 mb-3">1. {t('create.selectType')}</h2>
-            <div className="grid grid-cols-4 gap-2">
-              {(Object.keys(typeConfig) as MediaType[]).map((t) => {
-                const { icon: Icon, color, label } = typeConfig[t];
-                const isSelected = type === t;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setType(t)}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${isSelected
-                      ? `border-${color}-500 bg-${color}-50 dark:bg-${color}-900/20 text-${color}-600 dark:text-${color}-400`
-                      : 'border-stone-300 dark:border-zinc-700 hover:border-gray-300 text-stone-500'
-                      }`}
-                  >
-                    <Icon className="text-xl" />
-                    <span className="text-xs font-medium">{label}</span>
-                  </button>
-                );
-              })}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* ═══ SOL KOLON: FORM ═══ */}
+        <form onSubmit={handleSubmit} className="lg:col-span-8 flex flex-col gap-4">
+
+          {/* 1. ARAMA VE TÜR SEÇİMİ (Kompakt) */}
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-zinc-800 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <FaSearch className="text-sky-500 text-sm" />
+              <h2 className="text-sm font-bold text-slate-800 dark:text-white">API ile Otomatik Doldur</h2>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="w-full sm:w-40 shrink-0 relative z-50">
+                <Listbox value={type} onChange={setType}>
+                  <Listbox.Button className="w-full h-10 px-3 flex items-center justify-between bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-lg hover:border-slate-300 dark:hover:border-zinc-600 transition-colors text-sm">
+                    <div className="flex items-center gap-2">
+                      <currentType.icon className={currentType.color} />
+                      <span className="font-semibold text-slate-700 dark:text-zinc-200">{t(`media.${type}`)}</span>
+                    </div>
+                    <FaChevronDown className="text-slate-400 text-xs" />
+                  </Listbox.Button>
+                  <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                    <Listbox.Options className="absolute w-full mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50 py-1">
+                      {(Object.values(TYPE_CONFIG)).map((opt) => (
+                        <Listbox.Option key={opt.id} value={opt.id} className={({ active }) => `flex items-center gap-2 px-3 py-2 cursor-pointer text-sm transition-colors ${active ? 'bg-slate-100 dark:bg-zinc-700' : ''}`}>
+                          <opt.icon className={opt.color} />
+                          <span className={`font-semibold ${type === opt.id ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-zinc-400'}`}>
+                            {t(`media.${opt.id}`)}
+                          </span>
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </Transition>
+                </Listbox>
+              </div>
+
+              <div className="flex-1 relative z-40">
+                {/* SearchInput bileşeninin de içeride h-10 gibi kompakt bir yapı kullandığını varsayıyoruz */}
+                <SearchInput type={type} onSelect={handleSearchSelect} />
+              </div>
             </div>
           </div>
 
-          {/* Step 2: Search - Collapsible */}
-          {type && (
-            <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-stone-200 dark:border-zinc-700">
-              <button
-                type="button"
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="w-full flex items-center justify-between p-4 hover:bg-stone-100 dark:hover:bg-zinc-700/50 transition"
-              >
-                <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 flex items-center gap-2">
-                  🔍 2. {t('create.searchLabel')}
-                  <span className="text-xs font-normal text-stone-400">(opsiyonel)</span>
-                </h2>
-                <span className={`text-stone-400 transition-transform ${searchOpen ? 'rotate-180' : ''}`}>▼</span>
-              </button>
-              {searchOpen && (
-                <div className="px-4 pb-4">
-                  <SearchInput type={type} onSelect={handleSearchSelect} />
-                </div>
-              )}
+          {/* 2. MANUEL DETAYLAR (İnce Inputlar) */}
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-zinc-800 shadow-sm relative z-30">
+            <div className="flex items-center gap-2 mb-4">
+              <FaPen className="text-emerald-500 text-sm" />
+              <h2 className="text-sm font-bold text-slate-800 dark:text-white">İçerik Detayları</h2>
             </div>
-          )}
 
-          {/* Step 3: Details */}
-          {type && (
-            <div className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm border border-stone-200 dark:border-zinc-700 space-y-4">
-              <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 mb-1">3. {t('create.detailsLabel')}</h2>
-
-              {/* Title */}
-              <div>
-                <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.titleLabel')} *</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                  className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-sm"
-                />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">{t('create.titleLabel')} *</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 transition-colors placeholder:text-slate-400"
+                  />
+                </div>
+                {type === 'book' && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">{t('create.authorLabel')}</label>
+                    <input
+                      type="text"
+                      value={author}
+                      onChange={(e) => setAuthor(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 transition-colors placeholder:text-slate-400"
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Image URL */}
               <div>
-                <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.imageLabel')}</label>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">{t('create.imageLabel')}</label>
                 <input
                   type="url"
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                   placeholder="https://..."
-                  className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 transition-colors placeholder:text-slate-400"
                 />
               </div>
 
-              {/* Description */}
               <div>
-                <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.descriptionLabel')}</label>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">{t('create.descriptionLabel')}</label>
                 <textarea
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm resize-none"
+                  className="w-full p-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 transition-colors placeholder:text-slate-400 resize-none custom-scrollbar"
                 />
               </div>
 
-              {/* Author (books only) */}
-              {type === 'book' && (
+              <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 grid grid-cols-2 gap-4 items-center">
+                {/* İnce Puan Slider */}
                 <div>
-                  <label className="block text-xs font-medium text-stone-500 mb-1">{t('create.authorLabel')}</label>
-                  <input
-                    type="text"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm"
-                  />
+                  <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase mb-2">
+                    <FaStar className="text-amber-400 text-xs" /> Puan: <span className="text-sm font-black" style={{ color: ratingColor }}>{rating}</span>
+                  </label>
+                  <div className="px-1.5">
+                    <Slider
+                      value={parseFloat(rating)}
+                      onChange={(v) => setRating(String(Array.isArray(v) ? v[0] : v))}
+                      min={0} max={10} step={0.1}
+                      trackStyle={{ backgroundColor: ratingColor, height: 4 }}
+                      handleStyle={{ borderColor: ratingColor, backgroundColor: 'white', height: 14, width: 14, marginTop: -5, opacity: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}
+                      railStyle={{ backgroundColor: '#e2e8f0', height: 4 }}
+                    />
+                  </div>
                 </div>
-              )}
 
-              {/* Rating */}
-              <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-stone-500 mb-2">
-                  <FaStar className="text-yellow-500" /> {t('create.ratingLabel')}: <span className="font-bold" style={{ color: ratingColor }}>{rating}</span>
-                </label>
-                <Slider
-                  value={parseFloat(rating)}
-                  onChange={(v) => setRating(String(Array.isArray(v) ? v[0] : v))}
-                  min={0} max={10} step={0.1}
-                  trackStyle={{ backgroundColor: ratingColor, height: 6 }}
-                  handleStyle={{ borderColor: ratingColor, backgroundColor: 'white', height: 18, width: 18, marginTop: -6 }}
-                  railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
-                />
-              </div>
-
-              {/* Watched Toggle */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setWatched(!watched)}
-                  className={`w-12 h-6 rounded-full transition-colors ${watched ? 'bg-green-500' : 'bg-gray-300 dark:bg-zinc-600'}`}
-                >
-                  <div className={`w-5 h-5 bg-stone-50 rounded-full shadow transition-transform ${watched ? 'translate-x-6' : 'translate-x-0.5'}`} />
-                </button>
-                <span className="text-sm text-stone-600 dark:text-zinc-300">
-                  {watched ? <><FaCheck className="inline text-green-500 mr-1" />{t('media.watched')}</> : t('media.notWatched')}
-                </span>
+                {/* Minimal Standart Toggle */}
+                <div className="flex flex-col items-end justify-center">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-2">Durum</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                      {watched ? t('media.watched') : t('media.notWatched')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setWatched(!watched)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${watched ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-600'}`}
+                    >
+                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${watched ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Step 4: Genres & Tags */}
-          {type && (
-            <div className="bg-white dark:bg-zinc-800 rounded-2xl p-5 shadow-sm border border-stone-200 dark:border-zinc-700 space-y-4">
-              <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400">4. {t('create.genresAndTags')}</h2>
+          {/* 3. TÜRLER VE ETİKETLER */}
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-zinc-800 shadow-sm relative z-20">
+            <div className="flex items-center gap-2 mb-4">
+              <FaTags className="text-purple-500 text-sm" />
+              <h2 className="text-sm font-bold text-slate-800 dark:text-white">Tür & Etiketler</h2>
+            </div>
 
-              {/* Genres */}
-              <div>
-                <label className="block text-xs font-medium text-stone-500 mb-2">🎭 {t('genreLabel')}</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {GENRES[type].map((g) => (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => toggleGenre(g)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition ${genres.includes(g)
-                        ? 'bg-purple-500 text-white border-purple-500'
-                        : 'bg-gray-50 dark:bg-zinc-700 text-stone-600 dark:text-zinc-300 border-stone-300 dark:border-zinc-600 hover:border-purple-400'
-                        }`}
-                    >
-                      {genres.includes(g) && '✓ '}{g}
-                    </button>
-                  ))}
-                </div>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-1.5">
+                {GENRES[type].map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => toggleGenre(g)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${genres.includes(g)
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700'
+                      }`}
+                  >
+                    {g}
+                  </button>
+                ))}
               </div>
 
-              {/* Tags */}
-              <div>
-                <label className="block text-xs font-medium text-stone-500 mb-2">🏷️ {t('tags.label')}</label>
+              <div className="pt-3 border-t border-slate-100 dark:border-zinc-800">
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput); setTagInput(''); } }}
-                    placeholder={t('tags.addPlaceholder')}
-                    className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-stone-300 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-900 text-sm"
+                    placeholder="Etiket yazıp Enter'a basın..."
+                    className="flex-1 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white text-sm focus:ring-1 focus:ring-purple-500 placeholder:text-slate-400"
                   />
-                  <button type="button" onClick={() => { addTag(tagInput); setTagInput(''); }} className="shrink-0 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600">+</button>
+                  <button type="button" onClick={() => { addTag(tagInput); setTagInput(''); }} className="px-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors">
+                    Ekle
+                  </button>
                 </div>
+
                 <div className="flex flex-wrap gap-1.5">
                   {SUGGESTED_TAGS.filter(t => !tags.includes(t)).map(t => (
-                    <button key={t} type="button" onClick={() => addTag(t)} className="px-2 py-0.5 text-xs rounded-full border border-dashed border-gray-300 dark:border-zinc-600 text-stone-500 hover:border-blue-400 hover:text-blue-500">+{t}</button>
+                    <button key={t} type="button" onClick={() => addTag(t)} className="px-2 py-0.5 text-[10px] font-semibold rounded-md border border-dashed border-slate-300 dark:border-zinc-700 text-slate-400 hover:text-purple-500 transition-colors">
+                      + {t}
+                    </button>
+                  ))}
+                  {tags.map((tag, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                      #{tag}
+                      <button type="button" onClick={() => removeTag(i)} className="hover:text-purple-500 ml-1">×</button>
+                    </span>
                   ))}
                 </div>
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {tags.map((tag, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                        #{tag}
-                        <button type="button" onClick={() => removeTag(i)} className="hover:text-blue-500">×</button>
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Submit */}
-          {type && (
-            <button
-              type="submit"
-              disabled={isLoading || !title}
-              className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {isLoading ? t('common.loading') : t('create.addButton')}
-            </button>
-          )}
+          <button
+            type="submit"
+            disabled={isLoading || !title}
+            className="w-full h-11 mt-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm rounded-xl shadow-sm hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isLoading ? <span>Kaydediliyor...</span> : <><FaCheck className="text-xs" /> Kütüphaneye Ekle</>}
+          </button>
         </form>
 
-        {/* Preview Card */}
-        <div className="lg:col-span-2">
-          <div className="sticky top-24">
-            <h2 className="text-sm font-semibold text-stone-600 dark:text-zinc-400 mb-3">{t('create.preview')}</h2>
-            <MediaCard item={previewItem} refetch={() => { }} readOnly />
+        {/* ═══ SAĞ KOLON: ÖNİZLEME (Sticky) ═══ */}
+        <div className="lg:col-span-4 hidden lg:block">
+          <div className="sticky top-6 bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl p-5 border border-slate-200/50 dark:border-zinc-800/50">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">Önizleme</h2>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Aktif</span>
+              </div>
+            </div>
+            <div className="w-full max-w-[240px] mx-auto">
+              <MediaCard item={previewItem} refetch={() => { }} readOnly />
+            </div>
           </div>
         </div>
+
       </div>
     </section>
   );

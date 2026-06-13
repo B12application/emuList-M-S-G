@@ -1,5 +1,6 @@
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FaCalendarCheck, FaFilm, FaSpinner } from 'react-icons/fa';
+import { FaCalendarCheck, FaFilm, FaSpinner, FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import type { MediaItem } from '../../../backend/types/media';
 
 type TFn = (key: string) => string;
@@ -13,89 +14,146 @@ interface HomeActivityFeedProps {
 }
 
 export default function HomeActivityFeed({ loading, items, onSelect, formatDate, t }: HomeActivityFeedProps) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (scrollRef.current) {
+            const amount = 280;
+            scrollRef.current.scrollBy({
+                left: direction === 'left' ? -amount : amount,
+                behavior: 'smooth',
+            });
+        }
+    };
+
     return (
         <section>
             {/* Header */}
-            <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-500 dark:bg-sky-950 dark:text-sky-400">
-                    <FaCalendarCheck className="text-sm" />
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-500">
+                        <FaCalendarCheck size={16} />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                            {t('home.recentActivity')}
+                        </h2>
+                        <p className="text-xs text-slate-400 dark:text-zinc-500">
+                            {t('home.liveRibbon')}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                        {t('home.recentActivity')}
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400">
-                        {t('home.liveRibbon')}
-                    </p>
-                </div>
+
+                {/* Scroll Buttons */}
+                {items.length > 3 && (
+                    <div className="hidden sm:flex items-center gap-1">
+                        <button
+                            onClick={() => scroll('left')}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+                        >
+                            <FaChevronLeft size={10} />
+                        </button>
+                        <button
+                            onClick={() => scroll('right')}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+                        >
+                            <FaChevronRight size={10} />
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Content */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-                {loading ? (
-                    <div className="flex items-center justify-center gap-3 py-16">
-                        <FaSpinner className="h-5 w-5 animate-spin text-slate-400" />
-                        <span className="text-sm text-slate-500 dark:text-zinc-400">{t('home.loading')}</span>
-                    </div>
-                ) : items.length === 0 ? (
-                    <div className="py-12 text-center">
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-300 dark:bg-zinc-800 dark:text-zinc-600">
-                            <FaCalendarCheck className="text-xl" />
-                        </div>
-                        <p className="mt-3 text-sm text-slate-500 dark:text-zinc-400">{t('home.noRecent')}</p>
-                    </div>
-                ) : (
-                    <ul className="divide-y divide-slate-100 dark:divide-zinc-800">
+            {loading ? (
+                <div className="flex items-center justify-center gap-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 py-16">
+                    <FaSpinner className="animate-spin text-slate-300 dark:text-zinc-600" size={20} />
+                    <span className="text-sm text-slate-400 dark:text-zinc-500">{t('home.loading')}</span>
+                </div>
+            ) : items.length === 0 ? (
+                <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-dashed border-slate-200 dark:border-zinc-800 py-12 text-center">
+                    <FaCalendarCheck size={32} className="mx-auto text-slate-200 dark:text-zinc-700 mb-3" />
+                    <p className="text-sm text-slate-400 dark:text-zinc-500">{t('home.noRecent')}</p>
+                </div>
+            ) : (
+                <div className="relative">
+                    {/* Sol gradient */}
+                    <div className="absolute left-0 top-0 bottom-0 w-8 z-10 bg-gradient-to-r from-white dark:from-zinc-950 to-transparent pointer-events-none sm:hidden" />
+                    {/* Sağ gradient */}
+                    <div className="absolute right-0 top-0 bottom-0 w-8 z-10 bg-gradient-to-l from-white dark:from-zinc-950 to-transparent pointer-events-none sm:hidden" />
+
+                    {/* Yatay scroll */}
+                    <div
+                        ref={scrollRef}
+                        className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1 snap-x snap-mandatory"
+                    >
                         {items.map((item, idx) => (
-                            <motion.li
+                            <motion.button
                                 key={item.id}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: idx * 0.05, duration: 0.3 }}
+                                onClick={() => onSelect(item)}
+                                className="group relative flex-shrink-0 w-[180px] sm:w-[200px] snap-start"
                             >
-                                <button
-                                    type="button"
-                                    onClick={() => onSelect(item)}
-                                    className="group flex w-full items-center gap-4 px-5 py-3.5 text-left transition hover:bg-slate-50 dark:hover:bg-zinc-900"
-                                >
-                                    {/* Thumbnail */}
-                                    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/5">
-                                        {item.image ? (
-                                            <img
-                                                src={item.image}
-                                                alt=""
-                                                className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                                            />
-                                        ) : (
-                                            <FaFilm className="text-lg text-slate-300 dark:text-zinc-600" />
-                                        )}
-                                    </div>
+                                {/* Kart */}
+                                <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 dark:bg-zinc-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                                    {/* Fotoğraf */}
+                                    {item.image ? (
+                                        <img
+                                            src={item.image}
+                                            alt={item.title}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <FaFilm size={40} className="text-slate-300 dark:text-zinc-600" />
+                                        </div>
+                                    )}
 
-                                    {/* Content */}
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold text-slate-900 line-clamp-1 group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400 transition-colors">
-                                            {item.title}
-                                        </p>
-                                        <p className="mt-0.5 text-xs text-slate-500 line-clamp-1 dark:text-zinc-400">
-                                            {item.description || t('home.noDescription')}
-                                        </p>
-                                    </div>
+                                    {/* Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                                    {/* Meta - Right side */}
-                                    <div className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
-                                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
+                                    {/* Tip badge - sol üst */}
+                                    <div className="absolute top-2.5 left-2.5">
+                                        <span className="px-2 py-0.5 rounded-lg bg-black/50 backdrop-blur-sm text-white text-[9px] font-bold uppercase">
                                             {item.type}
                                         </span>
-                                        <span className="text-[10px] text-slate-400 dark:text-zinc-500">
-                                            {formatDate(item.createdAt)}
+                                    </div>
+
+                                    {/* Rating - sağ üst */}
+                                    <div className="absolute top-2.5 right-2.5">
+                                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-amber-500 text-white text-[9px] font-bold">
+                                            <FaStar size={7} /> {item.rating}
                                         </span>
                                     </div>
-                                </button>
-                            </motion.li>
+
+                                    {/* Alt bilgi */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                                        <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-[9px] text-white/60 mt-1">
+                                            {formatDate(item.createdAt)}
+                                        </p>
+                                    </div>
+
+                                    {/* Hover detay katmanı */}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <span className="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-bold border border-white/20">
+                                            Detaylar
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.button>
                         ))}
-                    </ul>
-                )}
-            </div>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
         </section>
     );
 }

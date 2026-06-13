@@ -5,29 +5,7 @@ import { collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, w
 import { useAuth } from '../context/AuthContext';
 import { format, addMonths, parseISO } from 'date-fns';
 
-const CATEGORY_MAP: Record<string, string[]> = {
-  'Yeme İçme': ['Yemek', 'Yeme-İçme', 'Kafe', 'Restoran', 'Cafe', 'Gıda', 'Market', 'Bakkal', 'Atıştırmalık'],
-  'Alışveriş': ['Alışveriş', 'Giyim', 'Teknoloji', 'Kozmetik', 'Aksesuar', 'Ayakkabı', 'Elektronik', 'Alışveriş / Teknoloji'],
-  'Akaryakıt': ['Akaryakıt', 'Yakıt'],
-  'Araba Harcamaları': ['Araba Harcamaları', 'Araç', 'Otopark', 'HGS', 'Bakım', 'Tamir', 'Yıkama'],
-  'Ulaşım': ['Ulaşım', 'Taksi', 'Otobüs', 'Metro', 'Yolculuk', 'Bilet', 'Uçak'],
-  'Fatura': ['Fatura', 'Abonelik', 'Elektrik', 'Su', 'Doğalgaz', 'İnternet', 'Telefon', 'Netflix', 'Spotify'],
-  'Sağlık': ['Sağlık', 'Eczane', 'Hastane', 'Muayene', 'İlaç', 'Diş'],
-  'Finans & Vergi': ['Vergi', 'Kamu', 'Ceza', 'Sigorta', 'BES', 'Yatırım', 'Kredi', 'Faiz', 'Kamu / Vergi', 'Vergi / Ceza', 'Vergi ve Ödemeler', 'Sigorta / BES', 'Sigorta ve Yatırım'],
-  'Eğlence': ['Eğlence', 'Oyun', 'Sinema', 'Konser', 'Tiyatro', 'Hobi', 'Oyun / Eğlence', 'Eğlence/Cafe'],
-  'Diğer': ['Diğer', 'Genel', 'Bağış', 'Hizmet', 'Seyahat', 'Konaklama', 'Yol Üstü Tesis']
-};
-
-const normalizeCategory = (name: string): string => {
-  if (!name) return 'Diğer';
-  const trimmed = name.trim();
-  for (const [standard, aliases] of Object.entries(CATEGORY_MAP)) {
-    if (standard.toLowerCase() === trimmed.toLowerCase() || aliases.some(a => a.toLowerCase() === trimmed.toLowerCase())) {
-      return standard;
-    }
-  }
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-};
+// CATEGORY_MAP and normalizeCategory removed as we are transitioning to v2 categories directly.
 
 export interface Expense {
   id: string;
@@ -53,6 +31,8 @@ export interface Expense {
   installmentGroupId?: string;
   isDeleted?: boolean;
   deletedAt?: number;
+  // Categories 2.0 — title-based re-categorization
+  category2?: string;
 }
 
 export type NewExpense = Omit<Expense, 'id' | 'userId' | 'createdAt'> & {
@@ -134,7 +114,7 @@ export default function useExpenses() {
       const batch = writeBatch(db);
       const expensesRef = collection(db, 'expensedata');
 
-      const normalizedCategoryName = normalizeCategory(newExpense.category);
+      const selectedCategory = newExpense.category || 'Diğer';
 
       for (let i = 0; i < installmentCount; i++) {
         const installmentDate = installmentCount > 1
@@ -143,7 +123,8 @@ export default function useExpenses() {
 
         const expenseData = {
           title: newExpense.title,
-          category: normalizedCategoryName,
+          category: selectedCategory,
+          category2: selectedCategory,
           amount: perInstallmentAmount,
           date: installmentDate,
           description: newExpense.description || '',
@@ -164,10 +145,10 @@ export default function useExpenses() {
       }
 
       // Auto-create category if it doesn't exist
-      if (!dbCategories.find(c => c.name === normalizedCategoryName)) {
+      if (!dbCategories.find(c => c.name === selectedCategory)) {
         const catRef = doc(collection(db, 'categories'));
         batch.set(catRef, {
-          name: normalizedCategoryName,
+          name: selectedCategory,
           userId: user.uid,
           createdAt: Date.now(),
         });
@@ -209,10 +190,11 @@ export default function useExpenses() {
         const batch = writeBatch(db);
 
         for (const expense of chunk) {
-          const normalizedCategoryName = normalizeCategory(expense.category);
+          const selectedCategory = expense.category || 'Diğer';
           const expenseData = {
             title: expense.title,
-            category: normalizedCategoryName,
+            category: selectedCategory,
+            category2: selectedCategory,
             amount: expense.amount,
             date: expense.date,
             description: expense.description || '',
@@ -225,8 +207,8 @@ export default function useExpenses() {
           const newDocRef = doc(collection(db, 'expensedata'));
           batch.set(newDocRef, expenseData);
 
-          if (!dbCategories.find(c => c.name === normalizedCategoryName)) {
-            categoriesToCreate.add(normalizedCategoryName);
+          if (!dbCategories.find(c => c.name === selectedCategory)) {
+            categoriesToCreate.add(selectedCategory);
           }
         }
 

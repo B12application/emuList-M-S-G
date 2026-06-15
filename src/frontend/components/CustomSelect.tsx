@@ -40,11 +40,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ options, value, onChange, l
             : 'border-stone-200 dark:border-zinc-700 hover:border-stone-400 dark:hover:border-zinc-500'
         }`}
       >
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl transition-colors ${isOpen ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950' : 'bg-stone-100 dark:bg-zinc-800 text-stone-400'}`}>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className={`p-2 rounded-xl shrink-0 transition-colors ${isOpen ? 'bg-stone-900 text-white dark:bg-white dark:text-zinc-950' : 'bg-stone-100 dark:bg-zinc-800 text-stone-400'}`}>
             <FaTag className="text-[10px]" />
           </div>
-          <span className={value ? '' : 'text-stone-400 dark:text-zinc-500 italic font-medium'}>
+          <span className={`truncate text-left ${value ? '' : 'text-stone-400 dark:text-zinc-500 italic font-medium'}`}>
             {value || placeholder || 'Select...'}
           </span>
         </div>

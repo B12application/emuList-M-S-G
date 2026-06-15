@@ -31,6 +31,8 @@ export interface Expense {
   installmentGroupId?: string;
   isDeleted?: boolean;
   deletedAt?: number;
+  isExcluded?: boolean;
+  excludedAt?: number;
   // Categories 2.0 — title-based re-categorization
   category2?: string;
 }
@@ -55,7 +57,7 @@ const fetchExpenses = async (userId: string): Promise<Expense[]> => {
   const snapshot = await getDocs(q);
   return snapshot.docs
     .map(doc => ({ id: doc.id, ...doc.data() } as Expense))
-    .filter(e => !e.isDeleted)
+    .filter(e => !e.isDeleted && !e.isExcluded)
     .sort((a, b) => b.date.localeCompare(a.date));
 };
 
@@ -70,6 +72,20 @@ const fetchDeletedExpenses = async (userId: string): Promise<Expense[]> => {
   return snapshot.docs
     .map(doc => ({ id: doc.id, ...doc.data() } as Expense))
     .sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+};
+
+const fetchExcludedExpenses = async (userId: string): Promise<Expense[]> => {
+  const expensesRef = collection(db, 'expensedata');
+  const q = query(
+    expensesRef,
+    where('userId', '==', userId),
+    where('isExcluded', '==', true)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() } as Expense))
+    .filter(e => !e.isDeleted)
+    .sort((a, b) => (b.excludedAt || 0) - (a.excludedAt || 0));
 };
 
 const fetchCategories = async (userId: string): Promise<Category[]> => {
@@ -92,6 +108,12 @@ export default function useExpenses() {
   const { data: deletedExpenses = [], isLoading: isLoadingDeleted } = useQuery({
     queryKey: ['deletedExpenses', user?.uid],
     queryFn: () => fetchDeletedExpenses(user!.uid),
+    enabled: !!user?.uid,
+  });
+
+  const { data: excludedExpenses = [], isLoading: isLoadingExcluded } = useQuery({
+    queryKey: ['excludedExpenses', user?.uid],
+    queryFn: () => fetchExcludedExpenses(user!.uid),
     enabled: !!user?.uid,
   });
 
@@ -259,6 +281,34 @@ export default function useExpenses() {
     },
   });
 
+  const excludeExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const expenseRef = doc(db, 'expensedata', expenseId);
+      await updateDoc(expenseRef, {
+        isExcluded: true,
+        excludedAt: Date.now()
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['excludedExpenses', user?.uid] });
+    },
+  });
+
+  const includeExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const expenseRef = doc(db, 'expensedata', expenseId);
+      await updateDoc(expenseRef, {
+        isExcluded: false,
+        excludedAt: null
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['excludedExpenses', user?.uid] });
+    },
+  });
+
   const hardDeleteExpenseMutation = useMutation({
     mutationFn: async (expenseId: string) => {
       await deleteDoc(doc(db, 'expensedata', expenseId));
@@ -270,6 +320,9 @@ export default function useExpenses() {
 
   const updateExpenseMutation = useMutation({
     mutationFn: async ({ id, ...updateData }: Partial<Expense> & { id: string }) => {
+      if ('category' in updateData) {
+        updateData.category2 = updateData.category;
+      }
       const expenseRef = doc(db, 'expensedata', id);
       await updateDoc(expenseRef, updateData);
     },
@@ -284,7 +337,7 @@ export default function useExpenses() {
       const batch = writeBatch(db);
       ids.forEach(id => {
         const ref = doc(db, 'expensedata', id);
-        batch.update(ref, { category });
+        batch.update(ref, { category, category2: category });
       });
       await batch.commit();
     },
@@ -312,13 +365,32 @@ export default function useExpenses() {
     },
   });
 
+  const bulkExcludeExpensesMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (!user) throw new Error('User not authenticated');
+      const batch = writeBatch(db);
+      ids.forEach(id => {
+        const ref = doc(db, 'expensedata', id);
+        batch.update(ref, {
+          isExcluded: true,
+          excludedAt: Date.now()
+        });
+      });
+      await batch.commit();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['excludedExpenses', user?.uid] });
+    },
+  });
+
   const deleteCategoryMutation = useMutation({
     mutationFn: async (categoryName: string) => {
       if (!user) throw new Error('User not authenticated');
       const batch = writeBatch(db);
 
       // Delete expenses in category
-      const expensesToDelete = expenses.filter(e => e.category === categoryName);
+      const expensesToDelete = expenses.filter(e => (e.category2 || e.category) === categoryName);
       expensesToDelete.forEach((exp) => {
         batch.delete(doc(db, 'expensedata', exp.id));
       });
@@ -337,26 +409,42 @@ export default function useExpenses() {
     },
   });
 
-  // Merge categories from DB and existing expenses (for safety)
+  // Sadece aktif kullanılan ve yeni eklenen kategorileri al (V1 ve v2_ çöplerini temizle)
+  const activeExpenseCats = expenses.map(e => e.category2).filter(Boolean) as string[];
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  
+  const cleanDbCats = dbCategories
+    .filter(c => !c.name.startsWith('v2_'))
+    .filter(c => {
+      const isUsed = activeExpenseCats.includes(c.name);
+      const isRecent = Date.now() - c.createdAt < SEVEN_DAYS_MS;
+      return isUsed || isRecent;
+    })
+    .map(c => c.name);
+
   const categories = Array.from(new Set([
-    ...dbCategories.map(c => c.name),
-    ...expenses.map(e => e.category)
-  ])).sort();
+    ...activeExpenseCats,
+    ...cleanDbCats
+  ])).filter(Boolean).sort();
 
   return {
     expenses,
     deletedExpenses,
+    excludedExpenses,
     categories,
-    isLoading: isLoadingExpenses || isLoadingCategories || isLoadingDeleted,
+    isLoading: isLoadingExpenses || isLoadingCategories || isLoadingDeleted || isLoadingExcluded,
     addExpense: addExpenseMutation.mutateAsync,
     addCategory: addCategoryMutation.mutateAsync,
     addBulkExpenses: addBulkExpensesMutation.mutateAsync,
     deleteExpense: deleteExpenseMutation.mutateAsync,
     restoreExpense: restoreExpenseMutation.mutateAsync,
+    excludeExpense: excludeExpenseMutation.mutateAsync,
+    includeExpense: includeExpenseMutation.mutateAsync,
     hardDeleteExpense: hardDeleteExpenseMutation.mutateAsync,
     updateExpense: updateExpenseMutation.mutateAsync,
     bulkUpdateCategory: bulkUpdateCategoryMutation.mutateAsync,
     bulkDeleteExpenses: bulkDeleteExpensesMutation.mutateAsync,
+    bulkExcludeExpenses: bulkExcludeExpensesMutation.mutateAsync,
     deleteCategory: deleteCategoryMutation.mutateAsync,
     isAdding: addExpenseMutation.isPending,
     isDeleting: deleteExpenseMutation.isPending,
@@ -366,5 +454,6 @@ export default function useExpenses() {
     isBulkAdding: addBulkExpensesMutation.isPending,
     isBulkUpdating: bulkUpdateCategoryMutation.isPending,
     isBulkDeleting: bulkDeleteExpensesMutation.isPending,
+    isBulkExcluding: bulkExcludeExpensesMutation.isPending,
   };
 }

@@ -49,13 +49,15 @@ export default function HomeActivityFeed({ loading, items, onSelect, formatDate,
                     <div className="hidden sm:flex items-center gap-1">
                         <button
                             onClick={() => scroll('left')}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                            className="w-8 h-8 flex cursor-pointer items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
                         >
                             <FaChevronLeft size={10} />
                         </button>
                         <button
                             onClick={() => scroll('right')}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                            className="w-8 h-8 flex cursor-pointer items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
                         >
                             <FaChevronRight size={10} />
                         </button>
@@ -93,7 +95,8 @@ export default function HomeActivityFeed({ loading, items, onSelect, formatDate,
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: idx * 0.05, duration: 0.3 }}
                                 onClick={() => onSelect(item)}
-                                className="group relative flex-shrink-0 w-[180px] sm:w-[200px] snap-start"
+                                // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                className="group relative flex-shrink-0 w-[180px] sm:w-[200px] snap-start cursor-pointer"
                             >
                                 {/* Kart */}
                                 <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 dark:bg-zinc-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">

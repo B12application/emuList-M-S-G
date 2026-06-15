@@ -58,7 +58,8 @@ export default function QuoteWidget() {
                     <button
                         onClick={handleRefresh}
                         disabled={isRefreshing}
-                        className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/60 hover:text-white disabled:opacity-50"
+                        // HATA DÜZELTİLDİ: cursor-pointer ve disabled:cursor-default eklendi
+                        className="p-2 cursor-pointer rounded-full hover:bg-white/10 transition-colors text-white/60 hover:text-white disabled:opacity-50 disabled:cursor-default"
                         title="Yeni söz"
                     >
                         <FaSyncAlt className={isRefreshing ? 'animate-spin' : ''} />

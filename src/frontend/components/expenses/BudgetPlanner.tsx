@@ -1,13 +1,18 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
-import {
-  FaPlus, FaTrash, FaArrowRight, FaArrowLeft,
-  FaCheck, FaSpinner, FaUndo, FaCircle
-} from 'react-icons/fa';
+import React, { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../../../backend/config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import type { Expense } from '../../hooks/useExpenses';
+import {
+  FaPlus,
+  FaTrash,
+  FaWallet,
+  FaArrowDown,
+  FaArrowUp,
+  FaSpinner,
+  FaCalendarAlt,
+  FaCoins
+} from 'react-icons/fa';
 
 type Props = {
   t: any;
@@ -16,138 +21,145 @@ type Props = {
   selectedMonth: string;
 };
 
-type PlannedItem = {
+// Yenilenmiş Veri Tipleri
+type IncomeItem = {
+  id: string;
+  title: string;
+  amount: number;
+  expectedDate: string;
+};
+
+type WishItem = {
   id: string;
   title: string;
   price: number;
-  paid: boolean;
-  paidAt?: string;
+  targetDate: string; // <-- Alınacaklar için hedef tarih alanı eklendi
 };
 
-type BudgetData = {
-  salary: number;
-  currentBalance: number;
-  planned: PlannedItem[];
+type PlannerData = {
+  walletBalance: number;
+  incomes: IncomeItem[];
+  wishes: WishItem[];
   updatedAt: string;
 };
 
-const BudgetPlanner: React.FC<Props> = ({ t, isDark, expenses, selectedMonth }) => {
+const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
   const { user } = useAuth();
-  const [salary, setSalary] = useState<number>(0);
-  const [currentBalance, setCurrentBalance] = useState<number>(0);
-  const [planned, setPlanned] = useState<PlannedItem[]>([]);
-  const [newTitle, setNewTitle] = useState('');
-  const [newPrice, setNewPrice] = useState('');
+
+  // Temel Durumlar (State)
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [incomes, setIncomes] = useState<IncomeItem[]>([]);
+  const [wishes, setWishes] = useState<WishItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Yeni Gelir Formu State'leri
+  const [incomeTitle, setIncomeTitle] = useState('');
+  const [incomeAmt, setIncomeAmt] = useState('');
+  const [incomeDate, setIncomeDate] = useState('');
+
+  // Yeni Alınacak Formu State'leri
+  const [wishTitle, setWishTitle] = useState('');
+  const [wishPrice, setWishPrice] = useState('');
+  const [wishDate, setWishDate] = useState(''); // <-- Form için state eklendi
+
+  // Veritabanından Veri Çekme
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
-        const snap = await getDoc(doc(db, 'budgetPlans', user.uid));
+        const snap = await getDoc(doc(db, 'futurePlans', user.uid));
         if (snap.exists()) {
-          const d = snap.data() as BudgetData;
-          setSalary(d.salary || 0);
-          setCurrentBalance(d.currentBalance || 0);
-          setPlanned(d.planned || []);
+          const d = snap.data() as PlannerData;
+          setWalletBalance(d.walletBalance || 0);
+          setIncomes(d.incomes || []);
+          setWishes(d.wishes || []);
         }
       } catch (err) {
-        console.error(err);
+        console.error("Veri çekme hatası:", err);
       } finally {
         setLoading(false);
       }
     })();
   }, [user]);
 
-  const saveToFirebase = async (overrides?: Partial<BudgetData>) => {
+  // Veritabanına Kaydetme Fonksiyonu
+  const saveToFirebase = async (overrides?: Partial<PlannerData>) => {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'budgetPlans', user.uid), {
-        salary,
-        currentBalance,
-        planned,
+      await setDoc(doc(db, 'futurePlans', user.uid), {
+        walletBalance,
+        incomes,
+        wishes,
         ...overrides,
         updatedAt: Timestamp.now(),
       }, { merge: true });
     } catch (err) {
-      console.error(err);
+      console.error("Kaydetme hatası:", err);
     } finally {
       setSaving(false);
     }
   };
 
-  // HESAPLAMALAR
-  const thisMonthPayments = useMemo(() => {
-    if (!selectedMonth || selectedMonth === 'all') return 0;
-    const [y, m] = selectedMonth.split('-').map(Number);
-    const start = startOfMonth(new Date(y, m - 1));
-    const end = endOfMonth(new Date(y, m - 1));
-    return expenses
-      .filter(e => e.direction !== 'gelen')
-      .filter(e => isWithinInterval(parseISO(e.date), { start, end }))
-      .reduce((s, e) => s + e.amount, 0);
-  }, [expenses, selectedMonth]);
+  // --- HESAPLAMALAR ---
+  const totalExpectedIncome = useMemo(() => incomes.reduce((sum, item) => sum + item.amount, 0), [incomes]);
+  const totalWishesCost = useMemo(() => wishes.reduce((sum, item) => sum + item.price, 0), [wishes]);
 
-  const unpaidTotal = useMemo(() => planned.filter(p => !p.paid).reduce((s, p) => s + p.price, 0), [planned]);
-  const paidTotal = useMemo(() => planned.filter(p => p.paid).reduce((s, p) => s + p.price, 0), [planned]);
-  const plannedTotal = useMemo(() => planned.reduce((s, p) => s + p.price, 0), [planned]);
+  // Toplam Para = Cebimdeki Para + Gelecek Paralar
+  const totalMoney = walletBalance + totalExpectedIncome;
+  // Kalan Sonuç = Toplam Para - Alınacaklar Toplamı
+  const finalResult = totalMoney - totalWishesCost;
 
-  const remainingBudget = currentBalance + salary - thisMonthPayments - unpaidTotal;
-  const deficit = thisMonthPayments + unpaidTotal - currentBalance;
+  // --- EKLEME VE SİLME İŞLEMLERİ ---
+  const addIncome = async () => {
+    const amount = Number(incomeAmt);
+    if (!incomeTitle || !amount || !incomeDate) return;
 
-  const addPlanned = async () => {
-    const price = Number(newPrice || 0);
-    if (!newTitle || !price) return;
-    const updated = [...planned, { id: Math.random().toString(36).slice(2), title: newTitle, price, paid: false }];
-    setPlanned(updated);
-    setNewTitle('');
-    setNewPrice('');
-    await saveToFirebase({ planned: updated });
+    const newItem: IncomeItem = {
+      id: Math.random().toString(36).slice(2),
+      title: incomeTitle,
+      amount,
+      expectedDate: incomeDate,
+    };
+
+    const updated = [...incomes, newItem];
+    setIncomes(updated);
+    setIncomeTitle('');
+    setIncomeAmt('');
+    setIncomeDate('');
+    await saveToFirebase({ incomes: updated });
   };
 
-  const togglePaid = async (id: string) => {
-    const updated = planned.map(p =>
-      p.id === id
-        ? {
-          ...p,
-          paid: !p.paid,
-          paidAt: !p.paid ? new Date().toISOString() : undefined,
-        }
-        : p
-    );
-    setPlanned(updated);
-
-    // ✅ Ödendiğinde mevcut bakiyeyi düş
-    const item = planned.find(p => p.id === id);
-    if (item && !item.paid) {
-      const newBalance = currentBalance - item.price;
-      setCurrentBalance(newBalance);
-      await saveToFirebase({ planned: updated, currentBalance: newBalance });
-    } else {
-      // Geri alındığında bakiyeyi geri ekle
-      if (item && item.paid) {
-        const newBalance = currentBalance + item.price;
-        setCurrentBalance(newBalance);
-        await saveToFirebase({ planned: updated, currentBalance: newBalance });
-      } else {
-        await saveToFirebase({ planned: updated });
-      }
-    }
+  const removeIncome = async (id: string) => {
+    const updated = incomes.filter(i => i.id !== id);
+    setIncomes(updated);
+    await saveToFirebase({ incomes: updated });
   };
 
-  const removePlanned = async (id: string) => {
-    const updated = planned.filter(p => p.id !== id);
-    setPlanned(updated);
-    await saveToFirebase({ planned: updated });
+  const addWish = async () => {
+    const price = Number(wishPrice);
+    if (!wishTitle || !price || !wishDate) return;
+
+    const newItem: WishItem = {
+      id: Math.random().toString(36).slice(2),
+      title: wishTitle,
+      price,
+      targetDate: wishDate, // Hedef tarih eklendi
+    };
+
+    const updated = [...wishes, newItem];
+    setWishes(updated);
+    setWishTitle('');
+    setWishPrice('');
+    setWishDate('');
+    await saveToFirebase({ wishes: updated });
   };
 
-  const scroll = (dir: 'left' | 'right') => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: dir === 'left' ? -340 : 340, behavior: 'smooth' });
-    }
+  const removeWish = async (id: string) => {
+    const updated = wishes.filter(w => w.id !== id);
+    setWishes(updated);
+    await saveToFirebase({ wishes: updated });
   };
 
   if (loading) {
@@ -158,241 +170,214 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark, expenses, selectedMonth }) 
     );
   }
 
-  const paidCount = planned.filter(p => p.paid).length;
-
   return (
-    <div className="space-y-16 py-8">
-      {/* ═══════════════════════════════════════════
-          HERO SAYILAR — Büyük tipografi, yatay scroll
-          ═══════════════════════════════════════════ */}
-      <div className="relative">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Bütçe</span>
-            <span className="w-8 h-[1px] bg-slate-300 dark:bg-zinc-700" />
-            <span className="text-[10px] text-slate-400">
-              {new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
-            </span>
+    <div className="max-w-6xl mx-auto py-8 space-y-6">
+
+      {/* ── 1. BÜYÜK ÖZET PANELİ (DASHBOARD) ── */}
+      <div className="rounded-[2.5rem] bg-slate-900 text-white p-6 md:p-8 shadow-2xl overflow-hidden relative dark:bg-black dark:border dark:border-zinc-800">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-96 h-96 bg-emerald-500/15 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/3 w-96 h-96 bg-rose-500/15 blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Cebimdeki Mevcut Para (Gösterge) */}
+          <div>
+            <span className="text-slate-400 text-xs font-bold uppercase tracking-widest block mb-1">Cebimdeki Nakit</span>
+            <span className="text-3xl md:text-4xl font-black text-white tabular-nums">₺{walletBalance.toLocaleString()}</span>
           </div>
-          {saving && (
-            <span className="text-[10px] text-slate-400 animate-pulse">Kaydediliyor…</span>
-          )}
-        </div>
 
-        {/* Yatay scroll alanı */}
-        <div className="relative group">
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-          >
-            <FaArrowLeft className="text-xs" />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-          >
-            <FaArrowRight className="text-xs" />
-          </button>
-
-          <div
-            ref={scrollRef}
-            className="flex gap-8 overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
-          >
-            {/* Kart 1: Bakiye */}
-            <div className="snap-start shrink-0 w-[300px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-4">
-                Mevcut Bakiye
-              </p>
-              <p className="text-6xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums">
-                ₺{currentBalance.toLocaleString()}
-              </p>
-              <div className="mt-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-xs text-slate-500">Nakit</span>
-              </div>
+          {/* Formüller */}
+          <div className="flex items-center gap-3 text-xs md:text-sm font-bold text-slate-400">
+            <div className="px-3 py-2 bg-white/5 rounded-xl text-center">
+              <span className="block text-[10px] uppercase text-slate-400">Gelecekler (+)</span>
+              <span className="text-emerald-400">₺{totalExpectedIncome.toLocaleString()}</span>
             </div>
-
-            {/* Kart 2: Maaş */}
-            <div className="snap-start shrink-0 w-[300px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-4">
-                Aylık Gelir
-              </p>
-              <div className="relative inline-block">
-                <input
-                  value={salary || ''}
-                  onChange={e => {
-                    const v = Number(e.target.value || 0);
-                    setSalary(v);
-                    setTimeout(() => saveToFirebase({ salary: v }), 500);
-                  }}
-                  type="number"
-                  placeholder="0"
-                  className="w-[250px] text-6xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums bg-transparent border-b-4 border-slate-200 dark:border-zinc-800 focus:border-slate-900 dark:focus:border-white focus:outline-none pb-2 transition"
-                />
-                <span className="absolute -top-2 -right-8 text-sm text-slate-400">₺</span>
-              </div>
-            </div>
-
-            {/* Kart 3: Bu Ay Harcanan */}
-            <div className="snap-start shrink-0 w-[300px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-4">
-                Bu Ay Harcanan
-              </p>
-              <p className="text-6xl font-black text-rose-500 dark:text-rose-400 tracking-tighter tabular-nums">
-                ₺{thisMonthPayments.toLocaleString()}
-              </p>
-              <div className="mt-4 w-full h-1 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-rose-500 rounded-full transition-all duration-700"
-                  style={{ width: `${salary > 0 ? Math.min((thisMonthPayments / salary) * 100, 100) : 0}%` }}
-                />
-              </div>
-              <p className="text-[10px] text-slate-400 mt-2">
-                {salary > 0 ? Math.round((thisMonthPayments / salary) * 100) : 0}% gelirin
-              </p>
-            </div>
-
-            {/* Kart 4: Kalan */}
-            <div className="snap-start shrink-0 w-[300px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-4">
-                Kullanılabilir
-              </p>
-              <p className={`text-6xl font-black tracking-tighter tabular-nums ${remainingBudget >= 0 ? 'text-slate-900 dark:text-white' : 'text-red-500'}`}>
-                {remainingBudget < 0 ? '−' : ''}₺{Math.abs(remainingBudget).toLocaleString()}
-              </p>
-              <p className="text-xs text-slate-500 mt-3">
-                {remainingBudget >= 0 ? 'Harcanabilir bütçe' : 'Bütçe aşımı'}
-              </p>
-            </div>
-
-            {/* Kart 5: Açık */}
-            <div className="snap-start shrink-0 w-[300px]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-4">
-                Karşılanması Gereken
-              </p>
-              <p className={`text-6xl font-black tracking-tighter tabular-nums ${deficit > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                ₺{Math.max(0, deficit).toLocaleString()}
-              </p>
-              <p className="text-xs text-slate-500 mt-3">
-                {deficit > 0 ? 'Mevcut bakiyeyi aşan tutar' : 'Bakiye yeterli ✓'}
-              </p>
+            <span className="text-slate-600 font-black">-</span>
+            <div className="px-3 py-2 bg-white/5 rounded-xl text-center">
+              <span className="block text-[10px] uppercase text-slate-400">Alınacaklar (-)</span>
+              <span className="text-rose-400">₺{totalWishesCost.toLocaleString()}</span>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ═══════════════════════════════════════════
-          PLANLANAN ALIMLAR — Swiss poster list
-          ═══════════════════════════════════════════ */}
-      <div>
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-              Planlanan
-            </span>
-            <span className="text-[10px] text-slate-300">{planned.length} kalem</span>
-            <span className="text-[10px] text-emerald-500">{paidCount} ödendi</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-400">Bekleyen:</span>
-            <span className="text-sm font-black text-amber-600 dark:text-amber-400">
-              ₺{unpaidTotal.toLocaleString()}
-            </span>
-          </div>
-        </div>
-
-        {/* Ekleme — inline, minimal */}
-        <div className="flex gap-1 mb-6 pb-6 border-b border-slate-100 dark:border-zinc-800">
-          <input
-            placeholder="Ne alacaksın?"
-            value={newTitle}
-            onChange={e => setNewTitle(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addPlanned()}
-            className="flex-1 text-sm font-medium bg-transparent text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-zinc-600 focus:outline-none"
-          />
-          <input
-            placeholder="Fiyat"
-            value={newPrice}
-            onChange={e => setNewPrice(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addPlanned()}
-            type="number"
-            className="w-24 text-sm font-medium bg-transparent text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-zinc-600 focus:outline-none text-right"
-          />
-          <span className="text-sm text-slate-400 mr-2">₺</span>
-          <button
-            onClick={addPlanned}
-            className="w-8 h-8 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center transition hover:scale-110 active:scale-95"
-          >
-            <FaPlus className="text-[10px]" />
-          </button>
-        </div>
-
-        {/* Liste — editorial, her satır bir nefes */}
-        <div className="space-y-1">
-          {planned.length === 0 ? (
-            <p className="text-sm text-slate-300 dark:text-zinc-600 italic py-12">
-              Henüz planlanmış harcama yok.
+          {/* Final Simülasyon Sonucu */}
+          <div className="text-left md:text-right">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              {finalResult >= 0 ? "Plan Sonrası Cebinde Kalacak Para" : "Hedef İçin Eksik Olan Para"}
             </p>
-          ) : (
-            planned.map(p => (
-              <div
-                key={p.id}
-                className={`group flex items-center gap-4 py-3.5 px-1 transition-colors ${p.paid
-                    ? 'opacity-50'
-                    : 'hover:bg-slate-50 dark:hover:bg-zinc-900'
-                  }`}
-              >
-                {/* Tik — büyük, brutaldan esinli */}
-                <button
-                  onClick={() => togglePaid(p.id)}
-                  className={`w-6 h-6 shrink-0 rounded-sm flex items-center justify-center transition-all ${p.paid
-                      ? 'bg-emerald-500 text-white'
-                      : 'border-2 border-slate-300 dark:border-zinc-700 text-transparent hover:border-slate-900 dark:hover:border-white'
-                    }`}
-                >
-                  {p.paid && <FaCheck className="text-[10px]" />}
-                </button>
-
-                {/* İçerik */}
-                <div className="flex-1 min-w-0 flex items-baseline justify-between gap-4">
-                  <span className={`text-sm ${p.paid ? 'line-through text-slate-400' : 'font-medium text-slate-900 dark:text-white'}`}>
-                    {p.title}
-                  </span>
-                  <span className={`text-sm tabular-nums shrink-0 ${p.paid ? 'text-slate-400' : 'font-bold text-slate-700 dark:text-zinc-300'}`}>
-                    ₺{p.price.toLocaleString()}
-                  </span>
-                </div>
-
-                {/* Aksiyon — hover'da görünür */}
-                <button
-                  onClick={() => p.paid ? togglePaid(p.id) : removePlanned(p.id)}
-                  className="shrink-0 w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-slate-400 hover:text-red-500"
-                  title={p.paid ? 'Geri al' : 'Sil'}
-                >
-                  {p.paid ? <FaUndo className="text-[10px]" /> : <FaTrash className="text-[10px]" />}
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Özet bar — altta sabit gibi */}
-        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-slate-400">
-          <span>Ödenen: ₺{paidTotal.toLocaleString()}</span>
-          <span>Kalan: ₺{unpaidTotal.toLocaleString()}</span>
-          <span>Toplam: ₺{plannedTotal.toLocaleString()}</span>
+            <p className={`text-4xl md:text-5xl font-black tracking-tighter tabular-nums ${finalResult >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
+              {finalResult < 0 ? "-" : ""}₺{Math.abs(finalResult).toLocaleString()}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════
-          ALT BİLGİ — Minimal
-          ═══════════════════════════════════════════ */}
-      <div className="flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 dark:border-zinc-800 pt-6">
-        <span>Bakiye + Maaş = ₺{(currentBalance + salary).toLocaleString()}</span>
-        <span className="flex items-center gap-1.5">
-          <FaCircle className={`text-[6px] ${saving ? 'text-amber-500 animate-pulse' : 'text-emerald-500'}`} />
-          {saving ? 'Senkronize ediliyor' : 'Güncel'}
-        </span>
+      {saving && <p className="text-xs text-center text-slate-400 animate-pulse">Senkronize ediliyor...</p>}
+
+      {/* ── 2. NAKİT GİRİŞ HAP KART (Mevcut Bakiye Yönetimi) ── */}
+      <div className="bg-slate-50 border border-slate-200/60 dark:bg-zinc-900/40 dark:border-zinc-800 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 flex items-center justify-center">
+            <FaWallet className="text-sm" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Mevcut Bakiyeni Güncelle</h4>
+            <p className="text-xs text-slate-500">Şu an cebinde/bankanda net ne kadar para var?</p>
+          </div>
+        </div>
+        <div className="relative inline-block w-full sm:w-auto">
+          <input
+            type="number"
+            value={walletBalance || ''}
+            onChange={e => {
+              const val = Number(e.target.value || 0);
+              setWalletBalance(val);
+              setTimeout(() => saveToFirebase({ walletBalance: val }), 800);
+            }}
+            placeholder="0"
+            className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 w-full sm:w-[160px] pr-8"
+          />
+          <span className="absolute right-3 top-2.5 text-slate-400 text-xs font-bold">₺</span>
+        </div>
+      </div>
+
+      {/* ── 3. İKİLİ SÜTUN (GELECEK PARALAR & HEDEFLER) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* SOL SÜTUN: GELECEK PARALAR (TARİHLİ) */}
+        <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <FaArrowDown className="text-md" />
+              </div>
+              <div>
+                <h3 className="text-md font-bold text-slate-900 dark:text-white">Gelecek Paralar (+ Tutar)</h3>
+                <p className="text-xs text-slate-500">Geleceği kesin olan paralar ve tarihleri</p>
+              </div>
+            </div>
+
+            {/* Giriş Formu */}
+            <div className="flex flex-col gap-2.5 mb-6 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-slate-100 dark:border-zinc-900">
+              <input
+                type="text"
+                placeholder="Para nereden gelecek? (Örn: Maaş)"
+                value={incomeTitle} onChange={e => setIncomeTitle(e.target.value)}
+                className="w-full bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-medium"
+              />
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="number"
+                  placeholder="Tutar (₺)"
+                  value={incomeAmt} onChange={e => setIncomeAmt(e.target.value)}
+                  className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-bold"
+                />
+                <input
+                  type="date"
+                  value={incomeDate} onChange={e => setIncomeDate(e.target.value)}
+                  className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none text-slate-500 dark:text-slate-400"
+                />
+                <button
+                  onClick={addIncome}
+                  className="w-8 h-8 shrink-0 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 transition text-xs"
+                >
+                  <FaPlus />
+                </button>
+              </div>
+            </div>
+
+            {/* Liste */}
+            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+              {incomes.length === 0 ? (
+                <p className="text-center text-xs text-slate-400 py-8 italic">Gelecek bir ödeme takvimi eklemediniz.</p>
+              ) : (
+                incomes.map(item => (
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-900/60 border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 transition group">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{item.title}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-zinc-500 flex items-center gap-1 mt-1 font-medium">
+                        <FaCalendarAlt className="text-[9px]" /> {new Date(item.expectedDate).toLocaleDateString('tr-TR')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black text-emerald-500">+ ₺{item.amount.toLocaleString()}</span>
+                      <button onClick={() => removeIncome(item.id)} className="text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                        <FaTrash className="text-xs" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* SAĞ SÜTUN: ALINACAKLAR & HEDEFLER (TARİHLİ) */}
+        <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                <FaArrowUp className="text-md" />
+              </div>
+              <div>
+                <h3 className="text-md font-bold text-slate-900 dark:text-white">Alınacaklar & Hedefler (- Tutar)</h3>
+                <p className="text-xs text-slate-500">Almayı düşündüğün hayaller ve hedef tarihleri</p>
+              </div>
+            </div>
+
+            {/* Giriş Formu */}
+            <div className="flex flex-col gap-2.5 mb-6 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-slate-100 dark:border-zinc-900">
+              <input
+                type="text"
+                placeholder="Ne alacaksın? (Örn: Yeni Telefon)"
+                value={wishTitle} onChange={e => setWishTitle(e.target.value)}
+                className="w-full bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-medium"
+              />
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="number"
+                  placeholder="Fiyatı (₺)"
+                  value={wishPrice} onChange={e => setWishPrice(e.target.value)}
+                  className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-bold"
+                />
+                <input
+                  type="date"
+                  value={wishDate} onChange={e => setWishDate(e.target.value)}
+                  className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none text-slate-500 dark:text-slate-400"
+                />
+                <button
+                  onClick={addWish}
+                  className="w-8 h-8 shrink-0 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-slate-800 transition text-xs"
+                >
+                  <FaPlus />
+                </button>
+              </div>
+            </div>
+
+            {/* Liste */}
+            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+              {wishes.length === 0 ? (
+                <p className="text-center text-xs text-slate-400 py-8 italic">Alışveriş listeniz boş, yeni hedefler ekleyin!</p>
+              ) : (
+                wishes.map(item => (
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-900/60 border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 transition group">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{item.title}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-zinc-500 flex items-center gap-1 mt-1 font-medium">
+                        <FaCalendarAlt className="text-[9px]" /> {new Date(item.targetDate).toLocaleDateString('tr-TR')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black text-rose-500">- ₺{item.price.toLocaleString()}</span>
+                      <button onClick={() => removeWish(item.id)} className="text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                        <FaTrash className="text-xs" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

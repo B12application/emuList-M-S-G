@@ -54,7 +54,8 @@ export default function HomeFavoritesRail({
                             type="button"
                             disabled={page === 0}
                             onClick={() => onPageChange(Math.max(0, page - 1))}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                            // HATA DÜZELTİLDİ: cursor-pointer ve disabled:cursor-default eklendi
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 disabled:cursor-default dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
                         >
                             <FaChevronLeft className="text-[10px]" />
                         </button>
@@ -65,7 +66,8 @@ export default function HomeFavoritesRail({
                             type="button"
                             disabled={page >= totalPages - 1}
                             onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                            // HATA DÜZELTİLDİ: cursor-pointer ve disabled:cursor-default eklendi
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 disabled:cursor-default dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
                         >
                             <FaChevronRight className="text-[10px]" />
                         </button>
@@ -99,7 +101,8 @@ export default function HomeFavoritesRail({
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.06, duration: 0.3 }}
                             onClick={() => onSelect(item)}
-                            className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left transition-all hover:border-slate-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                            className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left transition-all hover:border-slate-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
                         >
                             {/* Image Area */}
                             <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-zinc-800">
@@ -124,7 +127,8 @@ export default function HomeFavoritesRail({
                                 <button
                                     type="button"
                                     onClick={(e) => onRemoveFavorite(item, e)}
-                                    className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-rose-500 shadow-sm opacity-0 transition-all hover:bg-rose-500 hover:text-white group-hover:opacity-100 dark:bg-zinc-900/90 dark:text-rose-400 dark:hover:bg-rose-500 dark:hover:text-white"
+                                    // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                    className="absolute right-2.5 top-2.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-rose-500 shadow-sm opacity-0 transition-all hover:bg-rose-500 hover:text-white group-hover:opacity-100 dark:bg-zinc-900/90 dark:text-rose-400 dark:hover:bg-rose-500 dark:hover:text-white"
                                     title={t('home.removeFavorite')}
                                 >
                                     <FaTimes className="text-[10px]" />
@@ -146,23 +150,22 @@ export default function HomeFavoritesRail({
 
                                     {/* Status */}
                                     <span
-                                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                                            item.watched
+                                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.watched
                                                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
                                                 : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'
-                                        }`}
+                                            }`}
                                     >
                                         {item.watched
                                             ? item.type === 'book'
                                                 ? t('media.read')
                                                 : item.type === 'game'
-                                                  ? t('media.played')
-                                                  : t('media.watched')
+                                                    ? t('media.played')
+                                                    : t('media.watched')
                                             : item.type === 'book'
-                                              ? t('media.notRead')
-                                              : item.type === 'game'
-                                                ? t('media.notPlayed')
-                                                : t('media.notWatched')}
+                                                ? t('media.notRead')
+                                                : item.type === 'game'
+                                                    ? t('media.notPlayed')
+                                                    : t('media.notWatched')}
                                     </span>
                                 </div>
                             </div>

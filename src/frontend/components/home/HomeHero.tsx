@@ -116,7 +116,7 @@ export default function HomeHero({
                         <div className="flex flex-wrap items-center gap-3">
                             <Link
                                 to="/create"
-                                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                                className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                             >
                                 <span className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/20 to-amber-400/0 translate-x-[-100%] transition-transform duration-500 group-hover:translate-x-[100%]" />
                                 <FaPlus />
@@ -124,7 +124,7 @@ export default function HomeHero({
                             </Link>
                             <Link
                                 to="/all"
-                                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/50 px-6 py-3.5 text-sm font-bold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:shadow-sm active:scale-95 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-slate-200 bg-white/50 px-6 py-3.5 text-sm font-bold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:shadow-sm active:scale-95 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:bg-zinc-800"
                             >
                                 <FaArchive className="text-slate-400 dark:text-zinc-500" />
                                 {t('home.viewCollection')}
@@ -134,14 +134,14 @@ export default function HomeHero({
                                 <button
                                     type="button"
                                     onClick={onRandom}
-                                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 transition-all hover:bg-amber-200 hover:shadow-sm active:scale-95 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
+                                    className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-amber-100 text-amber-600 transition-all hover:bg-amber-200 hover:shadow-sm active:scale-95 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
                                     title={t('home.randomButton')}
                                 >
                                     <FaRandom className="text-lg" />
                                 </button>
                                 <Link
                                     to="/planner?todo=true"
-                                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 transition-all hover:bg-emerald-200 hover:shadow-sm active:scale-95 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+                                    className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 transition-all hover:bg-emerald-200 hover:shadow-sm active:scale-95 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
                                     title={t('home.myTasks')}
                                 >
                                     <FaTasks className="text-lg" />
@@ -185,7 +185,7 @@ export default function HomeHero({
                         </p>
                     </motion.div>
 
-                    {/* BENTO KUTUSU 3: Live Ribbon (Taşma Sorunu Çözüldü) */}
+                    {/* BENTO KUTUSU 3: Live Ribbon (Canlı Kısım) */}
                     <motion.div
                         custom={2}
                         variants={bentoItem}
@@ -204,14 +204,14 @@ export default function HomeHero({
                         </div>
 
                         {previewItems.length > 0 ? (
-                            /* Taşmayı önleyen akıllı grid yapısı (aspect-square sayesinde her ekrana tam sığar) */
                             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 sm:gap-2.5">
                                 {previewItems.slice(0, 7).map((item) => (
                                     <button
                                         key={item.id}
                                         type="button"
-                                        onClick={() => setSelectedItem(item)} // Tıklanınca DetailModal'ı açacak veriyi set et
-                                        className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-150 transition-all hover:scale-105 hover:shadow-md active:scale-95 dark:border-zinc-800 dark:bg-zinc-800"
+                                        onClick={() => setSelectedItem(item)}
+                                        // HATA DÜZELTİLDİ: cursor-pointer eklendi.
+                                        className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-100 bg-slate-100 transition-all hover:scale-105 hover:shadow-md active:scale-95 dark:border-zinc-800 dark:bg-zinc-800"
                                         title={item.title}
                                     >
                                         <ImageWithFallback
@@ -265,7 +265,7 @@ export default function HomeHero({
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] bg-white p-1 shadow-2xl dark:bg-zinc-900"
+                                className="relative w-full max-w-sm cursor-default overflow-hidden rounded-[2rem] bg-white p-1 shadow-2xl dark:bg-zinc-900"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="rounded-[1.8rem] border border-slate-100 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -276,7 +276,8 @@ export default function HomeHero({
                                         <button
                                             type="button"
                                             onClick={() => setIsExpanded(false)}
-                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
                                         >
                                             <FaTimes className="text-sm" />
                                         </button>
@@ -301,7 +302,8 @@ export default function HomeHero({
                                         <Link
                                             to="/profile"
                                             onClick={() => setIsExpanded(false)}
-                                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-zinc-950"
+                                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                            className="mt-8 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-zinc-950"
                                         >
                                             {t('home.profileModalCta')}
                                             <FaArrowRight className="text-xs" />

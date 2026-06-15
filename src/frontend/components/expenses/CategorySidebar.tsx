@@ -13,15 +13,11 @@ interface CategorySidebarProps {
   categoryCounts: Record<string, number>;
   totalCount: number;
   deletedCount: number;
+  excludedCount: number;
   onAddCategory: () => void;
   onDeleteCategory: (category: string) => void;
   onRunMigration?: () => void;
   isMigrating?: boolean;
-  categoryVersion: 'v1' | 'v2';
-  setCategoryVersion: (v: 'v1' | 'v2') => void;
-  onRunV2Migration?: () => void;
-  isMigratingV2?: boolean;
-  hasV2Data?: boolean;
 }
 
 const CategorySidebar: React.FC<CategorySidebarProps> = ({
@@ -35,15 +31,11 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   categoryCounts,
   totalCount,
   deletedCount,
+  excludedCount,
   onAddCategory,
   onDeleteCategory,
   onRunMigration,
-  isMigrating,
-  categoryVersion,
-  setCategoryVersion,
-  onRunV2Migration,
-  isMigratingV2,
-  hasV2Data
+  isMigrating
 }) => {
   const [isCategoriesCollapsed, setIsCategoriesCollapsed] = React.useState(false);
   const [categorySort, setCategorySort] = React.useState<'name' | 'count'>('name');
@@ -122,13 +114,8 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                         className={`text-stone-400 shrink-0 transition-transform duration-300 ${isCategoriesCollapsed ? '-rotate-90' : ''}`}
                       />
                       <span className="text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em] truncate">
-                        {categoryVersion === 'v2' ? 'Kategoriler 2.0' : 'Kategorilerim'}
+                        Kategoriler
                       </span>
-                      {categoryVersion === 'v2' && (
-                        <span className="text-[7px] font-black bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-1.5 py-0.5 rounded-md shrink-0">
-                          NEW
-                        </span>
-                      )}
                     </div>
                   )}
                   {isSidebarOpen && (
@@ -172,10 +159,18 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 ))}
               </motion.div>
 
-              {/* Silinenler + Version */}
-              <div className="pt-2">
+              {/* Liste Dışı ve Silinenler */}
+              <div className="pt-2 space-y-1">
                 <SidebarItem
                   icon={<FaHistory size={10} />}
+                  label="Liste Dışılar"
+                  isActive={activeCategory === 'excluded'}
+                  onClick={() => setActiveCategory('excluded')}
+                  isOpen={isSidebarOpen}
+                  count={excludedCount}
+                />
+                <SidebarItem
+                  icon={<FaTrash size={10} />}
                   label="Silinenler"
                   isActive={activeCategory === 'deleted'}
                   onClick={() => setActiveCategory('deleted')}
@@ -183,21 +178,6 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                   count={deletedCount}
                   variant="danger"
                 />
-
-                {isSidebarOpen && (
-                  <div className="mt-2 flex justify-center">
-                    <button
-                      onClick={() => setCategoryVersion(categoryVersion === 'v1' ? 'v2' : 'v1')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${categoryVersion === 'v1'
-                        ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-sm'
-                        : 'bg-stone-100 text-stone-500 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
-                        }`}
-                    >
-                      <FaHistory size={8} />
-                      {categoryVersion === 'v1' ? 'V2\'ye Dön' : 'V1\'e Dön (Eski Veriler)'}
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>

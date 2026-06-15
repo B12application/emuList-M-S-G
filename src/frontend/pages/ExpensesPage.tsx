@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory, FaReceipt } from 'react-icons/fa';
+import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory, FaReceipt, FaEyeSlash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import useExpenses from '../hooks/useExpenses';
 import type { Expense } from '../hooks/useExpenses';
@@ -33,16 +33,20 @@ const ExpensesPage: React.FC = () => {
   const {
     expenses,
     deletedExpenses,
+    excludedExpenses,
     categories,
     isLoading: isLoadingExpenses,
     addExpense,
     addCategory,
     deleteExpense,
     restoreExpense,
+    excludeExpense,
+    includeExpense,
     hardDeleteExpense,
     updateExpense,
     bulkUpdateCategory,
     bulkDeleteExpenses,
+    bulkExcludeExpenses,
     deleteCategory,
     addBulkExpenses
   } = useExpenses();
@@ -60,16 +64,15 @@ const ExpensesPage: React.FC = () => {
   const { runMigration, isMigrating } = useExpenseMigration();
   const { runV2Migration, isMigrating: isMigratingV2 } = useCategoryV2Migration();
 
-  // Categories 2.0: version toggle
-  const [categoryVersion, setCategoryVersion] = useState<'v1' | 'v2'>('v2');
+
 
   // Check if v2 data exists
   const hasV2Data = useMemo(() => expenses.some(e => !!e.category2), [expenses]);
 
   // Active category field based on version
   const getCategoryField = useCallback((e: Expense) => {
-    return categoryVersion === 'v2' && e.category2 ? e.category2 : e.category;
-  }, [categoryVersion]);
+    return e.category2 || e.category;
+  }, []);
 
   const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>('harcamalar');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -79,6 +82,7 @@ const ExpensesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [directionFilter, setDirectionFilter] = useState<'all' | 'gelen' | 'giden'>('all');
   const [visibleCount, setVisibleCount] = useState(10);
   const [isInvestmentEditing, setIsInvestmentEditing] = useState(false);
   const [editingInvestmentId, setEditingInvestmentId] = useState<string | null>(null);
@@ -143,8 +147,10 @@ const ExpensesPage: React.FC = () => {
   }, [dateLocale, t]);
 
   const filteredExpenses = useMemo(() => {
-    let result = activeCategory === 'deleted' ? [...deletedExpenses] : [...expenses];
-    if (activeCategory !== 'all' && activeCategory !== 'deleted') {
+    let result = activeCategory === 'deleted' ? [...deletedExpenses] 
+               : activeCategory === 'excluded' ? [...excludedExpenses] 
+               : [...expenses];
+    if (activeCategory !== 'all' && activeCategory !== 'deleted' && activeCategory !== 'excluded') {
       // v2 modunda category2 alanına göre filtrele
       result = result.filter(e => getCategoryField(e) === activeCategory);
     }
@@ -153,6 +159,9 @@ const ExpensesPage: React.FC = () => {
       const start = startOfMonth(new Date(year, month - 1));
       const end = endOfMonth(new Date(year, month - 1));
       result = result.filter(e => isWithinInterval(parseISO(e.date), { start, end }));
+    }
+    if (directionFilter !== 'all') {
+      result = result.filter(e => e.direction === directionFilter);
     }
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
@@ -163,12 +172,19 @@ const ExpensesPage: React.FC = () => {
         const dateStr3 = format(dateObj, 'dd/MM/yyyy');
         const catField = getCategoryField(e);
 
+        const amountStr = e.amount.toString();
+        const amountWithSign = e.direction === 'gelen' ? `+${amountStr}` : `-${amountStr}`;
+        const dirStr = e.direction === 'gelen' ? 'gelir' : 'gider';
+        
         return e.title.toLowerCase().includes(lowerSearch) ||
           catField.toLowerCase().includes(lowerSearch) ||
           dateStr1.includes(lowerSearch) ||
           dateStr2.includes(lowerSearch) ||
           dateStr3.includes(lowerSearch) ||
-          e.date.includes(lowerSearch);
+          e.date.includes(lowerSearch) ||
+          amountStr.includes(lowerSearch) ||
+          amountWithSign.includes(lowerSearch) ||
+          dirStr.includes(lowerSearch);
       });
     }
     result.sort((a, b) => {
@@ -181,7 +197,7 @@ const ExpensesPage: React.FC = () => {
       }
     });
     return result;
-  }, [expenses, activeCategory, selectedMonth, searchTerm, sortBy, sortOrder, getCategoryField]);
+  }, [expenses, deletedExpenses, excludedExpenses, activeCategory, selectedMonth, directionFilter, searchTerm, sortBy, sortOrder, getCategoryField]);
 
   const totalFilteredAmount = useMemo(() => filteredExpenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0), [filteredExpenses]);
   const totalLifetimeAmount = useMemo(() => expenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0), [expenses]);
@@ -244,18 +260,6 @@ const ExpensesPage: React.FC = () => {
     return counts;
   }, [expenses, getCategoryField]);
 
-  // v2 modunda category2 alanlarından unique kategori listesi oluştur
-  // getCategoryField ile aynı fallback mantığını kullan: category2 varsa onu, yoksa category'yi al
-  const v2Categories = useMemo(() => {
-    if (categoryVersion !== 'v2') return categories;
-    const cats = new Set<string>();
-    expenses.forEach(e => {
-      cats.add(getCategoryField(e));
-    });
-    return Array.from(cats).sort();
-  }, [expenses, categoryVersion, categories, getCategoryField]);
-
-  const activeCategories = categoryVersion === 'v2' ? v2Categories : categories;
 
   const totalCount = expenses.length;
   const mainTabs = [
@@ -284,8 +288,11 @@ const ExpensesPage: React.FC = () => {
     else setSelectedIds(new Set(filteredExpenses.map(e => e.id)));
   }, [selectedIds, filteredExpenses]);
 
+  const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
+
   const handleAddExpense = async () => {
-    if (!newExpense.title || !newExpense.amount) return;
+    if (!newExpense.title || !newExpense.amount || isSubmittingExpense) return;
+    setIsSubmittingExpense(true);
     try {
       if (isEditing && editingId) {
         await updateExpense({ id: editingId, ...newExpense } as Expense);
@@ -296,11 +303,22 @@ const ExpensesPage: React.FC = () => {
       setIsEditing(false);
       setEditingId(null);
       setNewExpense({
-        title: '', amount: 0, category: activeCategories[0] || 'Genel',
+        title: '', amount: 0, category: categories[0] || 'Genel',
         date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1,
         direction: 'giden', type: '', source: '', description: ''
       });
     } catch (error) { console.error('Error handling expense:', error); }
+    finally { setIsSubmittingExpense(false); }
+  };
+
+  const handleExcludeExpense = async (id: string) => {
+    await excludeExpense(id);
+    toast.success('Harcama Liste Dışı bırakıldı.', { icon: '👁️‍🗨️' });
+  };
+
+  const handleIncludeExpense = async (id: string) => {
+    await includeExpense(id);
+    toast.success('Harcama Listeye eklendi.', { icon: '🔄' });
   };
 
   const handleDeleteExpense = async (id: string) => {
@@ -355,17 +373,36 @@ const ExpensesPage: React.FC = () => {
     setIsDeleteConfirmModalOpen(true);
   };
 
+  const handleBulkExclude = async () => {
+    if (window.confirm(t('expenses.bulkExcludeConfirm') || 'Seçili harcamaları liste dışı bırakmak istediğinize emin misiniz?')) {
+      await bulkExcludeExpenses(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      toast.success('Seçili harcamalar liste dışı bırakıldı.', { icon: '👁️‍🗨️' });
+    }
+  };
+
   const handleEditClick = (expense: Expense) => {
-    setNewExpense(expense);
+    setNewExpense({
+      ...expense,
+      category: expense.category2 || expense.category
+    });
     setIsEditing(true);
     setEditingId(expense.id);
     setIsAddModalOpen(true);
   };
 
+  const [isBulkApplying, setIsBulkApplying] = useState(false);
+
   const applyBulkCategory = async () => {
-    await bulkUpdateCategory({ ids: Array.from(selectedIds), category: bulkCategory });
-    setIsBulkCategoryModalOpen(false);
-    setSelectedIds(new Set());
+    if (isBulkApplying) return;
+    setIsBulkApplying(true);
+    try {
+      await bulkUpdateCategory({ ids: Array.from(selectedIds), category: bulkCategory });
+      setIsBulkCategoryModalOpen(false);
+      setSelectedIds(new Set());
+    } finally {
+      setIsBulkApplying(false);
+    }
   };
 
   const confirmImport = async () => {
@@ -683,12 +720,13 @@ const ExpensesPage: React.FC = () => {
             isDark={isDark}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
-            categories={activeCategories}
+            categories={categories}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
             categoryCounts={categoryCounts}
             totalCount={totalCount}
             deletedCount={deletedExpenses.length}
+            excludedCount={excludedExpenses.length}
             onAddCategory={() => {
               const name = window.prompt(t('expenses.newCategoryPlaceholder'));
               if (name) addCategory(name);
@@ -696,18 +734,6 @@ const ExpensesPage: React.FC = () => {
             onDeleteCategory={handleDeleteCategory}
             onRunMigration={runMigration}
             isMigrating={isMigrating}
-            categoryVersion={categoryVersion}
-            setCategoryVersion={(v) => {
-              setCategoryVersion(v);
-              setActiveCategory('all');
-            }}
-            onRunV2Migration={async () => {
-              await runV2Migration();
-              // After migration, invalidate queries to refetch data
-              // The hook handles this internally
-            }}
-            isMigratingV2={isMigratingV2}
-            hasV2Data={hasV2Data}
           />
 
           <div className="flex-1">
@@ -718,7 +744,7 @@ const ExpensesPage: React.FC = () => {
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               monthOptions={monthOptions}
-              categories={activeCategories}
+              categories={categories}
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
               showAddButton={activeTab === 'harcamalar'}
@@ -729,7 +755,7 @@ const ExpensesPage: React.FC = () => {
               onAddClick={() => {
                 setIsEditing(false);
                 setNewExpense({
-                  title: '', amount: 0, category: activeCategories[0] || 'Genel',
+                  title: '', amount: 0, category: categories[0] || 'Genel',
                   date: format(new Date(), 'yyyy-MM-dd'), installmentCount: 1, installmentCurrent: 1
                 });
                 setIsAddModalOpen(true);
@@ -750,6 +776,9 @@ const ExpensesPage: React.FC = () => {
                     <div className="flex gap-2">
                       <button onClick={() => setIsBulkCategoryModalOpen(true)} className="p-2 text-white dark:text-stone-900 hover:bg-white/10 dark:hover:bg-black/5 rounded-xl transition-all" title="Kategori Değiştir">
                         <FaLayerGroup size={12} />
+                      </button>
+                      <button onClick={handleBulkExclude} className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-xl transition-all" title="Seçilenleri Liste Dışı Bırak">
+                        <FaEyeSlash size={12} />
                       </button>
                       <button onClick={handleBulkDelete} className="p-2 text-red-400 hover:bg-red-500/20 rounded-xl transition-all" title="Seçilenleri Sil">
                         <FaTrash size={12} />
@@ -785,15 +814,20 @@ const ExpensesPage: React.FC = () => {
                       setSortBy={setSortBy}
                       sortOrder={sortOrder}
                       setSortOrder={setSortOrder}
+                      directionFilter={directionFilter}
+                      setDirectionFilter={setDirectionFilter}
                       selectedIds={selectedIds}
                       toggleSelect={toggleSelect}
                       toggleSelectAll={toggleSelectAll}
                       handleEditClick={activeCategory === 'deleted' || activeTab === 'silinenler' ? (e: Expense) => handleRestoreExpense(e.id) : handleEditClick}
                       handleDeleteExpense={activeCategory === 'deleted' || activeTab === 'silinenler' ? handleHardDeleteExpense : handleDeleteExpense}
+                      onExcludeExpense={handleExcludeExpense}
+                      onIncludeExpense={handleIncludeExpense}
+                      isTrashView={activeCategory === 'deleted' || activeTab === 'silinenler'}
+                      isExcludedView={activeCategory === 'excluded'}
                       visibleCount={visibleCount}
                       setVisibleCount={setVisibleCount}
                       onConvertToInvestment={handleConvertToInvestment}
-                      isTrashView={activeCategory === 'deleted' || activeTab === 'silinenler'}
                       getCategoryField={getCategoryField}
                     />
                   )}
@@ -805,7 +839,7 @@ const ExpensesPage: React.FC = () => {
                       monthlySummary={monthlySummary}
                       onPdfImport={handlePdfImport}
                       expenses={expenses}
-                      categories={activeCategories}
+                      categories={categories}
                     />
                   )}
                 </motion.div>
@@ -819,7 +853,7 @@ const ExpensesPage: React.FC = () => {
         t={t} isDark={isDark} dateLocale={dateLocale}
         isAddModalOpen={isAddModalOpen} setIsAddModalOpen={setIsAddModalOpen}
         isEditing={isEditing} newExpense={newExpense} setNewExpense={setNewExpense}
-        handleAddExpense={handleAddExpense} categories={activeCategories}
+        handleAddExpense={handleAddExpense} categories={categories}
         isBulkCategoryModalOpen={isBulkCategoryModalOpen} setIsBulkCategoryModalOpen={setIsBulkCategoryModalOpen}
         bulkCategory={bulkCategory} setBulkCategory={setBulkCategory} applyBulkCategory={applyBulkCategory}
         selectedIds={selectedIds} isImportPreviewOpen={isImportPreviewOpen} setIsImportPreviewOpen={setIsImportPreviewOpen}

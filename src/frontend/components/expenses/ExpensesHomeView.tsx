@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp, FaGem, FaUndo } from 'react-icons/fa';
+import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp, FaGem, FaUndo, FaEyeSlash, FaEye, FaFilter, FaPlus, FaMinus } from 'react-icons/fa';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import type { Expense } from '../../hooks/useExpenses';
 
@@ -22,6 +22,8 @@ interface ExpensesHomeViewProps {
   setSortBy: (val: 'date' | 'amount') => void;
   sortOrder: 'asc' | 'desc';
   setSortOrder: (val: 'asc' | 'desc') => void;
+  directionFilter: 'all' | 'gelen' | 'giden';
+  setDirectionFilter: (val: 'all' | 'gelen' | 'giden') => void;
   selectedIds: Set<string>;
   toggleSelect: (id: string) => void;
   toggleSelectAll: () => void;
@@ -30,7 +32,10 @@ interface ExpensesHomeViewProps {
   visibleCount: number;
   setVisibleCount: React.Dispatch<React.SetStateAction<number>>;
   onConvertToInvestment?: (expense: Expense) => void;
+  onExcludeExpense?: (id: string) => void;
+  onIncludeExpense?: (id: string) => void;
   isTrashView?: boolean;
+  isExcludedView?: boolean;
   getCategoryField?: (e: Expense) => string;
 }
 
@@ -51,6 +56,8 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
   setSortBy,
   sortOrder,
   setSortOrder,
+  directionFilter,
+  setDirectionFilter,
   selectedIds,
   toggleSelect,
   toggleSelectAll,
@@ -59,7 +66,10 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
   visibleCount,
   setVisibleCount,
   onConvertToInvestment,
+  onExcludeExpense,
+  onIncludeExpense,
   isTrashView = false,
+  isExcludedView = false,
   getCategoryField
 }) => {
   const totalIncomeAmount = filteredExpenses.filter(e => e.direction === 'gelen').reduce((sum, e) => sum + e.amount, 0);
@@ -68,7 +78,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {!isTrashView && (
+      {!isTrashView && !isExcludedView && (
         <>
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -169,7 +179,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
           {/* Row 1: Select + Count + Sort */}
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5">
-              {!isTrashView && (
+              {!isTrashView && !isExcludedView && (
                 <button
                   onClick={toggleSelectAll}
                   className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0
@@ -189,10 +199,10 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
 
               <div className="flex flex-col">
                 <span className="text-[11px] font-black text-stone-900 dark:text-white uppercase tracking-tight">
-                  {isTrashView ? 'SİLİNENLER' : (filteredExpenses.length + ' ' + (t('expenses.transactionSuffix') || 'Harcama'))}
-                  {isTrashView && ` (${filteredExpenses.length})`}
+                  {isTrashView ? 'SİLİNENLER' : isExcludedView ? 'LİSTE DIŞI' : (filteredExpenses.length + ' ' + (t('expenses.transactionSuffix') || 'Harcama'))}
+                  {(isTrashView || isExcludedView) && ` (${filteredExpenses.length})`}
                 </span>
-                {selectedIds.size > 0 && !isTrashView && (
+                {selectedIds.size > 0 && !isTrashView && !isExcludedView && (
                   <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
                     {selectedIds.size} SEÇİLDİ
                   </span>
@@ -201,7 +211,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
             </div>
 
             {/* Sort Controls - compact, always visible */}
-            {!isTrashView && (
+            {!isTrashView && !isExcludedView && (
               <div className="flex bg-stone-50 dark:bg-zinc-800 p-1 rounded-xl border border-stone-100 dark:border-zinc-800 shrink-0">
                 <button
                   onClick={() => setSortBy('date')}
@@ -216,6 +226,24 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                 >
                   <FaWallet size={9} />
                   <span className="hidden sm:inline">{t('expenses.amount')}</span>
+                </button>
+                <div className="w-[1px] h-3.5 bg-stone-200 dark:bg-zinc-700 mx-0.5 self-center" />
+                <button
+                  onClick={() => {
+                    if (directionFilter === 'all') setDirectionFilter('giden');
+                    else if (directionFilter === 'giden') setDirectionFilter('gelen');
+                    else setDirectionFilter('all');
+                  }}
+                  className={`p-1.5 rounded-lg transition-all ${
+                    directionFilter === 'all' ? 'text-stone-400 hover:text-stone-900 dark:hover:text-white' : 
+                    directionFilter === 'giden' ? 'bg-rose-500/10 text-rose-500 dark:text-rose-400' :
+                    'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400'
+                  }`}
+                  title={directionFilter === 'all' ? 'Tümü' : directionFilter === 'giden' ? 'Sadece Giderler' : 'Sadece Gelirler'}
+                >
+                  {directionFilter === 'all' ? <FaFilter size={10} /> :
+                   directionFilter === 'giden' ? <FaMinus size={10} /> :
+                   <FaPlus size={10} />}
                 </button>
                 <div className="w-[1px] h-3.5 bg-stone-200 dark:bg-zinc-700 mx-0.5 self-center" />
                 <button
@@ -235,7 +263,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={isTrashView ? "Silinenlerde ara..." : t('common.searchPlaceholder')}
+              placeholder={isTrashView ? "Silinenlerde ara..." : isExcludedView ? "Liste dışında ara..." : t('common.searchPlaceholder')}
               className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-100 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-9 text-[11px] font-black uppercase tracking-wider text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-stone-900/5 dark:focus:ring-white/5 transition-all"
             />
             {searchTerm && (
@@ -270,7 +298,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                       : 'hover:bg-stone-50 dark:hover:bg-zinc-800/40'
                       }`}
                   >
-                    {!isTrashView && (
+                    {!isTrashView && !isExcludedView && (
                       <div
                         onClick={() => toggleSelect(expense.id)}
                         className={`w-5 h-5 shrink-0 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${selectedIds.has(expense.id)
@@ -305,7 +333,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                       <span className={`text-sm font-black tracking-tighter ${selectedIds.has(expense.id) ? 'text-white dark:text-black' : (expense.direction === 'gelen' ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-900 dark:text-white')}`}>
                         {expense.direction === 'gelen' ? '+' : '-'}{t('expenses.currency')}{expense.amount.toLocaleString()}
                       </span>
-                      {!isTrashView ? (
+                      {!isTrashView && !isExcludedView ? (
                         <>
                           {onConvertToInvestment && (
                             <button
@@ -322,9 +350,45 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                           >
                             <FaEdit size={11} />
                           </button>
+                          {onExcludeExpense && (
+                            <button
+                              onClick={() => onExcludeExpense(expense.id)}
+                              className={`p-2 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-blue-300 hover:text-blue-100 hover:bg-blue-500/20' : 'text-stone-400 hover:text-blue-500 bg-white dark:bg-zinc-800 border border-stone-100 dark:border-zinc-700'}`}
+                              title="Liste Dışı Bırak"
+                            >
+                              <FaEyeSlash size={11} />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteExpense(expense.id)}
                             className={`p-2 rounded-xl transition-all ${selectedIds.has(expense.id) ? 'text-rose-300 hover:text-rose-100 hover:bg-rose-500/20' : 'text-stone-400 hover:text-rose-500 bg-white dark:bg-zinc-800 border border-stone-100 dark:border-zinc-700'}`}
+                            title="Sil"
+                          >
+                            <FaTrash size={11} />
+                          </button>
+                        </>
+                      ) : isExcludedView ? (
+                        <>
+                          <button
+                            onClick={() => handleEditClick(expense)}
+                            className="p-2.5 bg-stone-500/10 text-stone-500 hover:bg-stone-500 hover:text-white rounded-xl transition-all"
+                            title="Düzenle"
+                          >
+                            <FaEdit size={11} />
+                          </button>
+                          {onIncludeExpense && (
+                            <button
+                              onClick={() => onIncludeExpense(expense.id)}
+                              className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all"
+                              title="Listeye Ekle"
+                            >
+                              <FaEye size={11} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteExpense(expense.id)}
+                            className="p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"
+                            title="Sil"
                           >
                             <FaTrash size={11} />
                           </button>

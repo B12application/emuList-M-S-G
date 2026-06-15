@@ -40,7 +40,8 @@ export default function HomeContinueWatching({ shows, t, getNextEpisode, onQuick
                 </div>
                 <Link
                     to="/my-shows"
-                    className="group inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                    // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                    className="group inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
                 >
                     {t('myShows.viewAll')}
                     <FaArrowRight className="text-[10px] transition group-hover:translate-x-0.5" />
@@ -101,7 +102,8 @@ export default function HomeContinueWatching({ shows, t, getNextEpisode, onQuick
                                     <button
                                         type="button"
                                         onClick={() => onQuickMark(show)}
-                                        className="mt-2.5 inline-flex items-center gap-1.5 self-start rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white transition-all hover:bg-amber-600 hover:shadow-md active:scale-95 dark:bg-white dark:text-zinc-900 dark:hover:bg-amber-500 dark:hover:text-white"
+                                        // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                        className="mt-2.5 inline-flex cursor-pointer items-center gap-1.5 self-start rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white transition-all hover:bg-amber-600 hover:shadow-md active:scale-95 dark:bg-white dark:text-zinc-900 dark:hover:bg-amber-500 dark:hover:text-white"
                                     >
                                         <FaPlay className="text-[9px]" />
                                         S{nextEp.season} E{nextEp.episode}

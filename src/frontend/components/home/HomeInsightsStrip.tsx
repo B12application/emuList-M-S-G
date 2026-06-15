@@ -89,7 +89,8 @@ export default function HomeInsightsStrip({
                             <button
                                 type="button"
                                 onClick={() => onSelect(spotlight)}
-                                className="group flex items-start gap-3 w-full text-left"
+                                // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                className="group flex cursor-pointer items-start gap-3 w-full text-left"
                             >
                                 <div className="h-14 w-10 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
                                     {spotlight.image ? (
@@ -120,7 +121,8 @@ export default function HomeInsightsStrip({
                         <button
                             type="button"
                             onClick={() => onSelect(spotlight)}
-                            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 self-start"
+                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                            className="mt-2 inline-flex cursor-pointer items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 self-start"
                         >
                             {t('home.inspectNow')} <FaArrowRight className="text-[8px]" />
                         </button>
@@ -150,7 +152,8 @@ export default function HomeInsightsStrip({
                                     key={item.id}
                                     type="button"
                                     onClick={() => onSelect(item)}
-                                    className="group flex shrink-0 flex-col items-center gap-1 w-[52px]"
+                                    // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                    className="group flex shrink-0 cursor-pointer flex-col items-center gap-1 w-[52px]"
                                 >
                                     <div className="h-[52px] w-[52px] overflow-hidden rounded-xl bg-white border border-slate-200 transition-all group-hover:border-amber-500 dark:bg-zinc-800 dark:border-zinc-700 dark:group-hover:border-amber-400 shadow-sm">
                                         {item.image ? (
@@ -171,7 +174,6 @@ export default function HomeInsightsStrip({
                 </div>
             </div>
 
-            {/* ── BEYAZ KART KALDIRILDI: Söz bileşeni artık doğrudan render ediliyor ── */}
             <QuoteWidget />
         </div>
     );

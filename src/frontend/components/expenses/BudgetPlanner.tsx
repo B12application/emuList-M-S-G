@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../../../backend/config/firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -34,6 +34,8 @@ type WishItem = {
   title: string;
   price: number;
   targetDate: string; // <-- Alınacaklar için hedef tarih alanı eklendi
+  group?: string; // <-- Gruplama için eklendi
+  excludeFromTotal?: boolean; // <-- Hesaplamadan çıkarmak için eklendi
 };
 
 type PlannerData = {
@@ -62,13 +64,18 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
   const [wishTitle, setWishTitle] = useState('');
   const [wishPrice, setWishPrice] = useState('');
   const [wishDate, setWishDate] = useState(''); // <-- Form için state eklendi
+  const [wishGroup, setWishGroup] = useState(''); // <-- Grup adı state'i
+
+  // Hata Mesajları State'leri
+  const [incomeError, setIncomeError] = useState('');
+  const [wishError, setWishError] = useState('');
 
   // Veritabanından Veri Çekme
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
-        const snap = await getDoc(doc(db, 'futurePlans', user.uid));
+        const snap = await getDoc(doc(db, 'budgetPlans', user.uid));
         if (snap.exists()) {
           const d = snap.data() as PlannerData;
           setWalletBalance(d.walletBalance || 0);
@@ -83,15 +90,15 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
     })();
   }, [user]);
 
+  // Timeout ref for debouncing wallet balance
+  const walletTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Veritabanına Kaydetme Fonksiyonu
-  const saveToFirebase = async (overrides?: Partial<PlannerData>) => {
+  const saveToFirebase = async (overrides: Partial<PlannerData>) => {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'futurePlans', user.uid), {
-        walletBalance,
-        incomes,
-        wishes,
+      await setDoc(doc(db, 'budgetPlans', user.uid), {
         ...overrides,
         updatedAt: Timestamp.now(),
       }, { merge: true });
@@ -104,17 +111,68 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
 
   // --- HESAPLAMALAR ---
   const totalExpectedIncome = useMemo(() => incomes.reduce((sum, item) => sum + item.amount, 0), [incomes]);
-  const totalWishesCost = useMemo(() => wishes.reduce((sum, item) => sum + item.price, 0), [wishes]);
+  const totalWishesCost = useMemo(() => wishes.reduce((sum, item) => item.excludeFromTotal ? sum : sum + item.price, 0), [wishes]);
 
   // Toplam Para = Cebimdeki Para + Gelecek Paralar
   const totalMoney = walletBalance + totalExpectedIncome;
   // Kalan Sonuç = Toplam Para - Alınacaklar Toplamı
   const finalResult = totalMoney - totalWishesCost;
 
+  // --- GRUPLAMA HESAPLAMALARI ---
+  const ungroupedWishes = useMemo(() => wishes.filter(w => !w.group), [wishes]);
+  const groupedWishes = useMemo(() => {
+    return wishes.reduce((acc, w) => {
+      if (w.group) {
+        if (!acc[w.group]) acc[w.group] = [];
+        acc[w.group].push(w);
+      }
+      return acc;
+    }, {} as Record<string, WishItem[]>);
+  }, [wishes]);
+
+  // --- DRAG & DROP İŞLEMLERİ ---
+  const handleDropToGroup = async (e: React.DragEvent, targetGroup?: string) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('wishId');
+    if (!itemId) return;
+
+    const itemIndex = wishes.findIndex(w => w.id === itemId);
+    if (itemIndex === -1) return;
+
+    const targetGroupVal = targetGroup?.trim() || undefined;
+    if (wishes[itemIndex].group === targetGroupVal) return;
+
+    const updated = [...wishes];
+    updated[itemIndex] = { ...updated[itemIndex], group: targetGroupVal };
+    setWishes(updated);
+    await saveToFirebase({ wishes: updated });
+  };
+
+  // --- HESAPLAMADAN ÇIKARMA (EXCLUDE) İŞLEMLERİ ---
+  const toggleExclude = async (id: string) => {
+    const itemIndex = wishes.findIndex(w => w.id === id);
+    if (itemIndex === -1) return;
+
+    const updated = [...wishes];
+    updated[itemIndex] = { ...updated[itemIndex], excludeFromTotal: !updated[itemIndex].excludeFromTotal };
+    setWishes(updated);
+    await saveToFirebase({ wishes: updated });
+  };
+
+  const toggleGroupExclude = async (groupName: string, exclude: boolean) => {
+    const updated = wishes.map(w => w.group === groupName ? { ...w, excludeFromTotal: exclude } : w);
+    setWishes(updated);
+    await saveToFirebase({ wishes: updated });
+  };
+
   // --- EKLEME VE SİLME İŞLEMLERİ ---
   const addIncome = async () => {
     const amount = Number(incomeAmt);
-    if (!incomeTitle || !amount || !incomeDate) return;
+    if (!incomeTitle) { setIncomeError('Lütfen gelir kaynağını (başlık) girin.'); return; }
+    if (!amount || amount <= 0) { setIncomeError('Lütfen geçerli bir tutar girin.'); return; }
+    if (!incomeDate) { setIncomeError('Lütfen bir tarih seçin.'); return; }
+    
+    setIncomeError('');
 
     const newItem: IncomeItem = {
       id: Math.random().toString(36).slice(2),
@@ -139,13 +197,18 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
 
   const addWish = async () => {
     const price = Number(wishPrice);
-    if (!wishTitle || !price || !wishDate) return;
+    if (!wishTitle) { setWishError('Lütfen ne alacağınızı (hedef) yazın.'); return; }
+    if (!price || price <= 0) { setWishError('Lütfen geçerli bir fiyat girin.'); return; }
+    if (!wishDate) { setWishError('Lütfen hedef tarihi seçin.'); return; }
+
+    setWishError('');
 
     const newItem: WishItem = {
       id: Math.random().toString(36).slice(2),
       title: wishTitle,
       price,
       targetDate: wishDate, // Hedef tarih eklendi
+      group: wishGroup.trim() || undefined,
     };
 
     const updated = [...wishes, newItem];
@@ -153,6 +216,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
     setWishTitle('');
     setWishPrice('');
     setWishDate('');
+    setWishGroup('');
     await saveToFirebase({ wishes: updated });
   };
 
@@ -230,7 +294,10 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
             onChange={e => {
               const val = Number(e.target.value || 0);
               setWalletBalance(val);
-              setTimeout(() => saveToFirebase({ walletBalance: val }), 800);
+              if (walletTimeoutRef.current) {
+                clearTimeout(walletTimeoutRef.current);
+              }
+              walletTimeoutRef.current = setTimeout(() => saveToFirebase({ walletBalance: val }), 800);
             }}
             placeholder="0"
             className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 w-full sm:w-[160px] pr-8"
@@ -270,11 +337,14 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                   value={incomeAmt} onChange={e => setIncomeAmt(e.target.value)}
                   className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-bold"
                 />
-                <input
-                  type="date"
-                  value={incomeDate} onChange={e => setIncomeDate(e.target.value)}
-                  className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none text-slate-500 dark:text-slate-400"
-                />
+                <div className="w-1/2 flex items-center border-b border-slate-200 dark:border-zinc-700">
+                  <span className="text-[10px] text-slate-400 mr-1 whitespace-nowrap">Tarih:</span>
+                  <input
+                    type="date"
+                    value={incomeDate} onChange={e => setIncomeDate(e.target.value)}
+                    className="w-full bg-transparent py-1.5 text-[11px] focus:outline-none text-slate-600 dark:text-slate-300"
+                  />
+                </div>
                 <button
                   onClick={addIncome}
                   className="w-8 h-8 shrink-0 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 transition text-xs"
@@ -282,6 +352,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                   <FaPlus />
                 </button>
               </div>
+              {incomeError && <p className="text-[10px] text-rose-500 mt-1 font-medium">{incomeError}</p>}
             </div>
 
             {/* Liste */}
@@ -327,10 +398,20 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
             <div className="flex flex-col gap-2.5 mb-6 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-slate-100 dark:border-zinc-900">
               <input
                 type="text"
-                placeholder="Ne alacaksın? (Örn: Yeni Telefon)"
+                placeholder="Ne alacaksın veya Ödeme? (Örn: Borç, Telefon)"
                 value={wishTitle} onChange={e => setWishTitle(e.target.value)}
                 className="w-full bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-medium"
               />
+              <input
+                type="text"
+                list="existing-groups"
+                placeholder="Grup Adı (İsteğe Bağlı, Örn: Evlilik, Tatil)"
+                value={wishGroup} onChange={e => setWishGroup(e.target.value)}
+                className="w-full bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-[11px] focus:outline-none text-slate-500 dark:text-slate-400"
+              />
+              <datalist id="existing-groups">
+                {Object.keys(groupedWishes).map(g => <option key={g} value={g} />)}
+              </datalist>
               <div className="flex items-center gap-2 mt-1">
                 <input
                   type="number"
@@ -338,11 +419,14 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                   value={wishPrice} onChange={e => setWishPrice(e.target.value)}
                   className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none dark:text-white font-bold"
                 />
-                <input
-                  type="date"
-                  value={wishDate} onChange={e => setWishDate(e.target.value)}
-                  className="w-1/2 bg-transparent border-b border-slate-200 dark:border-zinc-700 py-1.5 text-xs focus:outline-none text-slate-500 dark:text-slate-400"
-                />
+                <div className="w-1/2 flex items-center border-b border-slate-200 dark:border-zinc-700">
+                  <span className="text-[10px] text-slate-400 mr-1 whitespace-nowrap">Hedef:</span>
+                  <input
+                    type="date"
+                    value={wishDate} onChange={e => setWishDate(e.target.value)}
+                    className="w-full bg-transparent py-1.5 text-[11px] focus:outline-none text-slate-600 dark:text-slate-300"
+                  />
+                </div>
                 <button
                   onClick={addWish}
                   className="w-8 h-8 shrink-0 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-slate-800 transition text-xs"
@@ -350,29 +434,113 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                   <FaPlus />
                 </button>
               </div>
+              {wishError && <p className="text-[10px] text-rose-500 mt-1 font-medium">{wishError}</p>}
             </div>
 
             {/* Liste */}
-            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+            <div className="space-y-4 max-h-[320px] overflow-y-auto pr-1">
               {wishes.length === 0 ? (
-                <p className="text-center text-xs text-slate-400 py-8 italic">Alışveriş listeniz boş, yeni hedefler ekleyin!</p>
+                <p className="text-center text-xs text-slate-400 py-8 italic">Listeniz boş, hedefler veya borçlar ekleyin!</p>
               ) : (
-                wishes.map(item => (
-                  <div key={item.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-900/60 border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 transition group">
-                    <div>
-                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{item.title}</p>
-                      <p className="text-[11px] text-slate-400 dark:text-zinc-500 flex items-center gap-1 mt-1 font-medium">
-                        <FaCalendarAlt className="text-[9px]" /> {new Date(item.targetDate).toLocaleDateString('tr-TR')}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-black text-rose-500">- ₺{item.price.toLocaleString()}</span>
-                      <button onClick={() => removeWish(item.id)} className="text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
-                        <FaTrash className="text-xs" />
-                      </button>
-                    </div>
+                <>
+                  {/* Gruplanmamış Öğeler (Örn: Tekil Borçlar) */}
+                  <div 
+                    className={`space-y-2 rounded-xl p-2 border-2 border-dashed transition-colors ${ungroupedWishes.length === 0 ? 'min-h-[60px] flex items-center justify-center border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700' : 'border-transparent'}`}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => handleDropToGroup(e, undefined)}
+                  >
+                    {ungroupedWishes.length === 0 ? (
+                      <p className="text-[10px] text-slate-400 font-medium italic opacity-60">Öğeleri gruptan çıkarmak için buraya sürükleyebilirsiniz</p>
+                    ) : (
+                      ungroupedWishes.map(item => (
+                        <div 
+                          key={item.id} 
+                          draggable
+                          onDragStart={e => e.dataTransfer.setData('wishId', item.id)}
+                          className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-900/60 border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 transition group cursor-grab active:cursor-grabbing bg-white dark:bg-zinc-950/50"
+                        >
+                          <div>
+                            <p className={`text-xs font-bold ${item.excludeFromTotal ? 'text-slate-400 dark:text-zinc-600 line-through' : 'text-slate-800 dark:text-zinc-200'}`}>{item.title}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-zinc-500 flex items-center gap-1 mt-1 font-medium">
+                              <FaCalendarAlt className="text-[9px]" /> {new Date(item.targetDate).toLocaleDateString('tr-TR')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-sm font-black ${item.excludeFromTotal ? 'text-slate-400 dark:text-zinc-600' : 'text-rose-500'}`}>- ₺{item.price.toLocaleString()}</span>
+                            <input 
+                              type="checkbox" 
+                              checked={!item.excludeFromTotal}
+                              onChange={() => toggleExclude(item.id)}
+                              className="w-3.5 h-3.5 cursor-pointer accent-slate-900 dark:accent-white"
+                              title="Hesaba Kat"
+                            />
+                            <button onClick={() => removeWish(item.id)} className="text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                              <FaTrash className="text-xs" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
-                ))
+
+                  {/* Gruplanmış Öğeler */}
+                  {Object.entries(groupedWishes).map(([groupName, groupItems]) => {
+                    const groupTotal = groupItems.reduce((sum, i) => i.excludeFromTotal ? sum : sum + i.price, 0);
+                    const isGroupFullyExcluded = groupItems.every(i => i.excludeFromTotal);
+                    return (
+                      <div 
+                        key={groupName} 
+                        className={`bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl p-3 border-2 border-dashed transition-colors ${isGroupFullyExcluded ? 'opacity-50 border-slate-100 dark:border-zinc-800/30' : 'border-transparent hover:border-slate-200 dark:hover:border-zinc-800/80'}`}
+                        onDragOver={e => e.preventDefault()}
+                        onDrop={e => handleDropToGroup(e, groupName)}
+                      >
+                        <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-200/50 dark:border-zinc-800/50">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="checkbox" 
+                              checked={!isGroupFullyExcluded}
+                              onChange={() => toggleGroupExclude(groupName, !isGroupFullyExcluded)}
+                              className="w-3.5 h-3.5 cursor-pointer accent-slate-900 dark:accent-white"
+                              title="Tüm grubu hesaba kat/çıkar"
+                            />
+                            <h4 className={`text-xs font-bold tracking-wide uppercase ${isGroupFullyExcluded ? 'text-slate-400 dark:text-zinc-500 line-through' : 'text-slate-700 dark:text-zinc-300'}`}>{groupName}</h4>
+                          </div>
+                          <span className={`text-xs font-black ${isGroupFullyExcluded ? 'text-slate-400 dark:text-zinc-600' : 'text-rose-500'}`}>- ₺{groupTotal.toLocaleString()}</span>
+                        </div>
+                        <div className="space-y-1">
+                          {groupItems.map(item => (
+                            <div 
+                              key={item.id} 
+                              draggable
+                              onDragStart={e => e.dataTransfer.setData('wishId', item.id)}
+                              className={`flex items-center justify-between p-2 rounded-lg border border-transparent transition group/item cursor-grab active:cursor-grabbing ${item.excludeFromTotal ? 'bg-transparent hover:bg-slate-50/50 dark:hover:bg-zinc-900/10 opacity-70' : 'hover:bg-white dark:hover:bg-zinc-900 hover:border-slate-200 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950/30'}`}
+                            >
+                              <div>
+                                <p className={`text-[11px] font-bold ${item.excludeFromTotal ? 'text-slate-400 dark:text-zinc-600 line-through' : 'text-slate-700 dark:text-zinc-400'}`}>{item.title}</p>
+                                <p className="text-[9px] text-slate-400 dark:text-zinc-500 flex items-center gap-1 mt-0.5 font-medium">
+                                  <FaCalendarAlt className="text-[8px]" /> {new Date(item.targetDate).toLocaleDateString('tr-TR')}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs font-black ${item.excludeFromTotal ? 'text-slate-400 dark:text-zinc-600' : 'text-rose-400'}`}>- ₺{item.price.toLocaleString()}</span>
+                                <input 
+                                  type="checkbox" 
+                                  checked={!item.excludeFromTotal}
+                                  onChange={() => toggleExclude(item.id)}
+                                  className="w-3 h-3 cursor-pointer accent-slate-900 dark:accent-white"
+                                  title="Hesaba Kat"
+                                />
+                                <button onClick={() => removeWish(item.id)} className="text-slate-300 hover:text-red-500 transition opacity-0 group-hover/item:opacity-100">
+                                  <FaTrash className="text-[10px]" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
               )}
             </div>
           </div>

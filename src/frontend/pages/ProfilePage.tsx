@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import useUserProfile from '../hooks/useUserProfile';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { FaUserEdit, FaCamera, FaHeart, FaFilm, FaTv, FaGamepad, FaBook, FaCalendarAlt, FaCheck, FaTimes, FaCog, FaStar, FaHistory, FaChevronRight, FaQuoteLeft, FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaGlobe, FaLink } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { FaUserEdit, FaCamera, FaHeart, FaFilm, FaTv, FaGamepad, FaBook, FaCalendarAlt, FaCheck, FaTimes, FaCog, FaStar, FaHistory, FaChevronRight, FaQuoteLeft, FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaGlobe, FaLink, FaChartBar, FaTrophy, FaEye, FaPlus } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 import Marquee from 'react-fast-marquee';
 import { doc, setDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -26,7 +26,7 @@ export default function ProfilePage() {
     const { t } = useLanguage();
     const { items: allItems, loading: loadingMedia, refetch: refetchMedia } = useMedia('all', 'all', true);
 
-    // ⚡ İSTATİSTİK OPTİMİZASYONU
+    // İSTATİSTİK OPTİMİZASYONU
     const stats = useMemo(() => {
         const counts = {
             movieCount: 0,
@@ -52,7 +52,6 @@ export default function ProfilePage() {
     const statsLoading = loadingMedia;
     const { history } = useMediaHistory();
 
-
     const [isEditing, setIsEditing] = useState(false);
     const [displayName, setDisplayName] = useState(user?.displayName || '');
     const [bio, setBio] = useState('');
@@ -67,7 +66,7 @@ export default function ProfilePage() {
     }>({});
 
     const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
-
+    const [activeTab, setActiveTab] = useState<'favorites' | 'recent' | 'stats'>('favorites');
 
     // Gender-based avatar URLs
     const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
@@ -86,13 +85,12 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (user?.displayName) setDisplayName(user.displayName);
-        // Only use photoURL if it's a custom one (not our default avatars)
         if (user?.photoURL &&
             user.photoURL !== MALE_AVATAR_URL &&
             user.photoURL !== FEMALE_AVATAR_URL) {
             setAvatarUrl(user.photoURL);
         } else {
-            setAvatarUrl(''); // Will use gender-based default
+            setAvatarUrl('');
         }
     }, [user, profile]);
 
@@ -100,18 +98,14 @@ export default function ProfilePage() {
         if (!user) return;
         setLoading(true);
         try {
-            // Determine final photoURL to save
             let finalPhotoURL: string | null = null;
 
             if (avatarUrl && avatarUrl.trim() !== '') {
-                // User provided a custom URL - use it
                 finalPhotoURL = avatarUrl.trim();
             } else {
-                // No custom URL - set to null so gender-based avatar will be used
                 finalPhotoURL = null;
             }
 
-            // Update Firebase Auth profile
             if (displayName !== user.displayName || finalPhotoURL !== user.photoURL) {
                 await updateProfile(user, {
                     displayName,
@@ -119,19 +113,17 @@ export default function ProfilePage() {
                 });
             }
 
-            // Update Firestore user document - include photoURL and displayName for public profile
             const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, {
                 bio,
                 socialLinks,
                 displayName,
                 photoURL: finalPhotoURL,
-                gender: profile?.gender // Keep gender synced
+                gender: profile?.gender
             }, { merge: true });
 
-            // Invalidate cache instead of reload
             await queryClient.invalidateQueries({ queryKey: ['userProfile', user.uid] });
-            
+
             toast.success(t('profile.saveSuccess') || 'Profil güncellendi!');
             setIsEditing(false);
         } catch (error) {
@@ -156,15 +148,22 @@ export default function ProfilePage() {
             .slice(0, 5);
     }, [history]);
 
+    // En yüksek puanlı içerikler - TypeScript düzeltmesi
+    const topRated = useMemo(() => {
+        return allItems
+            .filter(item => item.rating)
+            .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
+            .slice(0, 5);
+    }, [allItems]);
+
     return (
-        <div className="min-h-screen pt-4 pb-0 relative">
+        <div className="min-h-screen pt-4 pb-0">
 
             {/* MAIN CONTAINER: Centered single column */}
             <div className="px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto mb-16">
 
                 {/* TOP CONTROLS */}
                 <div className="flex justify-between items-center mb-8">
-                    {/* Settings Left (for symmetry if needed, or keeping Right as before) */}
                     <div className="w-12"></div>
 
                     {/* Settings / Edit Controls */}
@@ -198,9 +197,6 @@ export default function ProfilePage() {
 
                 {/* HERO SECTION: Centered Avatar & Info */}
                 <div className="text-center relative mb-12">
-                    {/* Decorative Background Glow */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-amber-500/10 to-stone-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
                     <div className="relative inline-block mb-6">
                         <div className="w-48 h-48 rounded-full p-1.5 bg-gradient-to-br from-stone-600 via-amber-600 to-white mx-auto shadow-2xl">
                             <img
@@ -410,7 +406,7 @@ export default function ProfilePage() {
 
                 {/* MARQUEE */}
                 {!isEditing && (
-                    <div className="w-full bg-amber-500/5 border-y border-amber-500/10 py-3 mb-16 overflow-hidden backdrop-blur-sm">
+                    <div className="w-full bg-amber-500/5 border-y border-amber-500/10 py-3 mb-12 overflow-hidden backdrop-blur-sm">
                         <Marquee gradient={false} speed={40} className="text-amber-600/50 dark:text-amber-400/50 font-bold uppercase tracking-[0.2em] text-xs">
                             &nbsp;&bull; EmuSportApp &bull; V.I.P &bull; MOVIE LOVER &bull; SERIES ADDICT &bull; GAMER &bull; BOOKWORM &bull; EXPLORER
                             &nbsp;&bull; EmuSportApp &bull; V.I.P &bull; MOVIE LOVER &bull; SERIES ADDICT &bull; GAMER &bull; BOOKWORM &bull; EXPLORER
@@ -419,7 +415,7 @@ export default function ProfilePage() {
                 )}
 
                 {/* STATS ROW: Full Width Horizontal */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 max-w-4xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
                     {[
                         { title: t('home.movieCount'), count: stats.movieCount, icon: <FaFilm />, color: 'text-blue-500', from: 'from-blue-500/10', to: 'to-blue-500/5', border: 'hover:border-blue-500/50' },
                         { title: t('home.seriesCount'), count: stats.seriesCount, icon: <FaTv />, color: 'text-emerald-500', from: 'from-emerald-500/10', to: 'to-emerald-500/5', border: 'hover:border-emerald-500/50' },
@@ -438,197 +434,296 @@ export default function ProfilePage() {
                     ))}
                 </div>
 
-                {/* CONTENT SECTIONS STACKED */}
-                <div className="space-y-12">
-
-                    {/* FAVORITES */}
-                    <div className="bg-white dark:bg-stone-900/30 rounded-[2.5rem] p-8 md:p-10 border border-stone-200 dark:border-white/5 shadow-2xl shadow-stone-900/5 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
-
-                        <div className="flex items-center justify-between mb-8 relative z-10">
-                            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-3">
-                                <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-xl text-amber-600 dark:text-amber-500">
-                                    <FaHeart />
-                                </div>
-                                {t('profile.favorites')}
-                            </h2>
-                            <Link to="/all" className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-sm font-medium text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-all border border-transparent hover:border-amber-200 dark:hover:border-amber-700/30">
-                                {t('home.viewCollection') || 'Tümünü Gör'}
-                            </Link>
-                        </div>
-
-                        {favorites.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                {favorites.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        onClick={() => setSelectedItem(item as MediaItem)}
-                                        className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1"
-                                    >
-                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-5">
-                                            <div className="text-white font-bold text-base line-clamp-2 leading-tight mb-1.5 group-hover:text-amber-300 transition-colors">{item.title}</div>
-                                            <div className="flex items-center gap-2 text-[10px] text-gray-300 uppercase font-bold tracking-wider">
-                                                <span className={`px-1.5 py-0.5 rounded-md bg-white/10 backdrop-blur-md border border-white/10 ${item.type === 'movie' ? 'text-blue-200' :
-                                                    item.type === 'series' ? 'text-emerald-200' :
-                                                        item.type === 'game' ? 'text-amber-200' : 'text-rose-200'
-                                                    }`}>
-                                                    {item.type}
-                                                </span>
-                                                {item.rating && <span className="text-amber-400 flex items-center gap-0.5"><FaStar size={8} /> {item.rating}</span>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                        ) : (
-                            <div className="h-48 flex flex-col items-center justify-center text-stone-400 dark:text-zinc-500 bg-stone-100 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-stone-300 dark:border-zinc-800">
-                                <FaHeart className="text-4xl mb-3 opacity-20" />
-                                <p className="text-sm font-medium">{t('profile.noFavorites')}</p>
-                            </div>
-                        )}
+                {/* TAB SYSTEM */}
+                <div className="mb-12">
+                    {/* Tab Headers */}
+                    <div className="flex border-b-2 border-stone-200 dark:border-zinc-800 mb-8">
+                        {[
+                            { id: 'favorites' as const, label: t('profile.favorites'), icon: <FaHeart /> },
+                            { id: 'recent' as const, label: t('stats.recentWatched'), icon: <FaHistory /> },
+                            { id: 'stats' as const, label: 'İstatistikler', icon: <FaChartBar /> },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex-1 px-6 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-all relative ${activeTab === tab.id
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-stone-400 dark:text-zinc-500 hover:text-stone-600 dark:hover:text-zinc-300'
+                                    }`}
+                            >
+                                {tab.icon}
+                                <span className="hidden sm:inline">{tab.label}</span>
+                                {activeTab === tab.id && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500"
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                )}
+                            </button>
+                        ))}
                     </div>
 
-                    {/* RECENTLY WATCHED */}
-                    <div className="bg-white dark:bg-stone-900/30 rounded-[2.5rem] p-8 md:p-10 border border-stone-200 dark:border-white/5 shadow-2xl shadow-stone-900/5 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -ml-32 -mt-32 pointer-events-none"></div>
-
-                        <div className="mb-8 relative z-10">
-                            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-xl text-blue-600 dark:text-blue-500">
-                                    <FaHistory />
-                                </div>
-                                {t('stats.recentWatched')}
-                            </h2>
-                        </div>
-
-                        {recentlyWatched.length > 0 ? (
-                            <div className="space-y-3">
-                                {recentlyWatched.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        onClick={() => setSelectedItem(item as MediaItem)}
-                                        className="block group cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-5 p-4 rounded-3xl hover:bg-white dark:hover:bg-white/5 transition-colors border border-transparent hover:border-stone-200 dark:hover:border-white/5 hover:shadow-lg dark:hover:shadow-black/20">
-
-                                            {/* Icon Box */}
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 ${item.type === 'movie' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                                                item.type === 'series' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
-                                                    item.type === 'game' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
-                                                        'bg-amber-50 text-rose-600 dark:bg-amber-900/20 dark:text-amber-700'
-                                                }`}>
-                                                {item.type === 'movie' ? <FaFilm /> :
-                                                    item.type === 'series' ? <FaTv /> :
-                                                        item.type === 'game' ? <FaGamepad /> : <FaBook />}
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-lg font-bold text-stone-900 dark:text-stone-100 truncate group-hover:text-amber-700 dark:group-hover:text-amber-500 transition-colors">
-                                                    {item.title}
-                                                </h4>
-                                                <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                                                        {t(`nav.${item.type}s`)}
-                                                    </span>
-                                                    {item.rating && (
-                                                        <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[10px] font-bold">
-                                                            ★ {item.rating}
+                    {/* Tab Content */}
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'favorites' && (
+                            <motion.div
+                                key="favorites"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {favorites.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                        {favorites.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                onClick={() => setSelectedItem(item as MediaItem)}
+                                                className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1"
+                                            >
+                                                <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-5">
+                                                    <div className="text-white font-bold text-base line-clamp-2 leading-tight mb-1.5 group-hover:text-amber-300 transition-colors">{item.title}</div>
+                                                    <div className="flex items-center gap-2 text-[10px] text-gray-300 uppercase font-bold tracking-wider">
+                                                        <span className={`px-1.5 py-0.5 rounded-md bg-white/10 backdrop-blur-md border border-white/10 ${item.type === 'movie' ? 'text-blue-200' :
+                                                            item.type === 'series' ? 'text-emerald-200' :
+                                                                item.type === 'game' ? 'text-amber-200' : 'text-rose-200'
+                                                            }`}>
+                                                            {item.type}
                                                         </span>
-                                                    )}
+                                                        {item.rating && <span className="text-amber-400 flex items-center gap-0.5"><FaStar size={8} /> {item.rating}</span>}
+                                                    </div>
                                                 </div>
                                             </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-16 bg-stone-50 dark:bg-stone-900/30 rounded-2xl border-2 border-dashed border-stone-200 dark:border-zinc-700">
+                                        <FaHeart className="text-5xl mx-auto mb-4 text-stone-300 dark:text-zinc-600" />
+                                        <p className="text-base font-medium text-stone-400 dark:text-zinc-500">{t('profile.noFavorites')}</p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
 
-                                            {/* Arrow */}
-                                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-gray-300 dark:text-stone-700 group-hover:bg-amber-500 group-hover:text-white transition-all transform group-hover:translate-x-1">
-                                                <FaChevronRight />
+                        {activeTab === 'recent' && (
+                            <motion.div
+                                key="recent"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {recentlyWatched.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {recentlyWatched.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                onClick={() => setSelectedItem(item as unknown as MediaItem)}
+                                                className="block group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-5 p-4 rounded-3xl hover:bg-stone-50 dark:hover:bg-stone-900/30 transition-colors border border-transparent hover:border-stone-200 dark:hover:border-zinc-700 hover:shadow-lg">
+                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300 ${item.type === 'movie' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+                                                        item.type === 'series' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                                                            item.type === 'game' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
+                                                                'bg-amber-50 text-rose-600 dark:bg-amber-900/20 dark:text-amber-700'
+                                                        }`}>
+                                                        {item.type === 'movie' ? <FaFilm /> :
+                                                            item.type === 'series' ? <FaTv /> :
+                                                                item.type === 'game' ? <FaGamepad /> : <FaBook />}
+                                                    </div>
+
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-lg font-bold text-stone-900 dark:text-stone-100 truncate group-hover:text-amber-700 dark:group-hover:text-amber-500 transition-colors">
+                                                            {item.title}
+                                                        </h4>
+                                                        <div className="flex items-center gap-3 mt-1">
+                                                            <span className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                                                                {t(`nav.${item.type}s`)}
+                                                            </span>
+                                                            {item.rating && (
+                                                                <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[10px] font-bold">
+                                                                    ★ {item.rating}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-gray-300 dark:text-stone-700 group-hover:bg-amber-500 group-hover:text-white transition-all transform group-hover:translate-x-1">
+                                                        <FaChevronRight />
+                                                    </div>
+                                                </div>
                                             </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-16 bg-stone-50 dark:bg-stone-900/30 rounded-2xl border-2 border-dashed border-stone-200 dark:border-zinc-700">
+                                        <FaHistory className="text-5xl mx-auto mb-4 text-stone-300 dark:text-zinc-600" />
+                                        <p className="text-base font-medium text-stone-400 dark:text-zinc-500">{t('stats.noRecent')}</p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {activeTab === 'stats' && (
+                            <motion.div
+                                key="stats"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[
+                                        {
+                                            label: 'Toplam İçerik',
+                                            value: stats.totalCount,
+                                            icon: <FaPlus />,
+                                            color: 'text-purple-500',
+                                            bg: 'from-purple-500/10 to-purple-500/5'
+                                        },
+                                        {
+                                            label: 'Favoriler',
+                                            value: favorites.length,
+                                            icon: <FaHeart />,
+                                            color: 'text-red-500',
+                                            bg: 'from-red-500/10 to-red-500/5'
+                                        },
+                                        {
+                                            label: 'En Yüksek Puan',
+                                            value: topRated.length > 0 ? Math.max(...topRated.map(i => Number(i.rating) || 0)) : 0,
+                                            icon: <FaTrophy />,
+                                            color: 'text-amber-500',
+                                            bg: 'from-amber-500/10 to-amber-500/5'
+                                        },
+                                        {
+                                            label: 'Ortalama Puan',
+                                            value: allItems.filter(i => i.rating).length > 0
+                                                ? (allItems.filter(i => i.rating).reduce((acc: number, i) => acc + (Number(i.rating) || 0), 0) / allItems.filter(i => i.rating).length).toFixed(1)
+                                                : '0',
+                                            icon: <FaStar />,
+                                            color: 'text-yellow-500',
+                                            bg: 'from-yellow-500/10 to-yellow-500/5'
+                                        },
+                                    ].map((item, idx) => (
+                                        <motion.div
+                                            key={idx}
+                                            whileHover={{ y: -4 }}
+                                            className={`bg-gradient-to-br ${item.bg} dark:bg-stone-900/40 p-5 rounded-3xl border border-white/10 dark:border-white/5 transition-all relative overflow-hidden group`}
+                                        >
+                                            <div className={`text-2xl mb-3 ${item.color} group-hover:scale-110 transition-transform`}>{item.icon}</div>
+                                            <div className="text-3xl font-black text-stone-900 dark:text-stone-100 mb-1">{item.value}</div>
+                                            <div className="text-[10px] font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-widest">{item.label}</div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+
+                                {/* Top Rated Content Preview */}
+                                {topRated.length > 0 && (
+                                    <div className="mt-8">
+                                        <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2">
+                                            <FaTrophy className="text-amber-500" />
+                                            En Yüksek Puanlı İçerikler
+                                        </h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                            {topRated.map((item, idx) => (
+                                                <motion.div
+                                                    key={idx}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    onClick={() => setSelectedItem(item as MediaItem)}
+                                                    className="relative aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-lg"
+                                                >
+                                                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3">
+                                                        <div className="text-white font-bold text-xs truncate">{item.title}</div>
+                                                        <div className="text-amber-400 text-xs flex items-center gap-1">
+                                                            <FaStar size={10} />
+                                                            {item.rating}
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-900/50 rounded-2xl border-2 border-dashed border-stone-300 dark:border-zinc-800">
-                                <FaHistory className="text-5xl mx-auto mb-4 opacity-20" />
-                                <p className="text-base font-medium">{t('stats.noRecent')}</p>
-                            </div>
+                                )}
+                            </motion.div>
                         )}
-                    </div>
-
+                    </AnimatePresence>
                 </div>
 
             </div>
 
             {/* STICKY EDIT ACTION BAR */}
-            {isEditing && (
-                <motion.div
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-0 left-0 right-0 z-50"
-                >
-                    {/* Gradient top border */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
+            {/* STICKY EDIT ACTION BAR - Sayfanın üst kısmında sabit */}
+            <AnimatePresence>
+                {isEditing && (
+                    <motion.div
+                        initial={{ y: -100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -100, opacity: 0 }}
+                        className="fixed top-20 left-0 right-0 z-50"
+                    >
+                        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200 dark:border-zinc-700 rounded-2xl shadow-2xl">
+                                <div className="px-6 py-4">
+                                    <div className="flex items-center justify-between gap-4">
+                                        {/* Sol taraf - Bilgi metni */}
+                                        <div className="flex items-center gap-3">
+                                            <div className="hidden sm:flex w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 items-center justify-center">
+                                                <FaUserEdit className="text-amber-600 dark:text-amber-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-stone-900 dark:text-white">Profil Düzenleniyor</p>
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 hidden sm:block">Değişikliklerinizi kaydetmeyi unutmayın</p>
+                                            </div>
+                                        </div>
 
-                    {/* Glassmorphism bar */}
-                    <div className="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-white/20 dark:border-zinc-700/50 shadow-[0_-10px_40px_rgba(0,0,0,0.15)]">
-                        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div className="flex items-center justify-between gap-4">
-                                {/* Left side - info text */}
-                                <div className="flex items-center gap-3">
-                                    <div className="hidden sm:flex w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 items-center justify-center">
-                                        <FaUserEdit className="text-amber-600 dark:text-amber-400" />
+                                        {/* Sağ taraf - Aksiyon butonları */}
+                                        <div className="flex items-center gap-3 ml-auto">
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => setIsEditing(false)}
+                                                className="flex items-center gap-2 px-5 py-2.5 bg-stone-100 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-stone-700 dark:text-zinc-300 font-semibold rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
+                                            >
+                                                <FaTimes className="text-sm" />
+                                                <span className="hidden sm:inline">{t('profile.cancel')}</span>
+                                                <span className="sm:hidden">İptal</span>
+                                            </motion.button>
+
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={handleSave}
+                                                disabled={loading}
+                                                className="relative flex items-center gap-2 px-6 py-2.5 font-bold rounded-xl text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed group shadow-lg shadow-amber-500/25"
+                                            >
+                                                {/* Gradient arkaplan */}
+                                                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+
+                                                {/* Hover shine efekti */}
+                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+
+                                                {/* Buton içeriği */}
+                                                <span className="relative flex items-center gap-2">
+                                                    {loading ? (
+                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <FaCheck className="text-sm" />
+                                                    )}
+                                                    <span className="hidden sm:inline">{t('profile.saveProfile')}</span>
+                                                    <span className="sm:hidden">Kaydet</span>
+                                                </span>
+                                            </motion.button>
+                                        </div>
                                     </div>
-                                    <div className="hidden sm:block">
-                                        <p className="text-sm font-semibold text-stone-900 dark:text-white">Profil Düzenleniyor</p>
-                                        <p className="text-xs text-stone-500 dark:text-zinc-400">Değişikliklerinizi kaydetmeyi unutmayın</p>
-                                    </div>
-                                </div>
-
-                                {/* Right side - action buttons */}
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={() => setIsEditing(false)}
-                                        className="flex items-center gap-2 px-5 py-2.5 bg-stone-200 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 text-stone-700 dark:text-zinc-300 font-semibold rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
-                                    >
-                                        <FaTimes className="text-sm" />
-                                        <span className="hidden sm:inline">{t('profile.cancel')}</span>
-                                        <span className="sm:hidden">İptal</span>
-                                    </button>
-
-                                    {/* Animated Save Button */}
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handleSave}
-                                        disabled={loading}
-                                        className="relative flex items-center gap-2 px-6 py-2.5 font-bold rounded-xl text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed group"
-                                    >
-                                        {/* Animated gradient background */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-[shimmer_2s_ease-in-out_infinite]"></div>
-
-                                        {/* Shine effect */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-
-                                        {/* Button content */}
-                                        <span className="relative flex items-center gap-2">
-                                            {loading ? (
-                                                <span className="animate-spin">⏳</span>
-                                            ) : (
-                                                <FaCheck className="text-sm" />
-                                            )}
-                                            <span className="hidden sm:inline">{t('profile.saveProfile')}</span>
-                                            <span className="sm:hidden">Kaydet</span>
-                                        </span>
-                                    </motion.button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </motion.div>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <Footer />
 
@@ -639,6 +734,5 @@ export default function ProfilePage() {
                 refetch={refetchMedia}
             />
         </div>
-
     );
 }

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import useMediaHistory from '../hooks/useMediaHistory';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
-import { FaChartBar, FaChartPie, FaTrophy, FaLock, FaFilm, FaTv, FaGamepad, FaBook, FaCalendarWeek, FaClock, FaCalendarDay, FaGift } from 'react-icons/fa';
+import { FaChartBar, FaChartPie, FaTrophy, FaLock, FaFilm, FaTv, FaGamepad, FaBook, FaCalendarWeek, FaClock, FaCalendarDay, FaGift, FaArrowRight } from 'react-icons/fa';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area
@@ -32,14 +32,14 @@ export default function StatsPage() {
             return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
         });
 
-        // 1.5 This Week Added (List of Items)
+        // 1.5 This Week Added
         const thisWeekAddedItems = history.filter(item => {
             if (!item.createdAt) return false;
             const date = item.createdAt.toDate();
             return date > oneWeekAgo;
         }).sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime());
 
-        // 2. Type Distribution (Pie Chart)
+        // 2. Type Distribution
         const typeCounts = { movie: 0, series: 0, game: 0, book: 0 };
         let watchedCount = 0;
 
@@ -55,7 +55,7 @@ export default function StatsPage() {
             { name: t('nav.books'), value: typeCounts.book },
         ].filter(d => d.value > 0);
 
-        // 3. Monthly Activity (Bar Chart - Last 6 Months)
+        // 3. Monthly Activity
         const monthlyData = [];
         for (let i = 5; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -70,12 +70,12 @@ export default function StatsPage() {
             monthlyData.push({ name: monthName, count });
         }
 
-        // 3.5 Recently Watched (Top 5 items marked as watched, sorted by createdAt desc)
+        // Recently Watched
         const recentlyWatched = history
             .filter(item => item.watched)
             .slice(0, 5);
 
-        // NEW: Genre Distribution
+        // Genre Distribution
         const genreCounts: Record<string, number> = {};
         history.forEach(item => {
             if (item.genre) {
@@ -92,9 +92,9 @@ export default function StatsPage() {
         const genreData = Object.entries(genreCounts)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, 8); // Top 8 genres
+            .slice(0, 8);
 
-        // NEW: Rating Distribution (Histogram)
+        // Rating Distribution
         const ratingBuckets: Record<string, number> = {
             '0-2': 0, '2-4': 0, '4-6': 0, '6-8': 0, '8-10': 0
         };
@@ -109,7 +109,7 @@ export default function StatsPage() {
 
         const ratingData = Object.entries(ratingBuckets).map(([name, count]) => ({ name, count }));
 
-        // NEW: Weekly Day Activity (which days of the week user adds content)
+        // Weekly Day Activity
         const dayNames = t('lang') === 'tr'
             ? ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
             : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -118,7 +118,6 @@ export default function StatsPage() {
         history.forEach(item => {
             if (item.createdAt) {
                 const day = item.createdAt.toDate().getDay();
-                // Convert Sunday(0) to Monday(0) based index
                 dayCounts[(day + 6) % 7]++;
             }
         });
@@ -126,19 +125,16 @@ export default function StatsPage() {
         const weeklyDayData = dayNames.map((name, i) => ({
             name,
             count: dayCounts[i],
-            isMax: dayCounts[i] === Math.max(...dayCounts) && dayCounts[i] > 0
         }));
 
-        // Most active day
         const maxDayIndex = dayCounts.indexOf(Math.max(...dayCounts));
         const mostActiveDay = dayCounts[maxDayIndex] > 0 ? dayNames[maxDayIndex] : null;
 
-        // NEW: Yearly Heatmap Data (GitHub style - last 365 days)
+        // Yearly Heatmap Data
         const heatmapData: { date: string; count: number; level: number }[] = [];
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-        // Group items by date
         const dateCountMap: Record<string, number> = {};
         history.forEach(item => {
             if (item.createdAt) {
@@ -150,7 +146,6 @@ export default function StatsPage() {
             }
         });
 
-        // Create 365 days of data
         const maxCount = Math.max(...Object.values(dateCountMap), 1);
         for (let i = 364; i >= 0; i--) {
             const d = new Date();
@@ -161,15 +156,16 @@ export default function StatsPage() {
             heatmapData.push({ date: dateStr, count, level });
         }
 
-        // NEW: Radar Chart Data for Type Distribution
+        // Radar Chart Data
+        const maxTypeCount = Math.max(typeCounts.movie, typeCounts.series, typeCounts.game, typeCounts.book) + 10;
         const radarData = [
-            { type: t('nav.movies'), value: typeCounts.movie, fullMark: Math.max(typeCounts.movie, typeCounts.series, typeCounts.game, typeCounts.book) + 10 },
-            { type: t('nav.series'), value: typeCounts.series, fullMark: Math.max(typeCounts.movie, typeCounts.series, typeCounts.game, typeCounts.book) + 10 },
-            { type: t('nav.games'), value: typeCounts.game, fullMark: Math.max(typeCounts.movie, typeCounts.series, typeCounts.game, typeCounts.book) + 10 },
-            { type: t('nav.books'), value: typeCounts.book, fullMark: Math.max(typeCounts.movie, typeCounts.series, typeCounts.game, typeCounts.book) + 10 },
+            { type: t('nav.movies'), value: typeCounts.movie, fullMark: maxTypeCount },
+            { type: t('nav.series'), value: typeCounts.series, fullMark: maxTypeCount },
+            { type: t('nav.games'), value: typeCounts.game, fullMark: maxTypeCount },
+            { type: t('nav.books'), value: typeCounts.book, fullMark: maxTypeCount },
         ];
 
-        // NEW: Cumulative Growth Data (Area Chart)
+        // Cumulative Growth Data
         const sortedHistory = [...history].sort((a, b) => {
             const aTime = a.createdAt?.toDate().getTime() || 0;
             const bTime = b.createdAt?.toDate().getTime() || 0;
@@ -199,7 +195,7 @@ export default function StatsPage() {
             cumulativeData.push({ month: monthName, total: runningTotal });
         });
 
-        // 4. Badges
+        // Badges
         const badges = [
             {
                 id: 'cinephile',
@@ -231,7 +227,7 @@ export default function StatsPage() {
             },
         ];
 
-        // NEW: Year Distribution based on releaseDate
+        // Year Distribution
         const yearCounts: Record<string, number> = {};
         history.forEach(item => {
             if (item.releaseDate) {
@@ -246,7 +242,7 @@ export default function StatsPage() {
         const yearDistributionData = Object.entries(yearCounts)
             .map(([year, count]) => ({ year, count }))
             .sort((a, b) => parseInt(b.year) - parseInt(a.year))
-            .slice(0, 15); // Son 15 yıl
+            .slice(0, 15);
 
         return {
             thisMonthCount: thisMonthItems.length,
@@ -268,190 +264,158 @@ export default function StatsPage() {
         };
     }, [history, loading, t]);
 
-    if (loading) return <div className="min-h-screen text-center text-stone-500 pt-32">{t('common.loading')}</div>;
-    if (!stats) return <div className="min-h-screen text-center text-stone-500 pt-32">{t('stats.emptyHistory')}</div>;
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+                <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-stone-500">{t('common.loading')}</p>
+            </div>
+        </div>
+    );
+
+    if (!stats) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+                <FaChartBar className="text-6xl text-stone-300 dark:text-stone-700 mx-auto mb-4" />
+                <p className="text-stone-500 text-lg">{t('stats.emptyHistory')}</p>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8 flex items-center gap-3">
-                <FaChartPie className="text-amber-600" /> {t('stats.title')}
-            </h1>
-
-            {/* KEY METRICS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-amber-500/20 transition-all"></div>
-                    <div className="text-stone-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.thisMonth')}</div>
-                    <div className="text-4xl font-black text-amber-600 dark:text-amber-500 mt-2">+{stats.thisMonthCount}</div>
-                    <div className="text-xs text-stone-400 mt-1">{t('stats.newItem')}</div>
-                </div>
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-stone-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-stone-500/20 transition-all"></div>
-                    <div className="text-stone-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.totalItems')}</div>
-                    <div className="text-4xl font-black text-stone-900 dark:text-stone-100 mt-2">{stats.totalCount}</div>
-                </div>
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-all"></div>
-                    <div className="text-stone-500 dark:text-stone-400 text-sm font-semibold uppercase">{t('stats.completionRate')}</div>
-                    <div className="text-4xl font-black text-emerald-600 dark:text-emerald-500 mt-2">%{stats.completionRate}</div>
-                    <div className="text-xs text-stone-400 mt-1">{t('stats.watched')} / {t('stats.read')}</div>
+        <div className="min-h-screen pb-12">
+            {/* Header */}
+            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
+                                <FaChartPie className="text-amber-500" />
+                                {t('stats.title')}
+                            </h1>
+                            <p className="text-stone-500 dark:text-zinc-400 mt-2">
+                                İstatistiklerinizi ve aktivitelerinizi görüntüleyin
+                            </p>
+                        </div>
+                        <Link
+                            to="/profile"
+                            className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
+                        >
+                            <FaArrowRight className="rotate-180" />
+                            <span className="hidden sm:inline">Profile Dön</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
-            {/* WEEKLY PULSE */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* Added This Week - List View */}
-                <div className="bg-gradient-to-br from-stone-700 to-amber-700 rounded-3xl p-8 text-white shadow-xl shadow-amber-900/20 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full bg-black/10"></div>
-                    <div className="relative z-10 w-full h-full flex flex-col">
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-stone-100">
-                            <FaCalendarWeek /> {t('stats.addedThisWeek')}
-                        </h3>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* KEY METRICS */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800 relative overflow-hidden group hover:shadow-xl transition-shadow">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-amber-500/20 transition-all"></div>
+                        <div className="relative">
+                            <div className="text-stone-500 dark:text-zinc-400 text-sm font-semibold uppercase mb-2">{t('stats.thisMonth')}</div>
+                            <div className="text-4xl font-black text-amber-600 dark:text-amber-500">+{stats.thisMonthCount}</div>
+                            <div className="text-xs text-stone-400 dark:text-zinc-500 mt-1">{t('stats.newItem')}</div>
+                        </div>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800 relative overflow-hidden group hover:shadow-xl transition-shadow">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-stone-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-stone-500/20 transition-all"></div>
+                        <div className="relative">
+                            <div className="text-stone-500 dark:text-zinc-400 text-sm font-semibold uppercase mb-2">{t('stats.totalItems')}</div>
+                            <div className="text-4xl font-black text-stone-900 dark:text-white">{stats.totalCount}</div>
+                        </div>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800 relative overflow-hidden group hover:shadow-xl transition-shadow">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-all"></div>
+                        <div className="relative">
+                            <div className="text-stone-500 dark:text-zinc-400 text-sm font-semibold uppercase mb-2">{t('stats.completionRate')}</div>
+                            <div className="text-4xl font-black text-emerald-600 dark:text-emerald-500">%{stats.completionRate}</div>
+                            <div className="text-xs text-stone-400 dark:text-zinc-500 mt-1">{t('stats.watched')} / {t('stats.read')}</div>
+                        </div>
+                    </div>
+                </div>
 
-                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2 max-h-[220px]">
-                            {stats.thisWeekAddedItems.length > 0 ? (
-                                stats.thisWeekAddedItems.map((item) => (
-                                    <div key={item.id} className="flex items-center gap-3 bg-white/10 p-2.5 rounded-xl border border-white/5 backdrop-blur-sm hover:bg-white/20 transition-colors">
-                                        <div className={`p-2 rounded-lg ${item.type === 'movie' ? 'bg-blue-500/20 text-blue-200' :
-                                            item.type === 'series' ? 'bg-emerald-500/20 text-emerald-200' :
-                                                item.type === 'game' ? 'bg-amber-500/20 text-amber-200' : 'bg-amber-700/20 text-rose-200'
-                                            }`}>
-                                            {item.type === 'movie' ? <FaFilm /> :
-                                                item.type === 'series' ? <FaTv /> :
-                                                    item.type === 'game' ? <FaGamepad /> : <FaBook />}
+                {/* WEEKLY PULSE */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    {/* Added This Week */}
+                    <div className="bg-gradient-to-br from-stone-800 to-amber-800 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-full bg-black/10"></div>
+                        <div className="relative z-10">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                <FaCalendarWeek /> {t('stats.addedThisWeek')}
+                            </h3>
+                            <div className="space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar">
+                                {stats.thisWeekAddedItems.length > 0 ? (
+                                    stats.thisWeekAddedItems.map((item) => (
+                                        <div key={item.id} className="flex items-center gap-3 bg-white/10 p-2.5 rounded-xl border border-white/5 backdrop-blur-sm hover:bg-white/20 transition-colors">
+                                            <div className={`p-2 rounded-lg ${item.type === 'movie' ? 'bg-blue-500/20 text-blue-200' :
+                                                    item.type === 'series' ? 'bg-emerald-500/20 text-emerald-200' :
+                                                        item.type === 'game' ? 'bg-amber-500/20 text-amber-200' :
+                                                            'bg-rose-500/20 text-rose-200'
+                                                }`}>
+                                                {item.type === 'movie' ? <FaFilm /> :
+                                                    item.type === 'series' ? <FaTv /> :
+                                                        item.type === 'game' ? <FaGamepad /> : <FaBook />}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="font-semibold text-sm truncate">{item.title}</div>
+                                                <div className="text-[10px] text-white/50 uppercase tracking-wider">{t(`nav.${item.type}s`)}</div>
+                                            </div>
                                         </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="font-semibold text-sm truncate text-white/90">{item.title}</div>
-                                            <div className="text-[10px] text-white/50 uppercase tracking-wider">{t(`nav.${item.type}s`)}</div>
-                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-white/40">
+                                        <p className="text-sm">{t('stats.noAddedThisWeek')}</p>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-white/40">
-                                    <p className="text-sm">{t('stats.noAddedThisWeek')}</p>
+                                )}
+                            </div>
+                            {stats.thisWeekAddedItems.length > 0 && (
+                                <div className="mt-4 pt-3 border-t border-white/10 text-center text-xs font-medium opacity-80">
+                                    {t('stats.totalNew')} +{stats.thisWeekAddedItems.length}
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        {stats.thisWeekAddedItems.length > 0 && (
-                            <div className="mt-4 pt-3 border-t border-white/10 text-center text-xs font-medium opacity-80">
-                                {t('stats.totalNew')} +{stats.thisWeekAddedItems.length}
+                    {/* Recently Watched */}
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-4 flex items-center gap-2">
+                            <FaClock className="text-amber-500" /> {t('stats.recentWatched')}
+                        </h3>
+                        {stats.recentlyWatched.length > 0 ? (
+                            <div className="space-y-3">
+                                {stats.recentlyWatched.map(item => (
+                                    <Link to={`/${item.type}`} key={item.id} className="flex items-center gap-4 group cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800 p-3 rounded-xl transition-colors">
+                                        <div className={`w-2 h-10 rounded-full ${item.type === 'movie' ? 'bg-blue-500' :
+                                                item.type === 'series' ? 'bg-emerald-500' :
+                                                    item.type === 'game' ? 'bg-amber-500' : 'bg-rose-500'
+                                            }`}></div>
+                                        <div className="flex-1">
+                                            <div className="font-bold text-stone-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{item.title}</div>
+                                            <div className="text-xs text-stone-400 dark:text-zinc-500 capitalize">{t(`nav.${item.type}s`)}</div>
+                                        </div>
+                                        {item.rating && <div className="text-amber-500 font-bold text-sm">★ {item.rating}</div>}
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="h-40 flex flex-col items-center justify-center text-stone-400 dark:text-zinc-500 border-2 border-dashed border-stone-200 dark:border-zinc-700 rounded-2xl">
+                                <p>{t('stats.noRecent')}</p>
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
-                        <FaClock className="text-amber-600" /> {t('stats.recentWatched')}
-                    </h3>
-                    {stats.recentlyWatched.length > 0 ? (
-                        <div className="space-y-4">
-                            {stats.recentlyWatched.map(item => (
-                                <Link to={`/${item.type}`} key={item.id} className="flex items-center gap-4 group cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-800/50 p-2 rounded-xl transition-colors">
-                                    <div className={`w-2 h-10 rounded-full ${item.type === 'movie' ? 'bg-blue-500' :
-                                        item.type === 'series' ? 'bg-emerald-500' :
-                                            item.type === 'game' ? 'bg-amber-500' : 'bg-amber-700'
-                                        }`}></div>
-                                    <div className="flex-1">
-                                        <div className="font-bold text-stone-900 dark:text-stone-100 group-hover:text-amber-600 transition-colors">{item.title}</div>
-                                        <div className="text-xs text-stone-400 capitalize">{t(`nav.${item.type}s`)}</div>
-                                    </div>
-                                    {item.rating && <div className="text-amber-500 font-bold text-sm">★ {item.rating}</div>}
-                                </Link>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="h-40 flex flex-col items-center justify-center text-stone-400 border border-dashed border-stone-300 dark:border-stone-800 rounded-2xl">
-                            <p>{t('stats.noRecent')}</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* MONTHLY ACTIVITY CHART */}
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
-                        <FaChartBar className="text-stone-500" /> {t('stats.monthlyActivity')}
-                    </h3>
-                    <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.monthlyData}>
-                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
-                                <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
-                                <RechartsTooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
-                                    cursor={{ fill: 'transparent' }}
-                                />
-                                <Bar dataKey="count" fill="#d97706" radius={[6, 6, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* TYPE DISTRIBUTION CHART */}
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
-                        <FaChartPie className="text-stone-500" /> {t('stats.typeDistribution')}
-                    </h3>
-                    <div className="h-64 w-full flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={stats.pieData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {stats.pieData.map((_, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <RechartsTooltip contentStyle={{ borderRadius: '12px' }} />
-                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-
-            {/* GENRE & RATING CHARTS */}
-            {stats.genreData.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    {/* GENRE DISTRIBUTION CHART */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
-                            🎭 {t('statsCharts.genreDistribution')}
+                {/* MONTHLY & TYPE CHARTS */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-6 flex items-center gap-2">
+                            <FaChartBar className="text-stone-500" /> {t('stats.monthlyActivity')}
                         </h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.genreData} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
-                                    <XAxis type="number" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis type="category" dataKey="name" stroke="#a8a29e" fontSize={11} tickLine={false} axisLine={false} width={100} />
-                                    <RechartsTooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
-                                        cursor={{ fill: 'transparent' }}
-                                    />
-                                    <Bar dataKey="value" fill="#8b5cf6" radius={[0, 6, 6, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* RATING DISTRIBUTION CHART */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
-                            ⭐ {t('statsCharts.ratingDistribution')}
-                        </h3>
-                        <div className="h-64 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.ratingData}>
+                                <BarChart data={stats.monthlyData}>
                                     <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
                                     <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
@@ -459,269 +423,338 @@ export default function StatsPage() {
                                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
                                         cursor={{ fill: 'transparent' }}
                                     />
-                                    <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="count" fill="#d97706" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
-                </div>
-            )}
 
-            {/* YEAR DISTRIBUTION CHART */}
-            {stats.yearDistributionData && stats.yearDistributionData.length > 0 && (
-                <div className="mb-8">
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
-                            📅 {t('statsCharts.yearDistribution') || 'Yıl Dağılımı'}
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-6 flex items-center gap-2">
+                            <FaChartPie className="text-stone-500" /> {t('stats.typeDistribution')}
                         </h3>
-                        <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
-                            {t('statsCharts.yearDistributionDesc') || 'Hangi yılın içeriklerini en çok ekledin?'}
-                        </p>
-                        <div className="h-72 w-full">
+                        <div className="h-64 w-full flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.yearDistributionData}>
+                                <PieChart>
+                                    <Pie
+                                        data={stats.pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {stats.pieData.map((_, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip contentStyle={{ borderRadius: '12px' }} />
+                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+
+                {/* GENRE & RATING CHARTS */}
+                {stats.genreData.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                            <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-6 flex items-center gap-2">
+                                🎭 {t('statsCharts.genreDistribution')}
+                            </h3>
+                            <div className="h-64 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={stats.genreData} layout="vertical">
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                        <XAxis type="number" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis type="category" dataKey="name" stroke="#a8a29e" fontSize={11} tickLine={false} axisLine={false} width={100} />
+                                        <RechartsTooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                            cursor={{ fill: 'transparent' }}
+                                        />
+                                        <Bar dataKey="value" fill="#8b5cf6" radius={[0, 6, 6, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                            <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-6 flex items-center gap-2">
+                                ⭐ {t('statsCharts.ratingDistribution')}
+                            </h3>
+                            <div className="h-64 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={stats.ratingData}>
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                        <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                        <RechartsTooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                            cursor={{ fill: 'transparent' }}
+                                        />
+                                        <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* YEAR DISTRIBUTION CHART */}
+                {stats.yearDistributionData && stats.yearDistributionData.length > 0 && (
+                    <div className="mb-8">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                            <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-6 flex items-center gap-2">
+                                📅 {t('statsCharts.yearDistribution') || 'Yıl Dağılımı'}
+                            </h3>
+                            <p className="text-sm text-stone-500 dark:text-zinc-400 mb-4">
+                                {t('statsCharts.yearDistributionDesc') || 'Hangi yılın içeriklerini en çok ekledin?'}
+                            </p>
+                            <div className="h-72 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={stats.yearDistributionData}>
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                        <XAxis dataKey="year" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                        <RechartsTooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                            cursor={{ fill: 'transparent' }}
+                                            formatter={(value: any) => [`${value} içerik`, 'Toplam']}
+                                        />
+                                        <Bar dataKey="count" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* WEEKLY DAY ACTIVITY & WRAPPED LINK */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-6 flex items-center gap-2">
+                            <FaCalendarDay className="text-indigo-500" /> {t('stats.weeklyActivity') || 'Haftalık Aktivite'}
+                        </h3>
+                        <div className="h-48 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats.weeklyDayData}>
                                     <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
-                                    <XAxis dataKey="year" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
+                                    <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
                                     <RechartsTooltip
                                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
                                         cursor={{ fill: 'transparent' }}
-                                        formatter={(value: any) => [`${value} içerik`, 'Toplam']}
                                     />
-                                    <Bar dataKey="count" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
+                        {stats.mostActiveDay && (
+                            <div className="mt-4 pt-4 border-t border-stone-200 dark:border-zinc-800 text-center">
+                                <span className="text-sm text-stone-500 dark:text-zinc-400">{t('stats.mostActiveDay') || 'En aktif günün'}: </span>
+                                <span className="font-bold text-indigo-600 dark:text-indigo-400">{stats.mostActiveDay}</span>
+                            </div>
+                        )}
                     </div>
-                </div>
-            )}
 
-            {/* WEEKLY DAY ACTIVITY & WRAPPED LINK */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                {/* Weekly Day Activity Chart */}
-                <div className="lg:col-span-2 bg-stone-50 dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-6 flex items-center gap-2">
-                        <FaCalendarDay className="text-indigo-500" /> {t('stats.weeklyActivity') || 'Haftalık Aktivite'}
-                    </h3>
-                    <div className="h-48 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.weeklyDayData}>
-                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
-                                <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
-                                <RechartsTooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
-                                    cursor={{ fill: 'transparent' }}
-                                />
-                                <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                    {stats.mostActiveDay && (
-                        <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-800 text-center">
-                            <span className="text-sm text-stone-500 dark:text-stone-400">{t('stats.mostActiveDay') || 'En aktif günün'}: </span>
-                            <span className="font-bold text-indigo-600 dark:text-indigo-400">{stats.mostActiveDay}</span>
+                    <Link to="/wrapped" className="group bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-8 shadow-xl relative overflow-hidden flex flex-col justify-center items-center text-white hover:scale-[1.02] transition-transform">
+                        <div className="absolute inset-0 bg-black/10"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+                        <div className="relative z-10 text-center">
+                            <FaGift className="text-5xl mb-4 mx-auto group-hover:animate-bounce" />
+                            <h3 className="text-xl font-bold mb-2">{t('stats.wrappedTitle') || 'Yıllık Özet'}</h3>
+                            <p className="text-sm text-white/80 mb-4">{t('stats.wrappedDesc') || 'Yılın özetini keşfet!'}</p>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm font-semibold group-hover:bg-white/30 transition-colors">
+                                {t('stats.viewWrapped') || 'Özete Git'} →
+                            </div>
                         </div>
-                    )}
+                    </Link>
                 </div>
 
-                {/* Wrapped Page Link Card */}
-                <Link to="/wrapped" className="group bg-gradient-to-br from-violet-500 to-purple-600 rounded-3xl p-8 shadow-xl shadow-purple-900/20 relative overflow-hidden flex flex-col justify-center items-center text-white hover:scale-[1.02] transition-transform">
-                    <div className="absolute inset-0 bg-black/10"></div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+                {/* ADVANCED CHARTS */}
+                <div className="mb-8">
+                    <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
+                        📊 {t('stats.advancedCharts') || 'Gelişmiş Grafikler'}
+                    </h2>
 
-                    <div className="relative z-10 text-center">
-                        <FaGift className="text-5xl mb-4 mx-auto group-hover:animate-bounce" />
-                        <h3 className="text-xl font-bold mb-2">{t('stats.wrappedTitle') || 'Yıllık Özet'}</h3>
-                        <p className="text-sm text-white/80 mb-4">{t('stats.wrappedDesc') || 'Yılın özetini keşfet!'}</p>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm font-semibold group-hover:bg-white/30 transition-colors">
-                            {t('stats.viewWrapped') || 'Özete Git'} →
-                        </div>
-                    </div>
-                </Link>
-            </div>
+                    {/* GitHub-style Heatmap */}
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800 mb-6">
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-4 flex items-center gap-2">
+                            🗓️ {t('stats.yearlyHeatmap') || 'Yıllık Aktivite'}
+                        </h3>
+                        <div className="overflow-x-auto pb-2">
+                            <div className="flex mb-1" style={{ width: 'max-content' }}>
+                                {(() => {
+                                    const months: { name: string; weekStart: number }[] = [];
+                                    let currentMonth = -1;
 
-            {/* NEW VISUALIZATIONS SECTION */}
-            <div className="mb-8">
-                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-6 flex items-center gap-2">
-                    📊 {t('stats.advancedCharts') || 'Gelişmiş Grafikler'}
-                </h2>
+                                    stats.heatmapData.forEach((day, index) => {
+                                        const date = new Date(day.date);
+                                        const month = date.getMonth();
+                                        const weekIndex = Math.floor(index / 7);
 
-                {/* GitHub-style Heatmap */}
-                <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5 mb-6">
-                    <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
-                        🗓️ {t('stats.yearlyHeatmap') || 'Yıllık Aktivite'}
-                    </h3>
-                    <div className="overflow-x-auto pb-2">
-                        {/* Month Labels */}
-                        <div className="flex mb-1" style={{ width: 'max-content' }}>
-                            {(() => {
-                                const months: { name: string; weekStart: number }[] = [];
-                                let currentMonth = -1;
+                                        if (month !== currentMonth) {
+                                            currentMonth = month;
+                                            const monthName = date.toLocaleDateString(
+                                                t('lang') === 'tr' ? 'tr-TR' : 'en-US',
+                                                { month: 'short' }
+                                            );
+                                            months.push({ name: monthName, weekStart: weekIndex });
+                                        }
+                                    });
 
-                                stats.heatmapData.forEach((day, index) => {
-                                    const date = new Date(day.date);
-                                    const month = date.getMonth();
-                                    const weekIndex = Math.floor(index / 7);
+                                    return months.map((m, i) => {
+                                        const nextMonth = months[i + 1];
+                                        const width = nextMonth
+                                            ? (nextMonth.weekStart - m.weekStart) * 14
+                                            : (53 - m.weekStart) * 14;
 
-                                    if (month !== currentMonth) {
-                                        currentMonth = month;
-                                        const monthName = date.toLocaleDateString(
-                                            t('lang') === 'tr' ? 'tr-TR' : 'en-US',
-                                            { month: 'short' }
-                                        );
-                                        months.push({ name: monthName, weekStart: weekIndex });
-                                    }
-                                });
-
-                                return months.map((m, i) => {
-                                    const nextMonth = months[i + 1];
-                                    const width = nextMonth
-                                        ? (nextMonth.weekStart - m.weekStart) * 14 // 14px = 12px width + 2px gap
-                                        : (53 - m.weekStart) * 14;
-
-                                    return (
-                                        <div
-                                            key={i}
-                                            className="text-[10px] text-stone-500 dark:text-stone-400"
-                                            style={{ width: `${width}px`, minWidth: `${width}px` }}
-                                        >
-                                            {m.name}
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
-
-                        <div className="flex flex-wrap gap-0.5" style={{ width: 'max-content' }}>
-                            {/* Group by weeks (7 days per column) */}
-                            {Array.from({ length: 53 }, (_, weekIndex) => (
-                                <div key={weekIndex} className="flex flex-col gap-0.5">
-                                    {stats.heatmapData.slice(weekIndex * 7, weekIndex * 7 + 7).map((day, dayIndex) => {
-                                        const bgColors = [
-                                            'bg-gray-100 dark:bg-stone-800',
-                                            'bg-emerald-200 dark:bg-emerald-900',
-                                            'bg-emerald-300 dark:bg-emerald-700',
-                                            'bg-emerald-400 dark:bg-emerald-600',
-                                            'bg-emerald-500 dark:bg-emerald-500',
-                                        ];
-                                        const dateObj = new Date(day.date);
-                                        const formattedDate = dateObj.toLocaleDateString(
-                                            t('lang') === 'tr' ? 'tr-TR' : 'en-US',
-                                            { day: 'numeric', month: 'short', year: 'numeric' }
-                                        );
                                         return (
                                             <div
-                                                key={dayIndex}
-                                                className={`w-3 h-3 rounded-sm ${bgColors[day.level]} cursor-pointer transition-transform hover:scale-150`}
-                                                title={`${formattedDate}: ${day.count} içerik`}
-                                            />
+                                                key={i}
+                                                className="text-[10px] text-stone-500 dark:text-stone-400"
+                                                style={{ width: `${width}px`, minWidth: `${width}px` }}
+                                            >
+                                                {m.name}
+                                            </div>
                                         );
-                                    })}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-end gap-2 mt-4 text-xs text-stone-500 dark:text-stone-400">
-                        <span>{t('stats.less') || 'Az'}</span>
-                        <div className="w-3 h-3 rounded-sm bg-stone-200 dark:bg-stone-800" />
-                        <div className="w-3 h-3 rounded-sm bg-emerald-200 dark:bg-emerald-900" />
-                        <div className="w-3 h-3 rounded-sm bg-emerald-300 dark:bg-emerald-700" />
-                        <div className="w-3 h-3 rounded-sm bg-emerald-400 dark:bg-emerald-600" />
-                        <div className="w-3 h-3 rounded-sm bg-emerald-500 dark:bg-emerald-500" />
-                        <span>{t('stats.more') || 'Çok'}</span>
-                    </div>
-                </div>
-
-                {/* Radar Chart + Area Chart Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Radar Chart */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
-                            🎯 {t('stats.typeRadar') || 'Tür Dağılımı'}
-                        </h3>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart data={stats.radarData}>
-                                    <PolarGrid stroke="#a8a29e" strokeOpacity={0.3} />
-                                    <PolarAngleAxis dataKey="type" tick={{ fill: '#a8a29e', fontSize: 12 }} />
-                                    <PolarRadiusAxis tick={{ fill: '#a8a29e', fontSize: 10 }} />
-                                    <Radar
-                                        name="İçerik"
-                                        dataKey="value"
-                                        stroke="#8b5cf6"
-                                        fill="#8b5cf6"
-                                        fillOpacity={0.5}
-                                    />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Cumulative Growth Area Chart */}
-                    <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-stone-200 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 flex items-center gap-2">
-                            📈 {t('stats.cumulativeGrowth') || 'Kümülatif Büyüme'}
-                        </h3>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={stats.cumulativeData}>
-                                    <defs>
-                                        <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
-                                    <XAxis dataKey="month" stroke="#a8a29e" fontSize={10} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#a8a29e" fontSize={10} tickLine={false} axisLine={false} />
-                                    <RechartsTooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="total"
-                                        stroke="#10b981"
-                                        strokeWidth={2}
-                                        fillOpacity={1}
-                                        fill="url(#colorTotal)"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* GAMIFICATION BADGES */}
-            <div className="bg-white dark:bg-stone-900/50 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-stone-200 dark:border-white/5">
-                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-6 flex items-center gap-2">
-                    <FaTrophy className="text-amber-500" /> {t('stats.badges')}
-                </h2>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    {stats.badges.map((badge) => (
-                        <motion.div
-                            key={badge.id}
-                            whileHover={{ y: -5 }}
-                            className={`p-6 rounded-2xl border-2 text-center transition-all ${badge.unlocked
-                                ? 'border-amber-500/50 bg-amber-50 dark:bg-amber-900/10'
-                                : 'border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950/50 grayscale opacity-60'
-                                }`}
-                        >
-                            <div className="text-4xl mb-3 flex justify-center">
-                                {badge.unlocked ? badge.icon : <FaLock className="text-stone-400 dark:text-stone-700" />}
+                                    });
+                                })()}
                             </div>
-                            <h3 className="font-bold text-stone-900 dark:text-stone-100 mb-1">{badge.title}</h3>
-                            <p className="text-xs text-stone-500 dark:text-stone-400">{badge.desc}</p>
-                            {badge.unlocked && <div className="mt-3 inline-block px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase">{t('stats.unlocked')}</div>}
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
 
-            <Footer />
+                            <div className="flex flex-wrap gap-0.5" style={{ width: 'max-content' }}>
+                                {Array.from({ length: 53 }, (_, weekIndex) => (
+                                    <div key={weekIndex} className="flex flex-col gap-0.5">
+                                        {stats.heatmapData.slice(weekIndex * 7, weekIndex * 7 + 7).map((day, dayIndex) => {
+                                            const bgColors = [
+                                                'bg-stone-100 dark:bg-zinc-800',
+                                                'bg-emerald-200 dark:bg-emerald-900',
+                                                'bg-emerald-300 dark:bg-emerald-700',
+                                                'bg-emerald-400 dark:bg-emerald-600',
+                                                'bg-emerald-500 dark:bg-emerald-500',
+                                            ];
+                                            const dateObj = new Date(day.date);
+                                            const formattedDate = dateObj.toLocaleDateString(
+                                                t('lang') === 'tr' ? 'tr-TR' : 'en-US',
+                                                { day: 'numeric', month: 'short', year: 'numeric' }
+                                            );
+                                            return (
+                                                <div
+                                                    key={dayIndex}
+                                                    className={`w-3 h-3 rounded-sm ${bgColors[day.level]} cursor-pointer transition-transform hover:scale-150`}
+                                                    title={`${formattedDate}: ${day.count} içerik`}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-2 mt-4 text-xs text-stone-500 dark:text-stone-400">
+                            <span>{t('stats.less') || 'Az'}</span>
+                            <div className="w-3 h-3 rounded-sm bg-stone-100 dark:bg-zinc-800" />
+                            <div className="w-3 h-3 rounded-sm bg-emerald-200 dark:bg-emerald-900" />
+                            <div className="w-3 h-3 rounded-sm bg-emerald-300 dark:bg-emerald-700" />
+                            <div className="w-3 h-3 rounded-sm bg-emerald-400 dark:bg-emerald-600" />
+                            <div className="w-3 h-3 rounded-sm bg-emerald-500 dark:bg-emerald-500" />
+                            <span>{t('stats.more') || 'Çok'}</span>
+                        </div>
+                    </div>
+
+                    {/* Radar Chart + Area Chart Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                            <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-4 flex items-center gap-2">
+                                🎯 {t('stats.typeRadar') || 'Tür Dağılımı'}
+                            </h3>
+                            <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadarChart data={stats.radarData}>
+                                        <PolarGrid stroke="#a8a29e" strokeOpacity={0.3} />
+                                        <PolarAngleAxis dataKey="type" tick={{ fill: '#a8a29e', fontSize: 12 }} />
+                                        <PolarRadiusAxis tick={{ fill: '#a8a29e', fontSize: 10 }} />
+                                        <Radar
+                                            name="İçerik"
+                                            dataKey="value"
+                                            stroke="#8b5cf6"
+                                            fill="#8b5cf6"
+                                            fillOpacity={0.5}
+                                        />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800">
+                            <h3 className="text-lg font-bold text-stone-800 dark:text-white mb-4 flex items-center gap-2">
+                                📈 {t('stats.cumulativeGrowth') || 'Kümülatif Büyüme'}
+                            </h3>
+                            <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={stats.cumulativeData}>
+                                        <defs>
+                                            <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                                                <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="#a8a29e" />
+                                        <XAxis dataKey="month" stroke="#a8a29e" fontSize={10} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#a8a29e" fontSize={10} tickLine={false} axisLine={false} />
+                                        <RechartsTooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', color: '#000' }}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="total"
+                                            stroke="#10b981"
+                                            strokeWidth={2}
+                                            fillOpacity={1}
+                                            fill="url(#colorTotal)"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* GAMIFICATION BADGES */}
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-stone-200 dark:border-zinc-800 mb-8">
+                    <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
+                        <FaTrophy className="text-amber-500" /> {t('stats.badges')}
+                    </h2>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {stats.badges.map((badge) => (
+                            <motion.div
+                                key={badge.id}
+                                whileHover={{ y: -5 }}
+                                className={`p-6 rounded-2xl border-2 text-center transition-all ${badge.unlocked
+                                        ? 'border-amber-500/50 bg-amber-50 dark:bg-amber-900/10'
+                                        : 'border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/50 grayscale opacity-60'
+                                    }`}
+                            >
+                                <div className="text-4xl mb-3 flex justify-center">
+                                    {badge.unlocked ? badge.icon : <FaLock className="text-stone-400 dark:text-stone-600" />}
+                                </div>
+                                <h3 className="font-bold text-stone-900 dark:text-white mb-1">{badge.title}</h3>
+                                <p className="text-xs text-stone-500 dark:text-zinc-400">{badge.desc}</p>
+                                {badge.unlocked && (
+                                    <div className="mt-3 inline-block px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase">
+                                        {t('stats.unlocked')}
+                                    </div>
+                                )}
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                <Footer />
+            </div>
         </div>
     );
 }

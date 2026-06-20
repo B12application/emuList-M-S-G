@@ -37,6 +37,7 @@ interface ExpensesHomeViewProps {
   isTrashView?: boolean;
   isExcludedView?: boolean;
   getCategoryField?: (e: Expense) => string;
+  isBlurred?: boolean;
 }
 
 const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
@@ -70,7 +71,8 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
   onIncludeExpense,
   isTrashView = false,
   isExcludedView = false,
-  getCategoryField
+  getCategoryField,
+  isBlurred = false
 }) => {
   const totalIncomeAmount = filteredExpenses.filter(e => e.direction === 'gelen').reduce((sum, e) => sum + e.amount, 0);
   const totalExpenseAmount = filteredExpenses.filter(e => e.direction !== 'gelen').reduce((sum, e) => sum + e.amount, 0);
@@ -90,7 +92,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
             ].map((stat: { label: string; value: number; color?: string; suffix?: string; prefix?: string }, i) => (
               <div key={i} className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-100 dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-all">
                 <p className="text-[9px] sm:text-[9px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-1.5 truncate">{stat.label}</p>
-                <h4 className={`text-lg sm:text-xl font-black tracking-tighter ${stat.color || 'text-stone-900 dark:text-white'}`}>
+                <h4 className={`text-lg sm:text-xl font-black tracking-tighter ${stat.color || 'text-stone-900 dark:text-white'} ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : 'transition-all'}`}>
                   {stat.prefix || ''}{!stat.suffix && t('expenses.currency')}
                   {stat.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   {stat.suffix || ''}
@@ -330,7 +332,7 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className={`text-sm font-black tracking-tighter ${selectedIds.has(expense.id) ? 'text-white dark:text-black' : (expense.direction === 'gelen' ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-900 dark:text-white')}`}>
+                      <span className={`text-sm font-black tracking-tighter ${selectedIds.has(expense.id) ? 'text-white dark:text-black' : (expense.direction === 'gelen' ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-900 dark:text-white')} ${isBlurred ? 'blur-md select-none transition-all hover:blur-none cursor-pointer' : 'transition-all'}`}>
                         {expense.direction === 'gelen' ? '+' : '-'}{t('expenses.currency')}{expense.amount.toLocaleString()}
                       </span>
                       {!isTrashView && !isExcludedView ? (

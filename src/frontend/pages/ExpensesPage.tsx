@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory, FaReceipt, FaEyeSlash } from 'react-icons/fa';
+import { FaLayerGroup, FaTrash, FaWallet, FaChartLine, FaCar, FaGem, FaUndo, FaHistory, FaReceipt, FaEyeSlash, FaEye } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import useExpenses from '../hooks/useExpenses';
 import type { Expense } from '../hooks/useExpenses';
@@ -94,6 +94,16 @@ const ExpensesPage: React.FC = () => {
 
   //second navbar
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Blur State
+  const [isBlurred, setIsBlurred] = useState<boolean>(() => {
+    const saved = localStorage.getItem('expenses_is_blurred');
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('expenses_is_blurred', String(isBlurred));
+  }, [isBlurred]);
 
   // Missing States Added Here
   const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
@@ -681,6 +691,7 @@ const ExpensesPage: React.FC = () => {
               isDark={isDark}
               investments={investments}
               isLoading={isLoadingInvestments}
+              isBlurred={isBlurred}
               onAddClick={() => {
                 setIsInvestmentEditing(false);
                 setEditingInvestmentId(null);
@@ -734,6 +745,8 @@ const ExpensesPage: React.FC = () => {
             onDeleteCategory={handleDeleteCategory}
             onRunMigration={runMigration}
             isMigrating={isMigrating}
+            isBlurred={isBlurred}
+            setIsBlurred={setIsBlurred}
           />
 
           <div className="flex-1">
@@ -829,6 +842,7 @@ const ExpensesPage: React.FC = () => {
                       setVisibleCount={setVisibleCount}
                       onConvertToInvestment={handleConvertToInvestment}
                       getCategoryField={getCategoryField}
+                      isBlurred={isBlurred}
                     />
                   )}
                   {activeTab === 'raporlar' && (
@@ -840,6 +854,7 @@ const ExpensesPage: React.FC = () => {
                       onPdfImport={handlePdfImport}
                       expenses={expenses}
                       categories={categories}
+                      isBlurred={isBlurred}
                     />
                   )}
                 </motion.div>

@@ -13,6 +13,7 @@ interface InvestmentsTabProps {
   onAddClick: () => void;
   onEdit: (investment: Investment) => void;
   onDelete: (id: string) => void;
+  isBlurred?: boolean;
 }
 
 const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
@@ -22,7 +23,8 @@ const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
   isLoading,
   onAddClick,
   onEdit,
-  onDelete
+  onDelete,
+  isBlurred = false
 }) => {
   const [goldPrice, setGoldPrice] = useState<GoldPrice | null>(null);
   const [loadingPrice, setLoadingPrice] = useState(false);
@@ -72,7 +74,7 @@ const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
             </div>
 
             <div className="flex items-end gap-4">
-              <h2 className="text-4xl font-black">
+              <h2 className={`text-4xl font-black ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>
                 ₺{goldPrice ? goldPrice.sell.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '---'}
               </h2>
               {goldPrice && (
@@ -92,7 +94,7 @@ const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
         <div className="bg-white dark:bg-zinc-800/50 p-8 rounded-[2.5rem] border border-stone-100 dark:border-zinc-800 flex flex-col justify-center">
           <span className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2">Toplam Varlık</span>
           <h3 className="text-2xl font-black text-stone-900 dark:text-white">{totalGrams.toFixed(2)} g</h3>
-          <p className="text-xs font-bold text-stone-400 mt-1">₺{currentTotalValue.toLocaleString()} (Güncel)</p>
+          <p className={`text-xs font-bold text-stone-400 mt-1 ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{currentTotalValue.toLocaleString()} (Güncel)</p>
         </div>
       </div>
 
@@ -100,12 +102,12 @@ const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-stone-50/50 dark:bg-zinc-800/30 p-6 rounded-3xl border border-stone-100 dark:border-zinc-800">
           <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1">Maliyet</p>
-          <p className="text-sm font-black text-stone-900 dark:text-white">₺{totalCost.toLocaleString()}</p>
+          <p className={`text-sm font-black text-stone-900 dark:text-white ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{totalCost.toLocaleString()}</p>
         </div>
         <div className={`p-6 rounded-3xl border ${totalProfitLoss >= 0 ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30' : 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'}`}>
           <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1">Kar/Zarar</p>
           <div className="flex items-center gap-2">
-            <p className={`text-sm font-black ${totalProfitLoss >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+            <p className={`text-sm font-black ${totalProfitLoss >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>
               ₺{Math.abs(totalProfitLoss).toLocaleString()}
             </p>
             <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${totalProfitLoss >= 0 ? 'bg-emerald-100 dark:bg-emerald-400/20 text-emerald-700 dark:text-emerald-300' : 'bg-red-100 dark:bg-red-400/20 text-red-700 dark:text-red-300'}`}>
@@ -157,7 +159,7 @@ const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
                     <div>
                       <h4 className="text-sm font-black text-stone-900 dark:text-white">{inv.title}</h4>
                       <p className="text-[10px] font-bold text-stone-400 uppercase mt-0.5">
-                        {inv.amount}g • ₺{inv.buyPrice.toLocaleString()} (Alış) • {inv.date}
+                        {inv.amount}g • <span className={isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}>₺{inv.buyPrice.toLocaleString()}</span> (Alış) • {inv.date}
                       </p>
                     </div>
                   </div>
@@ -165,13 +167,13 @@ const InvestmentsTab: React.FC<InvestmentsTabProps> = ({
                   <div className="flex items-center gap-8">
                     <div className="text-right hidden sm:block">
                       <p className="text-[10px] font-black text-stone-400 uppercase tracking-tight mb-1">Maliyet</p>
-                      <p className="text-sm font-black text-stone-600 dark:text-zinc-400">₺{costVal.toLocaleString()}</p>
+                      <p className={`text-sm font-black text-stone-600 dark:text-zinc-400 ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{costVal.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-stone-400 uppercase tracking-tight mb-1">Güncel Değer</p>
-                      <p className="text-sm font-black text-stone-900 dark:text-white">₺{currentVal.toLocaleString()}</p>
+                      <p className={`text-sm font-black text-stone-900 dark:text-white ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{currentVal.toLocaleString()}</p>
                       <div className="flex items-center justify-end gap-2 mt-0.5">
-                        <span className={`text-[9px] font-black ${profit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                        <span className={`text-[9px] font-black ${profit >= 0 ? 'text-emerald-500' : 'text-red-500'} ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>
                           {profit >= 0 ? '+' : ''}₺{Math.abs(profit).toLocaleString()}
                         </span>
                         <span className={`text-[8px] font-black px-1 rounded ${profit >= 0 ? 'bg-emerald-100 dark:bg-emerald-400/20 text-emerald-600' : 'bg-red-100 dark:bg-red-400/20 text-red-600'}`}>

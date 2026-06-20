@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { countItemsWithoutGenre, migrateGenresForUser } from '../../backend/services/genreMigrationService';
 import { migrateReleaseDates } from '../../backend/services/releaseDateMigrationService';
 import { migrateRuntimeAndImdb } from '../../backend/services/runtimeImdbMigrationService';
-import { migrateToEpisodeTracking } from '../../backend/services/episodeMigrationService';
+import { migrateToEpisodeTracking, checkNewSeasonsForUser, getSeriesCountForUser } from '../../backend/services/episodeMigrationService';
 import { Link } from 'react-router-dom';
 
 export default function MigrationPage() {
@@ -49,6 +49,19 @@ export default function MigrationPage() {
         total: 0,
         title: '',
     });
+
+    // New Season Check States
+    const [seasonCheckLoading, setSeasonCheckLoading] = useState(false);
+    const [seasonCheckProgress, setSeasonCheckProgress] = useState({
+        current: 0,
+        total: 0,
+        title: '',
+    });
+    
+    // Custom Modal States
+    const [showSeasonCheckModal, setShowSeasonCheckModal] = useState(false);
+    const [seriesCount, setSeriesCount] = useState<number | null>(null);
+    const [seriesCountLoading, setSeriesCountLoading] = useState(false);
 
     // Load count on mount
     useEffect(() => {
@@ -158,6 +171,59 @@ export default function MigrationPage() {
             toast.error('Migration hatası: ' + error.message);
         } finally {
             setEpisodeMigrationLoading(false);
+        }
+    };
+
+    const handleNewSeasonCheck = async () => {
+        if (!user) return;
+        
+        setSeriesCountLoading(true);
+        setShowSeasonCheckModal(true);
+        
+        try {
+            const count = await getSeriesCountForUser(user.uid);
+            setSeriesCount(count);
+        } catch (error) {
+            console.error('Error fetching series count:', error);
+            toast.error('Dizi sayısı alınamadı.');
+            setShowSeasonCheckModal(false);
+        } finally {
+            setSeriesCountLoading(false);
+        }
+    };
+
+    const confirmNewSeasonCheck = async () => {
+        if (!user) return;
+        
+        setShowSeasonCheckModal(false);
+        setSeasonCheckLoading(true);
+        setSeasonCheckProgress({ current: 0, total: 0, title: '' });
+
+        try {
+            const result = await checkNewSeasonsForUser(user.uid, (progress) => {
+                setSeasonCheckProgress(progress);
+            });
+            
+            if (result.details && result.details.length > 0) {
+                toast.success(
+                    <div className="flex flex-col gap-1">
+                        <span className="font-bold">✅ Güncelleme Tamamlandı!</span>
+                        <div className="text-sm max-h-48 overflow-y-auto mt-1">
+                            {result.details.map((detail, idx) => (
+                                <div key={idx}>• {detail}</div>
+                            ))}
+                        </div>
+                    </div>,
+                    { duration: 8000 }
+                );
+            } else {
+                toast.success('✅ Kontrol tamamlandı. Yeni sezon veya bölüm bulunamadı.');
+            }
+        } catch (error: any) {
+            console.error('Season check error:', error);
+            toast.error('Kontrol hatası: ' + error.message);
+        } finally {
+            setSeasonCheckLoading(false);
         }
     };
 
@@ -420,7 +486,57 @@ export default function MigrationPage() {
                             </button>
                         )}
                     </div>
+
+                    {/* Admin Only: New Season Check Card */}
+                    {user?.uid === import.meta.env.VITE_ADMIN_UID && (
+                        <div className="bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-950/20 dark:to-red-950/20 rounded-2xl shadow-lg border border-rose-200 dark:border-rose-800 p-6 md:col-span-2">
+                            <div className="flex items-start gap-4 mb-4">
+                                <div className="p-3 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex-shrink-0">
+                                    <FaSync className="text-xl text-rose-600 dark:text-rose-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-rose-700 dark:text-rose-300 mb-1">Yeni Sezon ve Bölüm Kontrolü (Admin)</h2>
+                                    <p className="text-sm text-stone-600 dark:text-zinc-400">
+                                        Mevcut tüm dizileriniz için OMDB üzerinden yeni sezon veya yeni bölüm yayınlanmış mı diye kontrol eder.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <span className="text-sm font-medium text-stone-500 dark:text-zinc-400">
+                                    Dizilerinizde eksik olan yeni sezonları ve bölümleri otomatik ekleyin.
+                                </span>
+                            </div>
+
+                            {seasonCheckLoading ? (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-zinc-400">
+                                        <FaSync className="animate-spin" />
+                                        <span className="truncate">{seasonCheckProgress.title || 'İşleniyor...'}</span>
+                                    </div>
+                                    <div className="w-full bg-stone-200 dark:bg-zinc-700 rounded-full h-2.5 overflow-hidden">
+                                        <div
+                                            className="bg-rose-500 h-full rounded-full transition-all duration-300"
+                                            style={{ width: `${seasonCheckProgress.total > 0 ? (seasonCheckProgress.current / seasonCheckProgress.total) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                    <div className="text-xs text-stone-500 dark:text-zinc-400 font-medium">
+                                        {seasonCheckProgress.current} / {seasonCheckProgress.total}
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleNewSeasonCheck}
+                                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl"
+                                >
+                                    <FaRocket />
+                                    Kontrolü Başlat
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
+
 
                 {/* Bottom Info */}
                 <div className="mt-8 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-stone-200 dark:border-zinc-800">
@@ -436,6 +552,57 @@ export default function MigrationPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Season Check Modal */}
+            {showSeasonCheckModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-zinc-800 p-6 w-full max-w-md animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-3 bg-rose-100 dark:bg-rose-900/30 rounded-full text-rose-600 dark:text-rose-400">
+                                <FaTv className="text-xl" />
+                            </div>
+                            <h3 className="text-xl font-bold text-stone-900 dark:text-white">Yeni Sezon Kontrolü</h3>
+                        </div>
+                        
+                        <div className="mb-6 space-y-4">
+                            {seriesCountLoading ? (
+                                <div className="flex items-center justify-center py-4">
+                                    <FaSync className="animate-spin text-2xl text-stone-400" />
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="text-stone-600 dark:text-zinc-400 text-lg">
+                                        Toplam <strong className="text-rose-600 dark:text-rose-400 text-2xl">{seriesCount}</strong> adet diziniz bulundu.
+                                    </p>
+                                    <p className="text-sm text-stone-500 dark:text-zinc-500 bg-stone-50 dark:bg-zinc-800/50 p-3 rounded-lg">
+                                        Tüm dizileriniz için OMDB API üzerinden yeni sezon veya bölüm güncellemesi aranacaktır.
+                                    </p>
+                                    <p className="text-stone-700 dark:text-zinc-300 font-medium">
+                                        Onaylıyor musunuz?
+                                    </p>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowSeasonCheckModal(false)}
+                                className="px-4 py-2 text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 rounded-xl font-medium transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={confirmNewSeasonCheck}
+                                disabled={seriesCountLoading || seriesCount === 0}
+                                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                <FaCheckCircle />
+                                Onaylıyorum
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -102,6 +102,23 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
     // 10-11: Tatil
 
     if (index >= 0 && index <= 3) {
+      let isTatilEarly = false;
+      if (exactTime && index === 3) {
+        const hour = date.getHours();
+        const minute = date.getMinutes();
+        if (hour > 16 || (hour === 16 && minute >= 30)) {
+          isTatilEarly = true;
+        }
+      }
+
+      if (isTatilEarly) {
+        return {
+          type: 'Tatil',
+          dayIndex: 1, // Treat as start of Tatil
+          shiftDate: dateToCalculate,
+        };
+      }
+
       return {
         type: 'Sabah',
         startTime: '06:30',

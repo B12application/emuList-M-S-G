@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaFilter, FaTags, FaPlus, FaChevronDown, FaHistory, FaTrash } from 'react-icons/fa';
+import { FaFilter, FaTags, FaPlus, FaChevronDown, FaHistory, FaTrash, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 interface CategorySidebarProps {
   t: (key: string) => string;
@@ -18,6 +18,8 @@ interface CategorySidebarProps {
   onDeleteCategory: (category: string) => void;
   onRunMigration?: () => void;
   isMigrating?: boolean;
+  isBlurred?: boolean;
+  setIsBlurred?: (val: boolean) => void;
 }
 
 const CategorySidebar: React.FC<CategorySidebarProps> = ({
@@ -35,7 +37,9 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onAddCategory,
   onDeleteCategory,
   onRunMigration,
-  isMigrating
+  isMigrating,
+  isBlurred,
+  setIsBlurred
 }) => {
   const [isCategoriesCollapsed, setIsCategoriesCollapsed] = React.useState(false);
   const [categorySort, setCategorySort] = React.useState<'name' | 'count'>('name');
@@ -77,13 +81,24 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
               <FaFilter className="text-white dark:text-stone-900 text-[10px]" />
             </div>
             {isSidebarOpen && (
-              <motion.h3
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-[10px] font-black text-stone-900 dark:text-white uppercase tracking-widest whitespace-nowrap"
-              >
-                {t('expenses.categoriesTitle') || 'NAVİGASYON'}
-              </motion.h3>
+              <>
+                <motion.h3
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-[10px] font-black text-stone-900 dark:text-white uppercase tracking-widest whitespace-nowrap flex-1"
+                >
+                  {t('expenses.categoriesTitle') || 'NAVİGASYON'}
+                </motion.h3>
+                {setIsBlurred && (
+                  <button
+                    onClick={() => setIsBlurred(!isBlurred)}
+                    className="p-1.5 rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+                    title={isBlurred ? "Fiyatları Göster" : "Fiyatları Gizle"}
+                  >
+                    {isBlurred ? <FaEyeSlash size={12} /> : <FaEye size={12} />}
+                  </button>
+                )}
+              </>
             )}
           </div>
 

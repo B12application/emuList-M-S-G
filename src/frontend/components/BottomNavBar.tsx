@@ -38,7 +38,10 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
   );
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[100] md:hidden pb-3 pt-1">
+    <div 
+      className="fixed bottom-0 inset-x-0 z-[100] md:hidden pt-1"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+    >
       {/* Container with universal safe margin */}
       <div className="relative mx-3 mb-1 rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20 border border-white/20 dark:border-zinc-800/50">
 

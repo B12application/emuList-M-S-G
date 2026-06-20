@@ -44,7 +44,14 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
   const listsDropdownRef = useRef<HTMLDivElement | null>(null);
   const addDropdownRef = useRef<HTMLDivElement | null>(null);
   const { getShiftInfo } = useShift();
-  const todayShift = getShiftInfo(new Date(), true);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const todayShift = getShiftInfo(currentTime, true);
 
   // Gender-based avatar URLs
   const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
@@ -199,6 +206,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   let badgeCls = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800';
                   let IconComp = FaCoffee;
                   let label = todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type;
+                  let tooltip = todayShift.type === 'Tatil' ? 'Tatil Günü' : `${todayShift.type} Vardiyası`;
 
                   if (todayShift.type === 'Sabah') {
                     badgeCls = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800';
@@ -211,10 +219,38 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                     IconComp = FaUserShield;
                   }
 
+                  if (todayShift.startTime && todayShift.endTime && todayShift.type !== 'Tatil') {
+                    const [sH, sM] = todayShift.startTime.split(':').map(Number);
+                    const [eH, eM] = todayShift.endTime.split(':').map(Number);
+                    let startMinutes = sH * 60 + sM;
+                    let endMinutes = eH * 60 + eM;
+                    if (endMinutes <= startMinutes) endMinutes += 24 * 60; // Shift crosses midnight
+                    
+                    let currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+                    // If shift crosses midnight and we are currently after midnight
+                    if (endMinutes > 24 * 60 && currentMinutes < (endMinutes - 24 * 60)) {
+                      currentMinutes += 24 * 60;
+                    }
+
+                    if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+                      const remaining = endMinutes - currentMinutes;
+                      const h = Math.floor(remaining / 60);
+                      const m = remaining % 60;
+                      tooltip = `${todayShift.type} Vardiyası (${todayShift.startTime} - ${todayShift.endTime})\nKalan Mesai: ${h > 0 ? `${h} saat ` : ''}${m} dk`;
+                    } else if (currentMinutes < startMinutes && startMinutes - currentMinutes < 12 * 60) {
+                      const remaining = startMinutes - currentMinutes;
+                      const h = Math.floor(remaining / 60);
+                      const m = remaining % 60;
+                      tooltip = `${todayShift.type} Vardiyası (${todayShift.startTime} - ${todayShift.endTime})\nBaşlamasına: ${h > 0 ? `${h} saat ` : ''}${m} dk`;
+                    } else {
+                      tooltip = `${todayShift.type} Vardiyası (${todayShift.startTime} - ${todayShift.endTime})\nMesai Bitti`;
+                    }
+                  }
+
                   return (
                     <div
-                      className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${badgeCls}`}
-                      title={todayShift.type === 'Tatil' ? 'Tatil Günü' : todayShift.type === 'Nöbet' ? 'Nöbet Vardiyası' : `${todayShift.type} Vardiyası`}
+                      className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold cursor-help transition-all hover:scale-105 ${badgeCls}`}
+                      title={tooltip}
                     >
                       <IconComp className="w-3.5 h-3.5" />
                       <span>{label}</span>

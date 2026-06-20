@@ -22,9 +22,16 @@
   }
 }
 
-html:not(.dark) #root {
-  filter: brightness(var(--ui-light-brightness, 1)) sepia(var(--ui-light-softness, 0));
-  transition: filter 200ms ease;
+/* Avoid using filter on #root to prevent breaking position: fixed for children like BottomNavBar */
+html:not(.dark) body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99999;
+  backdrop-filter: brightness(var(--ui-light-brightness, 1)) sepia(var(--ui-light-softness, 0));
+  -webkit-backdrop-filter: brightness(var(--ui-light-brightness, 1)) sepia(var(--ui-light-softness, 0));
+  transition: backdrop-filter 200ms ease;
 }
 
 /* Star Animations */

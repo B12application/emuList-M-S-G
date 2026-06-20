@@ -15,8 +15,8 @@ export const fetchGoldPrice = async (): Promise<GoldPrice | null> => {
 
     if (!response.ok) {
       console.warn('Proxy fetch failed, falling back to direct fetch');
-      // Using the working GenelPara URL as fallback
-      const directResponse = await fetch('https://api.genelpara.com/json/?list=altin');
+      // Using a CORS proxy to fetch from GenelPara since local dev Vite doesn't have Netlify functions running
+      const directResponse = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.genelpara.com/embed/altin.json'));
       if (!directResponse.ok) throw new Error('Both proxy and direct fetch failed');
       return parseGoldData(await directResponse.json());
     }

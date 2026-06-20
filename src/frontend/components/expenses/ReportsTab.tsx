@@ -19,6 +19,7 @@ interface ReportsTabProps {
   // Yeni props'lar - ana sayfadan gelecek
   expenses?: any[];
   categories?: string[];
+  isBlurred?: boolean;
 }
 
 const PIE_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
@@ -31,7 +32,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   monthlySummary,
   onPdfImport,
   expenses = [],
-  categories = []
+  categories = [],
+  isBlurred = false
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -192,7 +194,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
               </div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Toplam</span>
             </div>
-            <p className="text-xl font-black text-stone-900 dark:text-white">₺{summaryStats.total.toLocaleString()}</p>
+            <p className={`text-xl font-black text-stone-900 dark:text-white ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{summaryStats.total.toLocaleString()}</p>
             <p className="text-[10px] text-stone-400 mt-1">{summaryStats.count} işlem</p>
           </div>
 
@@ -203,7 +205,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
               </div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Ortalama</span>
             </div>
-            <p className="text-xl font-black text-stone-900 dark:text-white">₺{Math.round(summaryStats.avg).toLocaleString()}</p>
+            <p className={`text-xl font-black text-stone-900 dark:text-white ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{Math.round(summaryStats.avg).toLocaleString()}</p>
             <p className="text-[10px] text-stone-400 mt-1">işlem başına</p>
           </div>
 
@@ -214,7 +216,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
               </div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Bu Ay</span>
             </div>
-            <p className="text-xl font-black text-stone-900 dark:text-white">₺{summaryStats.thisMonth.toLocaleString()}</p>
+            <p className={`text-xl font-black text-stone-900 dark:text-white ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{summaryStats.thisMonth.toLocaleString()}</p>
             <p className="text-[10px] text-stone-400 mt-1">
               {summaryStats.trend > 0 ? '↑' : '↓'} %{Math.abs(summaryStats.trend).toFixed(1)}
             </p>
@@ -230,7 +232,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
             <p className="text-sm font-black text-stone-900 dark:text-white truncate">
               {topCategories[0]?.name || '—'}
             </p>
-            <p className="text-[10px] text-stone-400 mt-1">
+            <p className={`text-[10px] text-stone-400 mt-1 ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>
               {topCategories[0] ? `₺${topCategories[0].value.toLocaleString()}` : 'Veri yok'}
             </p>
           </div>
@@ -315,7 +317,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
               monthlySummary.map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between p-4 bg-stone-50/50 dark:bg-zinc-800/20 rounded-xl border border-stone-100 dark:border-zinc-800/50 group hover:bg-stone-100 dark:hover:bg-zinc-800/40 transition-colors">
                   <span className="text-xs font-black text-stone-600 dark:text-zinc-400 uppercase tracking-tight">{item.month}</span>
-                  <span className="text-xs font-black text-stone-900 dark:text-white">₺{item.amount.toLocaleString()}</span>
+                  <span className={`text-xs font-black text-stone-900 dark:text-white ${isBlurred ? 'blur-md select-none transition-all hover:blur-none' : ''}`}>₺{item.amount.toLocaleString()}</span>
                 </div>
               ))
             )}

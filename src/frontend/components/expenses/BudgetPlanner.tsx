@@ -16,7 +16,18 @@ import {
   FaChevronUp,
   FaCheckCircle,
   FaRegCircle,
-  FaTrashAlt
+  FaTrashAlt,
+  FaChartPie,
+  FaChartBar,
+  FaChartLine,
+  FaPercentage,
+  FaBalanceScale,
+  FaPiggyBank,
+  FaCreditCard,
+  FaCalendarCheck,
+  FaExclamationTriangle,
+  FaLightbulb,
+  FaArrowRight
 } from 'react-icons/fa';
 
 type Props = {
@@ -38,11 +49,11 @@ type WishItem = {
   id: string;
   title: string;
   price: number;
-  targetDate: string; // <-- Alınacaklar için hedef tarih alanı eklendi
-  group?: string; // <-- Gruplama için eklendi
-  subGroup?: string; // <-- Alt gruplama (Kredi Kartı -> Telefon taksitleri gibi) için
-  excludeFromTotal?: boolean; // <-- Hesaplamadan çıkarmak için eklendi
-  isPaid?: boolean; // <-- Ödenmiş olarak işaretlemek için
+  targetDate: string;
+  group?: string;
+  subGroup?: string;
+  excludeFromTotal?: boolean;
+  isPaid?: boolean;
 };
 
 type PlannerData = {
@@ -70,8 +81,8 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
   // Yeni Alınacak Formu State'leri
   const [wishTitle, setWishTitle] = useState('');
   const [wishPrice, setWishPrice] = useState('');
-  const [wishDate, setWishDate] = useState(''); // <-- Form için state eklendi
-  const [wishGroup, setWishGroup] = useState(''); // <-- Grup adı state'i
+  const [wishDate, setWishDate] = useState('');
+  const [wishGroup, setWishGroup] = useState('');
   const [expenseType, setExpenseType] = useState<'cash' | 'credit_card'>('cash');
   const [installmentCount, setInstallmentCount] = useState('1');
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
@@ -129,22 +140,121 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
   // Kalan Sonuç = Toplam Para - Alınacaklar Toplamı
   const finalResult = totalMoney - totalWishesCost;
 
+  // --- YENİ ANALİTİK HESAPLAMALAR ---
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  // Bu ayın gelirleri
+  const currentMonthIncomes = useMemo(() => {
+    return incomes.filter(item => {
+      const date = new Date(item.expectedDate);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    });
+  }, [incomes, currentMonth, currentYear]);
+
+  const currentMonthIncomeTotal = useMemo(() =>
+    currentMonthIncomes.reduce((sum, item) => sum + item.amount, 0),
+    [currentMonthIncomes]);
+
+  // Bu ayın giderleri (alınacaklar)
+  const currentMonthExpenses = useMemo(() => {
+    return wishes.filter(item => {
+      const date = new Date(item.targetDate);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear && !item.excludeFromTotal;
+    });
+  }, [wishes, currentMonth, currentYear]);
+
+  const currentMonthExpenseTotal = useMemo(() =>
+    currentMonthExpenses.reduce((sum, item) => sum + item.price, 0),
+    [currentMonthExpenses]);
+
+  // Kredi kartı toplam borcu
+  const totalCreditCardDebt = useMemo(() => {
+    return wishes
+      .filter(w => w.group === "Kredi Kartı Ödemeleri" && !w.isPaid && !w.excludeFromTotal)
+      .reduce((sum, w) => sum + w.price, 0);
+  }, [wishes]);
+
+  // Kategori bazlı dağılım (pie chart için)
+  const categoryDistribution = useMemo(() => {
+    const distribution: Record<string, number> = {};
+    wishes.forEach(w => {
+      if (!w.isPaid && !w.excludeFromTotal) {
+        const category = w.group || 'Diğer';
+        distribution[category] = (distribution[category] || 0) + w.price;
+      }
+    });
+    return Object.entries(distribution)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5);
+  }, [wishes]);
+
+  // Bütçe sağlığı göstergeleri
+  const budgetHealth = useMemo(() => {
+    const expenseRatio = totalExpectedIncome > 0 ? (totalWishesCost / totalExpectedIncome) * 100 : 0;
+    const savingsRate = totalExpectedIncome > 0 ? ((totalExpectedIncome - totalWishesCost) / totalExpectedIncome) * 100 : 0;
+    const debtToIncome = totalExpectedIncome > 0 ? (totalCreditCardDebt / totalExpectedIncome) * 100 : 0;
+
+    return { expenseRatio, savingsRate, debtToIncome };
+  }, [totalExpectedIncome, totalWishesCost, totalCreditCardDebt]);
+
+  // Önümüzdeki 6 ayın projeksiyonu
+  const sixMonthProjection = useMemo(() => {
+    const months = [];
+    const today = new Date();
+
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      const monthIncome = incomes
+        .filter(item => {
+          const d = new Date(item.expectedDate);
+          return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum, item) => sum + item.amount, 0);
+
+      const monthExpense = wishes
+        .filter(item => {
+          const d = new Date(item.targetDate);
+          return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear() && !item.excludeFromTotal;
+        })
+        .reduce((sum, item) => sum + item.price, 0);
+
+      months.push({
+        label: date.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' }),
+        income: monthIncome,
+        expense: monthExpense,
+        balance: monthIncome - monthExpense
+      });
+    }
+
+    return months;
+  }, [incomes, wishes]);
+
+  const maxProjectionValue = useMemo(() => {
+    const max = Math.max(
+      ...sixMonthProjection.map(m => Math.max(m.income, m.expense)),
+      1
+    );
+    return max;
+  }, [sixMonthProjection]);
+
   // --- GRUPLAMA HESAPLAMALARI ---
   const ungroupedWishes = useMemo(() => wishes.filter(w => !w.group && !w.isPaid), [wishes]);
   const paidWishes = useMemo(() => wishes.filter(w => w.isPaid), [wishes]);
-  
-  // Array şeklinde dönüyoruz ki listeleme sırası wishes array'indeki sıraya göre otomatik oluşsun
+
   const groupedWishesArray = useMemo(() => {
     const groups: { name: string; items: WishItem[]; subGroups: { name: string; items: WishItem[] }[] }[] = [];
     wishes.forEach(w => {
-      if (w.isPaid) return; // Ödenmişler ayrı listede gösterilecek
+      if (w.isPaid) return;
       if (w.group) {
         let group = groups.find(g => g.name === w.group);
         if (!group) {
           group = { name: w.group, items: [], subGroups: [] };
           groups.push(group);
         }
-        
+
         if (w.subGroup) {
           let subGroup = group.subGroups.find(sg => sg.name === w.subGroup);
           if (!subGroup) {
@@ -176,21 +286,18 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
     const updated = [...wishes];
     const [draggedItem] = updated.splice(draggedIdx, 1);
 
-    // Eğer bir öğenin üzerine bırakıldıysa (sıralama değiştirme)
     if (targetId) {
       const targetIdx = updated.findIndex(w => w.id === targetId);
       if (targetIdx !== -1) {
-        draggedItem.group = updated[targetIdx].group; // Aynı gruba al
+        draggedItem.group = updated[targetIdx].group;
         updated.splice(targetIdx, 0, draggedItem);
       } else {
         updated.push(draggedItem);
       }
     }
-    // Eğer sadece grubun alanına bırakıldıysa
     else {
       const targetGroupVal = targetGroup?.trim() || undefined;
       draggedItem.group = targetGroupVal;
-      // İsterseniz burada dizinin sonuna ekleyebilir veya aynı sırayı koruyabilirsiniz.
       updated.push(draggedItem);
     }
 
@@ -215,10 +322,10 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
 
     const updated = [...wishes];
     const newPaidStatus = !updated[itemIndex].isPaid;
-    updated[itemIndex] = { 
-      ...updated[itemIndex], 
+    updated[itemIndex] = {
+      ...updated[itemIndex],
       isPaid: newPaidStatus,
-      excludeFromTotal: newPaidStatus ? true : updated[itemIndex].excludeFromTotal // Ödenince otomatik hesaptan düş
+      excludeFromTotal: newPaidStatus ? true : updated[itemIndex].excludeFromTotal
     };
     setWishes(updated);
     await saveToFirebase({ wishes: updated });
@@ -286,10 +393,9 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
       if (!count || count <= 0) { setWishError('Lütfen geçerli taksit sayısı girin.'); return; }
 
       const monthlyPrice = Number((price / count).toFixed(2));
-      const baseGroup = "Kredi Kartı Ödemeleri"; // Taksitler ana gruba alınır
-      const baseSubGroup = count > 1 ? `${wishTitle} (${count} Taksit)` : undefined; // Eğer taksitse alt grup oluştur
+      const baseGroup = "Kredi Kartı Ödemeleri";
+      const baseSubGroup = count > 1 ? `${wishTitle} (${count} Taksit)` : undefined;
 
-      // Kredi Kartı Hesap Kesim Tarihi Otomatik: Her ayın 3'ü
       const today = new Date();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
@@ -297,7 +403,6 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
       let firstPaymentMonth = currentMonth;
       let firstPaymentYear = currentYear;
 
-      // Eğer bugün ayın 3'ünden sonraysa, ilk ödeme bir sonraki aya sarkar
       if (today.getDate() > 3) {
         firstPaymentMonth += 1;
         if (firstPaymentMonth > 11) {
@@ -307,10 +412,8 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
       }
 
       for (let i = 0; i < count; i++) {
-        // Her ay için ayın 3'ünü belirle
         const targetDateObj = new Date(firstPaymentYear, firstPaymentMonth + i, 3);
 
-        // Yıl-Ay-Gün formatına çevirme (Saat dilimi hatalarını önlemek için)
         const yyyy = targetDateObj.getFullYear();
         const mm = String(targetDateObj.getMonth() + 1).padStart(2, '0');
         const dd = "03";
@@ -323,7 +426,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
           targetDate: dateString,
           group: baseGroup,
           subGroup: baseSubGroup,
-          excludeFromTotal: i !== 0, // İlk taksit (0) fiyata dahil, diğerleri hariç
+          excludeFromTotal: i !== 0,
         });
       }
     } else {
@@ -331,7 +434,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
         id: Math.random().toString(36).slice(2),
         title: wishTitle,
         price,
-        targetDate: wishDate, // Hedef tarih eklendi
+        targetDate: wishDate,
         group: wishGroup.trim() || undefined,
       });
     }
@@ -351,6 +454,65 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
     const updated = wishes.filter(w => w.id !== id);
     setWishes(updated);
     await saveToFirebase({ wishes: updated });
+  };
+
+  // --- GRAFİK YARDIMCI KOMPONENTLERİ ---
+  const MiniBarChart = ({ value, maxValue, color, label, sublabel }: { value: number; maxValue: number; color: string; label: string; sublabel?: string }) => {
+    const percentage = maxValue > 0 ? Math.min((value / maxValue) * 100, 100) : 0;
+
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-medium text-slate-600 dark:text-zinc-400">{label}</span>
+          <div className="flex items-center gap-2">
+            {sublabel && <span className="text-[10px] text-slate-400 dark:text-zinc-500">{sublabel}</span>}
+            <span className="font-bold text-slate-700 dark:text-zinc-300">₺{value.toLocaleString()}</span>
+          </div>
+        </div>
+        <div className="h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${color}`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const CategoryPieChart = ({ data }: { data: [string, number][] }) => {
+    const total = data.reduce((sum, [, val]) => sum + val, 0);
+    const colors = ['bg-rose-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500', 'bg-purple-500'];
+
+    if (total === 0) return null;
+
+    return (
+      <div className="space-y-2">
+        {data.map(([label, value], index) => {
+          const percentage = (value / total) * 100;
+          return (
+            <div key={label} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-600 dark:text-zinc-400 truncate max-w-[150px]" title={label}>
+                  {label}
+                </span>
+                <span className="font-bold text-slate-700 dark:text-zinc-300 ml-2">%{percentage.toFixed(0)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${colors[index % colors.length]}`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 w-16 text-right">
+                  ₺{value.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   if (loading) {
@@ -644,14 +806,14 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className={`text-sm font-black ${item.excludeFromTotal || item.isPaid ? 'text-slate-400 dark:text-zinc-600' : 'text-rose-500'}`}>- ₺{item.price.toLocaleString()}</span>
-                            <button 
+                            <button
                               onClick={() => togglePaid(item.id)}
                               className={`text-[9px] px-2 py-1 rounded-md font-bold transition-colors shadow-sm bg-slate-200 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-emerald-500 hover:text-white`}
                               title="Ödendi İşaretle"
                             >
                               ÖDE
                             </button>
-                            <button 
+                            <button
                               onClick={() => toggleExclude(item.id)}
                               className="text-base transition-colors focus:outline-none"
                               title="Hesaba Kat / Çıkar"
@@ -672,7 +834,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                     const groupName = group.name;
                     const allItemsInGroup = [...group.items, ...group.subGroups.flatMap(sg => sg.items)];
                     if (allItemsInGroup.length === 0) return null;
-                    
+
                     const groupTotal = allItemsInGroup.reduce((sum, i) => i.excludeFromTotal ? sum : sum + i.price, 0);
                     const isGroupFullyExcluded = allItemsInGroup.every(i => i.excludeFromTotal);
                     const isCollapsed = collapsedGroups[groupName];
@@ -698,7 +860,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                             </h4>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); payAllInGroup(groupName); }}
                               className="text-[9px] px-2 py-1 rounded-md font-bold transition-colors shadow-sm bg-slate-200 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-emerald-500 hover:text-white"
                               title="Tümünü Öde"
@@ -725,7 +887,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                                       <h5 className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wide">{subGroup.name}</h5>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <button 
+                                      <button
                                         onClick={(e) => { e.stopPropagation(); payAllInGroup(groupName, subGroup.name); }}
                                         className="text-[8px] px-1.5 py-0.5 rounded-md font-bold transition-colors shadow-sm bg-slate-200 dark:bg-zinc-700 text-slate-500 dark:text-zinc-400 hover:bg-emerald-500 hover:text-white"
                                         title="Tüm Taksitleri Öde"
@@ -759,13 +921,13 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                                           </div>
                                           <div className="flex items-center gap-2">
                                             <span className={`text-xs font-black ${item.excludeFromTotal ? 'text-slate-400 dark:text-zinc-600' : 'text-rose-400'}`}>- ₺{item.price.toLocaleString()}</span>
-                                            <button 
+                                            <button
                                               onClick={() => togglePaid(item.id)}
                                               className="text-[9px] px-2 py-1 rounded-md font-bold transition-colors shadow-sm bg-slate-200 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-emerald-500 hover:text-white"
                                             >
                                               ÖDE
                                             </button>
-                                            <button 
+                                            <button
                                               onClick={() => toggleExclude(item.id)}
                                               className="text-sm transition-colors focus:outline-none"
                                               title="Hesaba Kat / Çıkar"
@@ -804,13 +966,13 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className={`text-xs font-black ${item.excludeFromTotal ? 'text-slate-400 dark:text-zinc-600' : 'text-rose-400'}`}>- ₺{item.price.toLocaleString()}</span>
-                                  <button 
+                                  <button
                                     onClick={() => togglePaid(item.id)}
                                     className="text-[9px] px-2 py-1 rounded-md font-bold transition-colors shadow-sm bg-slate-200 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-emerald-500 hover:text-white"
                                   >
                                     ÖDE
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => toggleExclude(item.id)}
                                     className="text-sm transition-colors focus:outline-none"
                                     title="Hesaba Kat / Çıkar"
@@ -828,7 +990,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                       </div>
                     );
                   })}
-                  
+
                   {/* Geçmiş Ödemeler (Arşiv) */}
                   {paidWishes.length > 0 && (
                     <div className="bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl p-3 border-2 border-dashed border-transparent transition-colors mt-6">
@@ -845,7 +1007,7 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
                           </span>
                         </div>
                       </div>
-                      
+
                       {!collapsedGroups['PAID_ARCHIVE'] && (
                         <div className="space-y-1">
                           {paidWishes.map(item => (
@@ -880,6 +1042,230 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
         </div>
 
       </div>
+
+      {/* ── 4. ANALİTİK GÖSTERGE KARTLARI ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Tasarruf Oranı */}
+        <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+              <FaPiggyBank className="text-lg" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Tasarruf Oranı</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-2xl font-black text-emerald-500 dark:text-emerald-400">
+              %{budgetHealth.savingsRate.toFixed(1)}
+            </p>
+            <div className="h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(budgetHealth.savingsRate, 100)}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+              {budgetHealth.savingsRate >= 20 ? '✅ Sağlıklı tasarruf' : budgetHealth.savingsRate >= 10 ? '⚠️ Orta seviye' : '🔴 Düşük tasarruf'}
+            </p>
+          </div>
+        </div>
+
+        {/* Gider/Gelir Oranı */}
+        <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <FaBalanceScale className="text-lg" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Gider/Gelir</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-2xl font-black text-amber-500 dark:text-amber-400">
+              %{budgetHealth.expenseRatio.toFixed(1)}
+            </p>
+            <div className="h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${budgetHealth.expenseRatio > 80 ? 'bg-rose-500' : budgetHealth.expenseRatio > 60 ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}
+                style={{ width: `${Math.min(budgetHealth.expenseRatio, 100)}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+              {budgetHealth.expenseRatio > 80 ? '🔴 Yüksek risk' : budgetHealth.expenseRatio > 60 ? '⚠️ Dikkat' : '✅ İyi durumda'}
+            </p>
+          </div>
+        </div>
+
+        {/* Kredi Kartı Yükü */}
+        <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center">
+              <FaCreditCard className="text-lg" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Kredi Kartı</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-2xl font-black text-rose-500 dark:text-rose-400">
+              ₺{totalCreditCardDebt.toLocaleString()}
+            </p>
+            <div className="h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${budgetHealth.debtToIncome > 50 ? 'bg-rose-500' : budgetHealth.debtToIncome > 30 ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}
+                style={{ width: `${Math.min(budgetHealth.debtToIncome, 100)}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+              Gelirin %{budgetHealth.debtToIncome.toFixed(0)}'i
+            </p>
+          </div>
+        </div>
+
+        {/* Bu Ayın Durumu */}
+        <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center">
+              <FaCalendarCheck className="text-lg" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Bu Ay</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className={`text-2xl font-black ${currentMonthIncomeTotal - currentMonthExpenseTotal >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+              ₺{(currentMonthIncomeTotal - currentMonthExpenseTotal).toLocaleString()}
+            </p>
+            <div className="h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${currentMonthIncomeTotal - currentMonthExpenseTotal >= 0 ? 'bg-emerald-500' : 'bg-rose-500'
+                  }`}
+                style={{ width: `${Math.min(Math.abs(currentMonthIncomeTotal - currentMonthExpenseTotal) / (currentMonthIncomeTotal || 1) * 100, 100)}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+              {currentMonthIncomeTotal > 0 ? `${currentMonthIncomeTotal - currentMonthExpenseTotal >= 0 ? '+' : ''}₺${(currentMonthIncomeTotal - currentMonthExpenseTotal).toLocaleString()}` : 'Veri yok'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5. KATEGORİ DAĞILIMI VE PROJEKSİYON ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Kategori Bazlı Dağılım */}
+        <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 border border-slate-200 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/10 text-purple-500 flex items-center justify-center">
+              <FaChartPie className="text-md" />
+            </div>
+            <div>
+              <h3 className="text-md font-bold text-slate-900 dark:text-white">Harcama Kategorileri</h3>
+              <p className="text-xs text-slate-500">En çok harcama yapılan 5 kategori</p>
+            </div>
+          </div>
+          {categoryDistribution.length > 0 ? (
+            <CategoryPieChart data={categoryDistribution} />
+          ) : (
+            <p className="text-center text-xs text-slate-400 py-8 italic">Henüz kategorize edilmiş harcama yok.</p>
+          )}
+        </div>
+
+        {/* 6 Aylık Projeksiyon */}
+        <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 border border-slate-200 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center">
+              <FaChartLine className="text-md" />
+            </div>
+            <div>
+              <h3 className="text-md font-bold text-slate-900 dark:text-white">6 Aylık Projeksiyon</h3>
+              <p className="text-xs text-slate-500">Önümüzdeki ayların gelir-gider dengesi</p>
+            </div>
+          </div>
+          {sixMonthProjection.length > 0 ? (
+            <div className="space-y-3">
+              {sixMonthProjection.map((month, index) => (
+                <MiniBarChart
+                  key={index}
+                  value={month.income}
+                  maxValue={maxProjectionValue}
+                  color={month.balance >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}
+                  label={month.label}
+                  sublabel={`Bakiye: ${month.balance >= 0 ? '+' : ''}₺${month.balance.toLocaleString()}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-xs text-slate-400 py-8 italic">Henüz veri yok.</p>
+          )}
+        </div>
+      </div>
+
+      {/* ── 6. AKILLI ÖNERİLER ── */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/5 dark:to-orange-500/5 rounded-3xl p-6 border border-amber-200 dark:border-amber-800/30 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <FaLightbulb className="text-md" />
+          </div>
+          <div>
+            <h3 className="text-md font-bold text-slate-900 dark:text-white">Akıllı Öneriler</h3>
+            <p className="text-xs text-slate-500">Bütçeni iyileştirmek için öneriler</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {budgetHealth.savingsRate < 20 && (
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/50 rounded-xl p-3 border border-amber-100 dark:border-amber-800/20">
+              <FaExclamationTriangle className="text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-700 dark:text-zinc-300">
+                Tasarruf oranınız düşük. Gelirinizin en az %20'sini biriktirmeye çalışın.
+              </p>
+            </div>
+          )}
+          {totalCreditCardDebt > 0 && (
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/50 rounded-xl p-3 border border-amber-100 dark:border-amber-800/20">
+              <FaCreditCard className="text-rose-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-700 dark:text-zinc-300">
+                Kredi kartı borcunuz ₺{totalCreditCardDebt.toLocaleString()}. Öncelikli olarak ödemeyi hedefleyin.
+              </p>
+            </div>
+          )}
+          {budgetHealth.expenseRatio > 60 && (
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/50 rounded-xl p-3 border border-amber-100 dark:border-amber-800/20">
+              <FaBalanceScale className="text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-700 dark:text-zinc-300">
+                Giderleriniz gelirinize göre yüksek. Bazı harcamaları ertelemeyi düşünün.
+              </p>
+            </div>
+          )}
+          {finalResult < 0 && (
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/50 rounded-xl p-3 border border-amber-100 dark:border-amber-800/20">
+              <FaArrowDown className="text-rose-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-700 dark:text-zinc-300">
+                Planladığınız harcamalar bütçenizi aşıyor. ₺{Math.abs(finalResult).toLocaleString()} eksik var.
+              </p>
+            </div>
+          )}
+          {categoryDistribution.length > 0 && (
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/50 rounded-xl p-3 border border-amber-100 dark:border-amber-800/20">
+              <FaChartPie className="text-purple-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-700 dark:text-zinc-300">
+                En büyük harcama kaleminiz: <strong>{categoryDistribution[0][0]}</strong> (%{((categoryDistribution[0][1] / totalWishesCost) * 100).toFixed(0)})
+              </p>
+            </div>
+          )}
+          {incomes.length === 0 && (
+            <div className="flex items-start gap-2 bg-white/80 dark:bg-zinc-900/50 rounded-xl p-3 border border-amber-100 dark:border-amber-800/20">
+              <FaArrowRight className="text-blue-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-700 dark:text-zinc-300">
+                Henüz gelir eklemediniz. Maaş ve diğer gelirlerinizi ekleyerek planlamaya başlayın.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 };

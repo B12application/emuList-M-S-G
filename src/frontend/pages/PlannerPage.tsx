@@ -240,20 +240,20 @@ export default function PlannerPage() {
       animate={{ opacity: 1, y: 0 }}
       className="pb-24 pt-4 max-w-5xl mx-auto px-4"
     >
-      <div className="flex items-center justify-between mb-6 px-1">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-stone-800 to-stone-500 dark:from-zinc-100 dark:to-zinc-400 text-transparent bg-clip-text">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 px-2 gap-4">
+        <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100">
           Planlayıcı
         </h1>
 
         {/* Sub-nav */}
-        <div className="flex items-center bg-stone-200 dark:bg-zinc-800 p-1 rounded-xl shadow-inner">
+        <div className="flex items-center bg-stone-100 dark:bg-zinc-800/50 p-1 rounded-lg border border-stone-200 dark:border-zinc-800">
           {(['daily', 'weekly', 'monthly', 'jira'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab
-                ? 'bg-white dark:bg-zinc-700 shadow-sm text-rose-600 dark:text-rose-400'
-                : 'text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === tab
+                ? 'bg-white dark:bg-zinc-700 shadow-sm text-stone-900 dark:text-white'
+                : 'text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-700/50'
                 }`}
             >
               {tab === 'daily' ? 'Günlük' : tab === 'weekly' ? 'Haftalık' : tab === 'monthly' ? 'Aylık' : 'Jira'}

@@ -99,10 +99,11 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50 max-h-[90vh] overflow-y-auto"
+              className="relative flex flex-col w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50 max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="p-5 sm:p-8">
-                <div className="flex items-center justify-between mb-8">
+              {/* Header - Sabit */}
+              <div className="flex-shrink-0 p-5 sm:p-8 pb-4 sm:pb-6 border-b border-stone-100 dark:border-zinc-800/50">
+                <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-black text-stone-900 dark:text-white">
                       {isEditing ? t('expenses.editTitle') : t('expenses.addTitle')}
@@ -116,6 +117,10 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                     <FaTimes />
                   </button>
                 </div>
+              </div>
+
+              {/* Body - Kaydırılabilir */}
+              <div className="flex-1 overflow-y-auto p-5 sm:p-8 pt-4 sm:pt-6 custom-scrollbar">
 
                 <div className="space-y-6">
                   <div>
@@ -227,7 +232,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   <button
                     onClick={handleAddExpense}
                     disabled={!newExpense.title || !newExpense.amount}
-                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 shadow-xl shadow-stone-900/10 dark:shadow-white/10 flex items-center justify-center gap-3 mt-4"
+                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 shadow-xl shadow-stone-900/10 dark:shadow-white/10 flex items-center justify-center gap-3 mt-4 mb-4"
                   >
                     {isEditing ? <FaCheck /> : <FaPlus />}
                     {isEditing ? t('common.save') : t('common.add')}

@@ -130,17 +130,17 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
           ref={calendarRef}
           layout
           transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm min-w-0"
+          className="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800/50 rounded-xl overflow-hidden shadow-sm min-w-0"
           style={{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }}
         >
           {/* HEADER */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-stone-200 dark:border-zinc-800">
-            <h2 className="text-xl font-bold capitalize">{format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}</h2>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-stone-200 dark:border-zinc-800/50">
+            <h2 className="text-2xl font-semibold tracking-tight text-stone-800 dark:text-zinc-100 capitalize">{format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowMatches(v => !v)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all ${showMatches
-                    ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all ${showMatches
+                    ? 'bg-red-500 text-white shadow-sm'
                     : monthMatches.length > 0
                       ? 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
                       : 'bg-stone-100 text-stone-400 dark:bg-zinc-800/50 dark:text-zinc-600 cursor-not-allowed'
@@ -153,19 +153,19 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   {showMatches ? t('planner.hideFixture') : `${t('planner.showMatches')}${monthMatches.length > 0 ? ` (${monthMatches.length})` : ''}`}
                 </span>
               </button>
-              <button onClick={(e) => { e.stopPropagation(); prevMonth(); }} className="p-2.5 bg-stone-100 dark:bg-zinc-800 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition">
-                <FaChevronLeft className="text-stone-600 dark:text-zinc-300 text-sm" />
+              <button onClick={(e) => { e.stopPropagation(); prevMonth(); }} className="p-2 bg-transparent hover:bg-stone-100 dark:hover:bg-zinc-800 rounded-lg transition text-stone-500 dark:text-zinc-400">
+                <FaChevronLeft className="text-sm" />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); nextMonth(); }} className="p-2.5 bg-stone-100 dark:bg-zinc-800 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition">
-                <FaChevronRight className="text-stone-600 dark:text-zinc-300 text-sm" />
+              <button onClick={(e) => { e.stopPropagation(); nextMonth(); }} className="p-2 bg-transparent hover:bg-stone-100 dark:hover:bg-zinc-800 rounded-lg transition text-stone-500 dark:text-zinc-400">
+                <FaChevronRight className="text-sm" />
               </button>
             </div>
           </div>
 
           {/* GÜN BAŞLIKLARI */}
-          <div className="grid grid-cols-7 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950">
+          <div className="grid grid-cols-7 border-b border-stone-200 dark:border-zinc-800/50 bg-stone-50/50 dark:bg-zinc-900/20">
             {weekDays.map(day => (
-              <div key={day} className="py-3 text-center text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider">
+              <div key={day} className="py-2.5 text-center text-[11px] font-medium text-stone-500 dark:text-zinc-400 uppercase tracking-widest">
                 {day}
               </div>
             ))}
@@ -189,35 +189,35 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
               const isToday = isSameDay(day, new Date());
 
               // Define cell decoration based on shift type
-              let cellClass = 'border-l-[3px] border-l-transparent';
+              let cellClass = 'border-t-2 border-t-transparent';
               let shiftBadge = null;
 
               if (isCurrentMonth) {
                 if (shift.type === 'Sabah') {
-                  cellClass = 'border-l-[3px] border-l-amber-500 bg-amber-500/[0.03] dark:bg-amber-500/[0.02]';
+                  cellClass = 'border-t-[3px] border-t-amber-400 bg-amber-500/[0.02] dark:bg-amber-500/[0.01]';
                   shiftBadge = (
-                    <div className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200/50 dark:border-amber-900/40 w-fit shadow-sm">
+                    <div className="text-[10px] font-medium text-amber-700 dark:text-amber-400 tracking-tight">
                       {language === 'tr' ? 'Sabah' : 'Morning'}
                     </div>
                   );
                 } else if (shift.type === 'Akşam') {
-                  cellClass = 'border-l-[3px] border-l-indigo-500 bg-indigo-500/[0.03] dark:bg-indigo-500/[0.02]';
+                  cellClass = 'border-t-[3px] border-t-indigo-400 bg-indigo-500/[0.02] dark:bg-indigo-500/[0.01]';
                   shiftBadge = (
-                    <div className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-100/80 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-900/40 w-fit shadow-sm">
+                    <div className="text-[10px] font-medium text-indigo-700 dark:text-indigo-400 tracking-tight">
                       {language === 'tr' ? 'Akşam' : 'Evening'}
                     </div>
                   );
                 } else if (shift.type === 'Nöbet') {
-                  cellClass = 'border-l-[3px] border-l-rose-500 bg-rose-500/[0.03] dark:bg-rose-500/[0.02]';
+                  cellClass = 'border-t-[3px] border-t-rose-400 bg-rose-500/[0.02] dark:bg-rose-500/[0.01]';
                   shiftBadge = (
-                    <div className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-100/80 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300 border border-rose-200/50 dark:border-rose-900/40 w-fit shadow-sm">
+                    <div className="text-[10px] font-medium text-rose-700 dark:text-rose-400 tracking-tight">
                       {language === 'tr' ? 'Nöbet' : 'On-call'}
                     </div>
                   );
                 } else if (shift.type === 'Tatil') {
-                  cellClass = 'border-l-[3px] border-l-stone-300 dark:border-l-zinc-700 bg-stone-500/[0.01]';
+                  cellClass = 'border-t-[3px] border-t-stone-200 dark:border-t-zinc-700 bg-stone-500/[0.01]';
                   shiftBadge = (
-                    <div className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 w-fit">
+                    <div className="text-[10px] font-medium text-stone-500 dark:text-zinc-500 tracking-tight">
                       {language === 'tr' ? 'Tatil' : 'Off'}
                     </div>
                   );
@@ -231,16 +231,16 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   key={day.toString()}
                   data-date={dateStr}
                   onClick={() => onSelectDate(day)}
-                  className={`min-h-[65px] sm:min-h-[115px] p-2 border-r border-b border-stone-100 dark:border-zinc-800/80 cursor-pointer transition-all hover:bg-stone-50/50 dark:hover:bg-zinc-800/20 relative hover:scale-[1.02] hover:shadow-md hover:z-10 rounded-lg
-                    ${!isCurrentMonth ? 'opacity-30 pointer-events-none' : ''}
+                  className={`min-h-[75px] sm:min-h-[120px] p-2 sm:p-3 border-r border-b border-stone-100 dark:border-zinc-800/50 cursor-pointer transition-colors hover:bg-stone-50 dark:hover:bg-zinc-900 relative group
+                    ${!isCurrentMonth ? 'opacity-30 pointer-events-none bg-stone-50/30 dark:bg-zinc-950/30' : ''}
                     ${cellClass}
                     ${(idx + 1) % 7 === 0 ? 'border-r-0' : ''}
-                    ${hasMatch && showMatches ? 'ring-1 ring-inset ring-red-400/40 bg-red-50/30 dark:bg-red-900/10' : ''}
+                    ${hasMatch && showMatches ? 'bg-red-50/30 dark:bg-red-900/10' : ''}
                   `}
                 >
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5">
-                      <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-black italic ${isToday ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20' : 'text-stone-700 dark:text-zinc-300'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-medium ${isToday ? 'bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm' : 'text-stone-700 dark:text-zinc-300'}`}>
                         {format(day, dateFormat)}
                       </span>
                       {hasMatch && match && (
@@ -278,7 +278,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   )}
 
                   {/* Masaüstü Görünüm İçin Etkinlik Metinleri */}
-                  <div className="hidden sm:block mt-1.5 space-y-1">
+                  <div className="hidden sm:block mt-2 space-y-1">
                     {dayMeetings.filter(m => m.itemType !== 'match').slice(0, 3).map((m, i) => {
                       const mDateTime = new Date(`${m.date}T${m.startTime}`);
                       const isPast = mDateTime < now;
@@ -294,22 +294,22 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       };
 
                       return (
-                        <div key={m.id || i} className={`text-[10px] truncate pr-1.5 pl-2 py-0.5 rounded font-semibold border transition-all relative overflow-hidden
+                        <div key={m.id || i} className={`text-[11px] truncate px-1.5 py-[2px] rounded-sm font-medium border-l-[3px] transition-all relative overflow-hidden bg-stone-50/50 dark:bg-zinc-800/30
                           ${isPast ? 'opacity-40 grayscale-[0.5]' : ''}
-                           ${m.itemType === 'jira' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/50' :
-                             m.itemType === 'todo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/50' :
-                             m.itemType === 'sport' ? 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-900/50' :
-                               'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-900/50'}`}
+                           ${m.itemType === 'jira' ? 'border-l-blue-500 text-stone-700 dark:text-zinc-300' :
+                             m.itemType === 'todo' ? 'border-l-emerald-500 text-stone-700 dark:text-zinc-300' :
+                             m.itemType === 'sport' ? 'border-l-orange-500 text-stone-700 dark:text-zinc-300' :
+                               'border-l-rose-500 text-stone-700 dark:text-zinc-300'}`}
                         >
                           {m.itemType === 'jira' && (
-                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusAccent(m.status || 'todo')}`} />
+                            <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${getStatusAccent(m.status || 'todo')}`} />
                           )}
-                          <span className="opacity-70 mr-1">{m.startTime}</span>{m.title}
+                          <span className="opacity-50 mr-1.5 text-[10px]">{m.startTime}</span>{m.title}
                         </div>
                       );
                     })}
                     {dayMeetings.filter(m => m.itemType !== 'match').length > 3 && (
-                      <div className="text-[10px] text-stone-500 dark:text-zinc-500 font-medium px-1">
+                      <div className="text-[10px] text-stone-500 dark:text-zinc-500 font-medium px-1 mt-1">
                         +{dayMeetings.filter(m => m.itemType !== 'match').length - 3} {t('planner.more')}
                       </div>
                     )}

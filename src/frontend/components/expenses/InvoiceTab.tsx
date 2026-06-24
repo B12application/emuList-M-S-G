@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { format, addYears, differenceInCalendarDays, parseISO, isValid, startOfDay, subDays } from 'date-fns';
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../../backend/config/firebaseConfig';
 import { addCalendarAlert } from '../../../backend/services/plannerService';
-import { FaBell, FaCalendarAlt, FaCheckCircle, FaClock, FaFileInvoiceDollar, FaHistory, FaShieldAlt, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaBell, FaCalendarAlt, FaCheckCircle, FaClock, FaFileInvoiceDollar, FaHistory, FaShieldAlt, FaPlus, FaTimes, FaEdit, FaTrash, FaSync } from 'react-icons/fa';
 
 const BILL_COLLECTION = 'invoiceSubscriptions';
 const BILL_CATEGORIES = ['Fatura', 'İnternet', 'Telefon', 'Elektrik', 'Su', 'Doğalgaz', 'Diğer'];
@@ -69,6 +69,7 @@ export default function InvoiceTab() {
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const billCategories = BILL_CATEGORIES;
 
@@ -139,7 +140,50 @@ export default function InvoiceTab() {
     };
   }, [activeBills]);
 
-  const reset = () => setForm(defaultForm());
+  const reset = () => {
+    setForm(defaultForm());
+    setEditingId(null);
+  };
+
+  const handleEditClick = (bill: BillSubscription) => {
+    setForm({
+      title: bill.title,
+      amount: bill.amount as unknown as number,
+      category: bill.category,
+      description: bill.description || '',
+      contractStart: bill.contractStart,
+      contractYears: bill.contractYears as unknown as number,
+      notifyBeforeDays: bill.notifyBeforeDays as unknown as number
+    });
+    setEditingId(bill.id);
+    setIsModalOpen(true);
+  };
+
+  const handleRenewClick = (bill: BillSubscription) => {
+    setForm({
+      title: bill.title,
+      amount: bill.amount as unknown as number,
+      category: bill.category,
+      description: bill.description || '',
+      contractStart: format(new Date(), 'yyyy-MM-dd'),
+      contractYears: bill.contractYears as unknown as number,
+      notifyBeforeDays: bill.notifyBeforeDays as unknown as number
+    });
+    setEditingId(bill.id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Bu fatura kaydını silmek istediğinize emin misiniz?')) return;
+    try {
+      await deleteDoc(doc(db, BILL_COLLECTION, id));
+      setRecords(prev => prev.filter(r => r.id !== id));
+      toast.success('Kayıt başarıyla silindi');
+    } catch (err) {
+      console.error('Delete failed', err);
+      toast.error('Silme işlemi başarısız oldu');
+    }
+  };
 
   const handleSave = async () => {
     if (!form.title || !form.amount) return toast.error('Lütfen başlık ve tutar girin');
@@ -151,7 +195,7 @@ export default function InvoiceTab() {
       const contractMeta = calculateContractDates(form.contractStart, Number(form.contractYears), Number(form.notifyBeforeDays || 0));
       if (!contractMeta) throw new Error('Geçersiz sözleşme başlangıç tarihi');
 
-      await addDoc(collection(db, BILL_COLLECTION), {
+      const billData = {
         userId: user.uid,
         title: form.title,
         amount: Number(form.amount),
@@ -163,8 +207,24 @@ export default function InvoiceTab() {
         notifyBeforeDays: Number(form.notifyBeforeDays || 0),
         contractEndDate: contractMeta.contractEndDate,
         reminderDate: contractMeta.reminderDate,
-        billingCycle: 'yearly'
-      });
+        billingCycle: 'yearly' as const
+      };
+
+      if (editingId) {
+        await updateDoc(doc(db, BILL_COLLECTION, editingId), billData);
+        setRecords(prev => prev.map(r => r.id === editingId ? { id: editingId, ...billData } : r));
+        toast.success('Fatura güncellendi ve bildirimler ayarlandı');
+      } else {
+        const docRef = await addDoc(collection(db, BILL_COLLECTION), billData);
+        setRecords(prev => [
+          {
+            id: docRef.id,
+            ...billData
+          },
+          ...prev
+        ]);
+        toast.success('Fatura kaydedildi ve bildirimler ayarlandı');
+      }
 
       if (user) {
         await addCalendarAlert({
@@ -186,28 +246,8 @@ export default function InvoiceTab() {
         }
       }
 
-      toast.success('Fatura kaydedildi ve bildirimler ayarlandı');
       reset();
-      setIsModalOpen(false); // Kayıt başarılı olunca modalı kapat
-      
-      setRecords(prev => [
-        {
-          id: crypto.randomUUID(),
-          userId: user?.uid || '',
-          title: form.title,
-          amount: Number(form.amount),
-          date: form.contractStart,
-          category: form.category || 'Fatura',
-          description: form.description || '',
-          contractStart: form.contractStart,
-          contractYears: Number(form.contractYears),
-          notifyBeforeDays: Number(form.notifyBeforeDays || 0),
-          contractEndDate: contractMeta.contractEndDate,
-          reminderDate: contractMeta.reminderDate,
-          billingCycle: 'yearly'
-        },
-        ...prev
-      ]);
+      setIsModalOpen(false);
     } catch (err: any) {
       console.error('Invoice save failed', err);
       toast.error(err?.message || 'Kaydetme başarısız');
@@ -249,7 +289,7 @@ export default function InvoiceTab() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 mb-2">
         <h4 className="text-[11px] font-black uppercase tracking-widest text-stone-500 dark:text-zinc-400 flex items-center gap-2"><FaBell /> Kayıtlı Faturalar</h4>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => { reset(); setIsModalOpen(true); }}
           className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-stone-900 text-white dark:bg-white dark:text-stone-900 font-black uppercase tracking-[0.12em] text-[11px] hover:opacity-80 transition-opacity shadow-sm"
         >
           <FaPlus /> Yeni Ekle
@@ -288,12 +328,35 @@ export default function InvoiceTab() {
                     </div>
                     {bill.description ? <div className="mt-2 text-sm text-stone-600 dark:text-zinc-300 font-medium">{bill.description}</div> : null}
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0 mt-4 lg:mt-0">
                     <div className="text-right">
                       <div className="text-xl font-black text-stone-900 dark:text-white">{Number(bill.amount).toLocaleString('tr-TR')} ₺</div>
                       <div className="text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 dark:text-zinc-500 mt-1">
                         {bill.daysRemaining === null ? 'Geri sayım yok' : `${Math.max(Number(bill.daysRemaining), 0)} gün kaldı`}
                       </div>
+                    </div>
+                    <div className="flex flex-col gap-2 ml-4 border-l pl-4 border-stone-200 dark:border-zinc-700">
+                      <button 
+                        onClick={() => handleRenewClick(bill)}
+                        className="text-emerald-600 dark:text-emerald-400 hover:opacity-70 p-1.5"
+                        title="Taahhüt Yenile"
+                      >
+                        <FaSync size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleEditClick(bill)}
+                        className="text-blue-600 dark:text-blue-400 hover:opacity-70 p-1.5"
+                        title="Düzenle"
+                      >
+                        <FaEdit size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(bill.id)}
+                        className="text-red-600 dark:text-red-400 hover:opacity-70 p-1.5"
+                        title="Sil"
+                      >
+                        <FaTrash size={14} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -312,7 +375,7 @@ export default function InvoiceTab() {
             {/* Modal Header & Close Button */}
             <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 bg-stone-50/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-stone-200 dark:border-zinc-800 rounded-t-[2rem]">
               <h3 className="text-sm font-black uppercase tracking-widest text-stone-900 dark:text-white flex items-center gap-2">
-                <FaHistory className="text-stone-400" /> Fatura & Abonelik Ekle
+                <FaHistory className="text-stone-400" /> {editingId ? 'Fatura & Abonelik Düzenle' : 'Fatura & Abonelik Ekle'}
               </h3>
               <button 
                 onClick={() => setIsModalOpen(false)}

@@ -119,14 +119,25 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
     if (!user) return;
     setSaving(true);
     try {
+      // JSON serialization strips undefined values which Firebase doesn't accept
+      const cleanData = JSON.parse(JSON.stringify(overrides));
       await setDoc(doc(db, 'budgetPlans', user.uid), {
-        ...overrides,
+        ...cleanData,
         updatedAt: Timestamp.now(),
       }, { merge: true });
     } catch (err) {
       console.error("Kaydetme hatası:", err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const clearAllData = async () => {
+    if (window.confirm("Tüm bütçe verilerini (Bakiye, Gelirler ve Alınacaklar) silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")) {
+      setWalletBalance(0);
+      setIncomes([]);
+      setWishes([]);
+      await saveToFirebase({ walletBalance: 0, incomes: [], wishes: [] });
     }
   };
 
@@ -1264,6 +1275,17 @@ const BudgetPlanner: React.FC<Props> = ({ t, isDark }) => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── 4. AYARLAR / TEHLİKELİ BÖLGE ── */}
+      <div className="flex justify-end pt-8 mt-8 border-t border-slate-200 dark:border-zinc-800">
+        <button 
+          onClick={clearAllData}
+          className="flex items-center gap-2 text-[11px] bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2.5 rounded-xl transition-colors font-bold tracking-wider uppercase"
+          title="Tüm Bütçe Verilerini Sıfırla"
+        >
+          <FaTrashAlt className="text-sm" /> DB Temizle (Sıfırla)
+        </button>
       </div>
 
     </div>

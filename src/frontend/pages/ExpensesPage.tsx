@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import type { ParsedTransaction } from '../utils/pdfParserService';
 import { FaBars, FaTimes } from 'react-icons/fa';
-
+import { useSearchParams } from 'react-router-dom';
 
 // Modular Components
 import CategorySidebar from '../components/expenses/CategorySidebar';
@@ -74,7 +74,14 @@ const ExpensesPage: React.FC = () => {
     return e.category2 || e.category;
   }, []);
 
-  const [activeTab, setActiveTab] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>('harcamalar');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const defaultTab = (searchParams.get('tab') as any) || 'harcamalar';
+  const [activeTab, setActiveTabState] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>(defaultTab);
+
+  const setActiveTab = (tab: 'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer') => {
+    setActiveTabState(tab);
+    setSearchParams({ tab });
+  };
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -530,8 +537,17 @@ const ExpensesPage: React.FC = () => {
 
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
-      <div className="mb-8 flex items-center justify-center sm:justify-end">
-        <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
+      <div className="mb-8 flex items-center justify-center sm:justify-end gap-2">
+        {/* Mobil için Blur (Göz) Butonu */}
+        <button
+          onClick={() => setIsBlurred(!isBlurred)}
+          className="md:hidden flex items-center justify-center w-10 h-10 shrink-0 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+          title={isBlurred ? "Fiyatları Göster" : "Fiyatları Gizle"}
+        >
+          {isBlurred ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+        </button>
+
+        <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-x-auto custom-scrollbar">
           {/* Ana sekmeler - her zaman görünür */}
           {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },

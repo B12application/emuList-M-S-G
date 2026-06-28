@@ -380,7 +380,7 @@ export default function CreatePage() {
         </form>
 
         {/* ═══ SAĞ KOLON: ÖNİZLEME (Sticky) ═══ */}
-        <div className="lg:col-span-4 hidden lg:block">
+        <div className="lg:col-span-4 mt-8 lg:mt-0">
           <div className="sticky top-6 bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl p-5 border border-slate-200/50 dark:border-zinc-800/50">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">Önizleme</h2>

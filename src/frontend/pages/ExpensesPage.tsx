@@ -547,7 +547,7 @@ const ExpensesPage: React.FC = () => {
           {isBlurred ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
         </button>
 
-        <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-x-auto custom-scrollbar">
+        <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
           {/* Ana sekmeler - her zaman görünür */}
           {[
             { id: 'harcamalar', icon: FaWallet, label: t('expenses.expensesTab') },

@@ -230,6 +230,21 @@ export default function ProfilePage() {
                                     className="w-full text-center text-xs bg-stone-100 dark:bg-stone-950/50 border border-stone-300 dark:border-zinc-700 rounded-xl px-4 py-2 text-stone-500 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                                     placeholder="https://example.com/photo.jpg"
                                 />
+                                {user?.providerData?.find(p => p.providerId === 'google.com')?.photoURL && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const gPhoto = user.providerData.find(p => p.providerId === 'google.com')?.photoURL;
+                                            if (gPhoto) {
+                                                setAvatarUrl(gPhoto);
+                                                toast.success('Google profil fotoğrafı seçildi! 📸');
+                                            }
+                                        }}
+                                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs bg-sky-500/10 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400 rounded-xl hover:bg-sky-500/20 transition-all font-semibold mx-auto mt-2"
+                                    >
+                                        <FaGlobe className="text-sm" /> Google Profil Fotoğrafını Kullan
+                                    </button>
+                                )}
                                 <p className="text-[10px] text-stone-400 dark:text-zinc-500 text-center">
                                     💡 Özel fotoğraf URL'si girin veya boş bırakın ({profile?.gender === 'female' ? 'kadın' : 'erkek'} avatar kullanılır)
                                 </p>

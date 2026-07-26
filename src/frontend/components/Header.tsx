@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
 import NotificationDropdown from './NotificationDropdown';
@@ -128,9 +128,12 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
             </div>
 
             {/* --- CENTER SECTION: Navigation --- */}
-            <div className="pointer-events-none flex-1 flex items-center justify-start ml-16 md:ml-24 lg:ml-62 overflow-visible">              {user && (
+            <div className="pointer-events-none flex-1 flex items-center justify-center px-4 overflow-visible">
+              {user && (
               <nav className="pointer-events-auto hidden md:flex items-center gap-2 overflow-visible">
-                <NavLink to="/" end className={getNavCls}>{t('nav.home')}</NavLink>
+                <NavLink to="/" end className={getNavCls}>
+                  <span className="flex items-center gap-1.5"><FaHome className="text-xs opacity-80" />{t('nav.home')}</span>
+                </NavLink>
 
                 <div
                   ref={listsDropdownRef}
@@ -145,7 +148,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                       : "text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-zinc-800/40"
                       }`}
                   >
-                    <span>{getListTitle()}</span>
+                    <span className="flex items-center gap-1.5"><FaLayerGroup className="text-xs opacity-80" />{getListTitle()}</span>
                     <motion.div
                       animate={{ rotate: showListsDropdown ? 180 : 0 }}
                       className="flex items-center justify-center"
@@ -191,8 +194,15 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   </AnimatePresence>
                 </div>
 
-                <NavLink to="/planner" className={getNavCls}>{t('nav.calendar')}</NavLink>
-                <NavLink to="/expenses" className={getNavCls}>{t('expenses.title')}</NavLink>
+                <NavLink to="/planner" className={getNavCls}>
+                  <span className="flex items-center gap-1.5"><FaCalendarAlt className="text-xs opacity-80" />{t('nav.calendar')}</span>
+                </NavLink>
+                <NavLink to="/expenses" className={getNavCls}>
+                  <span className="flex items-center gap-1.5"><FaWallet className="text-xs opacity-80" />{t('expenses.title')}</span>
+                </NavLink>
+                <NavLink to="/travel-planner" className={getNavCls}>
+                  <span className="flex items-center gap-1.5"><FaCompass className="text-xs opacity-80" />Gezi</span>
+                </NavLink>
               </nav>
             )}
             </div>

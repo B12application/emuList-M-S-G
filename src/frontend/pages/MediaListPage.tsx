@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaCheck, FaClock, FaFilter, FaTheaterMasks } from 'react-icons/fa';
+import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaArrowUp, FaExchangeAlt, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaCheck, FaClock, FaFilter, FaTheaterMasks, FaSort, FaSave } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
@@ -8,13 +8,231 @@ import DetailModal from '../components/DetailModal';
 import EmptyState from '../components/ui/EmptyState';
 import SkeletonCard from '../components/ui/SkeletonCard';
 import { exportToPDF } from '../utils/pdfExport';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSeriesProgress } from '../../backend/services/episodeTrackingService';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  arrayMove,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { useLanguage } from '../context/LanguageContext';
+
+// ─── Sortable Game List Item (Mobile & Desktop Friendly) ───────────────────────
+function SortableGameListItem({
+  item,
+  rank,
+  totalItems,
+  onMoveUp,
+  onMoveDown,
+  onMoveToRank,
+}: {
+  item: MediaItem;
+  rank: number;
+  totalItems: number;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onMoveToRank: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.7 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all ${
+        isDragging ? 'ring-2 ring-violet-500 scale-[1.01] shadow-xl z-50' : ''
+      }`}
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="p-2.5 bg-stone-100 dark:bg-zinc-800 text-stone-400 dark:text-zinc-500 rounded-xl cursor-grab active:cursor-grabbing hover:bg-stone-200 dark:hover:bg-zinc-700 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors"
+        title="Sürüklemek için basılı tutun"
+      >
+        <FaSort size={15} />
+      </div>
+
+      {/* Rank Badge */}
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 font-black text-white text-xs shadow-sm">
+        {rank}
+      </div>
+
+      {/* Image */}
+      <div className="w-12 h-16 rounded-lg bg-stone-200 dark:bg-zinc-800 overflow-hidden shrink-0 border border-stone-100 dark:border-zinc-800">
+        {item.image ? (
+          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-stone-400">
+            <FaGamepad size={20} />
+          </div>
+        )}
+      </div>
+
+      {/* Title */}
+      <div className="flex-1 min-w-0">
+        <h4 className="font-bold text-stone-900 dark:text-white truncate text-sm sm:text-base">
+          {item.title}
+        </h4>
+        <span className="text-[10px] uppercase font-bold text-stone-400 dark:text-zinc-500 tracking-wider">
+          Oyun
+        </span>
+      </div>
+
+      {/* Nudge / Move Controls */}
+      <div className="flex items-center gap-1 shrink-0">
+        {/* Move Up */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveUp();
+          }}
+          disabled={rank === 1}
+          className="p-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 hover:text-violet-600 dark:hover:text-violet-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          title="Yukarı taşı"
+        >
+          <FaArrowUp size={12} />
+        </button>
+
+        {/* Move Down */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveDown();
+          }}
+          disabled={rank === totalItems}
+          className="p-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 hover:text-violet-600 dark:hover:text-violet-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          title="Aşağı taşı"
+        >
+          <FaArrowDown size={12} />
+        </button>
+
+        {/* Move to Rank button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveToRank();
+          }}
+          className="p-2 bg-violet-500/10 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 rounded-xl hover:bg-violet-500/20 transition-colors flex items-center gap-1 text-xs font-bold"
+          title="Belirli bir sıraya taşı"
+        >
+          <FaExchangeAlt size={10} />
+          <span className="hidden sm:inline">Konum</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sortable Game Card Wrapper ──────────────────────────────────────────────
+function SortableGameCard({
+  item,
+  rank,
+  selectionMode,
+  selectedIds,
+  toggleSelection,
+  setSelectedItem,
+  refetch,
+}: {
+  item: MediaItem;
+  rank: number;
+  selectionMode: boolean;
+  selectedIds: Set<string>;
+  toggleSelection: (id: string) => void;
+  setSelectedItem: (item: MediaItem) => void;
+  refetch: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative cursor-pointer h-full ${
+        selectionMode && selectedIds.has(item.id) ? 'ring-2 ring-sky-500 rounded-2xl' : ''
+      } ${isDragging ? 'scale-[1.03] shadow-2xl rounded-2xl' : ''}`}
+      onClick={() => (selectionMode ? toggleSelection(item.id) : setSelectedItem(item))}
+    >
+      {/* Drag Handle — sağ üst köşe */}
+      <div
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-2 right-2 z-30 p-1.5 rounded-lg bg-black/30 hover:bg-black/50 text-white cursor-grab active:cursor-grabbing transition-colors"
+        title="Sıralamak için sürükle"
+      >
+        <FaSort size={11} />
+      </div>
+
+      {/* Sıra Rozeti */}
+      <div className="absolute top-2 left-2 z-30 w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+        <span className="text-[10px] font-black text-white leading-none">{rank}</span>
+      </div>
+
+      {/* Seçim Checkbox */}
+      {selectionMode && (
+        <div className="absolute top-3 left-10 z-20">
+          <div
+            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+              selectedIds.has(item.id)
+                ? 'bg-sky-500 text-white'
+                : 'bg-white/90 dark:bg-zinc-800/90 border-2 border-gray-300 dark:border-zinc-600'
+            }`}
+          >
+            {selectedIds.has(item.id) && <FaCheckSquare />}
+          </div>
+        </div>
+      )}
+
+      <MediaCard item={item} refetch={refetch} />
+    </div>
+  );
+}
 
 export default function MediaListPage() {
   const { t } = useLanguage();
@@ -25,7 +243,7 @@ export default function MediaListPage() {
   const filter: FilterStatus = (searchParams.get('filter') as FilterStatus) || 'all';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date' | 'releaseDate'>('rating');
+  const [sortOption, setSortOption] = useState<'rating' | 'title' | 'date' | 'releaseDate' | 'order'>('rating');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -36,6 +254,11 @@ export default function MediaListPage() {
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
+  // Game sort mode state
+  const [gameSortMode, setGameSortMode] = useState(false);
+  const [gameOrderedItems, setGameOrderedItems] = useState<MediaItem[]>([]);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+
   // Bulk Actions state
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -45,7 +268,9 @@ export default function MediaListPage() {
   const isAdvancedFilterActive = genreFilter !== 'all' || ratingRange !== 'all' || yearFilter !== 'all';
   // We fetch 'all' items if the filter is 'watched' so we can locally include series with 100% progress
   const fetchFilter = filter === 'watched' ? 'all' : filter;
-  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, fetchFilter, isSearchActive || isAdvancedFilterActive || filter === 'watched');
+  // Game sort mode: fetch all to allow full reorder
+  const isGameSortMode = type === 'game' && gameSortMode;
+  const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, fetchFilter, isSearchActive || isAdvancedFilterActive || filter === 'watched' || isGameSortMode);
 
   // Compute all available genres from items
   const allGenres = useMemo(() => {
@@ -141,28 +366,102 @@ export default function MediaListPage() {
     }
 
     // Sadece seçilen kritere göre sırala (izlendi/izlenmedi karışık)
-    result.sort((a, b) => {
-      let comparison = 0;
-      if (sortOption === 'rating') {
-        comparison = Number(b.rating) - Number(a.rating);
-      } else if (sortOption === 'title') {
-        comparison = a.title.localeCompare(b.title);
-      } else if (sortOption === 'date') {
-        comparison = (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-      } else if (sortOption === 'releaseDate') {
-        // Çıkış tarihine göre sırala (en yeni önce)
-        const getYear = (dateStr?: string) => {
-          if (!dateStr) return 0;
-          const match = dateStr.match(/\b(19|20)\d{2}\b/);
-          return match ? parseInt(match[0]) : 0;
-        };
-        comparison = getYear(b.releaseDate) - getYear(a.releaseDate);
-      }
-      return sortDirection === 'asc' ? -comparison : comparison;
-    });
+    if (sortOption === 'order') {
+      // queueOrder'a göre sırala; atanmamışlar sona
+      result.sort((a, b) => {
+        const oa = a.queueOrder ?? 99999;
+        const ob = b.queueOrder ?? 99999;
+        return oa - ob;
+      });
+    } else {
+      result.sort((a, b) => {
+        let comparison = 0;
+        if (sortOption === 'rating') {
+          comparison = Number(b.rating) - Number(a.rating);
+        } else if (sortOption === 'title') {
+          comparison = a.title.localeCompare(b.title);
+        } else if (sortOption === 'date') {
+          comparison = (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        } else if (sortOption === 'releaseDate') {
+          const getYear = (dateStr?: string) => {
+            if (!dateStr) return 0;
+            const match = dateStr.match(/\b(19|20)\d{2}\b/);
+            return match ? parseInt(match[0]) : 0;
+          };
+          comparison = getYear(b.releaseDate) - getYear(a.releaseDate);
+        }
+        return sortDirection === 'asc' ? -comparison : comparison;
+      });
+    }
 
     return result;
   }, [items, searchQuery, sortOption, sortDirection, isSearchActive, filter, genreFilter, ratingRange, yearFilter]);
+
+  // Game sort mode — sıralı liste (yalnızca sıralama modu açıldığında bir kez ilk değer atanır)
+  useEffect(() => {
+    if (isGameSortMode) {
+      setGameOrderedItems(filteredItems);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGameSortMode]);
+
+  // dnd-kit sensors
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const moveItem = useCallback((index: number, newIndex: number) => {
+    if (newIndex < 0 || newIndex >= gameOrderedItems.length) return;
+    setGameOrderedItems((prev) => {
+      const copy = [...prev];
+      const [moved] = copy.splice(index, 1);
+      copy.splice(newIndex, 0, moved);
+      return copy;
+    });
+  }, [gameOrderedItems.length]);
+
+  const handleMoveToRankPrompt = useCallback((currentIndex: number) => {
+    const input = prompt(`Bu oyunu kaçıncı sıraya taşımak istersiniz? (1 - ${gameOrderedItems.length}):`, (currentIndex + 1).toString());
+    if (input === null) return;
+    const targetRank = parseInt(input, 10);
+    if (isNaN(targetRank) || targetRank < 1 || targetRank > gameOrderedItems.length) {
+      toast.error('Geçersiz sıra numarası.');
+      return;
+    }
+    moveItem(currentIndex, targetRank - 1);
+  }, [gameOrderedItems.length, moveItem]);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setGameOrderedItems((prev) => {
+      const oldIdx = prev.findIndex((i) => i.id === active.id);
+      const newIdx = prev.findIndex((i) => i.id === over.id);
+      return arrayMove(prev, oldIdx, newIdx);
+    });
+  }, []);
+
+  const saveGameOrder = async () => {
+    if (gameOrderedItems.length === 0) return;
+    setIsSavingOrder(true);
+    try {
+      const batch = writeBatch(db);
+      gameOrderedItems.forEach((item, index) => {
+        batch.update(doc(db, 'mediaItems', item.id), { queueOrder: index + 1 });
+      });
+      await batch.commit();
+      await refetch();
+      toast.success('Oyun sıralaması kaydedildi! 🎮');
+      setGameSortMode(false);
+      setSortOption('order');
+    } catch {
+      toast.error('Sıralama kaydedilemedi.');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
 
   // Modal senkronizasyonu
   useEffect(() => {
@@ -189,12 +488,23 @@ export default function MediaListPage() {
   };
 
   const handleSortChange = (option: typeof sortOption) => {
+    // Sıralama modu açıkken diğer sortlara geçişi engelle
+    if (gameSortMode) return;
     if (sortOption === option) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
       setSortOption(option);
-      // Başlık için varsayılan A-Z (asc), diğerleri için Yüksekten-Düşüğe (desc)
       setSortDirection(option === 'title' ? 'asc' : 'desc');
+    }
+  };
+
+  const toggleGameSortMode = () => {
+    if (gameSortMode) {
+      // İptal et
+      setGameSortMode(false);
+    } else {
+      setGameSortMode(true);
+      setSortOption('order');
     }
   };
 
@@ -438,14 +748,32 @@ export default function MediaListPage() {
                 className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'releaseDate'
                   ? 'bg-white dark:bg-zinc-700 text-emerald-600 shadow-sm'
                   : 'text-stone-400 hover:text-emerald-500'
-                  }`}
+                  } ${gameSortMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => handleSortChange('releaseDate')}
+                disabled={gameSortMode}
               >
                 <FaFilm className="text-sm" />
                 {sortOption === 'releaseDate' && (
                   <span className="text-[10px]">{sortDirection === 'desc' ? '▼' : '▲'}</span>
                 )}
               </button>
+
+              {/* Sıra Sıralama - her zaman oyunlar için göster */}
+              {type === 'game' && !gameSortMode && (
+                <button
+                  title="Sıralama önceliğine göre"
+                  className={`p-2 rounded-md transition-all duration-200 flex items-center gap-1 ${sortOption === 'order'
+                    ? 'bg-white dark:bg-zinc-700 text-violet-600 shadow-sm'
+                    : 'text-stone-400 hover:text-violet-500'
+                    }`}
+                  onClick={() => handleSortChange('order')}
+                >
+                  <FaSort className="text-sm" />
+                  {sortOption === 'order' && (
+                    <span className="text-[10px]">▲</span>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Ayraç */}
@@ -515,6 +843,28 @@ export default function MediaListPage() {
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full" />
               )}
             </button>
+
+            {/* Oyun Sıralama Modu Butonu */}
+            {type === 'game' && (
+              <>
+                <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
+                <button
+                  onClick={toggleGameSortMode}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    gameSortMode
+                      ? 'bg-violet-500 text-white shadow-md shadow-violet-500/30'
+                      : 'text-stone-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 bg-stone-200 dark:bg-zinc-800'
+                  }`}
+                  title={gameSortMode ? 'Sıralama modunu kapat' : 'Oyunları sırala'}
+                >
+                  <FaSort className="text-sm" />
+                  <span className="hidden sm:inline">{gameSortMode ? 'Sıralamayı Kapat' : 'Sırala'}</span>
+                </button>
+              </>
+            )}
+
+            {/* Ayraç */}
+            <div className="w-px h-6 bg-stone-200 dark:bg-zinc-700" />
 
             {/* Araçlar */}
             <div className="flex items-center gap-1">
@@ -699,6 +1049,42 @@ export default function MediaListPage() {
         )}
       </AnimatePresence>
 
+      {/* Floating Game Sort Mode Toolbar */}
+      <AnimatePresence>
+        {gameSortMode && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-stone-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between gap-6 w-[90%] max-w-md"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse" />
+              <span className="text-sm font-bold text-stone-850 dark:text-zinc-250">
+                Sıralama Düzenleniyor
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleGameSortMode}
+                className="px-4 py-2 text-sm bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 font-semibold transition"
+              >
+                İptal
+              </button>
+              <button
+                onClick={saveGameOrder}
+                disabled={isSavingOrder}
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl hover:from-violet-700 hover:to-purple-700 font-semibold shadow-lg shadow-violet-500/20 transition disabled:opacity-50"
+              >
+                {isSavingOrder ? <FaSpinner className="animate-spin text-sm" /> : <FaSave className="text-sm" />}
+                Kaydet
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ... (Yükleniyor ve Liste) ... */}
       {loading ? (
         <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -706,30 +1092,80 @@ export default function MediaListPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-12">
-          {/* Grid Görünümü - Kartlar */}
-          {viewMode === 'grid' && (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredItems.map(item => (
-                <div
-                  key={item.id}
-                  onClick={() => selectionMode ? toggleSelection(item.id) : setSelectedItem(item)}
-                  className={`cursor-pointer h-full relative ${selectionMode && selectedIds.has(item.id) ? 'ring-2 ring-sky-500 rounded-2xl' : ''}`}
-                >
-                  {/* Seçim Checkbox */}
-                  {selectionMode && (
-                    <div className="absolute top-3 left-3 z-20">
-                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${selectedIds.has(item.id)
-                        ? 'bg-sky-500 text-white'
-                        : 'bg-white/90 dark:bg-zinc-800/90 border-2 border-gray-300 dark:border-zinc-600'
-                        }`}>
-                        {selectedIds.has(item.id) && <FaCheckSquare />}
-                      </div>
-                    </div>
-                  )}
-                  <MediaCard item={item} refetch={refetch} />
+          {/* Oyun Sıralama Modu Banner */}
+          {isGameSortMode && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-300 dark:border-violet-700 rounded-xl"
+            >
+              <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+              <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+                Sıralama modu aktif — oyunları <strong>sürükle-bırak</strong> ile yeniden sırala, sonra <strong>Kaydet</strong>'e bas.
+              </span>
+            </motion.div>
+          )}
+
+          {isGameSortMode ? (
+            // ── Drag-and-Drop List (Mobile & Touch Friendly) ──────
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={gameOrderedItems.map((i) => i.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="flex flex-col gap-3 max-w-2xl mx-auto w-full px-2">
+                  {gameOrderedItems.map((item, index) => (
+                    <SortableGameListItem
+                      key={item.id}
+                      item={item}
+                      rank={index + 1}
+                      totalItems={gameOrderedItems.length}
+                      onMoveUp={() => moveItem(index, index - 1)}
+                      onMoveDown={() => moveItem(index, index + 1)}
+                      onMoveToRank={() => handleMoveToRankPrompt(index)}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <>
+              {/* Grid Görünümü - Kartlar */}
+              {viewMode === 'grid' && (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {filteredItems.map((item, index) => (
+                    <div
+                      key={item.id}
+                      onClick={() => selectionMode ? toggleSelection(item.id) : setSelectedItem(item)}
+                      className={`cursor-pointer h-full relative ${selectionMode && selectedIds.has(item.id) ? 'ring-2 ring-sky-500 rounded-2xl' : ''}`}
+                    >
+                      {/* Sıra Rozeti — sortOption === 'order' iken göster */}
+                      {type === 'game' && sortOption === 'order' && item.queueOrder && (
+                        <div className="absolute top-2 left-2 z-30 w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg pointer-events-none">
+                          <span className="text-[10px] font-black text-white leading-none">{item.queueOrder}</span>
+                        </div>
+                      )}
+                      {/* Seçim Checkbox */}
+                      {selectionMode && (
+                        <div className="absolute top-3 left-3 z-20">
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${selectedIds.has(item.id)
+                            ? 'bg-sky-500 text-white'
+                            : 'bg-white/90 dark:bg-zinc-800/90 border-2 border-gray-300 dark:border-zinc-600'
+                            }`}>
+                            {selectedIds.has(item.id) && <FaCheckSquare />}
+                          </div>
+                        </div>
+                      )}
+                      <MediaCard item={item} refetch={refetch} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           {/* Liste Görünümü - Satır Satır */}

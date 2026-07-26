@@ -1,5 +1,6 @@
 // src/hooks/useMedia.ts
 // Refactored with React Query + Infinite Scroll for pagination
+import { useMemo } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { db, auth } from '../../backend/config/firebaseConfig';
 import {
@@ -102,7 +103,7 @@ export default function useMedia(
   });
 
   // Tüm sayfaların itemlerini birleştir
-  const items = data?.pages.flatMap(page => page.items) || [];
+  const items = useMemo(() => data?.pages.flatMap(page => page.items) || [], [data?.pages]);
   const loading = isLoading;
 
   // Manual refetch - aynı zamanda ilgili cache'leri de invalidate eder

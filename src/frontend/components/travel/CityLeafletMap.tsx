@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Custom colored pin icons
+// Custom colored pin icons for general categories
 function createPinIcon(color: string, size: number = 28): L.DivIcon {
   return L.divIcon({
     className: 'custom-pin-icon',
@@ -29,7 +29,7 @@ function createPinIcon(color: string, size: number = 28): L.DivIcon {
         display: flex; align-items: center; justify-content: center;
       ">
         <div style="
-          width: ${size * 0.4}px; height: ${size * 0.4}px;
+          width: ${size * 0.35}px; height: ${size * 0.35}px;
           background: white;
           border-radius: 50%;
           transform: rotate(45deg);
@@ -42,9 +42,39 @@ function createPinIcon(color: string, size: number = 28): L.DivIcon {
   });
 }
 
+// Special highly-visible pin icon for VISITED places (Electric Indigo + White Checkmark ✓, matching standard pin size)
+function createVisitedPinIcon(): L.DivIcon {
+  return L.divIcon({
+    className: 'custom-visited-pin',
+    html: `
+      <div style="
+        width: 26px; height: 26px;
+        background: linear-gradient(135deg, #4f46e5, #3730a3);
+        border: 2.5px solid #ffffff;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        box-shadow: 0 3px 10px rgba(79, 70, 229, 0.55);
+        display: flex; align-items: center; justify-content: center;
+      ">
+        <span style="
+          transform: rotate(45deg);
+          color: #ffffff;
+          font-weight: 900;
+          font-size: 12px;
+          font-family: system-ui, -apple-system, sans-serif;
+          line-height: 1;
+        ">✓</span>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 26],
+    popupAnchor: [0, -26],
+  });
+}
+
 // Numbered pin icons for plan routes
 function createNumberedPinIcon(number: number, color: string = '#0ea5e9', isVisited: boolean = false): L.DivIcon {
-  const bg = isVisited ? '#10b981' : color;
+  const bg = isVisited ? '#4f46e5' : color;
   return L.divIcon({
     className: 'custom-numbered-pin',
     html: `
@@ -63,7 +93,7 @@ function createNumberedPinIcon(number: number, color: string = '#0ea5e9', isVisi
           font-weight: 900;
           font-size: 13px;
           font-family: sans-serif;
-        ">${number}</span>
+        ">${isVisited ? '✓' : number}</span>
       </div>
     `,
     iconSize: [32, 32],
@@ -73,7 +103,7 @@ function createNumberedPinIcon(number: number, color: string = '#0ea5e9', isVisi
 }
 
 // Predefined icons
-const visitedIcon = createPinIcon('#10b981', 30);   // emerald
+const visitedIcon = createVisitedPinIcon();         // Electric Indigo + White Checkmark ✓
 const plannedIcon = createPinIcon('#0ea5e9', 28);    // sky
 const defaultIcon = createPinIcon('#ef4444', 26);    // red
 const selectedIcon = createPinIcon('#f59e0b', 34);   // amber (larger)
@@ -85,11 +115,31 @@ function getCategoryIcon(kinds: string, isVisited: boolean): L.DivIcon {
   return createPinIcon(cat.color, 26);
 }
 
-// Component to fit map bounds to markers or route stops
-function FitBounds({ attractions, routeStops, cityLat, cityLon }: { attractions?: TouristAttraction[]; routeStops?: TravelStop[]; cityLat: number; cityLon: number }) {
+// Component to fit map bounds to markers or route stops ONLY when location changes
+function FitBounds({
+  attractions,
+  routeStops,
+  cityLat,
+  cityLon,
+  locationKey
+}: {
+  attractions?: TouristAttraction[];
+  routeStops?: TravelStop[];
+  cityLat: number;
+  cityLon: number;
+  locationKey?: string;
+}) {
   const map = useMap();
+  const lastKeyRef = useRef<string>('');
+  const currentKey = locationKey || `${cityLat}_${cityLon}`;
 
   useEffect(() => {
+    // Prevent zoom reset if location hasn't changed (e.g. user just marked a place as visited or panned around)
+    if (lastKeyRef.current === currentKey && lastKeyRef.current !== '') {
+      return;
+    }
+    lastKeyRef.current = currentKey;
+
     const points: [number, number][] = [];
 
     if (routeStops && routeStops.length > 0) {
@@ -121,7 +171,7 @@ function FitBounds({ attractions, routeStops, cityLat, cityLon }: { attractions?
     } catch (e) {
       map.setView([safeLat, safeLon], 11);
     }
-  }, [attractions, routeStops, cityLat, cityLon, map]);
+  }, [currentKey, attractions, routeStops, cityLat, cityLon, map]);
 
   return null;
 }
@@ -130,6 +180,7 @@ interface CityLeafletMapProps {
   cityName: string;
   cityLat: number;
   cityLon: number;
+  locationKey?: string;
   attractions?: TouristAttraction[];
   visitedPlaces?: VisitedPlace[];
   routeStops?: TravelStop[];
@@ -143,6 +194,7 @@ export default function CityLeafletMap({
   cityName,
   cityLat,
   cityLon,
+  locationKey,
   attractions = [],
   visitedPlaces = [],
   routeStops,
@@ -180,7 +232,7 @@ export default function CityLeafletMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <FitBounds attractions={validAttractions} routeStops={validRouteStops} cityLat={safeCityLat} cityLon={safeCityLon} />
+      <FitBounds attractions={validAttractions} routeStops={validRouteStops} cityLat={safeCityLat} cityLon={safeCityLon} locationKey={locationKey || `${cityName}_${safeCityLat}_${safeCityLon}`} />
 
         {/* Route Polyline connecting stops in order */}
         {validRouteStops.length > 1 && (
@@ -304,13 +356,13 @@ export default function CityLeafletMap({
         {/* Legend */}
         <div className="absolute bottom-3 left-3 z-[1000] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-stone-200/50 dark:border-zinc-700/50">
           <div className="flex items-center gap-3 text-[10px] text-stone-600 dark:text-zinc-400">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 border border-white" />
+            <div className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
+              <div className="w-3.5 h-3.5 rounded-full bg-indigo-600 border border-white flex items-center justify-center text-[9px] text-white font-black shadow-sm">✓</div>
               <span>Gezildi</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full bg-red-500 border border-white" />
-              <span>Gezilecek</span>
+              <div className="w-3 h-3 rounded-full bg-emerald-500 border border-white" />
+              <span>Doğa</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-amber-500 border border-white" />

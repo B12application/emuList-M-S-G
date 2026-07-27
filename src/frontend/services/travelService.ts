@@ -5,69 +5,45 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 const API_KEY = import.meta.env.VITE_OPENTRIPMAP_API_KEY;
 const BASE_URL = 'https://api.opentripmap.com/0.1/en/places';
 
+import type { CityDistrict } from '../data/turkeyDistricts';
+
 // Local cache to avoid re-fetching
 const attractionCache = new Map<string, TouristAttraction[]>();
 const detailCache = new Map<string, AttractionDetail>();
 
-// Curated famous landmarks for Turkish cities to guarantee iconic natural & historical spots
-export const FAMOUS_TURKEY_LANDMARKS: Record<string, TouristAttraction[]> = {
-  "TR38": [ // Kayseri
-    { xid: "famous_kapuzbasi", name: "Kapuzbaşı Şelaleleri", lat: 37.7783, lon: 35.3933, kinds: "natural,waterfalls,water", rate: 3 },
-    { xid: "famous_kultepe", name: "Kültepe Kaniş Karum Ören Yeri", lat: 38.8514, lon: 35.6358, kinds: "historic,archeological_sites", rate: 3 },
-    { xid: "famous_erciyes", name: "Erciyes Dağı & Kayak Merkezi", lat: 38.5372, lon: 35.5342, kinds: "natural,sport,mountains", rate: 3 },
-    { xid: "famous_sultan_sazligi", name: "Sultan Sazlığı Milli Parkı", lat: 38.3333, lon: 35.2500, kinds: "natural,national_parks", rate: 3 },
-    { xid: "famous_soganli", name: "Soğanlı Vadisi & Kaya Kiliseleri", lat: 38.3414, lon: 34.9744, kinds: "historic,cultural,caves", rate: 3 },
-    { xid: "famous_kayseri_kalesi", name: "Kayseri Kalesi & Tarihi Çarşı", lat: 38.7225, lon: 35.4881, kinds: "historic,architecture", rate: 3 },
-    { xid: "famous_hunat_hatun", name: "Hunat Hatun Külliyesi & Camii", lat: 38.7208, lon: 35.4897, kinds: "historic,religion,cultural", rate: 3 },
-    { xid: "famous_doner_kumbet", name: "Döner Kümbet", lat: 38.7186, lon: 35.4950, kinds: "historic,monuments", rate: 3 },
-    { xid: "famous_yamula", name: "Yamula Barajı & Kuş Cenneti", lat: 38.9056, lon: 35.2444, kinds: "natural,water", rate: 3 },
-    { xid: "famous_ali_dagi", name: "Ali Dağı Yürüyüş & Yamaç Paraşütü", lat: 38.6833, lon: 35.5333, kinds: "natural,sport", rate: 3 },
-    { xid: "famous_derebag_selalesi", name: "Derebağ Şelalesi (Yahyalı)", lat: 37.9542, lon: 35.3489, kinds: "natural,waterfalls,water", rate: 3 },
-    { xid: "famous_koramaz_vadisi", name: "Koramaz Vadisi & Ağırnas", lat: 38.7833, lon: 35.6667, kinds: "natural,historic,cultural", rate: 3 },
-    { xid: "famous_mimarsinan_evi", name: "Mimar Sinan Evi (Ağırnas)", lat: 38.7886, lon: 35.6703, kinds: "historic,museums", rate: 3 },
-  ],
-  "TR58": [ // Sivas
-    { xid: "famous_divrigi_ulucamii", name: "Divriği Ulu Camii ve Darüşşifası (UNESCO)", lat: 39.3733, lon: 38.1147, kinds: "historic,architecture,religion", rate: 3 },
-    { xid: "famous_gok_medrese", name: "Gök Medrese (Sivas Merkez)", lat: 39.7436, lon: 37.0131, kinds: "historic,architecture", rate: 3 },
-    { xid: "famous_cifte_minare", name: "Çifte Minareli Medrese", lat: 39.7483, lon: 37.0153, kinds: "historic,architecture", rate: 3 },
-    { xid: "famous_sizir_selalesi", name: "Sızır Şelalesi (Gemerek)", lat: 39.3403, lon: 35.9619, kinds: "natural,waterfalls,water", rate: 3 },
-    { xid: "famous_kangal_kaplica", name: "Kangal Balıklı Kaplıcası", lat: 39.2319, lon: 37.4786, kinds: "natural,baths", rate: 3 },
-    { xid: "famous_todurge_golu", name: "Tödürge Gölü", lat: 39.8719, lon: 37.6042, kinds: "natural,water", rate: 3 },
-    { xid: "famous_sivas_kongre_binasi", name: "Atatürk Kongre ve Etnografya Müzesi", lat: 39.7489, lon: 37.0142, kinds: "historic,museums", rate: 3 },
-  ],
-};
-
 /**
- * Fetch tourist attractions near a city center
+ * Fetch tourist attractions dynamically for a specific district using OpenTripMap API
  * Uses 3-layer persistent cache (Memory -> LocalStorage -> Firestore)
- * OpenTripMap API is ONLY queried if not cached anywhere (Redis-like cache)
  */
-export async function fetchAttractionsByCity(
-  cityName: string,
-  lat: number,
-  lon: number,
-  radius: number = 200000,
-  kinds?: string,
-  cityId?: string
+export async function fetchAttractionsByDistrict(
+  district: CityDistrict,
+  cityId: string,
+  kinds?: string
 ): Promise<TouristAttraction[]> {
-  const cacheKey = `${cityName}_${radius}_${kinds || 'all'}`;
-  const targetCityId = cityId || cityName.toLowerCase();
-  const famous = (cityId && FAMOUS_TURKEY_LANDMARKS[cityId]) || [];
-  
-  // Helper to merge famous landmarks with API list without duplicates
-  const mergeAttractions = (apiList: TouristAttraction[]) => {
-    const existingNames = new Set(apiList.map(a => a.name.toLowerCase()));
-    const missingFamous = famous.filter(f => !existingNames.has(f.name.toLowerCase()));
-    return [...missingFamous, ...apiList];
+  const cacheKey = `dist_${district.id}_${kinds || 'all'}`;
+  const localCacheKey = `travel_district_${cacheKey}`;
+
+  // Helper to deduplicate items by name or xid
+  const deduplicate = (list: TouristAttraction[]) => {
+    const seenNames = new Set<string>();
+    const seenXids = new Set<string>();
+    return list.filter(item => {
+      const normName = (item.name || '').toLowerCase().trim();
+      if (!normName || seenNames.has(normName) || (item.xid && seenXids.has(item.xid))) {
+        return false;
+      }
+      seenNames.add(normName);
+      if (item.xid) seenXids.add(item.xid);
+      return true;
+    });
   };
 
   // 1. Check memory cache
   if (attractionCache.has(cacheKey)) {
-    return mergeAttractions(attractionCache.get(cacheKey)!);
+    return attractionCache.get(cacheKey)!;
   }
 
   // 2. Check localStorage cache
-  const localCacheKey = `travel_attractions_${cacheKey}`;
   try {
     const cached = localStorage.getItem(localCacheKey);
     if (cached) {
@@ -82,16 +58,17 @@ export async function fetchAttractionsByCity(
           .filter((a: any) => Boolean(a.name && !isNaN(a.lat) && !isNaN(a.lon) && a.lat !== 0 && a.lon !== 0));
 
         if (validData.length > 0) {
-          attractionCache.set(cacheKey, validData);
-          return mergeAttractions(validData);
+          const deduped = deduplicate(validData);
+          attractionCache.set(cacheKey, deduped);
+          return deduped;
         }
       }
     }
   } catch { /* ignore parse errors */ }
 
-  // 3. Check Firestore persistent cache (Redis replacement)
+  // 3. Check Firestore persistent cache
   try {
-    const firestoreRef = doc(db, 'cityAttractions', targetCityId);
+    const firestoreRef = doc(db, 'districtAttractions', district.id);
     const snap = await getDoc(firestoreRef);
     if (snap.exists()) {
       const data = snap.data();
@@ -105,17 +82,98 @@ export async function fetchAttractionsByCity(
           .filter((a: any) => Boolean(a.name && !isNaN(a.lat) && !isNaN(a.lon)));
 
         if (validData.length > 0) {
-          attractionCache.set(cacheKey, validData);
+          const deduped = deduplicate(validData);
+          attractionCache.set(cacheKey, deduped);
           try {
-            localStorage.setItem(localCacheKey, JSON.stringify({ data: validData, timestamp: Date.now() }));
+            localStorage.setItem(localCacheKey, JSON.stringify({ data: deduped, timestamp: Date.now() }));
           } catch {}
-          return mergeAttractions(validData);
+          return deduped;
         }
       }
     }
   } catch { /* ignore firestore error */ }
 
-  // 4. Fetch from OpenTripMap API if not cached
+  // 4. Fetch directly from OpenTripMap API for district coordinates
+  try {
+    const searchRadius = district.radius || 20000;
+    const params = new URLSearchParams({
+      radius: searchRadius.toString(),
+      lon: district.lon.toString(),
+      lat: district.lat.toString(),
+      apikey: API_KEY,
+      limit: '500',
+      format: 'json',
+    });
+
+    if (kinds) {
+      params.set('kinds', kinds);
+    }
+
+    const response = await fetch(`${BASE_URL}/radius?${params}`);
+    if (!response.ok) {
+      throw new Error(`OpenTripMap district error: ${response.status}`);
+    }
+
+    const rawData: any[] = await response.json();
+    
+    // Normalize lat/lon & filter valid coordinates
+    const filtered: TouristAttraction[] = rawData
+      .map((a: any) => ({
+        ...a,
+        lat: Number(a.lat ?? a.point?.lat),
+        lon: Number(a.lon ?? a.point?.lon),
+      }))
+      .filter((a: TouristAttraction) =>
+        Boolean(a.name && a.name.trim().length > 0 && !isNaN(a.lat) && !isNaN(a.lon) && a.lat !== 0 && a.lon !== 0)
+      )
+      .sort((a, b) => (b.rate || 0) - (a.rate || 0));
+
+    const finalMerged = deduplicate(filtered);
+
+    // Save to memory, localStorage, and Firestore cache
+    attractionCache.set(cacheKey, finalMerged);
+    try {
+      localStorage.setItem(localCacheKey, JSON.stringify({
+        data: finalMerged,
+        timestamp: Date.now()
+      }));
+    } catch {}
+
+    try {
+      setDoc(doc(db, 'districtAttractions', district.id), {
+        districtName: district.name,
+        cityId,
+        items: finalMerged.slice(0, 500),
+        updatedAt: new Date().toISOString(),
+      });
+    } catch {}
+
+    return finalMerged;
+  } catch (error) {
+    console.error(`Error fetching attractions for district ${district.name}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Fetch tourist attractions near a city center and all its districts
+ */
+export async function fetchAttractionsByCity(
+  cityName: string,
+  lat: number,
+  lon: number,
+  radius: number = 200000,
+  kinds?: string,
+  cityId?: string
+): Promise<TouristAttraction[]> {
+  const targetCityId = (cityId || cityName).toUpperCase();
+  const cacheKey = `city_${targetCityId}_${radius}_${kinds || 'all'}`;
+
+  if (attractionCache.has(cacheKey)) {
+    return attractionCache.get(cacheKey)!;
+  }
+
+  // Fetch using city center coordinates directly
   try {
     const params = new URLSearchParams({
       radius: radius.toString(),
@@ -131,14 +189,11 @@ export async function fetchAttractionsByCity(
     }
 
     const response = await fetch(`${BASE_URL}/radius?${params}`);
-    
     if (!response.ok) {
       throw new Error(`OpenTripMap API error: ${response.status}`);
     }
 
     const rawData: any[] = await response.json();
-    
-    // Normalize lat/lon from point object or root properties and filter invalid coordinates
     const filtered: TouristAttraction[] = rawData
       .map((a: any) => ({
         ...a,
@@ -150,28 +205,10 @@ export async function fetchAttractionsByCity(
       )
       .sort((a, b) => (b.rate || 0) - (a.rate || 0));
 
-    const finalMerged = mergeAttractions(filtered);
-
-    // Save to memory, localStorage, and Firestore for future instant 0-request loads
-    attractionCache.set(cacheKey, finalMerged);
-    try {
-      localStorage.setItem(localCacheKey, JSON.stringify({
-        data: finalMerged,
-        timestamp: Date.now()
-      }));
-    } catch {}
-
-    try {
-      setDoc(doc(db, 'cityAttractions', targetCityId), {
-        cityName,
-        items: finalMerged.slice(0, 500), // store up to 500 places in Redis-style Firestore cache
-        updatedAt: new Date().toISOString(),
-      });
-    } catch {}
-
-    return finalMerged;
+    attractionCache.set(cacheKey, filtered);
+    return filtered;
   } catch (error) {
-    console.error('Error fetching attractions:', error);
+    console.error('Error fetching city attractions:', error);
     return [];
   }
 }

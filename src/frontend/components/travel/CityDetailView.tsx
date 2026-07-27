@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaArrowLeft, FaSearch, FaCheckCircle, FaRoute, FaMapMarkerAlt,
-  FaSpinner, FaFilter, FaStar, FaEye, FaPlus
+  FaSpinner, FaFilter, FaStar, FaEye, FaPlus, FaBuilding
 } from 'react-icons/fa';
-import { fetchAttractionsByCity, ATTRACTION_CATEGORIES, getAttractionCategory } from '../../services/travelService';
+import { fetchAttractionsByCity, fetchAttractionsByDistrict, ATTRACTION_CATEGORIES, getAttractionCategory } from '../../services/travelService';
+import { getDistrictsByCityId, type CityDistrict } from '../../data/turkeyDistricts';
 import type { TouristAttraction, VisitedPlace, TravelPlan } from '../../../backend/types/travelPlanner';
 import type { CityCoordinates } from '../../../backend/types/travelPlanner';
 import TravelRouteMap from './TravelRouteMap';
@@ -45,30 +46,82 @@ export default function CityDetailView({
   const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<TravelPlan | null>(null);
 
+  // Available districts for the selected city
+  const districts = useMemo(
+    () => getDistrictsByCityId(city.id, city.name, city.lat, city.lon),
+    [city]
+  );
+
+  const [selectedDistrictId, setSelectedDistrictId] = useState<string>(districts[0]?.id || `${city.id.toLowerCase()}_all`);
+
+  // Reset district when city changes
+  useEffect(() => {
+    if (districts.length > 0) {
+      setSelectedDistrictId(districts[0].id);
+    }
+  }, [city, districts]);
+
+  const currentDistrict = useMemo(
+    () => districts.find(d => d.id === selectedDistrictId) || districts[0],
+    [districts, selectedDistrictId]
+  );
+
   // Visited attraction IDs for quick lookup
   const visitedXids = useMemo(
     () => new Set(visitedPlaces.map(vp => vp.attractionXid)),
     [visitedPlaces]
   );
 
-  // Fetch attractions on mount
+  // Fetch attractions on mount or district change
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    
-    fetchAttractionsByCity(city.name, city.lat, city.lon, 200000, undefined, city.id)
-      .then(data => {
-        if (!cancelled) {
-          setAttractions(data);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
-      });
+
+    const dist = districts.find(d => d.id === selectedDistrictId) || districts[0];
+
+    if (!dist || dist.id.endsWith('_all')) {
+      // If "All Districts" selected, fetch all districts in parallel or city center query
+      const specificDistricts = districts.filter(d => !d.id.endsWith('_all'));
+      if (specificDistricts.length > 0) {
+        Promise.all(specificDistricts.map(d => fetchAttractionsByDistrict(d, city.id)))
+          .then(results => {
+            if (!cancelled) {
+              const combined = results.flat();
+              const seenNames = new Set<string>();
+              const deduped = combined.filter(a => {
+                const norm = (a.name || '').toLowerCase().trim();
+                if (!norm || seenNames.has(norm)) return false;
+                seenNames.add(norm);
+                return true;
+              });
+              setAttractions(deduped);
+              setLoading(false);
+            }
+          })
+          .catch(() => { if (!cancelled) setLoading(false); });
+      } else {
+        fetchAttractionsByCity(city.name, city.lat, city.lon, 200000, undefined, city.id)
+          .then(data => {
+            if (!cancelled) { setAttractions(data); setLoading(false); }
+          })
+          .catch(() => { if (!cancelled) setLoading(false); });
+      }
+    } else {
+      // Fetch specifically for the selected district from OpenTripMap
+      fetchAttractionsByDistrict(dist, city.id)
+        .then(data => {
+          if (!cancelled) {
+            setAttractions(data);
+            setLoading(false);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }
 
     return () => { cancelled = true; };
-  }, [city]);
+  }, [city, selectedDistrictId, districts]);
 
   // Filter attractions
   const filteredAttractions = useMemo(() => {
@@ -165,19 +218,48 @@ export default function CityDetailView({
               exit={{ opacity: 0, x: 20 }}
               className="p-4"
             >
-              {/* Search & Filter */}
-              <div className="flex gap-2 mb-4">
+              {/* Search input */}
+              <div className="flex gap-2 mb-3">
                 <div className="flex-1 relative">
                   <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Yer ara..."
+                    placeholder="Mekan veya yer ara..."
                     className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl text-sm text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
               </div>
+
+              {/* District Selector Chips */}
+              {districts.length > 0 && (
+                <div className="mb-3">
+                  <div className="flex items-center gap-1.5 mb-1.5 px-0.5">
+                    <FaBuilding className="text-sky-500 text-xs" />
+                    <span className="text-xs font-black text-stone-800 dark:text-zinc-200">İlçe Seçin:</span>
+                  </div>
+                  <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
+                    {districts.map(d => {
+                      const isSelected = selectedDistrictId === d.id;
+                      return (
+                        <button
+                          key={d.id}
+                          onClick={() => setSelectedDistrictId(d.id)}
+                          className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-md shadow-sky-500/25 scale-[1.02]'
+                              : 'bg-white dark:bg-zinc-900 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-800 hover:border-sky-300 dark:hover:border-sky-700'
+                          }`}
+                        >
+                          <span>{isSelected ? '📍' : '🏛️'}</span>
+                          {d.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Category filters */}
               <div className="flex gap-1.5 overflow-x-auto pb-3 mb-3 scrollbar-thin">
@@ -208,13 +290,14 @@ export default function CityDetailView({
                 ))}
               </div>
 
-              {/* Interactive Leaflet Map for City POIs */}
+              {/* Interactive Leaflet Map for City/District POIs */}
               {!loading && (
                 <div className="w-full h-80 sm:h-[420px] mb-6 rounded-2xl overflow-hidden shadow-xl border border-stone-200/80 dark:border-zinc-800/80">
                   <CityLeafletMap
-                    cityName={city.name}
-                    cityLat={city.lat}
-                    cityLon={city.lon}
+                    cityName={currentDistrict ? currentDistrict.name : city.name}
+                    cityLat={currentDistrict ? currentDistrict.lat : city.lat}
+                    cityLon={currentDistrict ? currentDistrict.lon : city.lon}
+                    locationKey={`${city.id}_${selectedDistrictId}`}
                     attractions={filteredAttractions}
                     visitedPlaces={visitedPlaces}
                     onMarkVisited={onMarkVisited}
@@ -225,10 +308,10 @@ export default function CityDetailView({
               {/* Section Header */}
               <div className="flex items-center justify-between mb-3 px-1">
                 <h3 className="text-sm font-black text-stone-900 dark:text-white flex items-center gap-2">
-                  <span>📍</span> Gezilecek Mekanlar ({filteredAttractions.length})
+                  <span>📍</span> {currentDistrict?.name || city.name} Gezilecek Yerler ({filteredAttractions.length})
                 </h3>
                 <span className="text-[10px] text-stone-400 dark:text-zinc-500">
-                  Önbellek (Redis-Style) Aktif ⚡
+                  OpenTripMap Canlı API ⚡
                 </span>
               </div>
 
@@ -260,7 +343,7 @@ export default function CityDetailView({
                           transition={{ delay: Math.min(index * 0.02, 0.4) }}
                           className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all hover:shadow-md ${
                             isVisited
-                              ? 'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-300/60 dark:border-emerald-800/40'
+                              ? 'bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-300/80 dark:border-indigo-800/60 shadow-sm'
                               : 'bg-white dark:bg-zinc-900 border-stone-200/80 dark:border-zinc-800/80 hover:border-sky-400 dark:hover:border-sky-600'
                           }`}
                         >
@@ -305,9 +388,9 @@ export default function CityDetailView({
                                   const vp = visitedPlaces.find(v => v.attractionXid === attraction.xid);
                                   if (vp) onUnmarkVisited(vp.id);
                                 }}
-                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl hover:bg-emerald-200 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/60 rounded-xl hover:bg-indigo-200 dark:hover:bg-indigo-900 transition-colors shadow-sm"
                               >
-                                <FaCheckCircle /> Gezildi
+                                <span>✓</span> Gezildi
                               </button>
                             ) : (
                               <button

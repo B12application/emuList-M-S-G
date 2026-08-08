@@ -611,7 +611,7 @@ export default function CreatePage() {
       </div>
 
       {/* ═══ FLOATING BOTTOM BAR (MOBİL & EKOSİSTEM İÇİN HER AN ERİŞİLEBİLİR YÜZEN KAYDET BAR) ═══ */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-xl bg-stone-900/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/10 p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-4 text-white">
+      <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-[110] w-[92%] max-w-xl bg-stone-900/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/10 p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-4 text-white">
         <div className="flex items-center gap-3 min-w-0">
           <div className={`p-2.5 rounded-xl ${activeTheme.badgeGradient} text-white shrink-0 shadow-md`}>
             <FaCheck className="text-xs" />

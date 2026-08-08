@@ -4,12 +4,14 @@ import { format, isAfter, subHours } from 'date-fns';
 // Kullanıcının sağladığı Google Takvim ICS bağlantısı
 const CALENDAR_URL = 'https://calendar.google.com/calendar/ical/frrhag59gbjmt7q7ug0rl7m7kc%40group.calendar.google.com/public/basic.ics';
 
-// CORS ve Cloudflare engellerini aşmak için sırayla denenecek proxy listesi
 const PROXY_URLS = [
+  `https://api.allorigins.win/get?url=${encodeURIComponent(CALENDAR_URL)}`,
   `https://api.allorigins.win/raw?url=${encodeURIComponent(CALENDAR_URL)}`,
   `https://corsproxy.io/?${encodeURIComponent(CALENDAR_URL)}`,
   `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(CALENDAR_URL)}`,
-  CALENDAR_URL // Doğrudan deneme
+  `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(CALENDAR_URL)}`,
+  CALENDAR_URL, // Doğrudan deneme
+  '/gs_fallback.ics' // Yerel yedek ICS dosyası (Harici proxy'ler başarısız olursa her zaman çalışır)
 ];
 
 async function fetchIcsData(): Promise<string | null> {
@@ -17,8 +19,20 @@ async function fetchIcsData(): Promise<string | null> {
     try {
       const response = await fetch(proxyUrl, { cache: 'no-store' });
       if (!response.ok) continue;
-      const text = await response.text();
-      // İçerik geçerli ICS metni mi (HTML hata sayfası değil mi)?
+      
+      let text = '';
+      const contentType = response.headers.get('content-type');
+      
+      if (proxyUrl.includes('/get?url=') && contentType && contentType.includes('application/json')) {
+        const json = await response.json();
+        if (json && json.contents) {
+          text = json.contents;
+        }
+      } else {
+        text = await response.text();
+      }
+
+      // İçerik geçerli ICS metni mi?
       if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
         return text;
       }
@@ -117,28 +131,25 @@ export const getUpcomingGSMatches = async (): Promise<PlannerMeeting[]> => {
           matchDate = new Date(year, month, day, hours, minutes);
         }
 
-        // Sadece günümüzden sonra oynanacak / oynanmakta olan maçları al:
-        if (isAfter(matchDate, now)) {
-          matches.push({
-            id: `gs-match-${matchDate.getTime()}-${matches.length}`,
-            userId: 'gs-system',
-            title: title,
-            date: format(matchDate, 'yyyy-MM-dd'),
-            startTime: format(matchDate, 'HH:mm'),
-            itemType: 'match',
-            category: category,
-            description: matchType,
-            externalLink: 'https://calendar.google.com/calendar/u/0/embed?src=frrhag59gbjmt7q7ug0rl7m7kc@group.calendar.google.com',
-          });
-        }
+        // Maçı listeye ekle (Sezon takvimindeki tüm maçlar takvimde görüntülenebilsin)
+        matches.push({
+          id: `gs-match-${matchDate.getTime()}-${matches.length}`,
+          userId: 'gs-system',
+          title: title,
+          date: format(matchDate, 'yyyy-MM-dd'),
+          startTime: format(matchDate, 'HH:mm'),
+          itemType: 'match',
+          category: category,
+          description: matchType,
+          externalLink: 'https://calendar.google.com/calendar/u/0/embed?src=frrhag59gbjmt7q7ug0rl7m7kc@group.calendar.google.com',
+        });
       }
     });
 
     // Maçları tarihe göre en yakından uzağa doğru sıralayalım
     matches.sort((a, b) => new Date(`${a.date}T${a.startTime}`).getTime() - new Date(`${b.date}T${b.startTime}`).getTime());
 
-    // Fikstür kalabalıklığı olmaması için sadece en yakın 15 maçı döndürelim
-    return matches.slice(0, 15);
+    return matches;
 
   } catch (error) {
     console.error("Error parsing Google Calendar GS matches", error);

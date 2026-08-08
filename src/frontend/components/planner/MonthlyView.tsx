@@ -85,12 +85,18 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
     onMonthChange(subMonths(currentMonth, 1));
   };
 
-  const monthMatches = useMemo(() =>
-    meetings
-      .filter(m => m.itemType === 'match' && days.some(d => format(d, 'yyyy-MM-dd') === m.date))
-      .slice(0, 6),
-    [meetings, days]
-  );
+  const monthMatches = useMemo(() => {
+    const currentMonthMatches = meetings.filter(
+      m => m.itemType === 'match' && days.some(d => format(d, 'yyyy-MM-dd') === m.date)
+    );
+    if (currentMonthMatches.length > 0) return currentMonthMatches;
+
+    // Eğer seçili ayda maç yoksa gelecek ilk maçları gösterelim
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    return meetings
+      .filter(m => m.itemType === 'match' && m.date >= todayStr)
+      .slice(0, 6);
+  }, [meetings, days]);
 
   const calculateArrows = () => {
     if (!wrapperRef.current || !sidebarRef.current || !calendarRef.current) return;
@@ -391,7 +397,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
 
         {/* FİKSTÜR SIDEBAR */}
         <AnimatePresence>
-          {showMatches && monthMatches.length > 0 && (
+          {showMatches && (
             <motion.div
               ref={sidebarRef}
               key="fixture-sidebar"
@@ -406,28 +412,34 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                   <div className="w-1 h-6 bg-red-600 rounded-full" />
                   <h3 className="text-base font-bold text-stone-800 dark:text-zinc-100">{t('planner.fixtureInfo')}</h3>
                 </div>
-                {monthMatches.map(match => (
-                  <div
-                    key={match.id}
-                    data-match-id={match.id}
-                    className={`bg-white dark:bg-zinc-800/60 p-3.5 rounded-2xl border border-stone-200 dark:border-zinc-700 shadow-sm hover:border-red-400/60 transition-all
-                        ${new Date(`${match.date}T${match.startTime}`) < now ? 'opacity-40 grayscale-[0.5]' : ''}`}
-                  >
-                    <div className="text-[10px] font-bold text-red-500 dark:text-red-400 mb-1 flex items-center gap-1.5">
-                      <span>{format(new Date(match.date), 'd MMMM', { locale: tr })}</span>
-                      <span className="w-1 h-1 bg-stone-300 rounded-full" />
-                      <span>{match.startTime}</span>
-                    </div>
-                    <div className="text-sm font-semibold text-stone-800 dark:text-zinc-100 leading-snug">
-                      {match.title}
-                    </div>
-                    {match.description && (
-                      <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 text-[10px] font-bold text-red-600 dark:text-red-400">
-                        <span>{match.description}</span>
+                {monthMatches.length > 0 ? (
+                  monthMatches.map(match => (
+                    <div
+                      key={match.id}
+                      data-match-id={match.id}
+                      className={`bg-white dark:bg-zinc-800/60 p-3.5 rounded-2xl border border-stone-200 dark:border-zinc-700 shadow-sm hover:border-red-400/60 transition-all
+                          ${new Date(`${match.date}T${match.startTime}`) < now ? 'opacity-40 grayscale-[0.5]' : ''}`}
+                    >
+                      <div className="text-[10px] font-bold text-red-500 dark:text-red-400 mb-1 flex items-center gap-1.5">
+                        <span>{format(new Date(match.date), 'd MMMM', { locale: tr })}</span>
+                        <span className="w-1 h-1 bg-stone-300 rounded-full" />
+                        <span>{match.startTime}</span>
                       </div>
-                    )}
+                      <div className="text-sm font-semibold text-stone-800 dark:text-zinc-100 leading-snug">
+                        {match.title}
+                      </div>
+                      {match.description && (
+                        <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 text-[10px] font-bold text-red-600 dark:text-red-400">
+                          <span>{match.description}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 px-3 bg-stone-50 dark:bg-zinc-900/40 border border-dashed border-stone-200 dark:border-zinc-800 rounded-2xl text-xs text-stone-400 dark:text-zinc-500">
+                    {t('planner.noMatches') || 'Bu ay gösterilecek maç bulunmuyor.'}
                   </div>
-                ))}
+                )}
               </div>
             </motion.div>
           )}

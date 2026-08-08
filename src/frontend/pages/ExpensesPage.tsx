@@ -96,6 +96,8 @@ const ExpensesPage: React.FC = () => {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkCategoryModalOpen, setIsBulkCategoryModalOpen] = useState(false);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -377,6 +379,18 @@ const ExpensesPage: React.FC = () => {
       }
     });
     setIsDeleteConfirmModalOpen(true);
+  };
+
+  const handleAddCategorySubmit = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await addCategory(newCategoryName.trim());
+      toast.success(`"${newCategoryName.trim()}" kategorisi eklendi.`);
+      setNewCategoryName('');
+      setIsAddCategoryModalOpen(false);
+    } catch (error) {
+      toast.error('Kategori eklenirken bir hata oluştu.');
+    }
   };
 
   const handleBulkDelete = async () => {
@@ -722,6 +736,8 @@ const ExpensesPage: React.FC = () => {
               }}
               onEdit={handleEditInvestmentClick}
               onDelete={deleteInvestment}
+              onUpdateInvestment={updateInvestment}
+              onAddInvestment={addInvestment}
             />
           </motion.div>
         </AnimatePresence>
@@ -742,30 +758,29 @@ const ExpensesPage: React.FC = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          <CategorySidebar
-            t={t}
-            isDark={isDark}
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            categories={categories}
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            categoryCounts={categoryCounts}
-            totalCount={totalCount}
-            deletedCount={deletedExpenses.length}
-            excludedCount={excludedExpenses.length}
-            onAddCategory={() => {
-              const name = window.prompt(t('expenses.newCategoryPlaceholder'));
-              if (name) addCategory(name);
-            }}
-            onDeleteCategory={handleDeleteCategory}
-            onRunMigration={runMigration}
-            isMigrating={isMigrating}
-            isBlurred={isBlurred}
-            setIsBlurred={setIsBlurred}
-          />
+          {(activeTab === 'harcamalar' || activeTab === 'silinenler') && (
+            <CategorySidebar
+              t={t}
+              isDark={isDark}
+              isSidebarOpen={isSidebarOpen}
+              setIsSidebarOpen={setIsSidebarOpen}
+              categories={categories}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
+              categoryCounts={categoryCounts}
+              totalCount={totalCount}
+              deletedCount={deletedExpenses.length}
+              excludedCount={excludedExpenses.length}
+              onAddCategory={() => setIsAddCategoryModalOpen(true)}
+              onDeleteCategory={handleDeleteCategory}
+              onRunMigration={runMigration}
+              isMigrating={isMigrating}
+              isBlurred={isBlurred}
+              setIsBlurred={setIsBlurred}
+            />
+          )}
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <ExpensesLayout
               activeTab={activeTab as 'harcamalar' | 'raporlar' | 'silinenler'}
               isSidebarOpen={isSidebarOpen}
@@ -777,10 +792,7 @@ const ExpensesPage: React.FC = () => {
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
               showAddButton={activeTab === 'harcamalar'}
-              onAddCategory={() => {
-                const name = window.prompt(t('expenses.newCategoryPlaceholder'));
-                if (name) addCategory(name);
-              }}
+              onAddCategory={() => setIsAddCategoryModalOpen(true)}
               onAddClick={() => {
                 setIsEditing(false);
                 setNewExpense({
@@ -796,7 +808,7 @@ const ExpensesPage: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-stone-900 dark:bg-white px-6 py-3 rounded-full shadow-2xl border border-stone-800 dark:border-stone-100"
+                    className="fixed bottom-24 sm:bottom-10 left-1/2 -translate-x-1/2 z-[120] flex items-center gap-4 bg-stone-900/95 dark:bg-white/95 backdrop-blur-xl px-6 py-3 rounded-full shadow-2xl border border-stone-800 dark:border-stone-100"
                   >
                     <span className="text-[10px] font-black text-white dark:text-stone-900 uppercase tracking-[0.2em]">
                       {selectedIds.size} {t('expenses.selectedCount') || 'SEÇİLDİ'}
@@ -910,6 +922,11 @@ const ExpensesPage: React.FC = () => {
         jsonInput={jsonInput}
         setJsonInput={setJsonInput}
         handleJsonParse={handleJsonParse}
+        isAddCategoryModalOpen={isAddCategoryModalOpen}
+        setIsAddCategoryModalOpen={setIsAddCategoryModalOpen}
+        newCategoryName={newCategoryName}
+        setNewCategoryName={setNewCategoryName}
+        handleAddCategorySubmit={handleAddCategorySubmit}
       />
     </div>
   );

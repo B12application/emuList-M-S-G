@@ -59,12 +59,12 @@ export default function SportTrackingModal({ isOpen, onClose, meetings, onUpdate
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800 flex flex-col max-h-[85vh]"
+          className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800 flex flex-col max-h-[90vh] sm:max-h-[85vh]"
         >
           <div className="flex items-center justify-between p-5 border-b border-stone-200 dark:border-zinc-800 bg-orange-50 dark:bg-orange-900/20">
             <h3 className="text-xl font-bold flex items-center gap-2 text-orange-600 dark:text-orange-400">

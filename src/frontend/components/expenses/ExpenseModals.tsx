@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaPlus, FaCheck, FaExclamationTriangle, FaTrash } from 'react-icons/fa';
+import { FaTimes, FaPlus, FaCheck, FaExclamationTriangle, FaTrash, FaTags } from 'react-icons/fa';
 import CalendarPicker from '../CalendarPicker';
 import CustomSelect from '../CustomSelect';
 import type { Expense } from '../../hooks/useExpenses';
@@ -48,6 +48,12 @@ interface ExpenseModalsProps {
   setIsDeleteConfirmModalOpen: (val: boolean) => void;
   confirmDeleteAction: () => void;
   deleteItemTitle: string;
+  // Add Category Modal
+  isAddCategoryModalOpen?: boolean;
+  setIsAddCategoryModalOpen?: (val: boolean) => void;
+  newCategoryName?: string;
+  setNewCategoryName?: (val: string) => void;
+  handleAddCategorySubmit?: () => void;
 }
 
 const ExpenseModals: React.FC<ExpenseModalsProps> = ({
@@ -79,163 +85,274 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   isDeleteConfirmModalOpen,
   setIsDeleteConfirmModalOpen,
   confirmDeleteAction,
-  deleteItemTitle
+  deleteItemTitle,
+  isAddCategoryModalOpen,
+  setIsAddCategoryModalOpen,
+  newCategoryName,
+  setNewCategoryName,
+  handleAddCategorySubmit
 }) => {
   return (
     <>
-      {/* Add/Edit Modal */}
-      {/* ... previous modals content ... */}
+      {/* Add/Edit Expense Modal */}
       <AnimatePresence>
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+              className="fixed inset-0 bg-stone-900/70 dark:bg-black/85 backdrop-blur-md"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative flex flex-col w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50 max-h-[85vh] sm:max-h-[90vh]"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative flex flex-col w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-stone-200/60 dark:border-zinc-800/60 max-h-[82vh] sm:max-h-[88vh] my-auto"
             >
               {/* Header - Sabit */}
-              <div className="flex-shrink-0 p-5 sm:p-8 pb-4 sm:pb-6 border-b border-stone-100 dark:border-zinc-800/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-black text-stone-900 dark:text-white">
-                      {isEditing ? t('expenses.editTitle') : t('expenses.addTitle')}
-                    </h2>
-                    <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">Harcama Bilgileri</p>
-                  </div>
-                  <button
-                    onClick={() => setIsAddModalOpen(false)}
-                    className="w-12 h-12 flex items-center justify-center rounded-2xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
-                  >
-                    <FaTimes />
-                  </button>
+              <div className="flex-shrink-0 p-5 sm:p-6 pb-4 border-b border-stone-100 dark:border-zinc-800/60 flex items-center justify-between bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-white tracking-tight">
+                    {isEditing ? t('expenses.editTitle') : t('expenses.addTitle')}
+                  </h2>
+                  <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-0.5">
+                    Harcama Bilgileri
+                  </p>
                 </div>
+                <button
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-100 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+                >
+                  <FaTimes size={14} />
+                </button>
               </div>
 
               {/* Body - Kaydırılabilir */}
-              <div className="flex-1 overflow-y-auto p-5 sm:p-8 pt-4 sm:pt-6 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto p-5 sm:p-7 custom-scrollbar space-y-5">
+                <div>
+                  <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                    Harcama Başlığı
+                  </label>
+                  <input
+                    type="text"
+                    value={newExpense.title || ''}
+                    onChange={(e) => setNewExpense({ ...newExpense, title: e.target.value })}
+                    placeholder="Örn: Market Alışverişi"
+                    className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300 dark:placeholder:text-zinc-600"
+                  />
+                </div>
 
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Harcama Başlığı</label>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      Tutar (₺)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newExpense.amount || ''}
+                      onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
+                      placeholder="0.00"
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300 dark:placeholder:text-zinc-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      Tarih
+                    </label>
+                    <CalendarPicker
+                      selectedDate={newExpense.date || ''}
+                      onChange={(date) => setNewExpense({ ...newExpense, date })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      İşlem Yönü
+                    </label>
+                    <div className="flex bg-stone-100 dark:bg-zinc-800 p-1 rounded-2xl border border-stone-200/50 dark:border-zinc-700/50">
+                      <button
+                        type="button"
+                        className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
+                          newExpense.direction !== 'gelen'
+                            ? 'bg-white dark:bg-zinc-900 text-rose-500 shadow-sm'
+                            : 'text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                        }`}
+                        onClick={() => setNewExpense({ ...newExpense, direction: 'giden' })}
+                      >
+                        Giden
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
+                          newExpense.direction === 'gelen'
+                            ? 'bg-white dark:bg-zinc-900 text-emerald-500 shadow-sm'
+                            : 'text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                        }`}
+                        onClick={() => setNewExpense({ ...newExpense, direction: 'gelen' })}
+                      >
+                        Gelen
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      Kategori
+                    </label>
+                    <CustomSelect
+                      value={newExpense.category || ''}
+                      onChange={(val) => setNewExpense({ ...newExpense, category: val })}
+                      options={categories}
+                      placeholder="Seçiniz..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      Kaynak (Örn: Banka / Kart)
+                    </label>
                     <input
                       type="text"
-                      value={newExpense.title}
-                      onChange={(e) => setNewExpense({ ...newExpense, title: e.target.value })}
-                      placeholder="Örn: Market Alışverişi"
-                      className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
+                      value={newExpense.source || ''}
+                      onChange={(e) => setNewExpense({ ...newExpense, source: e.target.value })}
+                      placeholder="Örn: Vadesiz Hesap"
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300 dark:placeholder:text-zinc-600"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Tutar</label>
-                      <input
-                        type="number"
-                        value={newExpense.amount}
-                        onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
-                        placeholder="0.00"
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Tarih</label>
-                      <CalendarPicker
-                        selectedDate={newExpense.date || ''}
-                        onChange={(date) => setNewExpense({ ...newExpense, date })}
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      İşlem Tipi
+                    </label>
+                    <input
+                      type="text"
+                      value={newExpense.type || ''}
+                      onChange={(e) => setNewExpense({ ...newExpense, type: e.target.value })}
+                      placeholder="Örn: Havale, Kredi Kartı"
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300 dark:placeholder:text-zinc-600"
+                    />
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">İşlem Yönü</label>
-                      <div className="flex bg-stone-50 dark:bg-zinc-800 p-1.5 rounded-[1.5rem] border border-stone-200/50 dark:border-zinc-800/50">
-                        <button
-                          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${newExpense.direction !== 'gelen' ? 'bg-white dark:bg-stone-900 shadow-md text-rose-500' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
-                          onClick={() => setNewExpense({ ...newExpense, direction: 'giden' })}
-                        >
-                          Giden
-                        </button>
-                        <button
-                          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${newExpense.direction === 'gelen' ? 'bg-white dark:bg-stone-900 shadow-md text-emerald-500' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
-                          onClick={() => setNewExpense({ ...newExpense, direction: 'gelen' })}
-                        >
-                          Gelen
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Kaynak</label>
-                      <input
-                        type="text"
-                        value={newExpense.source || ''}
-                        onChange={(e) => setNewExpense({ ...newExpense, source: e.target.value })}
-                        placeholder="Örn: Vadesiz Hesap, Kredi Kartı"
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
-                      />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      Taksit Sayısı
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newExpense.installmentCount || 1}
+                      onChange={(e) => setNewExpense({ ...newExpense, installmentCount: parseInt(e.target.value) || 1 })}
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                    />
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Kategori</label>
-                      <CustomSelect
-                        value={newExpense.category || ''}
-                        onChange={(val) => setNewExpense({ ...newExpense, category: val })}
-                        options={categories}
-                        placeholder="Seçiniz..."
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">İşlem Tipi</label>
-                      <input
-                        type="text"
-                        value={newExpense.type || ''}
-                        onChange={(e) => setNewExpense({ ...newExpense, type: e.target.value })}
-                        placeholder="Örn: Havale, Kredi Kartı Ödemesi"
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
+                      Açıklama (Opsiyonel)
+                    </label>
+                    <input
+                      type="text"
+                      value={newExpense.description || ''}
+                      onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+                      placeholder="Detaylar..."
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300 dark:placeholder:text-zinc-600"
+                    />
                   </div>
+                </div>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Taksit Sayısı</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={newExpense.installmentCount || 1}
-                        onChange={(e) => setNewExpense({ ...newExpense, installmentCount: parseInt(e.target.value) || 1 })}
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Açıklama</label>
-                      <input
-                        type="text"
-                        value={newExpense.description || ''}
-                        onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-                        placeholder="Opsiyonel detaylı açıklama"
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300"
-                      />
-                    </div>
+              {/* Footer - Sabit */}
+              <div className="flex-shrink-0 p-4 sm:p-6 bg-stone-50/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-stone-100 dark:border-zinc-800/60">
+                <button
+                  onClick={handleAddExpense}
+                  disabled={!newExpense.title || !newExpense.amount}
+                  className="w-full py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 shadow-xl flex items-center justify-center gap-2"
+                >
+                  {isEditing ? <FaCheck /> : <FaPlus />}
+                  {isEditing ? t('common.save') : t('common.add')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add New Category Modal */}
+      <AnimatePresence>
+        {isAddCategoryModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddCategoryModalOpen?.(false)}
+              className="fixed inset-0 bg-stone-900/70 dark:bg-black/85 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 border border-stone-200/50 dark:border-zinc-800/50"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 flex items-center justify-center shadow-md">
+                    <FaTags size={14} />
                   </div>
+                  <div>
+                    <h2 className="text-lg font-black text-stone-900 dark:text-white">Yeni Kategori</h2>
+                    <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-0.5">
+                      Harcama Kategorisi Oluştur
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsAddCategoryModalOpen?.(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-100 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+                >
+                  <FaTimes size={14} />
+                </button>
+              </div>
 
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-2">
+                    Kategori Adı
+                  </label>
+                  <input
+                    type="text"
+                    value={newCategoryName || ''}
+                    onChange={(e) => setNewCategoryName?.(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddCategorySubmit?.();
+                    }}
+                    placeholder="Örn: Ev & Yaşam, Sağlık..."
+                    autoFocus
+                    className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-4 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all placeholder:text-stone-300 dark:placeholder:text-zinc-600"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
                   <button
-                    onClick={handleAddExpense}
-                    disabled={!newExpense.title || !newExpense.amount}
-                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 shadow-xl shadow-stone-900/10 dark:shadow-white/10 flex items-center justify-center gap-3 mt-4 mb-4"
+                    onClick={() => setIsAddCategoryModalOpen?.(false)}
+                    className="flex-1 py-3.5 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
                   >
-                    {isEditing ? <FaCheck /> : <FaPlus />}
-                    {isEditing ? t('common.save') : t('common.add')}
+                    İptal
+                  </button>
+                  <button
+                    onClick={handleAddCategorySubmit}
+                    disabled={!newCategoryName?.trim()}
+                    className="flex-1 py-3.5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl transition-all disabled:opacity-50"
+                  >
+                    Oluştur
                   </button>
                 </div>
               </div>
@@ -247,21 +364,21 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
       {/* Bulk Category Modal */}
       <AnimatePresence>
         {isBulkCategoryModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsBulkCategoryModalOpen(false)}
-              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+              className="fixed inset-0 bg-stone-900/70 dark:bg-black/85 backdrop-blur-md"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-[3rem] shadow-2xl p-8 border border-stone-200/50 dark:border-zinc-800/50"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 border border-stone-200/50 dark:border-zinc-800/50"
             >
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-black text-stone-900 dark:text-white">Kategori Değiştir</h2>
                   <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">
@@ -270,7 +387,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                 </div>
                 <button
                   onClick={() => setIsBulkCategoryModalOpen(false)}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-100 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
                 >
                   <FaTimes />
                 </button>
@@ -285,7 +402,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Yeni Kategori</label>
+                  <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-2">Yeni Kategori</label>
                   <CustomSelect
                     value={bulkCategory}
                     onChange={setBulkCategory}
@@ -296,7 +413,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
 
                 <button
                   onClick={applyBulkCategory}
-                  className="w-full py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-xl shadow-stone-900/10 dark:shadow-white/10"
+                  className="w-full py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-xl"
                 >
                   Değişiklikleri Uygula
                 </button>
@@ -306,27 +423,25 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
         )}
       </AnimatePresence>
 
-
-
       {/* Import Preview Modal */}
       <AnimatePresence>
         {isImportPreviewOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsImportPreviewOpen(false)}
-              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+              className="fixed inset-0 bg-stone-900/70 dark:bg-black/85 backdrop-blur-md"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
             >
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
+              <div className="p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-black text-stone-900 dark:text-white">İçe Aktarma Önizleme</h2>
                     <p className="text-xs font-bold text-stone-400 dark:text-zinc-500 uppercase tracking-widest mt-1">
@@ -335,13 +450,13 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   </div>
                   <button
                     onClick={() => setIsImportPreviewOpen(false)}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-100 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
                   >
                     <FaTimes />
                   </button>
                 </div>
 
-                <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar space-y-3 mb-8">
+                <div className="max-h-[380px] overflow-y-auto pr-2 custom-scrollbar space-y-3 mb-6">
                   {importPreview.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-stone-50/50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800/50 group">
                       <div className="min-w-0 flex-1">
@@ -370,7 +485,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   </button>
                   <button
                     onClick={confirmImport}
-                    className="flex-1 py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-stone-900/10 dark:shadow-white/10 hover:scale-[1.02] transition-all"
+                    className="flex-1 py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] transition-all"
                   >
                     Hepsini Kaydet
                   </button>
@@ -384,22 +499,22 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
       {/* Add Investment Modal */}
       <AnimatePresence>
         {isInvestmentModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsInvestmentModalOpen(false)}
-              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+              className="fixed inset-0 bg-stone-900/70 dark:bg-black/85 backdrop-blur-md"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-stone-200/50 dark:border-zinc-800/50"
             >
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
+              <div className="p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-black text-stone-900 dark:text-white">
                       {isInvestmentEditing ? 'Yatırımı Düzenle' : 'Yeni Yatırım Ekle'}
@@ -410,27 +525,27 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   </div>
                   <button
                     onClick={() => setIsInvestmentModalOpen(false)}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
+                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-100 dark:bg-zinc-800 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all"
                   >
                     <FaTimes />
                   </button>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Yatırım Başlığı</label>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">Yatırım Başlığı</label>
                     <input
                       type="text"
                       value={newInvestment.title}
                       onChange={(e) => setNewInvestment({ ...newInvestment, title: e.target.value })}
                       placeholder="Örn: Şubat Birikimi"
-                      className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Alış Fiyatı (1g)</label>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">Alış Fiyatı (1g)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -440,11 +555,11 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                           setNewInvestment({ ...newInvestment, buyPrice: price });
                         }}
                         placeholder="0.00"
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                        className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Toplam Tutar (TL)</label>
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">Toplam Tutar (TL)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -457,25 +572,25 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                           }
                         }}
                         placeholder="0.00"
-                        className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all outline-none"
+                        className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Miktar (Gram)</label>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">Miktar (Gram)</label>
                     <input
                       type="number"
                       step="0.0001"
                       value={newInvestment.amount || ''}
                       onChange={(e) => setNewInvestment({ ...newInvestment, amount: parseFloat(e.target.value) || 0 })}
                       placeholder="0.0000"
-                      className="w-full bg-stone-50 dark:bg-zinc-800 border-none rounded-[1.5rem] p-4 text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
+                      className="w-full bg-stone-50 dark:bg-zinc-800/80 border border-stone-200/50 dark:border-zinc-700/50 rounded-2xl p-3.5 text-sm font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-white transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-4">Tarih</label>
+                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">Tarih</label>
                     <CalendarPicker
                       selectedDate={newInvestment.date || ''}
                       onChange={(date) => setNewInvestment({ ...newInvestment, date })}
@@ -485,7 +600,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   <button
                     onClick={handleAddInvestment}
                     disabled={!newInvestment.title || !newInvestment.amount || !newInvestment.buyPrice}
-                    className="w-full py-5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl"
+                    className="w-full py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 shadow-xl mt-2"
                   >
                     {isInvestmentEditing ? 'Güncelle' : 'Yatırımı Kaydet'}
                   </button>
@@ -499,33 +614,33 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {isDeleteConfirmModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsDeleteConfirmModalOpen(false)}
-              className="absolute inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-md"
+              className="fixed inset-0 bg-stone-900/70 dark:bg-black/85 backdrop-blur-md"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl p-8 border border-stone-200/50 dark:border-zinc-800/50 text-center"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 border border-stone-200/50 dark:border-zinc-800/50 text-center"
             >
-              <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <FaExclamationTriangle className="text-rose-500 text-2xl" />
+              <div className="w-14 h-14 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <FaExclamationTriangle className="text-rose-500 text-xl" />
               </div>
 
-              <h3 className="text-xl font-black text-stone-900 dark:text-white mb-2 uppercase tracking-tight">Kalıcı Olarak Silinsin mi?</h3>
-              <p className="text-xs font-medium text-stone-500 dark:text-zinc-400 mb-8 leading-relaxed">
+              <h3 className="text-lg font-black text-stone-900 dark:text-white mb-1.5 uppercase tracking-tight">Kalıcı Olarak Silinsin mi?</h3>
+              <p className="text-xs font-medium text-stone-500 dark:text-zinc-400 mb-6 leading-relaxed">
                 <span className="font-black text-stone-900 dark:text-white">"{deleteItemTitle}"</span> kalıcı olarak silinecek. Bu işlem geri alınamaz.
               </p>
 
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsDeleteConfirmModalOpen(false)}
-                  className="flex-1 py-4 bg-stone-50 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-stone-100 dark:hover:bg-zinc-700 transition-all"
+                  className="flex-1 py-3.5 bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
                 >
                   Vazgeç
                 </button>
@@ -534,7 +649,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                     confirmDeleteAction();
                     setIsDeleteConfirmModalOpen(false);
                   }}
-                  className="flex-1 py-4 bg-rose-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                  className="flex-1 py-3.5 bg-rose-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
                 >
                   Evet, Sil
                 </button>

@@ -29,11 +29,11 @@ export default function ShiftLegend() {
         <>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-650 border border-amber-200/50 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-900/40 font-bold">
             <FaSun className="text-xs" />
-            <span>{language === 'tr' ? 'Sabah (09:00 - 17:00)' : 'Morning (09:00 - 17:00)'}</span>
+            <span>{language === 'tr' ? 'Sabah (09:00 - 18:00)' : 'Morning (09:00 - 18:00)'}</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-650 border border-indigo-200/50 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-900/40 font-bold">
             <FaMoon className="text-xs" />
-            <span>{language === 'tr' ? 'Akşam (17:00 - 01:00)' : 'Evening (17:00 - 01:00)'}</span>
+            <span>{language === 'tr' ? 'Akşam (18:00 - 01:00)' : 'Evening (18:00 - 01:00)'}</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-50 text-rose-650 border border-rose-200/50 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-900/40 font-bold">
             <FaUserShield className="text-xs" />

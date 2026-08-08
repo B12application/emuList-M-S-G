@@ -4,17 +4,43 @@ import { format, isAfter, subHours } from 'date-fns';
 // Kullanıcının sağladığı Google Takvim ICS bağlantısı
 const CALENDAR_URL = 'https://calendar.google.com/calendar/ical/frrhag59gbjmt7q7ug0rl7m7kc%40group.calendar.google.com/public/basic.ics';
 
-// İstemci (tarayıcı) tarafında CORS hatası almamak için ücretsiz bir köprü (proxy) servisi kullanıyoruz.
-const PROXY_URL = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(CALENDAR_URL)}`;
+// CORS ve Cloudflare engellerini aşmak için sırayla denenecek proxy listesi
+const PROXY_URLS = [
+  `https://api.allorigins.win/raw?url=${encodeURIComponent(CALENDAR_URL)}`,
+  `https://corsproxy.io/?${encodeURIComponent(CALENDAR_URL)}`,
+  `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(CALENDAR_URL)}`,
+  CALENDAR_URL // Doğrudan deneme
+];
+
+async function fetchIcsData(): Promise<string | null> {
+  for (const proxyUrl of PROXY_URLS) {
+    try {
+      const response = await fetch(proxyUrl, { cache: 'no-store' });
+      if (!response.ok) continue;
+      const text = await response.text();
+      // İçerik geçerli ICS metni mi (HTML hata sayfası değil mi)?
+      if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
+        return text;
+      }
+    } catch {
+      // Bir sonraki proxy'yi dene
+    }
+  }
+  return null;
+}
 
 export const getUpcomingGSMatches = async (): Promise<PlannerMeeting[]> => {
   try {
-    const response = await fetch(PROXY_URL);
-    if (!response.ok) throw new Error("ICS fetch failed");
-    
-    const icsData = await response.text();
+    const icsData = await fetchIcsData();
+    if (!icsData) {
+      console.warn("Galatasaray ICS fetch returned no valid data from any proxy.");
+      return [];
+    }
 
-    const events = icsData.split('BEGIN:VEVENT');
+    // ICS dosyasında uzun satırlar alt satıra girintili devam eder (line folding). Önce bunları birleştirelim.
+    const unfoldedIcs = icsData.replace(/\r?\n[ \t]/g, '');
+
+    const events = unfoldedIcs.split('BEGIN:VEVENT');
     // İlk parça yapısal header bilgileridir, siliyoruz
     events.shift();
 
@@ -24,48 +50,84 @@ export const getUpcomingGSMatches = async (): Promise<PlannerMeeting[]> => {
     events.forEach(event => {
       // Özet (SUMMARY) ve Başlangıç Zamanı (DTSTART) verilerini yakala
       const summaryMatch = event.match(/SUMMARY:([^\r\n]*)/);
-      const startMatch = event.match(/DTSTART(?:;[^:]+)?:(\d{8}T\d{6}Z?)/);
+      const startMatch = event.match(/DTSTART(?:;[^:]+)?:(\d{8}T\d{6}Z?|\d{8})/);
       
       if (summaryMatch && startMatch) {
-        let title = summaryMatch[1].trim();
-        const dateStr = startMatch[1]; // Örn: 20260515T190000Z
+        const rawSummary = summaryMatch[1].trim();
+        const dateStr = startMatch[1]; // Örn: 20260515T190000Z veya 20260515
         
-        // Gereksiz karakterleri temizle (bazen summary önüne boşluk vs gelebiliyor)
+        // Turnuva / Lig Tipini Tespit Et
+        let matchType = 'Trendyol Süper Lig ⚽';
+        let category = 'Süper Lig';
+
+        if (rawSummary.includes('[CL]') || rawSummary.toLowerCase().includes('champions league')) {
+          matchType = 'UEFA Şampiyonlar Ligi 🏆';
+          category = 'Şampiyonlar Ligi';
+        } else if (rawSummary.includes('[UEL]') || rawSummary.toLowerCase().includes('europa league')) {
+          matchType = 'UEFA Avrupa Ligi 🏆';
+          category = 'Avrupa Ligi';
+        } else if (rawSummary.includes('[UECL]') || rawSummary.toLowerCase().includes('conference league')) {
+          matchType = 'UEFA Konferans Ligi 🏆';
+          category = 'Konferans Ligi';
+        } else if (rawSummary.includes('[TC]')) {
+          matchType = 'Ziraat Türkiye Kupası 🏆';
+          category = 'Türkiye Kupası';
+        } else if (rawSummary.includes('[SK]')) {
+          matchType = 'Turkcell Süper Kupa 🏆';
+          category = 'Süper Kupa';
+        } else if (
+          rawSummary.includes('Stade Rennais') ||
+          rawSummary.includes('Venezia') ||
+          rawSummary.includes('Villarreal') ||
+          rawSummary.includes('LASK') ||
+          rawSummary.includes('Parma') ||
+          rawSummary.includes('Düsseldorf') ||
+          rawSummary.toLowerCase().includes('friendly') ||
+          rawSummary.toLowerCase().includes('hazırlık')
+        ) {
+          matchType = 'Hazırlık Maçı 🤝';
+          category = 'Hazırlık Maçı';
+        }
+
+        // Başlık Temizliği
+        let title = rawSummary;
         title = title.replace(/\\,/g, ',').replace(/\\;/g, ';');
-        
         // Lig vb. parantezlerini sil (Örn: Galatasaray - Giresunspor [TC] -> Galatasaray - Giresunspor)
         title = title.replace(/\s*\[.*?\]\s*/g, '');
         // Skor varsa sil (Örn: (1-5) veya (0-1))
         title = title.replace(/\s*\(\d+-\d+\)\s*/g, '');
         title = title.trim();
 
-
-        // YYYYMMDDTHHMMSSZ -> JS Date Çevrimi
         const year = parseInt(dateStr.substring(0, 4));
         const month = parseInt(dateStr.substring(4, 6)) - 1; // JS'de aylar 0'dan başlar
         const day = parseInt(dateStr.substring(6, 8));
-        const hours = parseInt(dateStr.substring(9, 11));
-        const minutes = parseInt(dateStr.substring(11, 13));
         
+        let hours = 19; // Tam gün etkinlikler için varsayılan saat
+        let minutes = 0;
+        
+        if (dateStr.includes('T')) {
+          hours = parseInt(dateStr.substring(9, 11));
+          minutes = parseInt(dateStr.substring(11, 13));
+        }
+
         let matchDate: Date;
-        // Eğer UTC olduğunu belirten Z harfi varsa zaman dilimini ayarlayalım:
         if (dateStr.endsWith('Z')) {
-           matchDate = new Date(Date.UTC(year, month, day, hours, minutes));
+          matchDate = new Date(Date.UTC(year, month, day, hours, minutes));
         } else {
-           // Local Time
-           matchDate = new Date(year, month, day, hours, minutes);
+          matchDate = new Date(year, month, day, hours, minutes);
         }
 
         // Sadece günümüzden sonra oynanacak / oynanmakta olan maçları al:
         if (isAfter(matchDate, now)) {
           matches.push({
-            id: `gs-match-${matchDate.getTime()}`,
+            id: `gs-match-${matchDate.getTime()}-${matches.length}`,
             userId: 'gs-system',
             title: title,
             date: format(matchDate, 'yyyy-MM-dd'),
             startTime: format(matchDate, 'HH:mm'),
             itemType: 'match',
-            description: 'Google Takvim Senkronizasyonu',
+            category: category,
+            description: matchType,
             externalLink: 'https://calendar.google.com/calendar/u/0/embed?src=frrhag59gbjmt7q7ug0rl7m7kc@group.calendar.google.com',
           });
         }
@@ -75,11 +137,12 @@ export const getUpcomingGSMatches = async (): Promise<PlannerMeeting[]> => {
     // Maçları tarihe göre en yakından uzağa doğru sıralayalım
     matches.sort((a, b) => new Date(`${a.date}T${a.startTime}`).getTime() - new Date(`${b.date}T${b.startTime}`).getTime());
 
-    // Fikstür kalabalıklığı olmaması için sadece en yakın 10 maçı döndürelim
-    return matches.slice(0, 10);
+    // Fikstür kalabalıklığı olmaması için sadece en yakın 15 maçı döndürelim
+    return matches.slice(0, 15);
 
   } catch (error) {
     console.error("Error parsing Google Calendar GS matches", error);
     return [];
   }
 };
+

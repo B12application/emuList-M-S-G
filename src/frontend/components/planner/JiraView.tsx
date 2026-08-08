@@ -92,10 +92,10 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
           </button>
           <button 
             onClick={onAdd}
-            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 font-bold"
+            className="px-3.5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-1.5 font-bold shrink-0"
           >
-            <FaPlus />
-            <span className="hidden sm:inline">{t('planner.newTask')}</span>
+            <FaPlus size={14} />
+            <span className="text-xs sm:text-sm font-bold whitespace-nowrap">{t('planner.newTask')}</span>
           </button>
         </div>
       </div>

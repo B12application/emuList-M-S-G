@@ -20,6 +20,7 @@ import ShiftSettingsModal from '../components/planner/ShiftSettingsModal';
 import SportAddModal from '../components/planner/SportAddModal';
 import SportTrackingModal from '../components/planner/SportTrackingModal';
 import { useAuth } from '../context/AuthContext';
+import { useShift } from '../context/ShiftContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
 import { getUpcomingGSMatches } from '../services/galatasarayService';
 import type { PlannerMeeting } from '../../backend/types/planner';
@@ -28,6 +29,7 @@ import { showMarqueeToast } from '../components/MarqueeToast';
 
 export default function PlannerPage() {
   const { user } = useAuth();
+  const { shiftSettings } = useShift();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meetings, setMeetings] = useState<PlannerMeeting[]>(() => {
     try {
@@ -42,6 +44,7 @@ export default function PlannerPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<PlannerMeeting | null>(null);
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
+  const [modalInitialTab, setModalInitialTab] = useState<'meeting' | 'todo' | 'jira'>('meeting');
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [isSportAddModalOpen, setIsSportAddModalOpen] = useState(false);
@@ -315,10 +318,13 @@ export default function PlannerPage() {
                                rounded-lg text-sm font-bold hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors border border-orange-200 dark:border-orange-900/50"
                   >
                     <FaDumbbell />
-                    <span className="hidden sm:inline">Spor Ekle</span>
+                    <span>Spor Ekle</span>
                   </button>
                   <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                      setModalInitialTab('meeting');
+                      setIsModalOpen(true);
+                    }}
                     className="flex items-center gap-2 px-3 py-1.5 bg-rose-100/50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 
                                rounded-lg text-sm font-bold hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors border border-rose-200 dark:border-rose-900/50"
                   >
@@ -427,12 +433,15 @@ export default function PlannerPage() {
               onStatusChange={handleStatusChange}
               onDelete={handleDelete}
               onEdit={handleEdit}
-              onAdd={() => setIsModalOpen(true)}
+              onAdd={() => {
+                setModalInitialTab('jira');
+                setIsModalOpen(true);
+              }}
             />
           </div>
         )}
 
-        <ShiftLegend />
+        {shiftSettings.enableShiftSystem && <ShiftLegend />}
       </div>
 
       <QuickAddModal
@@ -444,6 +453,7 @@ export default function PlannerPage() {
         selectedDate={selectedDate}
         onAdded={loadData}
         initialData={modalInitialData}
+        initialTab={modalInitialTab}
       />
 
       <RecurringManagerModal

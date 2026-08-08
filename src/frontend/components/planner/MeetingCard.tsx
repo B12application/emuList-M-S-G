@@ -84,7 +84,11 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
           )
         )}
 
-        {!meeting.notes && meeting.description && (
+        {meeting.itemType === 'match' && meeting.description ? (
+          <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-[11px] font-bold text-rose-700 dark:text-rose-300">
+            <span>{meeting.description}</span>
+          </div>
+        ) : !meeting.notes && meeting.description && (
           <p className="text-sm text-stone-500 dark:text-zinc-500 mt-1 line-clamp-2">
             {meeting.description}
           </p>

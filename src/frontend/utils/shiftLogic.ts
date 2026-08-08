@@ -1,14 +1,10 @@
 import { differenceInCalendarDays, differenceInCalendarWeeks, format, parseISO, startOfWeek } from 'date-fns';
 import { auth } from '../../backend/config/firebaseConfig';
+import type { ShiftType, ShiftCustomHours, ShiftSettings } from '../../backend/services/shiftService';
+import { DEFAULT_SHIFT_SETTINGS } from '../../backend/services/shiftService';
 
-export type ShiftType = 'Sabah' | 'Akşam' | 'Tatil' | 'Nöbet';
-
-export interface ShiftSettings {
-  planMode: '3-person' | '2-person';
-  refDate3: string; // ISO format: YYYY-MM-DD
-  refDate2: string; // ISO format: YYYY-MM-DD
-  overrides?: Record<string, ShiftType>;
-}
+export type { ShiftType, ShiftCustomHours, ShiftSettings };
+export { DEFAULT_SHIFT_SETTINGS };
 
 export interface ShiftInfo {
   type: ShiftType;
@@ -18,13 +14,6 @@ export interface ShiftInfo {
   shiftDate: Date;
   isOverride?: boolean;
 }
-
-export const DEFAULT_SHIFT_SETTINGS: ShiftSettings = {
-  planMode: '3-person',
-  refDate3: '2026-04-04', // Reference start of Morning Day 1
-  refDate2: '2026-03-30', // Reference Monday of a Morning Week
-  overrides: {},
-};
 
 export function getLocalShiftSettings(): ShiftSettings {
   try {
@@ -45,18 +34,35 @@ export function getLocalShiftSettings(): ShiftSettings {
   return DEFAULT_SHIFT_SETTINGS;
 }
 
-export function getShiftHours(type: ShiftType, planMode: '3-person' | '2-person'): { start?: string; end?: string } {
+export function getShiftHours(
+  type: ShiftType,
+  planMode: ShiftSettings['planMode'],
+  customHours?: ShiftCustomHours
+): { start?: string; end?: string } {
   if (type === 'Tatil') return {};
+
+  // Check for custom hours
+  if (customHours && customHours[type as keyof ShiftCustomHours]) {
+    const ch = customHours[type as keyof ShiftCustomHours];
+    if (ch?.start && ch?.end) {
+      return { start: ch.start, end: ch.end };
+    }
+  }
+
   if (type === 'Nöbet') return { start: '14:00', end: '02:00' };
 
   if (planMode === '3-person') {
-    return type === 'Sabah' 
-      ? { start: '06:30', end: '16:30' } 
+    return type === 'Sabah'
+      ? { start: '06:30', end: '16:30' }
       : { start: '16:00', end: '02:00' };
+  } else if (planMode === '2-person') {
+    return type === 'Sabah'
+      ? { start: '09:00', end: '18:00' }
+      : { start: '18:00', end: '01:00' };
   } else {
-    return type === 'Sabah' 
-      ? { start: '09:00', end: '17:00' } 
-      : { start: '17:00', end: '01:00' };
+    return type === 'Sabah'
+      ? { start: '08:00', end: '18:00' }
+      : { start: '16:00', end: '00:00' };
   }
 }
 
@@ -77,7 +83,7 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
   // 1. Check for single day overrides
   if (settings.overrides && settings.overrides[dateStr]) {
     const type = settings.overrides[dateStr];
-    const hours = getShiftHours(type, settings.planMode);
+    const hours = getShiftHours(type, settings.planMode, settings.customHours);
     return {
       type,
       startTime: hours.start,
@@ -87,7 +93,49 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
     };
   }
 
-  // 2. Perform calculation based on plan mode
+  // 2. Custom Weekly Pattern (Pazartesi-Pazar 7 günlük sabitleme)
+  if (settings.planMode === 'custom-weekly') {
+    // JS getDay(): 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    // Index: 0 for Mon, 1 for Tue, ..., 6 for Sun
+    const jsDay = dateToCalculate.getDay();
+    const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
+    const pattern = settings.weeklyPattern || DEFAULT_SHIFT_SETTINGS.weeklyPattern!;
+    const type = pattern[dayIndex] || 'Tatil';
+    const hours = getShiftHours(type, settings.planMode, settings.customHours);
+
+    return {
+      type,
+      startTime: hours.start,
+      endTime: hours.end,
+      dayIndex: dayIndex + 1,
+      shiftDate: dateToCalculate,
+    };
+  }
+
+  // 3. Custom Cycle Pattern (N-günlük özel döngü)
+  if (settings.planMode === 'custom-cycle') {
+    const refDate = parseISO(settings.refDateCustom || '2026-01-01');
+    const diff = differenceInCalendarDays(dateToCalculate, refDate);
+    const cycle = settings.customCycle && settings.customCycle.length > 0
+      ? settings.customCycle
+      : DEFAULT_SHIFT_SETTINGS.customCycle!;
+    const cycleLength = cycle.length;
+    let index = diff % cycleLength;
+    if (index < 0) index += cycleLength;
+
+    const type = cycle[index] || 'Tatil';
+    const hours = getShiftHours(type, settings.planMode, settings.customHours);
+
+    return {
+      type,
+      startTime: hours.start,
+      endTime: hours.end,
+      dayIndex: index + 1,
+      shiftDate: dateToCalculate,
+    };
+  }
+
+  // 4. Perform calculation based on 3-person / 2-person plan modes
   if (settings.planMode === '3-person') {
     const refDate = parseISO(settings.refDate3);
     const diff = differenceInCalendarDays(dateToCalculate, refDate);
@@ -119,10 +167,11 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
         };
       }
 
+      const hours = getShiftHours('Sabah', settings.planMode, settings.customHours);
       return {
         type: 'Sabah',
-        startTime: '06:30',
-        endTime: '16:30',
+        startTime: hours.start || '06:30',
+        endTime: hours.end || '16:30',
         dayIndex: index + 1,
         shiftDate: dateToCalculate,
       };
@@ -133,10 +182,11 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
         shiftDate: dateToCalculate,
       };
     } else if (index >= 6 && index <= 9) {
+      const hours = getShiftHours('Akşam', settings.planMode, settings.customHours);
       return {
         type: 'Akşam',
-        startTime: '16:00',
-        endTime: '02:00',
+        startTime: hours.start || '16:00',
+        endTime: hours.end || '02:00',
         dayIndex: index - 5,
         shiftDate: dateToCalculate,
       };
@@ -162,19 +212,19 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
     // Weekdays (Monday to Friday)
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
       if (weekIndex === 0) {
-        // Morning Week
+        const hours = getShiftHours('Sabah', settings.planMode, settings.customHours);
         return {
           type: 'Sabah',
-          startTime: '09:00',
-          endTime: '17:00',
+          startTime: hours.start || '09:00',
+          endTime: hours.end || '18:00',
           shiftDate: dateToCalculate,
         };
       } else {
-        // Evening Week
+        const hours = getShiftHours('Akşam', settings.planMode, settings.customHours);
         return {
           type: 'Akşam',
-          startTime: '17:00',
-          endTime: '01:00',
+          startTime: hours.start || '18:00',
+          endTime: hours.end || '01:00',
           shiftDate: dateToCalculate,
         };
       }
@@ -188,20 +238,22 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
             shiftDate: dateToCalculate,
           };
         } else {
+          const hours = getShiftHours('Nöbet', settings.planMode, settings.customHours);
           return {
             type: 'Nöbet',
-            startTime: '14:00',
-            endTime: '02:00',
+            startTime: hours.start || '14:00',
+            endTime: hours.end || '02:00',
             shiftDate: dateToCalculate,
           };
         }
       } else {
         // Evening Week: Sat is Nöbet, Sun is Tatil
         if (dayOfWeek === 6) {
+          const hours = getShiftHours('Nöbet', settings.planMode, settings.customHours);
           return {
             type: 'Nöbet',
-            startTime: '14:00',
-            endTime: '02:00',
+            startTime: hours.start || '14:00',
+            endTime: hours.end || '02:00',
             shiftDate: dateToCalculate,
           };
         } else {
@@ -214,3 +266,4 @@ export function getShiftInfo(date: Date, exactTime: boolean = false, customSetti
     }
   }
 }
+

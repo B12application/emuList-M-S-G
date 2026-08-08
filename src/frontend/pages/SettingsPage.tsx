@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAppSound } from '../context/SoundContext';
 import { useTheme } from '../context/ThemeContext';
+import { useShift } from '../context/ShiftContext';
 import {
     FaLock, FaUserShield, FaShieldAlt, FaExclamationTriangle, FaCheck, FaDatabase,
     FaArrowRight, FaUser, FaTimes, FaVolumeUp, FaVolumeMute, FaCloud, FaMoon,
@@ -25,6 +26,7 @@ export default function SettingsPage() {
     const queryClient = useQueryClient();
     const { soundEnabled, toggleSound } = useAppSound();
     const { isDark, toggleTheme, lightBrightness, setLightBrightness, lightSoftness, setLightSoftness, resetLightThemeTuning } = useTheme();
+    const { shiftSettings, updateSettings: updateShiftSettings } = useShift();
 
     // Profile info states
     const [firstName, setFirstName] = useState('');
@@ -402,6 +404,37 @@ export default function SettingsPage() {
                                             >
                                                 <span
                                                     className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${soundEnabled ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
+
+                                        {/* Shift System Toggle */}
+                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800 rounded-xl">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg ${shiftSettings.enableShiftSystem ? 'bg-indigo-100 dark:bg-indigo-900/20' : 'bg-stone-100 dark:bg-zinc-700'}`}>
+                                                    <FaCalendar className={shiftSettings.enableShiftSystem ? 'text-indigo-600' : 'text-stone-400'} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-stone-900 dark:text-white">Vardiyalı Çalışma Sistemi</p>
+                                                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                                        {shiftSettings.enableShiftSystem 
+                                                            ? 'Takvimde vardiya takibi ve vardiya düzenleme araçları açık' 
+                                                            : 'Vardiyalı sistem kapalı (Varsayılan)'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const nextVal = !shiftSettings.enableShiftSystem;
+                                                    updateShiftSettings({ enableShiftSystem: nextVal });
+                                                    toast.success(nextVal ? 'Vardiya sistemi aktifleştirildi' : 'Vardiya sistemi kapatıldı');
+                                                }}
+                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shiftSettings.enableShiftSystem ? 'bg-indigo-600' : 'bg-stone-300 dark:bg-zinc-600'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${shiftSettings.enableShiftSystem ? 'translate-x-6' : 'translate-x-1'
                                                         }`}
                                                 />
                                             </button>

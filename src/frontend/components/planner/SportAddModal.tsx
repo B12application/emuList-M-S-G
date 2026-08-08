@@ -44,7 +44,7 @@ export default function SportAddModal({ isOpen, onClose, selectedDate, onAdded }
       if (shift.type === 'Sabah') {
         setStartTime('18:30');
         setEndTime('20:00');
-        setSuggestedMessage(language === 'tr' ? 'Sabah vardiyasında olduğun için akşam saatleri önerildi.' : 'Evening hours suggested due to morning shift.');
+        setSuggestedMessage(language === 'tr' ? 'Çalışma gününde olduğun için mesai sonrası saatler (18:30) önerildi.' : 'Evening hours suggested after work shift.');
       } else if (shift.type === 'Akşam') {
         setStartTime('09:30');
         setEndTime('11:00');
@@ -112,14 +112,14 @@ export default function SportAddModal({ isOpen, onClose, selectedDate, onAdded }
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800"
+          className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800 flex flex-col max-h-[90vh] sm:max-h-[85vh]"
         >
-          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800 bg-orange-50 dark:bg-orange-900/20">
+          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800 bg-orange-50 dark:bg-orange-900/20 shrink-0">
             <h3 className="text-lg font-bold flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <FaDumbbell />
               <span>{language === 'tr' ? 'Spor Planla' : 'Plan Sport'}</span>
@@ -129,7 +129,7 @@ export default function SportAddModal({ isOpen, onClose, selectedDate, onAdded }
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-5 space-y-5">
+          <form onSubmit={handleSubmit} className="p-5 space-y-5 flex-1 overflow-y-auto custom-scrollbar pb-10 sm:pb-5">
             {/* Vardiya Mesajı */}
             <div className="bg-orange-100/50 dark:bg-orange-900/30 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50">
               <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">

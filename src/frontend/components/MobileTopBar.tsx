@@ -48,11 +48,11 @@ export default function MobileTopBar({ onMenuOpen }: MobileTopBarProps) {
 
   return (
     <div className="fixed top-0 inset-x-0 z-[60] md:hidden">
-      <div className="mx-3 mt-3 px-3 py-2.5 bg-white/80 dark:bg-zinc-900/85 backdrop-blur-xl border border-white/30 dark:border-zinc-700/40 rounded-2xl shadow-lg shadow-black/5 flex items-center justify-between gap-2">
+      <div className="mx-3 mt-3 px-3 py-2.5 bg-white/85 dark:bg-zinc-900/90 backdrop-blur-xl border border-amber-400/35 dark:border-amber-500/25 rounded-2xl shadow-lg shadow-amber-500/10 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 overflow-hidden">
           <button
             onClick={onMenuOpen}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-400/15 dark:bg-amber-400/10 text-stone-800 dark:text-amber-300 hover:bg-amber-400/25 transition-colors shrink-0 border border-amber-400/30"
             aria-label="Menüyü Aç"
           >
             <FaBars className="text-base" />

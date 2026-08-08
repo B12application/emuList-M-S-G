@@ -66,9 +66,9 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
                   <motion.div
                     whileTap={{ scale: 0.92 }}
                     whileHover={{ scale: 1.05 }}
-                    className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg bg-stone-900 dark:bg-white"
+                    className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg bg-amber-400 text-stone-950 font-black shadow-amber-500/30 border border-amber-300"
                   >
-                    <FaPlus className="text-white dark:text-stone-900 text-sm" />
+                    <FaPlus className="text-stone-950 text-sm font-black" />
                   </motion.div>
 
                   <span
@@ -120,23 +120,21 @@ export default function BottomNavBar({ onMenuOpen }: BottomNavBarProps) {
                       transition={{ duration: 0.25 }}
                       className={`flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-300 ${
                         isActive 
-                          ? 'bg-stone-900 dark:bg-white' 
+                          ? 'bg-amber-400 text-stone-950 shadow-md shadow-amber-500/25 border border-amber-300' 
                           : 'bg-transparent'
                       }`}
                     >
                       <Icon className={`text-lg transition-colors duration-300 ${
                         isActive 
-                          ? 'text-white dark:text-stone-900' 
+                          ? 'text-stone-950 font-black' 
                           : 'text-stone-400 dark:text-zinc-500'
                       }`} />
                     </motion.div>
-
-                    {/* ACTIVE DOT REMOVED IN FAVOR OF BUTTON BG */}
                   </div>
 
                   <span
                     className={`text-[9px] font-black uppercase tracking-tighter transition-colors duration-300 ${
-                      isActive ? 'text-stone-900 dark:text-white' : 'text-stone-400 dark:text-zinc-500'
+                      isActive ? 'text-amber-600 dark:text-amber-400' : 'text-stone-400 dark:text-zinc-500'
                     }`}
                   >
                     {item.label}

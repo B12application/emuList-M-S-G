@@ -11,7 +11,7 @@ interface PlannerHeaderProps {
 }
 
 export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts }: PlannerHeaderProps) {
-  const { getShiftInfo } = useShift();
+  const { getShiftInfo, shiftSettings } = useShift();
   const shift = getShiftInfo(selectedDate);
   const { language, t } = useLanguage();
   const dateLocale = language === 'tr' ? tr : enUS;
@@ -32,12 +32,12 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
   if (shift.type === 'Sabah') {
     shiftBg = 'bg-amber-100/50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200';
     Icon = FaSun;
-    summaryText = t('planner.morningShift').replace('{day}', shift.dayIndex?.toString() || '');
-    timeText = `${shift.startTime} - ${shift.endTime}`;
+    summaryText = language === 'tr' ? 'Mesai / Çalışma Günü' : 'Work Day';
+    timeText = `${shift.startTime || '09:00'} - ${shift.endTime || '18:00'}`;
   } else if (shift.type === 'Akşam') {
     shiftBg = 'bg-indigo-100/50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800/50 text-indigo-800 dark:text-indigo-200';
     Icon = FaMoon;
-    summaryText = t('planner.eveningShift').replace('{day}', shift.dayIndex?.toString() || '');
+    summaryText = language === 'tr' ? 'Akşam Vardiyası' : 'Evening Shift';
     timeText = `${shift.startTime} - ${shift.endTime}`;
   } else if (shift.type === 'Nöbet') {
     shiftBg = 'bg-rose-100/50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800/50 text-rose-800 dark:text-rose-200';
@@ -46,7 +46,7 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
     timeText = `${shift.startTime} - ${shift.endTime}`;
   } else if (shift.type === 'Tatil') {
     shiftBg = 'bg-emerald-100/50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-200';
-    summaryText = t('planner.holidayShift').replace('{day}', shift.dayIndex?.toString() || '');
+    summaryText = language === 'tr' ? 'Tatil / İzin Günü' : 'Day Off / Holiday';
   }
 
   return (
@@ -54,8 +54,8 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
       {/* Background Icon Watermark */}
       <Icon className="absolute -right-4 -bottom-4 text-7xl opacity-5 transform -rotate-12 pointer-events-none" />
       
-      {/* Edit Shifts Button */}
-      {onEditShifts && (
+      {/* Edit Shifts Button - Shown only if enableShiftSystem is enabled */}
+      {onEditShifts && shiftSettings.enableShiftSystem && (
         <button
           onClick={onEditShifts}
           className="absolute right-4 top-4 p-2 rounded-xl bg-white/40 dark:bg-black/20 hover:bg-white/60 dark:hover:bg-black/30 border border-current/15 text-current transition-all flex items-center gap-1.5 text-xs font-bold active:scale-95 z-20 shadow-sm"

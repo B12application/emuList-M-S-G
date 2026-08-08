@@ -7,4 +7,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api/gold-price': {
+        target: 'https://finans.truncgil.com',
+        changeOrigin: true,
+        rewrite: () => '/today.json'
+      }
+    }
+  }
 })

@@ -143,13 +143,12 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                     ? 'bg-red-500 text-white shadow-sm'
                     : monthMatches.length > 0
                       ? 'bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
-                      : 'bg-stone-100 text-stone-400 dark:bg-zinc-800/50 dark:text-zinc-600 cursor-not-allowed'
+                      : 'bg-stone-100 text-stone-500 dark:bg-zinc-800/50 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
                   }`}
-                disabled={!showMatches && monthMatches.length === 0}
                 title={monthMatches.length === 0 ? t('planner.noMatches') : ''}
               >
                 <PiSoccerBallFill size={14} />
-                <span className="hidden sm:inline">
+                <span>
                   {showMatches ? t('planner.hideFixture') : `${t('planner.showMatches')}${monthMatches.length > 0 ? ` (${monthMatches.length})` : ''}`}
                 </span>
               </button>
@@ -188,11 +187,12 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
               const isCurrentMonth = isSameMonth(day, monthStart);
               const isToday = isSameDay(day, new Date());
 
-              // Define cell decoration based on shift type
-              let cellClass = 'border-t-2 border-t-transparent';
+              const alertInfos = getAlertInfoForDay(day, idx);
+
+              let cellClass = '';
               let shiftBadge = null;
 
-              if (isCurrentMonth) {
+              if (shift) {
                 if (shift.type === 'Sabah') {
                   cellClass = 'border-t-[3px] border-t-amber-400 bg-amber-500/[0.02] dark:bg-amber-500/[0.01]';
                   shiftBadge = (
@@ -224,8 +224,6 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                 }
               }
 
-              const alertInfos = getAlertInfoForDay(day, idx);
-
               return (
                 <div
                   key={day.toString()}
@@ -247,7 +245,7 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                         <span
                           className={`flex items-center gap-0.5 cursor-pointer transition-transform ${showMatches ? 'scale-110' : 'hover:scale-125'}`}
                           onClick={(e) => { e.stopPropagation(); setShowMatches(true); }}
-                          title={`${match.title} — ${match.startTime}`}
+                          title={`${match.title} ${match.description ? `(${match.description}) ` : ''}— ${match.startTime}`}
                         >
                           <span className="text-sm">⚽</span>
                           <span className="text-[9px] font-bold text-red-500 dark:text-red-400">{match.startTime}</span>
@@ -255,27 +253,16 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                       )}
                     </div>
                     {isCurrentMonth && (
-                      <div className="flex items-center gap-1">
-                        {shift.isOverride && (
+                      <div className="flex flex-col items-end gap-1">
+                        {shiftBadge}
+                        {shift && shift.isOverride && (
                           <span className="text-[10px]" title={language === 'tr' ? 'Manuel Vardiya' : 'Manual Override'}>
                             ⚙️
                           </span>
                         )}
-                        <div className={`sm:hidden w-2 h-2 rounded-full shadow-sm ${
-                          shift.type === 'Sabah' ? 'bg-amber-400 border border-amber-500' :
-                          shift.type === 'Akşam' ? 'bg-indigo-500 border border-indigo-600' :
-                          shift.type === 'Nöbet' ? 'bg-rose-500 border border-rose-600' :
-                          'bg-stone-300 dark:bg-zinc-750'
-                        }`} title={shift.type} />
                       </div>
                     )}
                   </div>
-
-                  {isCurrentMonth && (
-                    <div className="hidden sm:block mb-1.5">
-                      {shiftBadge}
-                    </div>
-                  )}
 
                   {/* Masaüstü Görünüm İçin Etkinlik Metinleri */}
                   <div className="hidden sm:block mt-2 space-y-1">
@@ -434,6 +421,11 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
                     <div className="text-sm font-semibold text-stone-800 dark:text-zinc-100 leading-snug">
                       {match.title}
                     </div>
+                    {match.description && (
+                      <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 text-[10px] font-bold text-red-600 dark:text-red-400">
+                        <span>{match.description}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -441,6 +433,60 @@ export default function MonthlyView({ currentMonth, onMonthChange, meetings, onS
           )}
         </AnimatePresence>
       </div>
+
+      {/* MOBİL & TABLET FİKSTÜR LİSTESİ (xl ekran altı için) */}
+      <AnimatePresence>
+        {showMatches && (
+          <motion.div
+            key="mobile-fixture-list"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="xl:hidden mt-4 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm space-y-3"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 bg-red-600 rounded-full" />
+                <h3 className="text-sm font-bold text-stone-800 dark:text-zinc-100">{t('planner.fixtureInfo')}</h3>
+              </div>
+              <span className="text-xs text-stone-400 dark:text-zinc-500">
+                {monthMatches.length > 0 ? `${monthMatches.length} Maç` : ''}
+              </span>
+            </div>
+
+            {monthMatches.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {monthMatches.map(match => (
+                  <div
+                    key={match.id}
+                    className={`bg-stone-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-stone-200 dark:border-zinc-700
+                        ${new Date(`${match.date}T${match.startTime}`) < now ? 'opacity-40 grayscale-[0.5]' : ''}`}
+                  >
+                    <div className="text-[10px] font-bold text-red-500 dark:text-red-400 mb-1 flex items-center gap-1.5">
+                      <span>{format(new Date(match.date), 'd MMMM', { locale: tr })}</span>
+                      <span className="w-1 h-1 bg-stone-300 rounded-full" />
+                      <span>{match.startTime}</span>
+                    </div>
+                    <div className="text-xs font-semibold text-stone-800 dark:text-zinc-100 leading-snug">
+                      {match.title}
+                    </div>
+                    {match.description && (
+                      <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 text-[9px] font-bold text-red-600 dark:text-red-400">
+                        <span>{match.description}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-xs text-stone-400 dark:text-zinc-500">
+                {t('planner.noMatches')}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* SVG OKLAR */}
       <AnimatePresence>

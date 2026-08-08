@@ -15,15 +15,16 @@ interface QuickAddModalProps {
   selectedDate: Date;
   onAdded: () => void;
   initialData?: PlannerMeeting | null; // For Edit mode
+  initialTab?: TabType;
 }
 
 type TabType = 'meeting' | 'todo' | 'jira';
 
-export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, initialData }: QuickAddModalProps) {
+export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, initialData, initialTab }: QuickAddModalProps) {
   const { user } = useAuth();
   const { playSuccess } = useAppSound();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<TabType>('meeting');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'meeting');
   const [title, setTitle] = useState('');
   const [itemDate, setItemDate] = useState(format(selectedDate, 'yyyy-MM-dd')); // Yeni eklenen State
   const [startTime, setStartTime] = useState('09:00');
@@ -70,6 +71,9 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setPriority(initialData.priority || 'medium');
     } else {
       // Reset for New
+      if (initialTab) {
+        setActiveTab(initialTab);
+      }
       setTitle('');
       setItemDate(format(selectedDate, 'yyyy-MM-dd')); // Seçili tarihi varsayılan yap
       setStartTime('09:00');
@@ -81,7 +85,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setCategoryColor('');
       setPriority('medium');
     }
-  }, [initialData, isOpen, selectedDate]);
+  }, [initialData, isOpen, selectedDate, initialTab]);
 
   // Auto-duration logic: When startTime changes, set endTime to +30 mins
   useEffect(() => {
@@ -156,14 +160,14 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800"
+          className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800 flex flex-col max-h-[90vh] sm:max-h-[85vh]"
         >
-          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800">
+          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-zinc-800 shrink-0">
             <h3 className="text-lg font-bold flex items-center gap-2">
               {isEditMode ? <FaEdit className="text-rose-500" /> : <FaCalendarPlus className="text-rose-500" />}
               <span>{isEditMode ? t('planner.edit') : t('planner.quickAdd')}</span>
@@ -174,7 +178,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
           </div>
 
           {!isEditMode && (
-            <div className="px-5 pt-4">
+            <div className="px-5 pt-4 shrink-0">
               <div className="flex bg-stone-100 dark:bg-zinc-800 p-1 rounded-xl">
                 {(['meeting', 'todo', 'jira'] as const).map(tab => (
                   <button
@@ -193,7 +197,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <form onSubmit={handleSubmit} className="p-5 space-y-4 flex-1 overflow-y-auto custom-scrollbar pb-10 sm:pb-5">
             
             {/* Tarih seçimi artık hem eklemede hem düzenlemede çalışacak şekilde değiştirildi */}
             <div>

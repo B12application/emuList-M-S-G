@@ -16,6 +16,9 @@ interface ShiftContextType {
   getShiftInfo: (date: Date, exactTime?: boolean) => ShiftInfo;
   updateSettings: (newSettings: Partial<ShiftSettings>) => Promise<void>;
   setDayOverride: (date: Date, type: ShiftType | 'default') => Promise<void>;
+  setMultipleDayOverrides: (overridesMap: Record<string, ShiftType | 'default'>) => Promise<void>;
+  setWeeklyPattern: (pattern: [ShiftType, ShiftType, ShiftType, ShiftType, ShiftType, ShiftType, ShiftType]) => Promise<void>;
+  setCustomCycle: (cycle: ShiftType[], refDate?: Date) => Promise<void>;
   realignCycle: (date: Date, type: 'Sabah' | 'Akşam' | 'Tatil' | 'Sabahçı' | 'Akşamcı') => Promise<void>;
 }
 
@@ -26,16 +29,32 @@ export function ShiftProvider({ children }: { children: React.ReactNode }) {
   const [shiftSettings, setShiftSettings] = useState<ShiftSettings>(DEFAULT_SHIFT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
+  const ensureNewShiftDefaults = (settings: ShiftSettings): ShiftSettings => {
+    if (!settings.weeklyPattern || settings.planMode === '3-person' || settings.planMode === '2-person') {
+      return {
+        ...DEFAULT_SHIFT_SETTINGS,
+        ...settings,
+        planMode: 'custom-weekly',
+        weeklyPattern: ['Tatil', 'Sabah', 'Sabah', 'Sabah', 'Sabah', 'Tatil', 'Tatil'],
+        customHours: {
+          ...settings.customHours,
+          Sabah: { start: '09:00', end: '18:00' }
+        }
+      };
+    }
+    return settings;
+  };
+
   // Synchronously load from LocalStorage first to prevent flash of default values
   useEffect(() => {
     const userId = user ? user.uid : 'default';
     try {
       const cached = localStorage.getItem(`shift_settings_${userId}`);
       if (cached) {
-        setShiftSettings({
+        setShiftSettings(ensureNewShiftDefaults({
           ...DEFAULT_SHIFT_SETTINGS,
           ...JSON.parse(cached)
-        });
+        }));
       } else {
         setShiftSettings(DEFAULT_SHIFT_SETTINGS);
       }
@@ -53,8 +72,9 @@ export function ShiftProvider({ children }: { children: React.ReactNode }) {
       }
       try {
         const dbSettings = await getUserShiftSettings(user.uid);
-        setShiftSettings(dbSettings);
-        localStorage.setItem(`shift_settings_${user.uid}`, JSON.stringify(dbSettings));
+        const updated = ensureNewShiftDefaults(dbSettings);
+        setShiftSettings(updated);
+        localStorage.setItem(`shift_settings_${user.uid}`, JSON.stringify(updated));
       } catch (err) {
         console.error('Failed to sync shift settings from db:', err);
       } finally {
@@ -106,6 +126,38 @@ export function ShiftProvider({ children }: { children: React.ReactNode }) {
     await updateSettings({ overrides: updatedOverrides });
   }, [shiftSettings, updateSettings]);
 
+  // Batch override multiple dates at once
+  const setMultipleDayOverrides = useCallback(async (overridesMap: Record<string, ShiftType | 'default'>) => {
+    const updatedOverrides = { ...(shiftSettings.overrides || {}) };
+
+    Object.entries(overridesMap).forEach(([dStr, type]) => {
+      if (type === 'default') {
+        delete updatedOverrides[dStr];
+      } else {
+        updatedOverrides[dStr] = type;
+      }
+    });
+
+    await updateSettings({ overrides: updatedOverrides });
+  }, [shiftSettings, updateSettings]);
+
+  // Set 7-day weekly pattern
+  const setWeeklyPattern = useCallback(async (pattern: [ShiftType, ShiftType, ShiftType, ShiftType, ShiftType, ShiftType, ShiftType]) => {
+    await updateSettings({
+      planMode: 'custom-weekly',
+      weeklyPattern: pattern
+    });
+  }, [updateSettings]);
+
+  // Set custom N-day cycle
+  const setCustomCycle = useCallback(async (cycle: ShiftType[], refDate?: Date) => {
+    await updateSettings({
+      planMode: 'custom-cycle',
+      customCycle: cycle,
+      refDateCustom: refDate ? format(refDate, 'yyyy-MM-dd') : (shiftSettings.refDateCustom || format(new Date(), 'yyyy-MM-dd'))
+    });
+  }, [shiftSettings, updateSettings]);
+
   // Re-align the cycle from a specific date
   const realignCycle = useCallback(async (date: Date, type: 'Sabah' | 'Akşam' | 'Tatil' | 'Sabahçı' | 'Akşamcı') => {
     if (shiftSettings.planMode === '3-person') {
@@ -146,6 +198,9 @@ export function ShiftProvider({ children }: { children: React.ReactNode }) {
     getShiftInfo: getShiftInfoBound,
     updateSettings,
     setDayOverride,
+    setMultipleDayOverrides,
+    setWeeklyPattern,
+    setCustomCycle,
     realignCycle
   };
 

@@ -77,7 +77,7 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                   {format(day, 'd')}
                 </div>
                 {dayMatches.length > 0 && (
-                  <div className="mt-1 cursor-help" title={`${dayMatches[0].title} — ${dayMatches[0].startTime}`}>
+                  <div className="mt-1 cursor-help" title={`${dayMatches[0].title} ${dayMatches[0].description ? `(${dayMatches[0].description}) ` : ''}— ${dayMatches[0].startTime}`}>
                     <span className="text-sm">⚽</span>
                     <span className="text-[9px] font-bold text-red-500 dark:text-red-400 ml-0.5">{dayMatches[0].startTime}</span>
                   </div>

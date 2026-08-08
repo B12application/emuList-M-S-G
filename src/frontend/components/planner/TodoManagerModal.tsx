@@ -127,15 +127,15 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800 flex flex-col max-h-[85vh]"
+          className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-200 dark:border-zinc-800 flex flex-col max-h-[90vh] sm:max-h-[85vh]"
         >
           {/* HEADER */}
-          <div className="flex items-center justify-between p-5 border-b border-stone-200 dark:border-zinc-800 bg-emerald-50/50 dark:bg-emerald-900/10">
+          <div className="flex items-center justify-between p-5 border-b border-stone-200 dark:border-zinc-800 bg-emerald-50/50 dark:bg-emerald-900/10 shrink-0">
             <h3 className="text-xl font-bold flex items-center gap-3 text-emerald-700 dark:text-emerald-400">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
                 <FaTasks size={18} />
@@ -157,7 +157,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
           </div>
 
           {/* ADD TASK FORM */}
-          <div className="p-4 bg-stone-50 dark:bg-zinc-950 border-b border-stone-200 dark:border-zinc-800">
+          <div className="p-4 bg-stone-50 dark:bg-zinc-950 border-b border-stone-200 dark:border-zinc-800 shrink-0">
             {/* Category Selector */}
             <div className="flex gap-2 overflow-x-auto pb-3 mb-1 scrollbar-hide">
               {CATEGORIES.map(cat => (
@@ -193,7 +193,7 @@ export default function TodoManagerModal({ isOpen, onClose, meetings, onRefresh 
           </div>
 
           {/* LIST */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-stone-50/50 dark:bg-zinc-950/50 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-stone-50/50 dark:bg-zinc-950/50 custom-scrollbar pb-12 sm:pb-4">
             {pendingTodos.length > 0 || recentCompletedTodos.length > 0 ? (
               <>
                 {pendingTodos.map(todo => (

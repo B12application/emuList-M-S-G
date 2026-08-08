@@ -1,17 +1,39 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 
+export type ShiftType = 'Sabah' | 'Akşam' | 'Tatil' | 'Nöbet';
+
+export interface ShiftCustomHours {
+  Sabah?: { start: string; end: string };
+  Akşam?: { start: string; end: string };
+  Nöbet?: { start: string; end: string };
+}
+
 export interface ShiftSettings {
-  planMode: '3-person' | '2-person';
-  refDate3: string; // ISO format string: YYYY-MM-DD (Default: '2026-04-04')
-  refDate2: string; // ISO format string: YYYY-MM-DD (Default: '2026-03-30', which is a Monday)
-  overrides: Record<string, 'Sabah' | 'Akşam' | 'Tatil' | 'Nöbet'>; // Date overrides mapping date -> ShiftType
+  enableShiftSystem?: boolean;
+  planMode: '3-person' | '2-person' | 'custom-weekly' | 'custom-cycle';
+  refDate3: string; // ISO format string: YYYY-MM-DD
+  refDate2: string; // ISO format string: YYYY-MM-DD
+  refDateCustom?: string; // ISO format string: YYYY-MM-DD
+  weeklyPattern?: [ShiftType, ShiftType, ShiftType, ShiftType, ShiftType, ShiftType, ShiftType];
+  customCycle?: ShiftType[];
+  customHours?: ShiftCustomHours;
+  overrides: Record<string, ShiftType>; // Date overrides mapping date -> ShiftType
 }
 
 export const DEFAULT_SHIFT_SETTINGS: ShiftSettings = {
-  planMode: '3-person',
+  enableShiftSystem: false,
+  planMode: 'custom-weekly',
   refDate3: '2026-04-04',
   refDate2: '2026-03-30',
+  refDateCustom: '2026-01-01',
+  weeklyPattern: ['Tatil', 'Sabah', 'Sabah', 'Sabah', 'Sabah', 'Tatil', 'Tatil'],
+  customCycle: ['Tatil', 'Sabah', 'Sabah', 'Sabah', 'Sabah', 'Tatil', 'Tatil'],
+  customHours: {
+    Sabah: { start: '09:00', end: '18:00' },
+    Akşam: { start: '16:00', end: '00:00' },
+    Nöbet: { start: '14:00', end: '02:00' },
+  },
   overrides: {},
 };
 

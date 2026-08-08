@@ -143,20 +143,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </div>
                 <FaChevronRight className="text-stone-300 dark:text-zinc-600 text-xs shrink-0 group-hover:translate-x-1 transition-transform" />
               </Link>
-
-              {todayShift && (
-                <div className="mt-4 px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
-                  <span className="text-xs font-semibold text-stone-600 dark:text-zinc-300">Günün Vardiyası</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    todayShift.type === 'Sabah' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                    todayShift.type === 'Akşam' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
-                    todayShift.type === 'Nöbet' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
-                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                  }`}>
-                    {todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type}
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Nav Items Scrollable Area */}

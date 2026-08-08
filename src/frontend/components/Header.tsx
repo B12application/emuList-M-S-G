@@ -22,8 +22,8 @@ interface NavLinkRenderProps {
 
 const getNavCls = ({ isActive }: NavLinkRenderProps) => {
   return isActive
-    ? "relative px-5 py-2.5 text-sm font-bold text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800/80 rounded-full transition-all duration-300 shadow-sm border border-stone-200/50 dark:border-zinc-700/50"
-    : "relative px-5 py-2.5 text-sm font-semibold text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors duration-300 hover:bg-stone-50 dark:hover:bg-zinc-800/40 rounded-full border border-transparent";
+    ? "relative px-5 py-2.5 text-sm font-black text-stone-950 bg-amber-400 dark:bg-amber-400 rounded-full transition-all duration-300 shadow-md shadow-amber-500/25 border border-amber-300 dark:border-amber-300 scale-105"
+    : "relative px-5 py-2.5 text-sm font-bold text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-300 hover:bg-amber-400/10 rounded-full border border-transparent";
 };
 
 
@@ -111,7 +111,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className={`pointer-events-auto w-full max-w-7xl backdrop-blur-2xl bg-white/70 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-3xl transition-all duration-300 hidden md:block ${scrolled ? 'py-3' : 'py-4'}`}
+          className={`pointer-events-auto w-full max-w-7xl backdrop-blur-2xl bg-white/80 dark:bg-zinc-950/80 border border-amber-400/30 dark:border-amber-500/20 shadow-[0_8px_30px_rgba(251,191,36,0.12)] dark:shadow-[0_8px_30px_rgba(251,191,36,0.08)] rounded-3xl transition-all duration-300 hidden md:block ${scrolled ? 'py-3' : 'py-4'}`}
         >
           <div className="relative px-6 md:px-8 flex items-center justify-between">
 
@@ -143,9 +143,9 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 >
                   <button
                     onClick={() => setShowListsDropdown((prev) => !prev)}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border border-transparent ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
-                      ? "text-stone-900 dark:text-white bg-stone-100 dark:bg-zinc-800/80 shadow-sm border-stone-200/50 dark:border-zinc-700/50"
-                      : "text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-zinc-800/40"
+                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
+                      ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
+                      : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
                       }`}
                   >
                     <span className="flex items-center gap-1.5"><FaLayerGroup className="text-xs opacity-80" />{getListTitle()}</span>
@@ -212,61 +212,6 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
               {/* Theme & Language & Notifications */}
               <div className="flex items-center gap-1.5 sm:gap-2 bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-full border border-stone-200/50 dark:border-zinc-700/50 shadow-inner">
-                {user && (() => {
-                  let badgeCls = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800';
-                  let IconComp = FaCoffee;
-                  let label = todayShift.type === 'Tatil' ? 'Tatil' : todayShift.type;
-                  let tooltip = todayShift.type === 'Tatil' ? 'Tatil Günü' : `${todayShift.type} Vardiyası`;
-
-                  if (todayShift.type === 'Sabah') {
-                    badgeCls = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800';
-                    IconComp = FaSun;
-                  } else if (todayShift.type === 'Akşam') {
-                    badgeCls = 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800';
-                    IconComp = FaMoon;
-                  } else if (todayShift.type === 'Nöbet') {
-                    badgeCls = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800';
-                    IconComp = FaUserShield;
-                  }
-
-                  if (todayShift.startTime && todayShift.endTime && todayShift.type !== 'Tatil') {
-                    const [sH, sM] = todayShift.startTime.split(':').map(Number);
-                    const [eH, eM] = todayShift.endTime.split(':').map(Number);
-                    let startMinutes = sH * 60 + sM;
-                    let endMinutes = eH * 60 + eM;
-                    if (endMinutes <= startMinutes) endMinutes += 24 * 60; // Shift crosses midnight
-                    
-                    let currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-                    // If shift crosses midnight and we are currently after midnight
-                    if (endMinutes > 24 * 60 && currentMinutes < (endMinutes - 24 * 60)) {
-                      currentMinutes += 24 * 60;
-                    }
-
-                    if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
-                      const remaining = endMinutes - currentMinutes;
-                      const h = Math.floor(remaining / 60);
-                      const m = remaining % 60;
-                      tooltip = `${todayShift.type} Vardiyası (${todayShift.startTime} - ${todayShift.endTime})\nKalan Mesai: ${h > 0 ? `${h} saat ` : ''}${m} dk`;
-                    } else if (currentMinutes < startMinutes && startMinutes - currentMinutes < 12 * 60) {
-                      const remaining = startMinutes - currentMinutes;
-                      const h = Math.floor(remaining / 60);
-                      const m = remaining % 60;
-                      tooltip = `${todayShift.type} Vardiyası (${todayShift.startTime} - ${todayShift.endTime})\nBaşlamasına: ${h > 0 ? `${h} saat ` : ''}${m} dk`;
-                    } else {
-                      tooltip = `${todayShift.type} Vardiyası (${todayShift.startTime} - ${todayShift.endTime})\nMesai Bitti`;
-                    }
-                  }
-
-                  return (
-                    <div
-                      className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold cursor-help transition-all hover:scale-105 ${badgeCls}`}
-                      title={tooltip}
-                    >
-                      <IconComp className="w-3.5 h-3.5" />
-                      <span>{label}</span>
-                    </div>
-                  );
-                })()}
 
                 {user && (
                   <div

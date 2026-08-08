@@ -13,6 +13,12 @@ export interface Investment {
   buyPrice: number; // price per unit at purchase
   date: string;
   createdAt: number;
+  status?: 'active' | 'sold';
+  soldPrice?: number;
+  soldDate?: string;
+  soldAmount?: number;
+  realizedProfitLoss?: number;
+  notes?: string;
 }
 
 export type NewInvestment = Omit<Investment, 'id' | 'userId' | 'createdAt'>;

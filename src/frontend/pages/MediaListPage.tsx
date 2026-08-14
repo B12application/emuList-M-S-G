@@ -4,6 +4,7 @@ import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAme
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
 import useMedia from '../hooks/useMedia';
 import MediaCard from '../components/MediaCard';
+import MediaListItem from '../components/MediaListItem';
 import DetailModal from '../components/DetailModal';
 import EmptyState from '../components/ui/EmptyState';
 import SkeletonCard from '../components/ui/SkeletonCard';
@@ -1170,116 +1171,17 @@ export default function MediaListPage() {
 
           {/* Liste Görünümü - Satır Satır */}
           {viewMode === 'list' && (
-            <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-700 overflow-hidden">
+            <div className="flex flex-col gap-3">
               {filteredItems.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className={`flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-stone-100 dark:hover:bg-zinc-700/50 ${idx !== filteredItems.length - 1 ? 'border-b border-stone-200 dark:border-zinc-700' : ''
-                    }`}
-                >
-                  {/* Küçük Resim */}
-                  <div className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-stone-200 dark:bg-zinc-700 rounded-lg overflow-hidden">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-stone-400">
-                        {item.type === 'movie' && <FaFilm size={24} />}
-                        {item.type === 'series' && <FaTv size={24} />}
-                        {item.type === 'game' && <FaGamepad size={24} />}
-                        {item.type === 'book' && <FaBook size={24} />}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Başlık ve Açıklama */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-stone-900 dark:text-white truncate mb-1 text-sm sm:text-base">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 dark:text-zinc-400 truncate hidden sm:block">
-                      {item.description || t('card.noDescription')}
-                    </p>
-                  </div>
-
-                  {/* Çıkış Tarihi - Mobilde gizli */}
-                  {item.releaseDate && (
-                    <div className="shrink-0 hidden lg:flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
-                      <FaFilm size={10} />
-                      <span>{item.releaseDate.match(/\b(19|20)\d{2}\b/)?.[0] || item.releaseDate}</span>
-                    </div>
-                  )}
-
-                  {/* Tür Badge - Mobilde gizli */}
-                  <div className="shrink-0 hidden md:block">
-                    <span className="text-[10px] font-bold uppercase px-2 py-1 rounded-md bg-sky-500 text-white shadow-sm">
-                      {item.type}
-                    </span>
-                  </div>
-
-                  {/* Puan - Sabit Genişlik */}
-                  <div className="shrink-0 w-16 flex items-center justify-center gap-1 text-sm text-amber-600 dark:text-amber-400">
-                    <FaStar size={14} />
-                    <span className="font-semibold">{item.rating}</span>
-                  </div>
-
-
-                  {/* Durum - Sabit Genişlik */}
-                  <div className="shrink-0 w-24 flex items-center justify-center">
-                    {/* Diziler için 3 aşamalı durum — watchedSeasons + watchedEpisodes */}
-                    {item.type === 'series' && item.totalSeasons && (() => {
-                      const sCompleted = item.watched ||
-                        (item.watchedSeasons && item.watchedSeasons.length === item.totalSeasons);
-                      const sHasEps = item.watchedEpisodes &&
-                        Object.values(item.watchedEpisodes).some(eps => eps.length > 0);
-                      const sInProgress = !sCompleted &&
-                        ((item.watchedSeasons && item.watchedSeasons.length > 0) || sHasEps);
-                      return (
-                        <>
-                          <div className="sm:hidden">
-                            {sCompleted ? (
-                              <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
-                            ) : sInProgress ? (
-                              <FaClock className="text-amber-500" size={16} title={t('media.inProgress')} />
-                            ) : (
-                              <FaTimes className="text-amber-700" size={16} title={t('media.notWatched')} />
-                            )}
-                          </div>
-                          <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${sCompleted
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                            : sInProgress
-                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
-                              : 'bg-rose-100 text-rose-700 dark:bg-amber-900/50 dark:text-rose-300'
-                            }`}>
-                            {sCompleted ? t('media.watched') : sInProgress ? t('media.inProgress') : t('media.notWatched')}
-                          </span>
-                        </>
-                      );
-                    })()}
-                    {/* Film/Kitap/Oyun için 2 aşamalı durum */}
-                    {item.type !== 'series' && (
-                      <>
-                        <div className="sm:hidden">
-                          {item.watched ? (
-                            <FaCheck className="text-emerald-500" size={16} title={t('media.watched')} />
-                          ) : (
-                            <FaTimes className="text-amber-700" size={16} title={t('media.notWatched')} />
-                          )}
-                        </div>
-                        <span className={`hidden sm:inline-block text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${item.watched
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                          : 'bg-rose-100 text-rose-700 dark:bg-amber-900/50 dark:text-rose-300'
-                          }`}>
-                          {item.watched ? t('card.watched') : t('card.notWatched')}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
+                <MediaListItem 
+                  key={item.id} 
+                  item={item} 
+                  refetch={refetch} 
+                  onClick={() => selectionMode ? toggleSelection(item.id) : setSelectedItem(item)}
+                  selectionMode={selectionMode}
+                  isSelected={selectionMode && selectedIds.has(item.id)}
+                  onToggleSelection={toggleSelection}
+                />
               ))}
             </div>
           )}

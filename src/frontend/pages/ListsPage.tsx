@@ -114,71 +114,73 @@ export default function ListsPage() {
 
                 {/* Lists Grid */}
                 {!loading && lists.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                         {lists.map((list, index) => (
                             <motion.div
                                 key={list.id}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800 hover:shadow-xl transition-all"
+                                transition={{ delay: index * 0.04 }}
+                                className="group relative bg-white dark:bg-zinc-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-md hover:shadow-xl border border-stone-200 dark:border-zinc-800 transition-all flex flex-col justify-between"
                             >
                                 {/* Color Accent Bar */}
                                 <div
-                                    className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl"
+                                    className="absolute top-0 left-0 right-0 h-1.5 rounded-t-xl sm:rounded-t-2xl"
                                     style={{ backgroundColor: list.color || '#8b5cf6' }}
                                 />
 
-                                {/* Top Row: Privacy + Item Count */}
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className="w-3 h-3 rounded-full"
-                                            style={{ backgroundColor: list.color || '#8b5cf6' }}
-                                        />
-                                        <span className="text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider">
-                                            {list.itemIds.length} {t('lists.items') || 'öğe'}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        {list.isPublic ? (
-                                            <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full font-medium">
-                                                <FaGlobe size={10} />
-                                                <span className="hidden sm:inline">{t('lists.public') || 'Herkese Açık'}</span>
+                                <div>
+                                    {/* Top Row: Privacy + Item Count */}
+                                    <div className="flex items-center justify-between mb-2.5 sm:mb-4 pt-1">
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className="w-2.5 h-2.5 rounded-full"
+                                                style={{ backgroundColor: list.color || '#8b5cf6' }}
+                                            />
+                                            <span className="text-[11px] sm:text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider">
+                                                {list.itemIds.length} {t('lists.items') || 'öğe'}
                                             </span>
+                                        </div>
+                                        <div>
+                                            {list.isPublic ? (
+                                                <span className="flex items-center gap-1 text-[11px] sm:text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full font-medium">
+                                                    <FaGlobe size={9} />
+                                                    <span>{t('lists.public') || 'Herkese Açık'}</span>
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-1 text-[11px] sm:text-xs text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full font-medium">
+                                                    <FaLock size={9} />
+                                                    <span>{t('lists.private') || 'Özel'}</span>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* List Info */}
+                                    <Link to={`/lists/${list.id}`} className="block mb-3 sm:mb-4">
+                                        <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white mb-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors line-clamp-1">
+                                            {list.name}
+                                        </h3>
+                                        {list.description ? (
+                                            <p className="text-xs sm:text-sm text-stone-500 dark:text-zinc-400 line-clamp-2">
+                                                {list.description}
+                                            </p>
                                         ) : (
-                                            <span className="flex items-center gap-1 text-xs text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 px-2 py-1 rounded-full font-medium">
-                                                <FaLock size={10} />
-                                                <span className="hidden sm:inline">{t('lists.private') || 'Özel'}</span>
-                                            </span>
+                                            <p className="text-xs sm:text-sm text-stone-400 dark:text-zinc-500 italic">
+                                                Açıklama yok
+                                            </p>
                                         )}
-                                    </div>
+                                    </Link>
                                 </div>
 
-                                {/* List Info */}
-                                <Link to={`/lists/${list.id}`} className="block mb-4">
-                                    <h3 className="text-lg font-bold text-stone-900 dark:text-white mb-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors line-clamp-1">
-                                        {list.name}
-                                    </h3>
-                                    {list.description ? (
-                                        <p className="text-sm text-stone-500 dark:text-zinc-400 line-clamp-2">
-                                            {list.description}
-                                        </p>
-                                    ) : (
-                                        <p className="text-sm text-stone-400 dark:text-zinc-500 italic">
-                                            Açıklama yok
-                                        </p>
-                                    )}
-                                </Link>
-
                                 {/* Bottom Actions */}
-                                <div className="flex items-center justify-between pt-4 border-t border-stone-100 dark:border-zinc-800">
+                                <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-stone-100 dark:border-zinc-800">
                                     <Link
                                         to={`/lists/${list.id}`}
-                                        className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 flex items-center gap-1 group/link"
+                                        className="text-xs sm:text-sm font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 flex items-center gap-1 group/link"
                                     >
                                         Listeyi Gör
-                                        <FaArrowRight className="text-xs group-hover/link:translate-x-1 transition-transform" />
+                                        <FaArrowRight className="text-[10px] sm:text-xs group-hover/link:translate-x-1 transition-transform" />
                                     </Link>
 
                                     <button
@@ -188,10 +190,10 @@ export default function ListsPage() {
                                                 deleteList(list.id);
                                             }
                                         }}
-                                        className="p-2 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                                        className="p-1.5 sm:p-2 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                                         title={t('actions.delete')}
                                     >
-                                        <FaTrash size={14} />
+                                        <FaTrash size={12} />
                                     </button>
                                 </div>
                             </motion.div>

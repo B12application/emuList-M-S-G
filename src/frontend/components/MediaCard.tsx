@@ -18,6 +18,7 @@ import { createActivity, deleteActivitiesForMedia } from '../../backend/services
 import { getSeriesProgress, toggleEpisodeWatched, updateCurrentProgress } from '../../backend/services/episodeTrackingService';
 import AddToListDropdown from './AddToListDropdown';
 import { useAppSound } from '../context/SoundContext';
+import SeriesProgressModal from './SeriesProgressModal';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -35,11 +36,11 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
   const [isToggling, setIsToggling] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isSeriesProgressModalOpen, setIsSeriesProgressModalOpen] = useState(false);
 
   const [localWatched, setLocalWatched] = useState(item.watched);
   const [localIsFavorite, setLocalIsFavorite] = useState(item.isFavorite || false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
-  const [isWatchBtnHovered, setIsWatchBtnHovered] = useState(false);
 
   // --- Çeviri State'leri ---
   const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
@@ -88,15 +89,19 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
     }
   };
 
-  const handleToggle = async () => {
+  const handleToggle = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    
+    if (item.type === 'series') {
+      setIsSeriesProgressModalOpen(true);
+      return;
+    }
+
     const newValue = !localWatched;
     setLocalWatched(newValue);
     setIsToggling(true);
     try {
       const updateData: Record<string, unknown> = { watched: newValue };
-      if (item.type === 'series' && item.totalSeasons) {
-        updateData.watchedSeasons = newValue ? Array.from({ length: item.totalSeasons }, (_, i) => i + 1) : [];
-      }
       await updateDoc(doc(db, "mediaItems", item.id), updateData);
       if (newValue && user) {
         try {
@@ -435,41 +440,54 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
 
           {/* Aksiyon butonları */}
           {!readOnly && (
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-1.5 mt-auto">
               <button
                 onClick={(e) => { e.stopPropagation(); handleToggle(); }}
-                onMouseEnter={() => setIsWatchBtnHovered(true)}
-                onMouseLeave={() => setIsWatchBtnHovered(false)}
-                disabled={isToggling}
-                className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-xl text-xs font-bold transition-all duration-300 disabled:opacity-50 ${isWatchBtnHovered
-                  ? localWatched
-                    ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30'
-                    : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30'
-                  : localWatched
-                    ? 'bg-slate-100 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 border border-transparent'
-                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-transparent'
-                  }`}
-              >
-                {isWatchBtnHovered
-                  ? localWatched ? <FaToggleOn size={14} className="text-rose-500" /> : <FaToggleOff size={14} className="text-emerald-500" />
-                  : localWatched ? <FaEye size={14} /> : <FaEyeSlash size={14} />
+                disabled={isToggling || readOnly}
+                className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50 truncate ${
+                  item.type === 'series'
+                    ? seriesIsCompleted
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800'
+                      : seriesIsInProgress
+                        ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-800'
+                        : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800'
+                    : localWatched
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800'
+                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700 border border-transparent'
+                }`}
+                title={
+                  item.type === 'series'
+                    ? (seriesIsCompleted ? t('media.watched') : seriesIsInProgress ? t('media.inProgress') : t('media.notWatched'))
+                    : localWatched
+                      ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
+                      : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
                 }
-                <span>
-                  {localWatched
-                    ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
-                    : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
+              >
+                {item.type === 'series' ? (
+                  seriesIsCompleted ? <FaCheck size={12} className="shrink-0" /> : <FaTv size={12} className="shrink-0" />
+                ) : localWatched ? (
+                  <FaEye size={12} className="shrink-0" />
+                ) : (
+                  <FaEyeSlash size={12} className="shrink-0" />
+                )}
+                <span className="truncate">
+                  {item.type === 'series'
+                    ? (seriesIsCompleted ? t('media.watched') : seriesIsInProgress ? t('media.inProgress') : t('media.notWatched'))
+                    : localWatched
+                      ? (isGame ? t('media.played') : item.type === 'book' ? t('media.read') : t('media.watched'))
+                      : (isGame ? t('media.notPlayed') : item.type === 'book' ? t('media.notRead') : t('media.notWatched'))
                   }
                 </span>
               </button>
 
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                 {item.imdbId && (
                   <a
                     href={`https://www.imdb.com/title/${item.imdbId}/`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#f5c518] hover:bg-[#e2b616] text-black transition-transform hover:scale-105 active:scale-95"
+                    className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#f5c518] hover:bg-[#e2b616] text-black transition-transform hover:scale-105 active:scale-95 shadow-sm"
                     title="IMDb"
                   >
                     <span className="text-[9px] font-black tracking-tighter">IMDb</span>
@@ -478,16 +496,18 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
                 {!isModal && <AddToListDropdown itemId={item.id} />}
                 <button
                   onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }}
-                  className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-500 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-500 transition-colors shadow-sm"
+                  title={t('actions.edit')}
                 >
-                  <FaPen size={12} />
+                  <FaPen size={11} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setIsConfirmDialogOpen(true); }}
                   disabled={isDeleting}
-                  className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-zinc-800 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors disabled:opacity-50 shadow-sm"
+                  title={t('actions.delete')}
                 >
-                  {isDeleting ? <FaSpinner size={12} className="animate-spin" /> : <FaTrash size={12} />}
+                  {isDeleting ? <FaSpinner size={11} className="animate-spin" /> : <FaTrash size={11} />}
                 </button>
               </div>
             </div>
@@ -506,6 +526,13 @@ export default function MediaCard({ item, refetch, isModal = false, readOnly = f
         confirmText={t('confirm.delete')}
         cancelText={t('confirm.cancel')}
         variant="danger"
+      />
+      
+      <SeriesProgressModal
+        isOpen={isSeriesProgressModalOpen}
+        onClose={() => setIsSeriesProgressModalOpen(false)}
+        item={item}
+        refetch={refetch}
       />
     </>
   );

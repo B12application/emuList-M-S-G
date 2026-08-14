@@ -78,56 +78,61 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 py-8 sm:p-6">
+        <div className="fixed inset-0 overflow-y-auto z-[9999]">
+          <div className="flex min-h-full items-end justify-center sm:items-center p-0 sm:p-4">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300 transform"
-              enterFrom="opacity-0 scale-95 translate-y-8"
-              enterTo="opacity-100 scale-100 translate-y-0"
+              enterFrom="translate-y-full sm:translate-y-4 sm:opacity-0"
+              enterTo="translate-y-0 sm:translate-y-0 sm:opacity-100"
               leave="ease-in duration-200 transform"
-              leaveFrom="opacity-100 scale-100 translate-y-0"
-              leaveTo="opacity-0 scale-95 translate-y-8"
+              leaveFrom="translate-y-0 sm:translate-y-0 sm:opacity-100"
+              leaveTo="translate-y-full sm:translate-y-4 sm:opacity-0"
             >
-              {/* ⬅️ max-w-2xl ile geniş modal */}
-              <Dialog.Panel className="w-full max-w-2xl transform text-left align-middle transition-all relative">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden bg-stone-50 dark:bg-zinc-950 sm:rounded-3xl rounded-t-3xl text-left align-middle shadow-2xl transition-all flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+                
+                {/* STICKY HEADER & KAPATMA BUTONU */}
+                <div className="sticky top-0 z-20 flex items-center justify-between p-4 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md border-b border-stone-200 dark:border-zinc-800">
+                  <Dialog.Title as="h3" className="text-lg font-black text-stone-900 dark:text-white line-clamp-1 flex-1 pr-4">
+                    {item.title}
+                  </Dialog.Title>
+                  <button
+                    onClick={handleClose}
+                    className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-stone-100 dark:bg-zinc-900 text-stone-500 hover:bg-stone-200 dark:hover:bg-zinc-800 hover:text-stone-900 dark:hover:text-white transition-colors"
+                    title={t('common.close') || 'Kapat'}
+                  >
+                    <FaTimes size={14} />
+                  </button>
+                </div>
 
-                {/* KAPATMA BUTONU */}
-                <button
-                  onClick={handleClose}
-                  className="absolute -top-3 -right-3 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-xl border-2 border-white/30 hover:scale-110 hover:bg-slate-800 transition-all cursor-pointer"
-                  title={t('common.close') || 'Kapat'}
-                >
-                  <FaTimes size={16} />
-                </button>
+                {/* SCROLLABLE BODY */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-0 sm:p-4 bg-stone-100/50 dark:bg-black/20">
+                  <div className="flex flex-col gap-4 max-w-full">
+                    {/* DETAY İÇERİK */}
+                    <DetailContent item={item} refetch={refetch} readOnly={readOnly} />
 
-                <div className="flex flex-col gap-4">
+                    {/* BÖLÜM TAKİBİ */}
+                    {hasEpisodeData && !readOnly && (
+                      <div className="p-4 bg-white dark:bg-zinc-900/90 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-sm mx-4 sm:mx-0 mb-4 sm:mb-0">
+                        <EpisodeTracker
+                          item={item}
+                          onUpdate={() => { setHasChanges(true); refetch(); }}
+                        />
+                      </div>
+                    )}
 
-                  {/* DETAY İÇERİK */}
-                  <DetailContent item={item} refetch={refetch} readOnly={readOnly} />
-
-                  {/* BÖLÜM TAKİBİ */}
-                  {hasEpisodeData && !readOnly && (
-                    <div className="p-4 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-zinc-800 shadow-xl">
-                      <EpisodeTracker
-                        item={item}
-                        onUpdate={() => { setHasChanges(true); refetch(); }}
-                      />
-                    </div>
-                  )}
-
-                  {/* SEZON TAKİBİ */}
-                  {hasSeasons && !hasEpisodeData && (
-                    <div className="p-4 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-zinc-800 shadow-xl">
-                      <SeasonSelector
-                        totalSeasons={item.totalSeasons!}
-                        watchedSeasons={localWatchedSeasons}
-                        onChange={handleSeasonChange}
-                        disabled={readOnly || isUpdating}
-                      />
-                    </div>
-                  )}
-
+                    {/* SEZON TAKİBİ */}
+                    {hasSeasons && !hasEpisodeData && (
+                      <div className="p-4 bg-white dark:bg-zinc-900/90 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-sm mx-4 sm:mx-0 mb-4 sm:mb-0">
+                        <SeasonSelector
+                          totalSeasons={item.totalSeasons!}
+                          watchedSeasons={localWatchedSeasons}
+                          onChange={handleSeasonChange}
+                          disabled={readOnly || isUpdating}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

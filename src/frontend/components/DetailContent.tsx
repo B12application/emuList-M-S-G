@@ -119,26 +119,30 @@ export default function DetailContent({ item, refetch, readOnly = false }: Detai
             {/* ═══ ÜST: FOTOĞRAF + BAŞLIK YANYANA ═══ */}
             <div className="flex flex-col md:flex-row">
 
-                {/* SOL: FOTOĞRAF - TAM KAPLAMA */}
-                <div className="relative w-full md:w-2/5 lg:w-1/3 shrink-0 min-h-[300px] md:min-h-[400px] bg-slate-100 dark:bg-zinc-900">
+                {/* SOL: FOTOĞRAF */}
+                <div className="relative w-full md:w-2/5 lg:w-1/3 shrink-0 h-48 md:h-auto md:min-h-[400px] bg-slate-100 dark:bg-zinc-900 overflow-hidden">
                     {item.image ? (
-                        <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover absolute inset-0"
-                            onError={(e) => {
-                                // Fallback: resim yüklenemezse
-                                const target = e.currentTarget;
-                                target.style.display = 'none';
-                                if (target.parentElement) {
-                                    target.parentElement.classList.add('flex', 'items-center', 'justify-center');
-                                    const fallback = document.createElement('div');
-                                    fallback.className = 'text-slate-400 dark:text-zinc-600';
-                                    fallback.innerHTML = '<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
-                                    target.parentElement.appendChild(fallback);
-                                }
-                            }}
-                        />
+                        <>
+                            <img
+                                src={item.image}
+                                alt={item.title}
+                                className="w-full h-full object-cover md:absolute md:inset-0"
+                                onError={(e) => {
+                                    // Fallback: resim yüklenemezse
+                                    const target = e.currentTarget;
+                                    target.style.display = 'none';
+                                    if (target.parentElement) {
+                                        target.parentElement.classList.add('flex', 'items-center', 'justify-center');
+                                        const fallback = document.createElement('div');
+                                        fallback.className = 'text-slate-400 dark:text-zinc-600';
+                                        fallback.innerHTML = '<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                                        target.parentElement.appendChild(fallback);
+                                    }
+                                }}
+                            />
+                            {/* Gradient Overlay for Mobile */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent md:hidden pointer-events-none" />
+                        </>
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-zinc-800 dark:to-zinc-900">
                             <FaFilm size={48} className="text-slate-400 dark:text-zinc-600" />
@@ -147,16 +151,16 @@ export default function DetailContent({ item, refetch, readOnly = false }: Detai
                 </div>
 
                 {/* SAĞ: BAŞLIK + META + AÇIKLAMA */}
-                <div className="flex-1 flex flex-col p-6 md:p-8">
+                <div className="flex-1 flex flex-col p-4 md:p-8 -mt-10 md:mt-0 relative z-10">
 
                     {/* Başlık + Favori */}
-                    <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-start justify-between gap-4 mb-4 mt-2 md:mt-0">
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-white leading-tight">
+                            <h2 className="text-2xl md:text-3xl font-black text-white md:text-slate-800 dark:text-white leading-tight drop-shadow-md md:drop-shadow-none">
                                 {item.title}
                             </h2>
                             {item.type === 'book' && item.author && (
-                                <p className="text-base md:text-lg font-medium text-slate-500 dark:text-zinc-400 italic mt-1">
+                                <p className="text-sm md:text-lg font-medium text-slate-200 md:text-slate-500 dark:text-zinc-400 italic mt-1 drop-shadow-sm md:drop-shadow-none">
                                     {item.author}
                                 </p>
                             )}

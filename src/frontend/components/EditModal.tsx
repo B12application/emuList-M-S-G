@@ -93,7 +93,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
   return (
     <Transition appear show={isOpen} as={Fragment}>
       {/* 'onClose' sadece dışarı (backdrop) tıklandığında çalışır */}
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog as="div" className="relative z-[9999]" onClose={onClose}>
 
         <Transition.Child
           as={Fragment}
@@ -107,32 +107,43 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <div className="fixed inset-0 overflow-y-auto z-[9999]">
+          <div className="flex min-h-full items-end justify-center sm:items-center p-0 sm:p-4">
             <Transition.Child
               as={Fragment}
               // 1. DÜZELTME: 'scale' (Zoom) efektleri kaldırıldı. Sadece Opacity ve Translate kaldı.
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4"
-              enterTo="opacity-100 translate-y-0"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0"
-              leaveTo="opacity-0 translate-y-4"
+              enter="ease-out duration-300 transform"
+              enterFrom="translate-y-full sm:translate-y-4 sm:opacity-0"
+              enterTo="translate-y-0 sm:translate-y-0 sm:opacity-100"
+              leave="ease-in duration-200 transform"
+              leaveFrom="translate-y-0 sm:translate-y-0 sm:opacity-100"
+              leaveTo="translate-y-full sm:translate-y-4 sm:opacity-0"
             >
               <Dialog.Panel
                 // 2. DÜZELTME: 'onClick={e => e.stopPropagation()}'
                 // Bu, modalın içine yapılan tıklamaların dışarı sızmasını ve diğer şeyleri tetiklemesini engeller.
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-stone-50 dark:bg-zinc-800 p-6 text-left align-middle shadow-xl transition-all max-h-[90vh] overflow-y-auto"
+                className="w-full max-w-lg transform overflow-hidden sm:rounded-3xl rounded-t-3xl bg-stone-50 dark:bg-zinc-950 p-0 text-left align-middle shadow-2xl transition-all flex flex-col max-h-[90vh] sm:max-h-[85vh]"
               >
-                <Dialog.Title
-                  as="h3"
-                  className="text-lg font-medium leading-6 text-stone-900 dark:text-white"
-                >
-                  {t('modal.editTitle').replace('{title}', item.title)}
-                </Dialog.Title>
+                {/* STICKY HEADER */}
+                <div className="sticky top-0 z-20 flex items-center justify-between p-4 sm:p-5 border-b border-stone-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-bold leading-6 text-stone-900 dark:text-white line-clamp-1 flex-1 pr-4"
+                  >
+                    {t('modal.editTitle').replace('{title}', item.title)}
+                  </Dialog.Title>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-stone-100 dark:bg-zinc-900 text-stone-500 hover:bg-stone-200 dark:hover:bg-zinc-800 hover:text-stone-900 dark:hover:text-white transition-colors"
+                  >
+                    <FaTimes size={14} />
+                  </button>
+                </div>
 
-                <div className="mt-4 flex flex-col gap-4">
+                {/* SCROLLABLE BODY */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6">
                   <div>
                     <label htmlFor="editTitle" className="block text-sm font-medium mb-1 text-stone-700 dark:text-zinc-300">
                       {t('create.titleLabel')}
@@ -339,10 +350,11 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
 
                 </div>
 
-                <div className="mt-6 flex justify-end gap-3">
+                {/* STICKY FOOTER */}
+                <div className="sticky bottom-0 z-20 flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-stone-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl">
                   <button
                     type="button"
-                    className="px-4 py-2 rounded-lg bg-stone-200 dark:bg-zinc-700 text-stone-900 dark:text-white text-sm font-medium hover:bg-stone-200 dark:hover:bg-gray-600"
+                    className="px-5 py-2.5 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 text-sm font-bold hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
                     onClick={onClose}
                   >
                     {t('actions.cancel')}
@@ -350,7 +362,7 @@ export default function EditModal({ isOpen, onClose, item, refetch }: EditModalP
                   <button
                     type="button"
                     disabled={isLoading}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-medium hover:bg-sky-700 disabled:opacity-50"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 disabled:opacity-50 transition-colors shadow-md"
                     onClick={handleSave}
                   >
                     {isLoading ? <FaSpinner className="animate-spin" /> : <FaSave />}

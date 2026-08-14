@@ -959,7 +959,7 @@ export const translationsTR = {
         // Tabs
         expensesTab: 'Harcamalar',
         reportsTab: 'Raporlar',
-        invoicesTab: 'Faturalar',
+        invoicesTab: 'Faturalar & Şifreler',
         vehicleTab: 'Araçlarım',
         // Monthly Summary
         monthlySummary: 'Aylık Özet',

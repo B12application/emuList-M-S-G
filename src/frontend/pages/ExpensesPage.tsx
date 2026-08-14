@@ -21,6 +21,7 @@ import ExpensesHomeView from '../components/expenses/ExpensesHomeView';
 import ReportsTab from '../components/expenses/ReportsTab';
 import VehicleTab from '../components/expenses/VehicleTab';
 import InvoiceTab from '../components/expenses/InvoiceTab';
+import PasswordsTab from '../components/expenses/PasswordsTab';
 import InvestmentsTab from '../components/expenses/InvestmentsTab';
 import BudgetPlanner from '../components/expenses/BudgetPlanner';
 import ExpenseModals from '../components/expenses/ExpenseModals';
@@ -686,8 +687,12 @@ const ExpensesPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2 }}
+            className="space-y-12"
           >
             <InvoiceTab />
+            <div className="pt-8 border-t-2 border-slate-200 dark:border-zinc-800 border-dashed">
+              <PasswordsTab />
+            </div>
           </motion.div>
         </AnimatePresence>
       ) : activeTab === 'butce' ? (

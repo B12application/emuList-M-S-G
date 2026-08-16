@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
 import NotificationDropdown from './NotificationDropdown';
@@ -194,6 +194,9 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   </AnimatePresence>
                 </div>
 
+                <NavLink to="/notes" className={getNavCls}>
+                  <span className="flex items-center gap-1.5"><FaStickyNote className="text-xs opacity-80" />Notlarım</span>
+                </NavLink>
                 <NavLink to="/planner" className={getNavCls}>
                   <span className="flex items-center gap-1.5"><FaCalendarAlt className="text-xs opacity-80" />{t('nav.calendar')}</span>
                 </NavLink>
@@ -316,6 +319,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
                     {[
                       { to: '/profile', label: t('nav.myProfile'), icon: 'bg-stone-800 dark:bg-white' },
+                      { to: '/notes', label: 'Notlarım', icon: 'bg-amber-500' },
                       { to: '/stats', label: t('home.stats'), icon: 'bg-stone-500' },
                       { to: '/lists', label: t('lists.title'), icon: 'bg-stone-500' },
                       { to: '/map', label: t('nav.map'), icon: 'bg-stone-500' },

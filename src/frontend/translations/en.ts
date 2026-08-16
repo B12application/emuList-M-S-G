@@ -14,6 +14,7 @@ export const translationsEN = {
         collection: 'My List',
         feed: 'Activities',
         expenses: 'Expenses',
+        notes: 'My Notes',
         // Profile dropdown
         myProfile: 'My Profile',
         settings: 'Settings',

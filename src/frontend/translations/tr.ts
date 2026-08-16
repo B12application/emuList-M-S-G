@@ -12,6 +12,7 @@ export const translationsTR = {
         collection: 'Listem',
         feed: 'Aktiviteler',
         expenses: 'Harcamalar',
+        notes: 'Notlarım',
         // Profile dropdown
         myProfile: 'Profilim',
         settings: 'Ayarlar',

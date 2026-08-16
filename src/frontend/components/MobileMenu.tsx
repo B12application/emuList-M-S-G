@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaMap, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight, FaCompass } from 'react-icons/fa';
+import { FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaMap, FaCog, FaChartBar, FaSignOutAlt, FaHistory, FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight, FaCompass, FaStickyNote } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -86,6 +86,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     {
       title: 'Araçlar',
       items: [
+        { to: '/notes', icon: FaStickyNote, label: 'Notlarım' },
         { to: '/planner', icon: FaCalendarAlt, label: 'Takvim/Plan' },
         { to: '/lists', icon: FaListUl, label: 'Listelerim' },
         { to: '/expenses', icon: FaWallet, label: 'Harcamalar' },

@@ -180,5 +180,17 @@ service cloud.firestore {
     match /budgetPlans/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
+
+    // Notes (Obsidian Vault)
+    match /notes/{noteId} {
+      allow read, delete, update: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow create: if isOwnerByRequest();
+    }
+
+    // Note Folders
+    match /noteFolders/{folderId} {
+      allow read, delete, update: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
+      allow create: if isOwnerByRequest();
+    }
   }
 }

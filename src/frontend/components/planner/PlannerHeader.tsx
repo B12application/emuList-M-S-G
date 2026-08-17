@@ -18,69 +18,64 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
   
   let dateText = format(selectedDate, 'd MMMM yyyy, EEEE', { locale: dateLocale });
   if (isToday(selectedDate)) {
-    dateText = language === 'tr' ? `Bugün (${dateText})` : `Today (${dateText})`;
+    dateText = language === 'tr' ? `Bugün` : `Today`;
   } else if (isTomorrow(selectedDate)) {
-    dateText = language === 'tr' ? `Yarın (${dateText})` : `Tomorrow (${dateText})`;
+    dateText = language === 'tr' ? `Yarın` : `Tomorrow`;
   }
 
-  // Determine styles and icon based on shift type
-  let shiftBg = 'bg-stone-100 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-stone-700 dark:text-zinc-300';
-  let Icon = FaBed;
-  let summaryText = t('planner.holidayMsg');
-  let timeText = '';
-
-  if (shift.type === 'Sabah') {
-    shiftBg = 'bg-amber-100/50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200';
-    Icon = FaSun;
-    summaryText = language === 'tr' ? 'Mesai / Çalışma Günü' : 'Work Day';
-    timeText = `${shift.startTime || '09:00'} - ${shift.endTime || '18:00'}`;
-  } else if (shift.type === 'Akşam') {
-    shiftBg = 'bg-indigo-100/50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800/50 text-indigo-800 dark:text-indigo-200';
-    Icon = FaMoon;
-    summaryText = language === 'tr' ? 'Akşam Vardiyası' : 'Evening Shift';
-    timeText = `${shift.startTime} - ${shift.endTime}`;
-  } else if (shift.type === 'Nöbet') {
-    shiftBg = 'bg-rose-100/50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800/50 text-rose-800 dark:text-rose-200';
-    Icon = FaUserShield;
-    summaryText = language === 'tr' ? 'Nöbet Vardiyası' : 'On-call Shift';
-    timeText = `${shift.startTime} - ${shift.endTime}`;
-  } else if (shift.type === 'Tatil') {
-    shiftBg = 'bg-emerald-100/50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-200';
-    summaryText = language === 'tr' ? 'Tatil / İzin Günü' : 'Day Off / Holiday';
-  }
+  const fullDateText = format(selectedDate, 'd MMMM yyyy, EEEE', { locale: dateLocale });
 
   return (
-    <div className={`p-5 rounded-2xl border ${shiftBg} transition-all duration-300 relative overflow-hidden shadow-sm`}>
-      {/* Background Icon Watermark */}
-      <Icon className="absolute -right-4 -bottom-4 text-7xl opacity-5 transform -rotate-12 pointer-events-none" />
-      
-      {/* Edit Shifts Button - Shown only if enableShiftSystem is enabled */}
-      {onEditShifts && shiftSettings.enableShiftSystem && (
-        <button
-          onClick={onEditShifts}
-          className="absolute right-4 top-4 p-2 rounded-xl bg-white/40 dark:bg-black/20 hover:bg-white/60 dark:hover:bg-black/30 border border-current/15 text-current transition-all flex items-center gap-1.5 text-xs font-bold active:scale-95 z-20 shadow-sm"
-          title={language === 'tr' ? 'Vardiya Ayarları' : 'Shift Settings'}
-        >
-          <FaCog className="animate-spin-slow text-xs" />
-          <span className="hidden sm:inline">{language === 'tr' ? 'Vardiya Düzenle' : 'Edit Shifts'}</span>
-        </button>
-      )}
+    <div className="flex flex-col md:flex-row md:items-center justify-between py-5 px-1 border-b border-stone-200/80 dark:border-zinc-800 gap-4 mb-6 font-sans">
+      <div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {isToday(selectedDate) || isTomorrow(selectedDate) ? (
+            <span className="px-2.5 py-1 text-[10px] font-extrabold uppercase rounded-lg bg-rose-500 text-white tracking-wider shadow-sm shadow-rose-500/10">
+              {dateText}
+            </span>
+          ) : null}
+          <h2 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-zinc-100 tracking-tight">
+            {fullDateText}
+          </h2>
+        </div>
+        <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1.5 font-bold uppercase tracking-wider">
+          {meetingCount > 0 
+            ? t('planner.itemsFound').replace('{count}', meetingCount.toString())
+            : t('planner.noItems')}
+        </p>
+      </div>
 
-      <div className="relative z-10">
-        <h2 className="text-sm font-medium opacity-80 mb-1">{dateText}</h2>
-        <div className="flex items-center gap-3 pr-28">
-          <Icon className="text-xl shrink-0" />
-          <h1 className="text-xl md:text-2xl font-bold">{summaryText}</h1>
-        </div>
-        {timeText && <p className="text-sm mt-1 font-medium opacity-90">{timeText}</p>}
-        
-        <div className="mt-4 pt-4 border-t border-current/10">
-          <p className="text-sm font-semibold">
-            {meetingCount > 0 
-              ? t('planner.itemsFound').replace('{count}', meetingCount.toString())
-              : t('planner.noItems')}
-          </p>
-        </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        {shiftSettings.enableShiftSystem && (
+          <div className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-bold shadow-sm ${
+            shift.type === 'Sabah' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' :
+            shift.type === 'Akşam' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400' :
+            shift.type === 'Nöbet' ? 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400' :
+            'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+          }`}>
+            {shift.type === 'Sabah' && <FaSun className="text-amber-500 text-sm" />}
+            {shift.type === 'Akşam' && <FaMoon className="text-indigo-500 text-sm" />}
+            {shift.type === 'Nöbet' && <FaUserShield className="text-rose-500 text-sm" />}
+            {shift.type === 'Tatil' && <FaBed className="text-emerald-500 text-sm" />}
+            <span>
+              {shift.type === 'Sabah' ? (language === 'tr' ? 'Mesai' : 'Work') : 
+               shift.type === 'Akşam' ? (language === 'tr' ? 'Akşam Vardiyası' : 'Evening') :
+               shift.type === 'Nöbet' ? (language === 'tr' ? 'Nöbet Vardiyası' : 'On-call') :
+               (language === 'tr' ? 'Tatil / İzin' : 'Day Off')}
+            </span>
+            {shift.startTime && <span className="opacity-60 font-medium">({shift.startTime} - {shift.endTime})</span>}
+          </div>
+        )}
+
+        {onEditShifts && shiftSettings.enableShiftSystem && (
+          <button
+            onClick={onEditShifts}
+            className="px-3.5 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-800 transition-all flex items-center gap-1.5 text-xs font-bold active:scale-95 shadow-sm cursor-pointer"
+          >
+            <FaCog className="text-xs" />
+            <span>Vardiya Düzenle</span>
+          </button>
+        )}
       </div>
     </div>
   );

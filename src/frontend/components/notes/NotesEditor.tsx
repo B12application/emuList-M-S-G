@@ -38,7 +38,17 @@ import {
   FaChevronDown
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import TextareaAutosize from 'react-textarea-autosize';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { TaskList } from '@tiptap/extension-task-list';
+import { TaskItem } from '@tiptap/extension-task-item';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { Link } from '@tiptap/extension-link';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Image } from '@tiptap/extension-image';
 import type { NoteItem, NoteFolder, NoteViewMode, NoteFontFamily, NoteFontSize, NoteLineHeight, NoteTheme, NoteAttachment } from '../../types/notes';
 import MarkdownRenderer from './MarkdownRenderer';
 import NoteThemePicker, { THEME_OPTIONS } from './NoteThemePicker';
@@ -57,6 +67,177 @@ interface NotesEditorProps {
   onAttachImageFile: (file: File) => Promise<NoteAttachment | null>;
   onBackToList?: () => void;
   isMobile?: boolean;
+}
+
+function htmlToMarkdown(html: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  function walk(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.nodeValue || '';
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return '';
+    }
+
+    const element = node as HTMLElement;
+    const tagName = element.tagName.toLowerCase();
+
+    let childrenContent = '';
+    for (let i = 0; i < element.childNodes.length; i++) {
+      childrenContent += walk(element.childNodes[i]);
+    }
+
+    switch (tagName) {
+      case 'b':
+      case 'strong':
+        return childrenContent.trim() ? `**${childrenContent.trim()}**` : '';
+      case 'i':
+      case 'em':
+        return childrenContent.trim() ? `*${childrenContent.trim()}*` : '';
+      case 's':
+      case 'strike':
+      case 'del':
+        return childrenContent.trim() ? `~~${childrenContent.trim()}~~` : '';
+      case 'h1':
+        return `\n\n# ${childrenContent.trim()}\n\n`;
+      case 'h2':
+        return `\n\n## ${childrenContent.trim()}\n\n`;
+      case 'h3':
+        return `\n\n### ${childrenContent.trim()}\n\n`;
+      case 'h4':
+      case 'h5':
+      case 'h6':
+        return `\n\n#### ${childrenContent.trim()}\n\n`;
+      case 'p':
+      case 'div':
+        return `\n${childrenContent}\n`;
+      case 'br':
+        return '\n';
+      case 'a':
+        const href = element.getAttribute('href') || '';
+        return childrenContent.trim() ? `[${childrenContent.trim()}](${href})` : '';
+      case 'li':
+        const parent = element.parentElement;
+        if (parent && parent.tagName.toLowerCase() === 'ol') {
+          const index = Array.from(parent.children).indexOf(element) + 1;
+          return `\n${index}. ${childrenContent.trim()}`;
+        }
+        return `\n- ${childrenContent.trim()}`;
+      case 'ul':
+      case 'ol':
+        return `\n${childrenContent}\n`;
+      case 'table':
+        return `\n\n${childrenContent.trim()}\n\n`;
+      case 'tr':
+        const cells = Array.from(element.children);
+        const cellContents = cells.map(c => {
+          let content = '';
+          for (let k = 0; k < c.childNodes.length; k++) {
+            content += walk(c.childNodes[k]);
+          }
+          return content.trim().replace(/\|/g, '\\|');
+        });
+        const isHeader = cells.some(c => c.tagName.toLowerCase() === 'th');
+        let rowStr = `| ${cellContents.join(' | ')} |\n`;
+        if (isHeader) {
+          const divider = `| ${cells.map(() => '---').join(' | ')} |\n`;
+          rowStr += divider;
+        }
+        return rowStr;
+      case 'td':
+      case 'th':
+        return childrenContent;
+      default:
+        return childrenContent;
+    }
+  }
+
+  const body = doc.body;
+  let result = '';
+  for (let i = 0; i < body.childNodes.length; i++) {
+    result += walk(body.childNodes[i]);
+  }
+
+  return result
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+const replaceAttachmentTagsWithUrls = (html: string, attachments: NoteAttachment[]) => {
+  let result = html;
+  if (!attachments) return result;
+  attachments.forEach(att => {
+    result = result.replace(new RegExp(`attachment:${att.id}`, 'g'), att.url);
+  });
+  return result;
+};
+
+const replaceUrlsWithAttachmentTags = (html: string, attachments: NoteAttachment[]) => {
+  let result = html;
+  if (!attachments) return result;
+  attachments.forEach(att => {
+    result = result.replace(new RegExp(att.url.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), `attachment:${att.id}`);
+  });
+  return result;
+};
+
+function markdownToHtml(markdown: string): string {
+  if (!markdown) return '';
+  if (markdown.trim().startsWith('<') || markdown.trim().includes('</p>') || markdown.trim().includes('</div>')) {
+    return markdown;
+  }
+  
+  let html = markdown;
+  
+  // Headings
+  html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+  // Horizontal Rule
+  html = html.replace(/^---$/gm, '<hr />');
+
+  // Task lists
+  html = html.replace(/^\s*[-*+]\s+\[x\]\s+(.*)$/gmi, '<ul data-type="taskList"><li data-checked="true"><label><input type="checkbox" checked><span></span></label><div>$1</div></li></ul>');
+  html = html.replace(/^\s*[-*+]\s+\[ \]\s+(.*)$/gmi, '<ul data-type="taskList"><li data-checked="false"><label><input type="checkbox"><span></span></label><div>$1</div></li></ul>');
+
+  // Unordered lists
+  html = html.replace(/^\s*[-*+]\s+(.*)$/gm, '<ul><li>$1</li></ul>');
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+  // Ordered lists
+  html = html.replace(/^\s*\d+\.\s+(.*)$/gm, '<ol><li>$1</li></ol>');
+  html = html.replace(/<\/ol>\s*<ol>/g, '');
+
+  // Blockquotes
+  html = html.replace(/^>\s+(.*)$/gm, '<blockquote>$1</blockquote>');
+  html = html.replace(/<\/blockquote>\s*<blockquote>/g, '<br/>');
+
+  // Bold, italic, strikethrough, highlight
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/~~(.*?)~~/g, '<s>$1</s>');
+  html = html.replace(/==(.*?)==/g, '<mark>$1</mark>');
+
+  // Links
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
+  // Images
+  html = html.replace(/!\[(.*?)\]\(attachment:([a-zA-Z0-9_-]+)\)/g, '<img src="attachment:$2" alt="$1" />');
+
+  // Wrap non-block lines in paragraphs
+  const lines = html.split('\n');
+  const processed = lines.map(l => {
+    const trimmed = l.trim();
+    if (!trimmed) return '<p></p>';
+    const isBlock = /^(<h[1-6]|<ul|<ol|<li|<blockquote|<hr|<p|<div|<img)/i.test(trimmed);
+    if (isBlock) return l;
+    return `<p>${l}</p>`;
+  });
+  
+  return processed.join('');
 }
 
 export default function NotesEditor({
@@ -81,17 +262,29 @@ export default function NotesEditor({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isFolderMenuOpen, setIsFolderMenuOpen] = useState(false);
-  const [activeBlockIndex, setActiveBlockIndex] = useState(0);
+  const [isTablePopoverOpen, setIsTablePopoverOpen] = useState(false);
+  const [hoveredGrid, setHoveredGrid] = useState({ rows: 0, cols: 0 });
 
-  const textareaRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderMenuRef = useRef<HTMLDivElement | null>(null);
+  const tablePopoverRef = useRef<HTMLDivElement>(null);
 
   // Close folder menu on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (folderMenuRef.current && !folderMenuRef.current.contains(event.target as Node)) {
         setIsFolderMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close table popover on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (tablePopoverRef.current && !tablePopoverRef.current.contains(event.target as Node)) {
+        setIsTablePopoverOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -105,15 +298,124 @@ export default function NotesEditor({
     }
   }, [isMobile]);
 
-  // Keyboard Shortcuts Handler
+  // TipTap Editor Instantiation
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3]
+        }
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: {
+          class: 'flex items-start gap-2.5 my-1.5'
+        }
+      }),
+      Table.configure({
+        resizable: true
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Link.configure({
+        openOnClick: false
+      }),
+      Highlight,
+      Image.configure({
+        allowBase64: true
+      })
+    ],
+    content: note ? replaceAttachmentTagsWithUrls(markdownToHtml(note.content || ''), note.attachments || []) : '',
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      const cleanContent = replaceUrlsWithAttachmentTags(html, note?.attachments || []);
+      onUpdateNote({ content: cleanContent });
+    },
+    editorProps: {
+      handlePaste(view, event) {
+        const items = event.clipboardData?.items;
+        if (items) {
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.type.indexOf('image') !== -1) {
+              event.preventDefault();
+              const file = item.getAsFile();
+              if (file) {
+                toast.loading('Pano ekran görüntüsü yükleniyor...', { id: 'paste-img' });
+                onAttachImageFile(file).then(att => {
+                  if (att) {
+                    view.dispatch(
+                      view.state.tr.replaceSelectionWith(
+                        view.state.schema.nodes.image.create({ src: att.url, alt: att.name })
+                      )
+                    );
+                    toast.success('Pano görüntüsü nota eklendi!', { id: 'paste-img' });
+                  }
+                }).catch(() => {
+                  toast.error('Görsel eklenemedi.', { id: 'paste-img' });
+                });
+              }
+              return true;
+            }
+          }
+        }
+        return false;
+      },
+      handleDrop(view, event) {
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+          event.preventDefault();
+          for (let i = 0; i < files.length; i++) {
+            if (files[i].type.startsWith('image/')) {
+              onAttachImageFile(files[i]).then(att => {
+                if (att) {
+                  view.dispatch(
+                    view.state.tr.replaceSelectionWith(
+                      view.state.schema.nodes.image.create({ src: att.url, alt: att.name })
+                    )
+                  );
+                }
+              });
+            }
+          }
+          return true;
+        }
+        return false;
+      }
+    }
+  });
+
+  // Sync TipTap readOnly mode based on viewMode
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(viewMode !== 'preview');
+    }
+  }, [viewMode, editor]);
+
+  // Sync Note Content with TipTap editor on note change
+  useEffect(() => {
+    if (editor && note) {
+      const rawHtml = markdownToHtml(note.content || '');
+      const contentWithUrls = replaceAttachmentTagsWithUrls(rawHtml, note.attachments || []);
+      
+      const currentClean = replaceUrlsWithAttachmentTags(editor.getHTML(), note.attachments || []);
+      const incomingClean = replaceUrlsWithAttachmentTags(contentWithUrls, note.attachments || []);
+      
+      if (currentClean !== incomingClean) {
+        editor.commands.setContent(contentWithUrls, { emitUpdate: false });
+      }
+    }
+  }, [note?.id, editor]);
+
+  // Keyboard Shortcuts Handler (supports Save, Undo/Redo is handled natively by TipTap)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const cmdKey = isMac ? e.metaKey : e.ctrlKey;
-
+      const cmdKey = e.metaKey || e.ctrlKey;
       if (!cmdKey) return;
 
-      if (e.key === 's' && !e.shiftKey) {
+      if (e.key === 's') {
         e.preventDefault();
         if (note) {
           onUpdateNote({ content: note.content });
@@ -121,13 +423,10 @@ export default function NotesEditor({
         }
       } else if (e.key === 'b') {
         e.preventDefault();
-        insertMarkdownFormat('**', '**');
+        editor?.chain().focus().toggleBold().run();
       } else if (e.key === 'i') {
         e.preventDefault();
-        insertMarkdownFormat('*', '*');
-      } else if (e.key === 'k') {
-        e.preventDefault();
-        insertMarkdownFormat('[', '](https://)');
+        editor?.chain().focus().toggleItalic().run();
       } else if (e.key === 'S' && e.shiftKey) {
         e.preventDefault();
         handleScreenCaptureClick();
@@ -136,166 +435,48 @@ export default function NotesEditor({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [note, onUpdateNote]);
+  }, [note, onUpdateNote, editor]);
 
-  // Paste handler to capture screenshots directly from clipboard
-  // Insert attachment block logic
   const insertAttachmentTag = useCallback((att: NoteAttachment) => {
-    if (!note) return;
-    const blocks = (note.content || '').split(/(!\[[^\]]*\]\(attachment:[^)]+\))/g);
-    let newContent = '';
-    const textarea = textareaRefs.current[activeBlockIndex];
-
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const blockText = blocks[activeBlockIndex] || '';
-      
-      const textBefore = blockText.substring(0, start);
-      const textAfter = blockText.substring(textarea.selectionEnd);
-      const markdown = `\n![${att.name}](attachment:${att.id})\n`;
-      
-      const newBlocks = [...blocks];
-      newBlocks[activeBlockIndex] = textBefore + markdown + textAfter;
-      newContent = newBlocks.join('');
-      
-      onUpdateNote({ content: newContent });
-      
-      setTimeout(() => {
-        const nextIdx = activeBlockIndex + 2;
-        const nextEl = textareaRefs.current[nextIdx];
-        if (nextEl) {
-          nextEl.focus();
-          nextEl.setSelectionRange(0, 0);
-          setActiveBlockIndex(nextIdx);
-        }
-      }, 50);
-    } else {
-      newContent = (note.content || '') + `\n![${att.name}](attachment:${att.id})\n`;
-      onUpdateNote({ content: newContent });
+    if (editor) {
+      editor.chain().focus().setImage({ src: att.url, alt: att.name }).run();
     }
-  }, [note, activeBlockIndex, onUpdateNote]);
+  }, [editor]);
 
-  // Paste handler to capture screenshots directly from clipboard
-  const handlePaste = useCallback(
-    async (e: React.ClipboardEvent) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
+  const insertTextAtCursor = useCallback((text: string) => {
+    if (editor) {
+      editor.chain().focus().insertContent(text).run();
+    }
+  }, [editor]);
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.type.indexOf('image') !== -1) {
-          e.preventDefault();
-          const file = item.getAsFile();
-          if (file) {
-            toast.loading('Panodaki ekran görüntüsü ekleniyor...', { id: 'paste-img' });
-            const att = await onAttachImageFile(file);
-            if (att) {
-              insertAttachmentTag(att);
-            }
-            toast.success('Pano görüntüsü nota eklendi!', { id: 'paste-img' });
-          }
-          break;
-        }
-      }
-    },
-    [onAttachImageFile, insertAttachmentTag]
-  );
-
-  // Drag & drop file handler
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        if (files[i].type.startsWith('image/')) {
-          const att = await onAttachImageFile(files[i]);
-          if (att) {
-            insertAttachmentTag(att);
-          }
-        }
-      }
+  const insertMarkdownFormat = (before: string, after: string = '', defaultText: string = '') => {
+    if (!editor) return;
+    if (before === '**') editor.chain().focus().toggleBold().run();
+    else if (before === '*') editor.chain().focus().toggleItalic().run();
+    else if (before === '~~') editor.chain().focus().toggleStrike().run();
+    else if (before === '==') editor.chain().focus().toggleHighlight().run();
+    else if (before === '# ') editor.chain().focus().toggleHeading({ level: 1 }).run();
+    else if (before === '## ') editor.chain().focus().toggleHeading({ level: 2 }).run();
+    else if (before === '### ') editor.chain().focus().toggleHeading({ level: 3 }).run();
+    else if (before === '- [ ] ') editor.chain().focus().toggleTaskList().run();
+    else if (before === '- ') editor.chain().focus().toggleBulletList().run();
+    else if (before === '1. ') editor.chain().focus().toggleOrderedList().run();
+    else if (before === '> ') editor.chain().focus().toggleBlockquote().run();
+    else if (before === '```javascript\n') editor.chain().focus().toggleCodeBlock().run();
+    else if (before === '\n---\n') editor.chain().focus().setHorizontalRule().run();
+    else if (before === '[') {
+      const url = prompt('Bağlantı adresi / Link URL:');
+      if (url) editor.chain().focus().setLink({ href: url }).run();
     }
   };
 
-  // Block deletion & navigation logic
-  const handleBlockKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, index: number) => {
-    const textarea = e.currentTarget;
-    if (e.key === 'Backspace' && textarea.selectionStart === 0 && textarea.selectionEnd === 0) {
-      if (index >= 2) {
-        e.preventDefault();
-        const blocks = (note?.content || '').split(/(!\[[^\]]*\]\(attachment:[^)]+\))/g);
-        const prevTextLength = blocks[index - 2].length;
-        
-        const newBlocks = [...blocks];
-        newBlocks[index - 2] = newBlocks[index - 2] + newBlocks[index];
-        newBlocks.splice(index - 1, 2);
-        
-        onUpdateNote({ content: newBlocks.join('') });
-        
-        setTimeout(() => {
-          const prevEl = textareaRefs.current[index - 2];
-          if (prevEl) {
-            prevEl.focus();
-            prevEl.setSelectionRange(prevTextLength, prevTextLength);
-            setActiveBlockIndex(index - 2);
-          }
-        }, 50);
-      }
-    } else if (e.key === 'ArrowUp' && textarea.selectionStart === 0) {
-      if (index >= 2) {
-        e.preventDefault();
-        const prevEl = textareaRefs.current[index - 2];
-        if (prevEl) {
-          prevEl.focus();
-          const len = prevEl.value.length;
-          prevEl.setSelectionRange(len, len);
-          setActiveBlockIndex(index - 2);
-        }
-      }
-    } else if (e.key === 'ArrowDown' && textarea.selectionStart === textarea.value.length) {
-      const blocks = (note?.content || '').split(/(!\[[^\]]*\]\(attachment:[^)]+\))/g);
-      if (index + 2 < blocks.length) {
-        e.preventDefault();
-        const nextEl = textareaRefs.current[index + 2];
-        if (nextEl) {
-          nextEl.focus();
-          nextEl.setSelectionRange(0, 0);
-          setActiveBlockIndex(index + 2);
-        }
-      }
+  const handleInsertTable = (rows: number, cols: number) => {
+    if (editor) {
+      editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
     }
+    setIsTablePopoverOpen(false);
   };
 
-  // Helper to insert markdown syntax at cursor position
-  const insertMarkdownFormat = useCallback((before: string, after: string = '', defaultText: string = '') => {
-    const textarea = textareaRefs.current[activeBlockIndex];
-    if (!textarea || !note) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const blocks = (note.content || '').split(/(!\[[^\]]*\]\(attachment:[^)]+\))/g);
-    const blockText = blocks[activeBlockIndex] || '';
-    const selectedText = blockText.substring(start, end) || defaultText;
-
-    const replacement = `${before}${selectedText}${after}`;
-    const newBlockText = blockText.substring(0, start) + replacement + blockText.substring(end);
-
-    const newBlocks = [...blocks];
-    newBlocks[activeBlockIndex] = newBlockText;
-
-    onUpdateNote({ content: newBlocks.join('') });
-
-    setTimeout(() => {
-      const el = textareaRefs.current[activeBlockIndex];
-      if (el) {
-        el.focus();
-        el.setSelectionRange(
-          start + before.length,
-          start + before.length + selectedText.length
-        );
-      }
-    }, 10);
-  }, [note, activeBlockIndex, onUpdateNote]);
 
   // Toggle interactive task in preview mode
   const handleToggleTaskInContent = (lineIndex: number) => {
@@ -841,17 +1022,62 @@ export default function NotesEditor({
           >
             <FaCode />
           </button>
-          <button
-            onClick={() =>
-              insertMarkdownFormat(
-                '| Başlık 1 | Başlık 2 |\n| --- | --- |\n| Veri 1 | Veri 2 |\n'
-              )
-            }
-            className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Tablo Ekle"
-          >
-            <FaTable />
-          </button>
+          {/* Interactive Table Grid Popover Button */}
+          <div className="relative" ref={tablePopoverRef}>
+            <button
+              onClick={() => setIsTablePopoverOpen(!isTablePopoverOpen)}
+              className={`p-1.5 rounded-lg text-stone-700 dark:text-zinc-300 transition-colors flex items-center justify-center cursor-pointer ${
+                isTablePopoverOpen ? 'bg-amber-400/25 text-amber-600 dark:text-amber-400' : 'hover:bg-stone-200 dark:hover:bg-zinc-800'
+              }`}
+              title="Tablo Ekle (Grid ile seç)"
+            >
+              <FaTable />
+            </button>
+            
+            <AnimatePresence>
+              {isTablePopoverOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="absolute top-full left-0 mt-2 p-3 bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-[110] w-[180px] origin-top-left"
+                >
+                  <div className="text-[10px] font-bold text-stone-500 dark:text-zinc-400 mb-2 uppercase tracking-wider text-center">
+                    Tablo Boyutu Seç
+                  </div>
+                  
+                  {/* 5x5 Grid */}
+                  <div className="grid grid-cols-5 gap-1.5 justify-center mb-2 mx-auto">
+                    {Array.from({ length: 5 }).map((_, rIdx) => {
+                      const row = rIdx + 1;
+                      return Array.from({ length: 5 }).map((_, cIdx) => {
+                        const col = cIdx + 1;
+                        const isHighlighted = row <= hoveredGrid.rows && col <= hoveredGrid.cols;
+                        return (
+                          <div
+                            key={`${row}-${col}`}
+                            onMouseEnter={() => setHoveredGrid({ rows: row, cols: col })}
+                            onClick={() => handleInsertTable(row, col)}
+                            className={`w-5 h-5 rounded-md border transition-all cursor-pointer ${
+                              isHighlighted
+                                ? 'bg-amber-500 border-amber-500 shadow-sm shadow-amber-500/20 scale-105'
+                                : 'border-stone-200 dark:border-zinc-850 bg-stone-50/50 dark:bg-zinc-950/20 hover:border-amber-400 hover:bg-amber-500/5'
+                            }`}
+                          />
+                        );
+                      });
+                    })}
+                  </div>
+                  
+                  {/* Grid Size label */}
+                  <div className="text-[11px] text-center font-bold text-amber-500 bg-amber-500/5 py-1 rounded-lg border border-amber-500/10">
+                    {hoveredGrid.rows > 0 && hoveredGrid.cols > 0 ? `${hoveredGrid.rows} × ${hoveredGrid.cols} Tablo Ekle` : '0 × 0 Tablo'}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <button
             onClick={() => insertMarkdownFormat('[', '](https://)', 'Bağlantı')}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
@@ -885,64 +1111,7 @@ export default function NotesEditor({
                 note.lineHeight
               )} text-stone-900 dark:text-zinc-100`}
             >
-              {(() => {
-                const blocks = (note.content || '').split(/(!\[[^\]]*\]\(attachment:[^)]+\))/g);
-                if (blocks.length === 0) blocks.push(''); // ensure at least one block
-                
-                return blocks.map((block, index) => {
-                  if (index % 2 === 1) {
-                    // Attachment block
-                    const match = block.match(/!\[([^\]]*)\]\(attachment:([^)]+)\)/);
-                    const alt = match?.[1] || '';
-                    const id = match?.[2] || '';
-                    const att = note.attachments?.find(a => a.id === id);
-                    
-                    if (!att) {
-                      return (
-                        <div key={index} className="my-2 p-3 rounded bg-red-50 dark:bg-red-900/20 text-red-500 text-xs border border-red-200 dark:border-red-900/30 flex items-center gap-2">
-                          <FaTimes />
-                          <span>Görsel bulunamadı veya silinmiş.</span>
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <div key={index} className="my-4 relative group flex flex-col items-center">
-                        <img src={att.url} alt={alt} className="max-w-full max-h-[600px] object-contain rounded-xl shadow-sm border border-stone-200 dark:border-zinc-800" />
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center gap-1.5 p-1 bg-black/60 rounded-xl backdrop-blur-sm">
-                          <button onClick={() => { setLightboxSrc(att.url); setLightboxAlt(att.name); }} className="p-2 hover:bg-white/20 text-white rounded-lg transition-colors" title="Büyüt">
-                            <FaEye className="text-xs" />
-                          </button>
-                          <button onClick={(e) => handleDeleteAttachment(att.id, e)} className="p-2 hover:bg-red-500/50 text-red-300 rounded-lg transition-colors" title="Eki Sil">
-                            <FaTrash className="text-xs" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  } else {
-                    // Text block
-                    return (
-                      <TextareaAutosize
-                        key={index}
-                        ref={(el) => { textareaRefs.current[index] = el; }}
-                        value={block}
-                        onChange={(e) => {
-                          const newBlocks = [...blocks];
-                          newBlocks[index] = e.target.value;
-                          onUpdateNote({ content: newBlocks.join('') });
-                        }}
-                        onFocus={() => setActiveBlockIndex(index)}
-                        onKeyDown={(e) => handleBlockKeyDown(e, index)}
-                        onPaste={handlePaste}
-                        onDrop={handleDrop}
-                        onDragOver={(e) => e.preventDefault()}
-                        placeholder={index === 0 && blocks.length === 1 ? "Düşüncelerinizi yazmaya başlayın... (Markdown, Ekran görüntüleri vb.)" : ""}
-                        className="w-full bg-transparent resize-none focus:outline-none placeholder:text-stone-400 dark:placeholder:text-zinc-600 outline-none"
-                      />
-                    );
-                  }
-                });
-              })()}
+              <EditorContent editor={editor} className="outline-none" />
             </div>
           </div>
         )}

@@ -142,3 +142,40 @@ export async function getTMDBDetails(
         throw new Error('TMDB detayları getirilirken bir hata oluştu');
     }
 }
+
+/**
+ * Fetches trending movies or TV series from TMDB
+ * type: 'movie' | 'series'
+ * timeWindow: 'day' | 'week'
+ */
+export async function getTMDBTrending(
+    type: 'movie' | 'series',
+    timeWindow: 'day' | 'week' = 'week'
+): Promise<TMDBMovieResult[]> {
+    if (!API_KEY) {
+        throw new Error('TMDB API key bulunamadı. Lütfen .env dosyasını kontrol edin.');
+    }
+
+    const mediaType = type === 'movie' ? 'movie' : 'tv';
+    const endpoint = `/trending/${mediaType}/${timeWindow}`;
+    const params = new URLSearchParams({
+        api_key: API_KEY,
+        language: 'tr-TR',
+    });
+
+    try {
+        const response = await fetch(`${BASE_URL}${endpoint}?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`TMDB API Hatası: ${response.statusText}`);
+        }
+
+        const data: TMDBSearchResponse = await response.json();
+        return data.results || [];
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('TMDB trend verileri getirilirken bir hata oluştu');
+    }
+}
+

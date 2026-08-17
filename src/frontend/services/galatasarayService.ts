@@ -14,10 +14,27 @@ const PROXY_URLS = [
   '/gs_fallback.ics' // Yerel yedek ICS dosyası (Harici proxy'ler başarısız olursa her zaman çalışır)
 ];
 
+// Helper to fetch with a timeout using AbortController
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 2500): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
 async function fetchIcsData(): Promise<string | null> {
   for (const proxyUrl of PROXY_URLS) {
     try {
-      const response = await fetch(proxyUrl, { cache: 'no-store' });
+      const response = await fetchWithTimeout(proxyUrl, { cache: 'no-store' }, 2500);
       if (!response.ok) continue;
       
       let text = '';
@@ -43,11 +60,36 @@ async function fetchIcsData(): Promise<string | null> {
   return null;
 }
 
-export const getUpcomingGSMatches = async (): Promise<PlannerMeeting[]> => {
+export const getUpcomingGSMatches = async (forceRefresh = false): Promise<PlannerMeeting[]> => {
+  const CACHE_KEY = 'gs_matches_cache';
+  const CACHE_TIME_KEY = 'gs_matches_cache_time';
+  const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+  // 1. Try reading from cache unless forceRefresh is triggered
+  if (!forceRefresh) {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+      if (cached && cachedTime) {
+        const age = Date.now() - parseInt(cachedTime, 10);
+        if (age < CACHE_TTL) {
+          return JSON.parse(cached);
+        }
+      }
+    } catch (e) {
+      console.warn("Error reading GS matches cache:", e);
+    }
+  }
+
   try {
     const icsData = await fetchIcsData();
     if (!icsData) {
       console.warn("Galatasaray ICS fetch returned no valid data from any proxy.");
+      // Fallback to cache even if stale on error
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) return JSON.parse(cached);
+      } catch {}
       return [];
     }
 
@@ -149,11 +191,23 @@ export const getUpcomingGSMatches = async (): Promise<PlannerMeeting[]> => {
     // Maçları tarihe göre en yakından uzağa doğru sıralayalım
     matches.sort((a, b) => new Date(`${a.date}T${a.startTime}`).getTime() - new Date(`${b.date}T${b.startTime}`).getTime());
 
+    // 2. Cache the successfully parsed results
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(matches));
+      localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+    } catch (e) {
+      console.warn("Failed to write GS matches to cache:", e);
+    }
+
     return matches;
 
   } catch (error) {
     console.error("Error parsing Google Calendar GS matches", error);
+    // Fallback to cache on general failure
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) return JSON.parse(cached);
+    } catch {}
     return [];
   }
 };
-

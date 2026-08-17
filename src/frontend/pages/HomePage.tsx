@@ -27,6 +27,7 @@ import HomeCategoryBento from '../components/home/HomeCategoryBento';
 import HomeBestRecommendations from '../components/home/HomeBestRecommendations';
 import HomeCollectionPicks from '../components/home/HomeCollectionPicks';
 import HomeClosingCta from '../components/home/HomeClosingCta';
+import HomeTrendingRail from '../components/home/HomeTrendingRail';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
 const FEMALE_AVATAR_URL = 'https://www.pngmart.com/files/23/Female-Transparent-PNG.png';
@@ -319,6 +320,9 @@ export default function HomePage() {
                         getNextEpisode={getNextEpisode}
                         onQuickMark={handleQuickMarkHome}
                     />
+
+                    {/* Trending Rail */}
+                    <HomeTrendingRail onAdded={allRefetch} onSelect={setSelectedRecentItem} />
 
                     <HomeFavoritesRail
                         loading={allLoading}

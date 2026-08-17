@@ -193,6 +193,12 @@ export const translationsEN = {
         footerCollection: 'View All Collection',
         spinAgain: 'Try Again',
         luckyDipTitle: 'You got this!',
+        trendingTitle: 'Global Trends',
+        trendingSubtitle: 'Most watched popular content worldwide',
+        trendingMovies: 'Trending Movies',
+        trendingSeries: 'Trending Series',
+        today: 'Today',
+        thisWeek: 'This Week',
 
         // Best Recommendations
         bestRecsTitle: 'Best Recommendations',

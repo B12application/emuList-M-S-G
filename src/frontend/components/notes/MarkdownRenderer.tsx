@@ -54,6 +54,21 @@ export default function MarkdownRenderer({
     );
   }
 
+  // If the content is HTML, render it directly
+  if (content.trim().startsWith('<') || content.trim().includes('</p>') || content.trim().includes('</div>') || content.trim().includes('</h2>') || content.trim().includes('</h1>')) {
+    let parsedHtml = content;
+    attachments?.forEach(att => {
+      parsedHtml = parsedHtml.replace(new RegExp(`attachment:${att.id}`, 'g'), att.url);
+    });
+
+    return (
+      <div 
+        className={`prose dark:prose-invert max-w-none ${className} font-sans`}
+        dangerouslySetInnerHTML={{ __html: parsedHtml }} 
+      />
+    );
+  }
+
   // Parse lines and render
   const lines = content.split('\n');
   const renderedElements: React.ReactNode[] = [];
@@ -221,18 +236,18 @@ export default function MarkdownRenderer({
         const dataRows = tableLines.slice(1).filter((l) => !isDivider(l));
 
         renderedElements.push(
-          <div key={`table-${i}`} className="my-4 overflow-x-auto rounded-xl border border-stone-200 dark:border-zinc-800 shadow-sm">
+          <div key={`table-${i}`} className="my-6 overflow-x-auto rounded-2xl border border-stone-200/80 dark:border-zinc-800/80 shadow-md bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md font-sans">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="bg-stone-100 dark:bg-zinc-800/80 border-b border-stone-200 dark:border-zinc-700">
+                <tr className="bg-stone-50/80 dark:bg-zinc-900/80 border-b border-stone-200/80 dark:border-zinc-850">
                   {headerCells.map((h, hIdx) => (
-                    <th key={hIdx} className="px-4 py-2.5 font-bold text-stone-800 dark:text-zinc-200">
+                    <th key={hIdx} className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
                       {renderInlineMarkdown(h, onImageClick, resolveSrc)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-200 dark:divide-zinc-800">
+              <tbody className="divide-y divide-stone-150 dark:divide-zinc-850">
                 {dataRows.map((row, rIdx) => {
                   const cells = row
                     .split('|')
@@ -241,10 +256,10 @@ export default function MarkdownRenderer({
                   return (
                     <tr
                       key={rIdx}
-                      className={rIdx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-stone-50/50 dark:bg-zinc-900/50'}
+                      className="hover:bg-amber-500/5 dark:hover:bg-amber-400/5 transition-colors"
                     >
                       {cells.map((cell, cIdx) => (
-                        <td key={cIdx} className="px-4 py-2 text-stone-700 dark:text-zinc-300">
+                        <td key={cIdx} className="px-5 py-3 text-stone-700 dark:text-zinc-300 font-medium">
                           {renderInlineMarkdown(cell, onImageClick, resolveSrc)}
                         </td>
                       ))}
@@ -262,6 +277,7 @@ export default function MarkdownRenderer({
     // 5. Interactive Checkboxes / Tasks (- [ ] or - [x])
     const taskMatch = line.match(/^(\s*)[-*+]\s+\[([ xX])\]\s+(.*)$/);
     if (taskMatch) {
+      const indent = taskMatch[1].length;
       const isChecked = taskMatch[2].toLowerCase() === 'x';
       const text = taskMatch[3];
       const lineIdx = i;
@@ -269,21 +285,28 @@ export default function MarkdownRenderer({
       renderedElements.push(
         <div
           key={`task-${i}`}
-          className="flex items-start gap-2.5 my-1.5 group cursor-pointer"
+          className="flex items-start gap-3 my-2 group cursor-pointer font-sans"
+          style={{ paddingLeft: `${Math.min(indent * 12, 48)}px` }}
           onClick={() => onToggleTask && onToggleTask(lineIdx)}
         >
-          <button
-            type="button"
-            className={`mt-0.5 shrink-0 transition-colors ${
+          <div
+            className={`mt-0.5 shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${
               isChecked
-                ? 'text-amber-500 dark:text-amber-400'
-                : 'text-stone-400 dark:text-zinc-600 hover:text-amber-500'
+                ? 'bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/20 scale-100'
+                : 'border-stone-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-transparent group-hover:border-amber-400 group-hover:bg-amber-500/5'
             }`}
           >
-            {isChecked ? <FaCheckSquare className="text-base" /> : <FaSquare className="text-base" />}
-          </button>
+            <svg
+              className={`w-3.5 h-3.5 stroke-current stroke-[3] fill-none transition-transform duration-200 ${
+                isChecked ? 'scale-100 rotate-0' : 'scale-0 -rotate-12'
+              }`}
+              viewBox="0 0 24 24"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
           <span
-            className={`text-sm sm:text-base leading-snug transition-all ${
+            className={`text-sm sm:text-base leading-relaxed transition-all ${
               isChecked
                 ? 'line-through text-stone-400 dark:text-zinc-500'
                 : 'text-stone-800 dark:text-zinc-200'
@@ -335,13 +358,28 @@ export default function MarkdownRenderer({
     if (ulMatch) {
       const indent = ulMatch[1].length;
       const text = ulMatch[2];
+      const indentLevel = Math.floor(indent / 2);
+      
+      let bulletIcon = (
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 mt-2.5 shrink-0 block" />
+      );
+      if (indentLevel % 3 === 1) {
+        bulletIcon = (
+          <span className="w-1.5 h-1.5 rounded-full border-2 border-amber-500 dark:border-amber-400 mt-2.5 shrink-0 block" />
+        );
+      } else if (indentLevel % 3 === 2) {
+        bulletIcon = (
+          <span className="w-1.5 h-1.5 rounded-none bg-amber-500 dark:bg-amber-400 rotate-45 mt-2.5 shrink-0 block" />
+        );
+      }
+
       renderedElements.push(
         <div
           key={`ul-${i}`}
-          className="flex items-start gap-2.5 my-1"
+          className="flex items-start gap-3 my-1.5 font-sans"
           style={{ paddingLeft: `${Math.min(indent * 12, 48)}px` }}
         >
-          <span className="text-amber-500 font-bold text-xs mt-1 shrink-0">•</span>
+          {bulletIcon}
           <span className="text-sm sm:text-base text-stone-800 dark:text-zinc-200 leading-relaxed">
             {renderInlineMarkdown(text, onImageClick, resolveSrc)}
           </span>
@@ -360,11 +398,11 @@ export default function MarkdownRenderer({
       renderedElements.push(
         <div
           key={`ol-${i}`}
-          className="flex items-start gap-2.5 my-1"
+          className="flex items-start gap-3 my-1.5 font-sans"
           style={{ paddingLeft: `${Math.min(indent * 12, 48)}px` }}
         >
-          <span className="font-mono text-xs font-bold text-amber-500 mt-0.5 shrink-0 min-w-[18px]">
-            {num}.
+          <span className="font-mono text-xs font-bold text-amber-500 mt-1 shrink-0 min-w-[20px] bg-amber-500/10 px-1 py-0.5 rounded text-center">
+            {num}
           </span>
           <span className="text-sm sm:text-base text-stone-800 dark:text-zinc-200 leading-relaxed">
             {renderInlineMarkdown(text, onImageClick, resolveSrc)}

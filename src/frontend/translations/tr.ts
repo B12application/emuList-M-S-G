@@ -191,6 +191,12 @@ export const translationsTR = {
         footerCollection: 'Tüm Koleksiyonu Gör',
         spinAgain: 'Tekrar Dene',
         luckyDipTitle: 'Şansına Bu Çıktı!',
+        trendingTitle: 'Dünya Trendleri',
+        trendingSubtitle: 'Bu ay en çok izlenen popüler içerikler',
+        trendingMovies: 'Trend Filmler',
+        trendingSeries: 'Trend Diziler',
+        today: 'Bugün',
+        thisWeek: 'Bu Hafta',
 
         // Best Recommendations
         bestRecsTitle: 'En İyi Öneriler',

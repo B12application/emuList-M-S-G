@@ -200,6 +200,7 @@ export default function NotesList({
 
             // Plain text excerpt
             const plainExcerpt = (note.content || '')
+              .replace(/<[^>]*>/g, ' ')
               .replace(/!\[(.*?)\]\((.*?)\)/g, '')
               .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
               .replace(/#{1,6}\s+/g, '')

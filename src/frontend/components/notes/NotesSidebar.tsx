@@ -66,16 +66,28 @@ export default function NotesSidebar({
   isMobileDrawer = false,
   onCloseMobileDrawer,
 }: NotesSidebarProps) {
-  const [collapsedFolders, setCollapsedFolders] = useState<Record<string, boolean>>({});
+  const [collapsedFolders, setCollapsedFolders] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('emulist_collapsed_folders');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
   const [openFolderMenuId, setOpenFolderMenuId] = useState<string | null>(null);
   const [dragOverTargetId, setDragOverTargetId] = useState<string | null>(null);
 
   const toggleFolderCollapse = (folderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setCollapsedFolders((prev) => ({
-      ...prev,
-      [folderId]: !prev[folderId],
-    }));
+    setCollapsedFolders((prev) => {
+      const current = prev[folderId] !== false; // defaults to true (collapsed)
+      const updated = {
+        ...prev,
+        [folderId]: !current,
+      };
+      localStorage.setItem('emulist_collapsed_folders', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleCategoryClick = (category: FilterCategory, folderId?: string | null) => {
@@ -93,7 +105,7 @@ export default function NotesSidebar({
 
   // Render folder tree item
   const renderFolderItem = (folder: NoteFolder, depth: number = 0) => {
-    const isCollapsed = Boolean(collapsedFolders[folder.id]);
+    const isCollapsed = collapsedFolders[folder.id] !== false;
     const isFolderActive = filterCategory === 'folder' && activeFolderId === folder.id;
     const isDragOver = dragOverTargetId === folder.id;
     const folderNotesCount = notes.filter(

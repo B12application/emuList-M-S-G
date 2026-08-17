@@ -78,7 +78,7 @@ export default function PlannerPage() {
       // 1. Verileri PARALEL çek (Hız kazandırır)
       const [dbMeetings, gsMatches, alerts] = await Promise.all([
         getUserMeetings(user.uid),
-        getUpcomingGSMatches(),
+        getUpcomingGSMatches(isManualRefresh),
         getUserCalendarAlerts(user.uid)
       ]);
 

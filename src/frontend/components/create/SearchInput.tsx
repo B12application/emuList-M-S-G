@@ -2,7 +2,7 @@
 // Unified search component for all media types (Movies, Series, Books, Games)
 
 import { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaSpinner, FaTimes, FaFilm, FaCalendarAlt, FaUser } from 'react-icons/fa';
 import { searchMovies, getMovieById, normalizeRating } from '../../../backend/services/omdbApi';
 import { searchTMDB, getTMDBDetails, getTMDBPosterUrl, normalizeTMDBRating } from '../../../backend/services/tmdbApi';
 import { searchBooks, getBookById, normalizeBookRating, getBookCoverUrl, formatAuthors } from '../../../backend/services/googleBooksApi';
@@ -133,7 +133,12 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
     }, [query, type, apiPreference, t]);
 
     const handleSelect = async (result: SearchResult) => {
+        // Blur active input element immediately to close virtual keyboard on mobile devices
+        if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         setIsSearching(true);
+        setShowResults(false);
 
         try {
             let details: MediaDetails;
@@ -179,7 +184,6 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     rating: data.volumeInfo.averageRating ? normalizeBookRating(data.volumeInfo.averageRating) : '0',
                     author: formatAuthors(data.volumeInfo.authors),
                     genres: data.volumeInfo.categories || [],
-                    // Kitaplar için yayın tarihi
                     releaseDate: data.volumeInfo.publishedDate || ''
                 };
             } else {
@@ -190,7 +194,6 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     description: data.description_raw || data.description || '',
                     rating: data.rating ? normalizeGameRating(data.rating) : '0',
                     genres: data.genres ? data.genres.map((g: any) => g.name) : [],
-                    // Oyunlar için çıkış tarihi
                     releaseDate: data.released || ''
                 };
             }
@@ -199,7 +202,6 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
             setQuery('');
             setResults([]);
             setShowResults(false);
-            toast.success(t('create.loaded'));
         } catch (err) {
             toast.error(err instanceof Error ? err.message : t('common.error'));
         } finally {
@@ -207,108 +209,141 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
         }
     };
 
-
-
     const getPlaceholder = () => {
         switch (type) {
-            case 'movie': return t('create.searchPlaceholderMovie');
-            case 'series': return t('create.searchPlaceholderSeries');
-            case 'book': return t('create.searchPlaceholderBook');
-            case 'game': return t('create.searchPlaceholderGame');
-            default: return t('create.searchPlaceholder');
+            case 'movie': return t('create.searchPlaceholderMovie') || 'Film ara (örn. Inception)...';
+            case 'series': return t('create.searchPlaceholderSeries') || 'Dizi ara (örn. Breaking Bad)...';
+            case 'book': return t('create.searchPlaceholderBook') || 'Kitap veya yazar ara...';
+            case 'game': return t('create.searchPlaceholderGame') || 'Oyun ara (örn. Witcher 3)...';
+            default: return t('create.searchPlaceholder') || 'Aramak için yazın...';
         }
     };
 
     return (
         <div ref={containerRef} className="relative">
-            <div className="relative">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
+            {/* Search Input Box */}
+            <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-amber-500 transition-colors pointer-events-none">
+                    <FaSearch className="text-sm" />
+                </div>
                 <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => results.length > 0 && setShowResults(true)}
                     placeholder={getPlaceholder()}
-                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full h-12 pl-11 pr-11 rounded-2xl border border-stone-200 dark:border-zinc-700/90 bg-stone-50/80 dark:bg-zinc-950/70 text-stone-900 dark:text-white placeholder:text-stone-400 text-sm font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 dark:focus:border-amber-400 transition-all shadow-inner"
                 />
                 {query && !isSearching && (
                     <button
                         type="button"
                         onClick={() => { setQuery(''); setResults([]); setShowResults(false); }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-stone-200/60 dark:bg-zinc-700/60 text-stone-500 hover:text-stone-800 dark:hover:text-white transition-colors"
+                        aria-label="Aramayı Temizle"
                     >
-                        <FaTimes />
+                        <FaTimes className="text-[10px]" />
                     </button>
                 )}
                 {isSearching && (
-                    <FaSpinner className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-blue-500" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <FaSpinner className="animate-spin text-amber-500 text-sm" />
+                    </div>
                 )}
             </div>
 
-            {/* API Selection Toggle - Premium Segmented Control */}
+            {/* API Engine Selection Toggle - For Movies and Series */}
             {(type === 'movie' || type === 'series') && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-3 px-1">
-                    <span className="text-[11px] uppercase tracking-widest text-stone-400 dark:text-zinc-500 font-bold ml-1">
-                        {language === 'tr' ? 'Arama Motoru:' : 'Search Engine:'}
+                <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 px-1">
+                    <span className="text-[10px] uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-extrabold flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+                        {language === 'tr' ? 'Arama Kaynağı' : 'Search Source'}
                     </span>
-                    <div className="flex items-center bg-stone-100/80 dark:bg-zinc-800/80 p-1 rounded-xl shadow-inner border border-stone-200/50 dark:border-zinc-700/50 backdrop-blur-md w-fit">
+                    <div className="flex items-center bg-stone-100 dark:bg-zinc-800 p-1 rounded-xl shadow-inner border border-stone-200/60 dark:border-zinc-700/60">
                         <button
                             type="button"
                             onClick={() => setApiPreference('omdb')}
-                            className={`relative px-4 py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all duration-300 ease-out flex items-center gap-1.5
-                                ${apiPreference === 'omdb' 
-                                    ? 'bg-white dark:bg-zinc-700 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-stone-200/50 dark:ring-zinc-600 scale-[1.02]' 
-                                    : 'text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-700/50'}`}
+                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                                apiPreference === 'omdb'
+                                    ? 'bg-amber-400 text-stone-950 shadow-sm'
+                                    : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                            }`}
                         >
-                            {apiPreference === 'omdb' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>}
-                            OMDb <span className="text-[9px] opacity-60 font-medium">(Klasik)</span>
+                            OMDb <span className="text-[9px] opacity-75 font-normal">(IMDb)</span>
                         </button>
-                        
                         <button
                             type="button"
                             onClick={() => setApiPreference('tmdb')}
-                            className={`relative px-4 py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all duration-300 ease-out flex items-center gap-1.5
-                                ${apiPreference === 'tmdb' 
-                                    ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-stone-200/50 dark:ring-zinc-600 scale-[1.02]' 
-                                    : 'text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-700/50'}`}
+                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                                apiPreference === 'tmdb'
+                                    ? 'bg-sky-500 text-white shadow-sm'
+                                    : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                            }`}
                         >
-                            {apiPreference === 'tmdb' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>}
-                            TMDb <span className="text-[9px] opacity-60 font-medium">(Modern)</span>
+                            TMDb <span className="text-[9px] opacity-75 font-normal">(Modern)</span>
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Results Dropdown */}
+            {/* Results Dropdown Floating Layer */}
             {showResults && results.length > 0 && (
-                <div className="absolute z-50 w-full mt-2 bg-stone-50 dark:bg-zinc-800 border border-stone-300 dark:border-zinc-700 rounded-xl shadow-xl max-h-80 overflow-y-auto">
+                <div className="absolute z-50 left-0 right-0 mt-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-stone-200/90 dark:border-zinc-700/90 rounded-2xl shadow-2xl max-h-80 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
+                    <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-stone-400 dark:text-zinc-500 flex items-center justify-between border-b border-stone-100 dark:border-zinc-800">
+                        <span>Arama Sonuçları ({results.length})</span>
+                        <span className="text-amber-500 font-bold">Önizlemek için tıkla</span>
+                    </div>
+
                     {results.map((result) => (
                         <button
                             key={result.id}
                             type="button"
                             onClick={() => handleSelect(result)}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-stone-100 dark:hover:bg-zinc-700 transition text-left border-b border-stone-200 dark:border-zinc-700 last:border-b-0"
+                            className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-amber-500/10 dark:hover:bg-amber-500/15 border border-transparent hover:border-amber-400/30 transition-all text-left group cursor-pointer"
                         >
-                            <ImageWithFallback
-                                src={result.image}
-                                alt={result.title}
-                                className="w-10 h-14 object-cover rounded-lg shrink-0"
-                            />
-                            <div className="min-w-0 flex-1">
-                                <h4 className="font-medium text-stone-900 dark:text-white truncate">{result.title}</h4>
+                            <div className="w-11 h-15 rounded-lg overflow-hidden shrink-0 shadow-sm border border-stone-200/50 dark:border-zinc-700/50 bg-stone-100 dark:bg-zinc-800">
+                                <ImageWithFallback
+                                    src={result.image}
+                                    alt={result.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                            </div>
+                            <div className="min-w-0 flex-1 space-y-0.5">
+                                <h4 className="font-bold text-sm text-stone-900 dark:text-white truncate group-hover:text-amber-500 transition-colors">
+                                    {result.title}
+                                </h4>
                                 {result.subtitle && (
-                                    <p className="text-sm text-stone-500 dark:text-zinc-400 truncate">{result.subtitle}</p>
+                                    <p className="text-xs text-stone-500 dark:text-zinc-400 truncate flex items-center gap-1">
+                                        <FaUser className="text-[10px] opacity-60" /> {result.subtitle}
+                                    </p>
                                 )}
-                                {result.year && (
-                                    <p className="text-xs text-stone-400">{result.year}</p>
-                                )}
+                                <div className="flex items-center gap-2 pt-0.5">
+                                    {result.year && (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400">
+                                            <FaCalendarAlt className="text-[8px]" /> {result.year}
+                                        </span>
+                                    )}
+                                    {result.source && (
+                                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${
+                                            result.source === 'tmdb' 
+                                                ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400' 
+                                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                        }`}>
+                                            {result.source}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </button>
                     ))}
                 </div>
             )}
 
-            {error && <p className="mt-2 text-sm text-amber-700">{error}</p>}
+            {error && (
+                <p className="mt-2 text-xs font-semibold text-rose-500 dark:text-rose-400 px-1">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }
+

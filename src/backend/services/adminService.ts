@@ -17,6 +17,8 @@ export interface AdminUser {
     displayName: string;
     gender?: 'male' | 'female' | '';
     createdAt?: Timestamp;
+    lastLoginAt?: Timestamp;
+    lastDevice?: string;
     bio?: string;
     location?: string;
     photoURL?: string;

@@ -486,6 +486,14 @@ export default function VehicleTab() {
     }).filter(a => a.drivenKm > 0 || a.fuelTotal > 0);
   }, [logs, expenses, vehicle]);
 
+  const fuelSummary = useMemo(() => {
+    if (!fuelAnalysis.length) return { totalFuel: 0, totalKm: 0, avgCostPerKm: 0 };
+    const totalFuel = fuelAnalysis.reduce((sum, item) => sum + item.fuelTotal, 0);
+    const totalKm = fuelAnalysis.reduce((sum, item) => sum + item.drivenKm, 0);
+    const avgCostPerKm = totalKm > 0 ? totalFuel / totalKm : 0;
+    return { totalFuel, totalKm, avgCostPerKm };
+  }, [fuelAnalysis]);
+
   const tireStats = useMemo(() => {
     const history = formData.tireHistory || [];
     const lastEntry = history.length > 0 ? history[history.length - 1] : null;
@@ -925,170 +933,19 @@ export default function VehicleTab() {
             </div>
           </div>
 
-          <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-              <GiCarWheel size={120} />
-            </div>
-            <div className="flex justify-between items-center mb-6 relative z-10">
-              <h3 className="text-[11px] font-black text-stone-900 dark:text-white flex items-center gap-2 uppercase tracking-widest">
-                <GiCarWheel className="text-stone-400 dark:text-zinc-500" /> {t('expenses.vehicle.tireStatus')}
-              </h3>
-              {!isEditing && (
-                <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 px-3 py-1 rounded-full border border-stone-100 dark:border-zinc-800 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-[9px] font-black text-stone-600 dark:text-zinc-400 uppercase">
-                    {tireStats.activeSet === 'summer' ? 'Yazlık Takılı' : 'Kışlık Takılı'}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4 relative z-10">
-              {/* Progress Bar Area */}
-              {!isEditing && (
-                <div className="p-5 bg-white dark:bg-zinc-900 rounded-[1.5rem] border border-stone-100 dark:border-zinc-800 shadow-sm">
-                  <div className="flex justify-between items-end mb-3">
-                    <div>
-                      <p className="text-[10px] font-black text-stone-400 uppercase leading-none mb-1">Lastik Kullanım Ömrü</p>
-                      <h4 className="text-xl font-black text-stone-900 dark:text-white uppercase tracking-tight">
-                        {tireStats.usagePercent}% <span className="text-stone-400 text-xs font-bold">Kullanıldı</span>
-                      </h4>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-stone-400 uppercase leading-none mb-1">Kalan Ömür</p>
-                      <p className={`text-sm font-black uppercase ${tireStats.status === 'warning' ? 'text-amber-500' : tireStats.status === 'danger' ? 'text-rose-500' : 'text-emerald-500'}`}>
-                        ~{tireStats.remainingKm.toLocaleString()} KM
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-3 w-full bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden flex gap-0.5">
-                    <div
-                      className={`h-full transition-all duration-1000 ${tireStats.status === 'danger' ? 'bg-rose-500' : tireStats.status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
-                      style={{ width: `${tireStats.usagePercent}%` }}
-                    />
-                    <div className="flex-1 h-full bg-stone-50 dark:bg-zinc-800/50" />
-                  </div>
-                </div>
-              )}
-
-              {/* Tires Detail Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  {
-                    type: 'summer',
-                    label: t('expenses.vehicle.summerTire'),
-                    brand: formData.tireSummerBrand,
-                    date: formData.tireSummerPurchaseDate,
-                    year: formData.tireSummerYear,
-                    icon: <FaSun className="text-amber-500" />
-                  },
-                  {
-                    type: 'winter',
-                    label: t('expenses.vehicle.winterTire'),
-                    brand: formData.tireWinterBrand,
-                    date: formData.tireWinterPurchaseDate,
-                    year: formData.tireWinterYear,
-                    icon: <FaSnowflake className="text-sky-500" />
-                  }
-                ].map(tire => (
-                  <div key={tire.type} className={`p-4 rounded-2xl border transition-all ${tireStats.activeSet === tire.type
-                    ? 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-700 shadow-md ring-1 ring-stone-900/5'
-                    : 'bg-stone-50/50 dark:bg-zinc-800/20 border-stone-100 dark:border-zinc-800 opacity-60'
-                    }`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-stone-100 dark:border-zinc-800">
-                          {tire.icon}
-                        </div>
-                        <p className="text-[10px] font-black text-stone-500 dark:text-zinc-400 uppercase">{tire.label}</p>
-                      </div>
-                      {tireStats.activeSet === tire.type && (
-                        <span className="text-[8px] font-black bg-stone-900 dark:bg-white text-white dark:text-stone-900 px-2 py-0.5 rounded-full uppercase tracking-tighter">Aktif</span>
-                      )}
-                    </div>
-
-                    {isEditing ? (
-                      <div className="space-y-2">
-                        <input
-                          placeholder="Marka/Model"
-                          value={tire.brand || ''}
-                          onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerBrand' : 'tireWinterBrand']: e.target.value })}
-                          className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black"
-                        />
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            type="number"
-                            placeholder="Üretim Yılı"
-                            value={tire.year || ''}
-                            onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerYear' : 'tireWinterYear']: Number(e.target.value) })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black"
-                          />
-                          <input
-                            type="date"
-                            value={tire.date || ''}
-                            onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerPurchaseDate' : 'tireWinterPurchaseDate']: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-black text-stone-900 dark:text-white uppercase leading-none">
-                          {tire.brand || '---'}
-                          <span className="text-[10px] text-stone-400 ml-2">{tire.year || ''}</span>
-                        </h4>
-                        <p className="text-[9px] font-bold text-stone-400 uppercase flex items-center gap-1">
-                          <FaCalendarAlt size={8} /> Alım: {tire.date ? format(parseISO(tire.date), 'MM/yyyy') : '---'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Quick Action: Change Tire */}
-              {!isEditing && (
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      const newSet = tireStats.activeSet === 'summer' ? 'winter' : 'summer';
-                      const currentKm = Number(formData.currentKm) || 0;
-
-                      const newEntry: any = {
-                        date: format(new Date(), 'yyyy-MM-dd'),
-                        km: currentKm,
-                        type: newSet as 'summer' | 'winter',
-                        note: `${newSet === 'summer' ? 'Yazlık' : 'Kışlık'} lastiklere geçiş yapıldı.`
-                      };
-
-                      setFormData({
-                        ...formData,
-                        tireLastChangeDate: newEntry.date,
-                        tireLastChangeKm: newEntry.km,
-                        tireHistory: [...(formData.tireHistory || []), newEntry]
-                      });
-                    }}
-                    className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 group"
-                  >
-                    <GiCarWheel className="group-hover:rotate-180 transition-transform duration-500" />
-                    Lastik Değişimi Kaydet ({(formData.currentKm || 0).toLocaleString()} KM)
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
         </div>
 
-        {/* Right Column: Dates, Maintenance, KM Input */}
+        {/* Right Column: Dates & Documents */}
         <div className="space-y-6 flex flex-col">
           {/* Important Dates */}
-          <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800">
-            <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
+          <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+              <FaCalendarAlt size={120} />
+            </div>
+            <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-widest relative z-10">
               <FaCalendarAlt className="text-stone-400 dark:text-zinc-500" /> Önemli Tarihler & Belgeler
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3 relative z-10">
               {[
                 { label: t('expenses.vehicle.insurance'), key: 'insuranceDate', icon: '🛡️', type: 'insurance' },
                 { label: t('expenses.vehicle.inspection'), key: 'inspectionDate', icon: '📋', type: 'inspection' }
@@ -1097,14 +954,14 @@ export default function VehicleTab() {
                 const daysLeft = (item.type === 'insurance' || item.type === 'inspection') && value && isValid(parseISO(value)) ? differenceInDays(parseISO(value), new Date()) : null;
 
                 return (
-                  <div key={item.key} className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800">
+                  <div key={item.key} className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900/50 rounded-2xl border border-stone-100 dark:border-zinc-800 shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-xl shadow-sm text-lg">{item.icon}</div>
+                      <div className="w-10 h-10 flex items-center justify-center bg-stone-50 dark:bg-zinc-800 rounded-xl text-lg">{item.icon}</div>
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase">{item.label}</p>
                           {!isEditing && daysLeft !== null && (
-                            <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter ${daysLeft < 30 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
+                            <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter ${daysLeft < 30 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                               }`}>
                               {daysLeft > 0 ? `${daysLeft} Gün Kaldı` : 'Süresi Doldu'}
                             </span>
@@ -1115,11 +972,11 @@ export default function VehicleTab() {
                             type="date"
                             value={value || ''}
                             onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
-                            className="text-xs font-black bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg p-1.5 mt-1 outline-none"
+                            className="text-xs font-black bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg p-1.5 mt-1 outline-none dark:text-white"
                           />
                         ) : (
                           <p className="text-sm font-black text-stone-900 dark:text-white mt-0.5">
-                            {value && isValid(parseISO(value)) ? format(parseISO(value), 'dd MMMM yyyy', { locale: dateLocale }) : '-'}
+                            {value && isValid(parseISO(value)) ? format(parseISO(value), 'dd MMMM yyyy', { locale: dateLocale }) : '---'}
                           </p>
                         )}
                       </div>
@@ -1128,6 +985,7 @@ export default function VehicleTab() {
                       <button
                         onClick={() => handleAddToCalendar(item.type as any, (formData as any)[item.key])}
                         className="p-2.5 bg-stone-100 dark:bg-zinc-800 text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white rounded-xl transition-all"
+                        title="Takvime Ekle"
                       >
                         <FaBell size={12} />
                       </button>
@@ -1136,451 +994,510 @@ export default function VehicleTab() {
                 );
               })}
 
-              {/* MTV Status */}
-              <div className="p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-xl shadow-sm text-lg">💰</div>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase">MTV Ödemeleri</p>
-                    {isEditing ? (
-                      <div className="flex flex-col gap-3 mt-2">
-                        <select
-                          value={formData.mtvYear || new Date().getFullYear()}
-                          onChange={e => setFormData({ ...formData, mtvYear: Number(e.target.value) })}
-                          className="text-xs font-black bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg p-2 outline-none w-28"
-                        >
-                          {[2024, 2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {[1, 2].map(i => (
-                            <label key={i} className="flex items-center gap-2 cursor-pointer p-2 bg-white dark:bg-zinc-900 rounded-lg border border-stone-200 dark:border-zinc-700">
-                              <input
-                                type="checkbox"
-                                checked={(formData as any)[`mtvPaid${i}`] || false}
-                                onChange={e => setFormData({ ...formData, [`mtvPaid${i}`]: e.target.checked })}
-                                className="accent-stone-900 dark:accent-white w-4 h-4 rounded-md"
-                              />
-                              <span className="text-[10px] font-bold text-stone-600 dark:text-zinc-400">Taksit {i} Ödendi</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
+              {/* MTV */}
+              <div className="p-4 bg-white dark:bg-zinc-900/50 rounded-2xl border border-stone-100 dark:border-zinc-800 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-lg">💰</span>
+                  <p className="text-[10px] font-black text-stone-500 dark:text-zinc-400 uppercase tracking-wider">MTV Ödemeleri</p>
+                  {isEditing && (
+                    <select value={formData.mtvYear || new Date().getFullYear()} onChange={e => setFormData({ ...formData, mtvYear: Number(e.target.value) })}
+                      className="ml-auto text-xs font-black bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg p-1.5 outline-none dark:text-white">
+                      {[2024, 2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  )}
+                  {!isEditing && <span className="ml-auto text-xs font-black text-stone-700 dark:text-zinc-200">{formData.mtvYear}</span>}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[1, 2].map(i => {
+                    const paid = (formData as any)[`mtvPaid${i}`];
+                    return isEditing ? (
+                      <label key={i} className={`flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border transition-all ${paid ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800' : 'bg-stone-50 border-stone-200 dark:bg-zinc-800 dark:border-zinc-700'}`}>
+                        <input type="checkbox" checked={paid || false} onChange={e => setFormData({ ...formData, [`mtvPaid${i}`]: e.target.checked })} className="accent-emerald-600 w-4 h-4" />
+                        <span className="text-[10px] font-black text-stone-700 dark:text-zinc-200">Taksit {i}</span>
+                      </label>
                     ) : (
-                      <div className="mt-1 flex flex-wrap items-center gap-3">
-                        <p className="text-sm font-black text-stone-900 dark:text-white">{formData.mtvYear}</p>
-                        <div className="flex gap-1.5">
-                          {[1, 2].map(i => (
-                            <span key={i} className={`text-[8px] px-2 py-1 rounded-md font-black uppercase tracking-tighter ${(formData as any)[`mtvPaid${i}`]
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                              }`}>
-                              Taksit {i}: {(formData as any)[`mtvPaid${i}`] ? 'ÖDENDİ' : 'ÖDENMEDİ'}
-                            </span>
-                          ))}
-                        </div>
+                      <div key={i} className={`flex items-center justify-between p-2.5 rounded-xl text-[10px] font-black uppercase ${paid ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'}`}>
+                        <span>Taksit {i}</span>
+                        <span>{paid ? 'Ödendi ✓' : 'Bekliyor'}</span>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Smart Maintenance Health Tracking */}
-          <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800 flex-1 flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-[11px] font-black text-stone-900 dark:text-white flex items-center gap-2 uppercase tracking-widest">
-                <FaWrench className="text-stone-400 dark:text-zinc-500" /> {t('expenses.vehicle.smartMaintenance') || 'Akıllı Bakım Takibi'}
-              </h3>
-              <button
-                onClick={() => setShowAddPart(!showAddPart)}
-                className="p-2 bg-stone-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg hover:scale-105 transition-all shadow-sm"
-              >
-                <FaPlus size={10} />
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {showAddPart && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-6 p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-stone-300 dark:border-zinc-700 space-y-4 overflow-hidden"
-                >
-                  <div>
-                    <label className="text-[9px] font-black text-stone-400 ml-1 uppercase tracking-widest mb-1 block">Hızlı Seçim</label>
-                    <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto p-1 custom-scrollbar">
-                      {COMMON_PARTS.map(part => (
-                        <button
-                          key={part.name}
-                          onClick={() => setNewPart({
-                            ...newPart,
-                            partName: part.name,
-                            lifespanKm: part.km,
-                            lifespanMonths: part.months
-                          })}
-                          className="px-2 py-1 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg text-[8px] font-bold text-stone-600 dark:text-zinc-400 hover:border-stone-900 dark:hover:border-white hover:bg-stone-50 dark:hover:bg-zinc-800 transition-all"
-                        >
-                          {part.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="col-span-2">
-                      <input
-                        type="text"
-                        placeholder="Parça Adı"
-                        value={newPart.partName}
-                        onChange={e => setNewPart({ ...newPart, partName: e.target.value })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[8px] font-black text-stone-400 uppercase ml-1">Değişim KM</label>
-                      <input
-                        type="number"
-                        value={newPart.replacedKm}
-                        onChange={e => setNewPart({ ...newPart, replacedKm: Number(e.target.value) })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[8px] font-black text-stone-400 uppercase ml-1">Değişim Tarihi</label>
-                      <input
-                        type="date"
-                        value={newPart.replacedDate}
-                        onChange={e => setNewPart({ ...newPart, replacedDate: e.target.value })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[8px] font-black text-stone-400 uppercase ml-1">Ömür (KM)</label>
-                      <input
-                        type="number"
-                        value={newPart.lifespanKm}
-                        onChange={e => setNewPart({ ...newPart, lifespanKm: Number(e.target.value) })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[8px] font-black text-stone-400 uppercase ml-1">Ömür (Ay)</label>
-                      <input
-                        type="number"
-                        value={newPart.lifespanMonths}
-                        onChange={e => setNewPart({ ...newPart, lifespanMonths: Number(e.target.value) })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleAddPart}
-                    className="w-full py-2 bg-stone-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all"
-                  >
-                    Listeye Ekle
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              {partStatuses.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center opacity-40 py-10">
-                  <FaTools size={32} className="mb-3 text-stone-300" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Henüz parça eklenmedi</p>
-                </div>
-              ) : (
-                partStatuses.map((part) => (
-                  <div key={part.id} className="p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800 group">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-tight">{part.partName}</h4>
-                        <p className="text-[8px] font-bold text-stone-400 uppercase mt-0.5">Son Değişim: {(part.replacedKm || 0).toLocaleString()} KM / {format(parseISO(part.replacedDate), 'dd.MM.yyyy')}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setConfirmingMaintenance({
-                            id: part.id!,
-                            partName: part.partName,
-                            replacedKm: vehicle?.currentKm || 0,
-                            replacedDate: format(new Date(), 'yyyy-MM-dd'),
-                            lifespanKm: part.lifespanKm,
-                            lifespanMonths: part.lifespanMonths
-                          })}
-                          className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:scale-110 transition-transform"
-                          title="Bakım Yapıldı"
-                        >
-                          <FaCheckCircle size={12} />
-                        </button>
-                        <button
-                          onClick={() => part.id && deleteMaintenanceRecord(part.id)}
-                          className="p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:scale-110 transition-transform opacity-0 group-hover:opacity-100"
-                        >
-                          <FaTrash size={10} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-tighter">
-                          <span className={part.status === 'critical' ? 'text-rose-500' : 'text-stone-400'}>
-                            {part.kmRemaining > 0 ? `${part.kmRemaining.toLocaleString()} KM Kaldı` : 'KM Doldu'}
-                          </span>
-                          <span className={part.status === 'critical' ? 'text-rose-500' : 'text-stone-400'}>
-                            {part.daysRemaining > 0 ? `${part.daysRemaining} Gün Kaldı` : 'Süre Doldu'}
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-stone-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${part.overallProgress}%` }}
-                            className={`h-full rounded-full ${part.status === 'safe' ? 'bg-emerald-500' :
-                              part.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500'
-                              }`}
-                          />
-                        </div>
-                      </div>
-
-                      {/* History List */}
-                      {part.history && part.history.length > 0 && (
-                        <div className="pt-2 border-t border-stone-200 dark:border-zinc-700">
-                          <button
-                            onClick={() => toggleHistory(part.id!)}
-                            className="w-full flex items-center justify-between text-[7px] font-black text-stone-400 uppercase tracking-widest hover:text-stone-900 dark:hover:text-white transition-colors group/hist"
-                          >
-                            <span className="flex items-center gap-1">
-                              <FaHistory size={6} /> Geçmiş Kayıtlar ({part.history.length})
-                            </span>
-                            <motion.span
-                              animate={{ rotate: expandedHistories.has(part.id!) ? 180 : 0 }}
-                              className="text-[10px]"
-                            >
-                              ↓
-                            </motion.span>
-                          </button>
-
-                          <AnimatePresence>
-                            {expandedHistories.has(part.id!) && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden space-y-1.5 mt-2"
-                              >
-                                {part.history.map((h: any, idx: number) => (
-                                  <div key={idx} className="flex justify-between items-center text-[8px] font-bold text-stone-500 dark:text-zinc-400 bg-white/50 dark:bg-zinc-900/30 px-2 py-1 rounded-md border border-stone-100/50 dark:border-zinc-800/50">
-                                    <span>{format(parseISO(h.replacedDate), 'dd.MM.yyyy')}</span>
-                                    <span>{h.replacedKm.toLocaleString()} KM</span>
-                                  </div>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
         </div>
       </div>
 
-      {/* Bottom Layout: KM Input (1/3) and Fuel Analysis (2/3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Monthly KM Input */}
-        <div className="bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800 h-full flex flex-col">
-          <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
-            <FaCalendarAlt className="text-stone-400 dark:text-zinc-500" /> Aylık KM Girişi
-          </h3>
-          <div className="space-y-4 flex-1">
-            <div className="space-y-3">
-              <input
-                type="month"
-                value={newLog.month}
-                onChange={e => setNewLog({ ...newLog, month: e.target.value })}
-                disabled={!!editingLogId}
-                className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-xs font-black focus:outline-none dark:text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-              />
-              <div className="relative">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Ay Sonu KM"
-                  value={newLog.km}
-                  onChange={e => {
-                    const val = e.target.value.replace(/[^0-9.,]/g, '');
-                    setNewLog({ ...newLog, km: val });
-                  }}
-                  className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-xs font-black focus:outline-none dark:text-white shadow-sm"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-stone-400">KM</span>
-              </div>
-              <button
-                onClick={() => {
-                  const cleanKm = typeof newLog.km === 'string'
-                    ? parseFloat(newLog.km.replace(',', '.'))
-                    : newLog.km;
+      {/* ═══════════════════════════════════════════════════════════
+          BÖLÜM 5 — LASTİK DURUMU
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="bg-white dark:bg-zinc-900/60 rounded-3xl p-6 border border-stone-200/70 dark:border-zinc-800 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-[0.025] pointer-events-none"><GiCarWheel size={130} /></div>
 
-                  if (!isNaN(cleanKm as number)) {
-                    handleAddLog();
-                  }
-                }}
-                className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg"
-              >
-                <FaPlus /> {editingLogId ? 'Guncelle' : 'Ekle'}
-              </button>
-              {editingLogId && (
-                <button
-                  onClick={() => {
-                    setEditingLogId(null);
-                    setNewLog({ month: format(new Date(), 'yyyy-MM'), km: '' });
-                  }}
-                  className="w-full py-2 bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all"
-                >
-                  Iptal
-                </button>
-              )}
+        <div className="flex items-center justify-between mb-5 relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-xl"><GiCarWheel className="text-stone-500 dark:text-zinc-400" size={14} /></div>
+            <div>
+              <h3 className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">{t('expenses.vehicle.tireStatus')}</h3>
+              <p className="text-[9px] font-bold text-stone-400 uppercase">Lastik Takip & Analizi</p>
             </div>
+          </div>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase ${tireStats.activeSet === 'summer' ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-400' : 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/30 dark:border-sky-800 dark:text-sky-400'}`}>
+            {tireStats.activeSet === 'summer' ? <><FaSun size={10} /> Yazlık Takılı</> : <><FaSnowflake size={10} /> Kışlık Takılı</>}
+          </div>
+        </div>
 
-            <div className="pt-4 border-t border-stone-200/50 dark:border-zinc-700/50 space-y-2 overflow-y-auto max-h-[220px] pr-1 custom-scrollbar">
-              {logs.map(log => (
-                <div key={log.id} className="flex justify-between items-center p-3 bg-white dark:bg-zinc-900/50 rounded-xl border border-stone-100 dark:border-zinc-800 group">
-                  <span className="text-[9px] font-black text-stone-400 uppercase">{format(parseISO(`${log.month}-01`), 'MMM yyyy', { locale: dateLocale })}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-stone-900 dark:text-white">{Number(log.km).toLocaleString('tr-TR')}</span>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => {
-                          setEditingLogId(log.id || null);
-                          setNewLog({ month: log.month, km: log.km.toString().replace('.', ',') });
-                        }}
-                        className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors"
-                      >
-                        <FaEdit size={10} />
-                      </button>
-                      <button onClick={() => log.id && deleteLog(log.id)} className="p-1 text-stone-400 hover:text-rose-500 transition-colors"><FaTrash size={10} /></button>
+        {/* Usage Progress Bar */}
+        <div className="mb-5 p-4 bg-stone-50 dark:bg-zinc-800/40 rounded-2xl border border-stone-100 dark:border-zinc-800 relative z-10">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest">Aktif Lastik Ömrü</p>
+              <p className="text-2xl font-black text-stone-900 dark:text-white leading-none mt-0.5">
+                {tireStats.usagePercent}% <span className="text-sm text-stone-400 font-bold">kullanıldı</span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest">Kalan</p>
+              <p className={`text-lg font-black ${tireStats.status === 'danger' ? 'text-rose-500' : tireStats.status === 'warning' ? 'text-amber-500' : 'text-emerald-500'}`}>
+                ~{tireStats.remainingKm.toLocaleString()} KM
+              </p>
+            </div>
+          </div>
+          <div className="h-3 w-full bg-stone-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${tireStats.usagePercent}%` }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className={`h-full rounded-full ${tireStats.status === 'danger' ? 'bg-rose-500' : tireStats.status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[8px] text-stone-400">0 KM</span>
+            <span className="text-[8px] text-stone-400">50.000 KM</span>
+          </div>
+        </div>
+
+        {/* Tire Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+          {[
+            { type: 'summer', label: t('expenses.vehicle.summerTire'), brand: formData.tireSummerBrand, date: formData.tireSummerPurchaseDate, year: formData.tireSummerYear, icon: <FaSun className="text-amber-400" size={16} />, iconBg: 'bg-amber-100 dark:bg-amber-950/30' },
+            { type: 'winter', label: t('expenses.vehicle.winterTire'), brand: formData.tireWinterBrand, date: formData.tireWinterPurchaseDate, year: formData.tireWinterYear, icon: <FaSnowflake className="text-sky-400" size={16} />, iconBg: 'bg-sky-100 dark:bg-sky-950/30' },
+          ].map(tire => {
+            const isActive = tireStats.activeSet === tire.type;
+            return (
+              <div key={tire.type} className={`p-4 rounded-2xl border-2 transition-all ${isActive ? 'border-stone-900 dark:border-white bg-stone-50 dark:bg-zinc-800/50 shadow-md' : 'border-stone-100 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-800/20 opacity-70'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-xl ${tire.iconBg}`}>{tire.icon}</div>
+                    <p className="text-[10px] font-black text-stone-600 dark:text-zinc-300 uppercase tracking-wider">{tire.label}</p>
+                  </div>
+                  {isActive && <span className="text-[8px] font-black bg-stone-900 dark:bg-white text-white dark:text-stone-900 px-2 py-0.5 rounded-full uppercase">Aktif</span>}
+                </div>
+
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <input placeholder="Marka / Model" value={tire.brand || ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerBrand' : 'tireWinterBrand']: e.target.value })}
+                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black dark:text-white outline-none" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="number" placeholder="Üretim Yılı" value={tire.year || ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerYear' : 'tireWinterYear']: Number(e.target.value) })}
+                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black dark:text-white outline-none" />
+                      <input type="date" value={tire.date || ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerPurchaseDate' : 'tireWinterPurchaseDate']: e.target.value })}
+                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black dark:text-white outline-none" />
                     </div>
                   </div>
+                ) : (
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-black text-stone-900 dark:text-white uppercase">{tire.brand || '—'} <span className="text-stone-400 text-xs font-bold">{tire.year}</span></h4>
+                    <p className="text-[9px] font-bold text-stone-400 flex items-center gap-1">
+                      <FaCalendarAlt size={8} /> Alım: {tire.date && isValid(parseISO(tire.date)) ? format(parseISO(tire.date), 'MM/yyyy') : '—'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Tire change button */}
+        <div className="mt-4 relative z-10">
+          <button
+            onClick={async () => {
+              const newSet = tireStats.activeSet === 'summer' ? 'winter' : 'summer';
+              const currentKm = Number(formData.currentKm) || 0;
+              const newEntry: any = { date: format(new Date(), 'yyyy-MM-dd'), km: currentKm, type: newSet, note: `${newSet === 'summer' ? 'Yazlık' : 'Kışlık'} lastiklere geçiş.` };
+              const updatedData = { ...formData, tireLastChangeDate: newEntry.date, tireLastChangeKm: newEntry.km, tireHistory: [...(formData.tireHistory || []), newEntry] };
+              setFormData(updatedData);
+              try { await saveVehicle(updatedData); toast.success(`${newSet === 'summer' ? 'Yazlık' : 'Kışlık'} lastiklere geçiş kaydedildi`); }
+              catch { toast.error('Kaydedilemedi'); }
+            }}
+            className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.01] active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 group"
+          >
+            <GiCarWheel className="group-hover:rotate-180 transition-transform duration-500" />
+            Lastik Değişimi Kaydet ({(formData.currentKm || 0).toLocaleString()} KM)
+          </button>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          BÖLÜM 6 — BAKIM TAKİBİ
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="bg-white dark:bg-zinc-900/60 rounded-3xl p-6 border border-stone-200/70 dark:border-zinc-800 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-xl"><FaWrench className="text-stone-500 dark:text-zinc-400" size={14} /></div>
+            <div>
+              <h3 className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">{t('expenses.vehicle.smartMaintenance') || 'Akıllı Bakım Takibi'}</h3>
+              <p className="text-[9px] font-bold text-stone-400 uppercase">
+                {partStatuses.length} parça takipte
+                {partStatuses.filter(p => p.status === 'critical').length > 0 && <span className="text-rose-500 ml-1">• {partStatuses.filter(p => p.status === 'critical').length} kritik</span>}
+              </p>
+            </div>
+          </div>
+          <button onClick={() => setShowAddPart(!showAddPart)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all ${showAddPart ? 'bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-200' : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-md hover:scale-105'}`}>
+            <FaPlus size={9} /> {showAddPart ? 'Kapat' : 'Parça Ekle'}
+          </button>
+        </div>
+
+        {/* Add Part Form */}
+        <AnimatePresence>
+          {showAddPart && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+              className="mb-5 p-4 bg-stone-50 dark:bg-zinc-800/40 rounded-2xl border border-dashed border-stone-300 dark:border-zinc-700 space-y-3 overflow-hidden">
+              <div>
+                <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest mb-2">Hızlı Seçim</p>
+                <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto custom-scrollbar">
+                  {COMMON_PARTS.map(part => (
+                    <button key={part.name} onClick={() => setNewPart({ ...newPart, partName: part.name, lifespanKm: part.km, lifespanMonths: part.months })}
+                      className={`px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border ${newPart.partName === part.name ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 border-transparent' : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-700 text-stone-600 dark:text-zinc-400 hover:border-stone-500'}`}>
+                      {part.name}
+                    </button>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="col-span-2">
+                  <input type="text" placeholder="Parça Adı" value={newPart.partName} onChange={e => setNewPart({ ...newPart, partName: e.target.value })}
+                    className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white" />
+                </div>
+                {[
+                  { label: 'Değişim KM', field: 'replacedKm', type: 'number' },
+                  { label: 'Değişim Tarihi', field: 'replacedDate', type: 'date' },
+                  { label: 'Ömür (KM)', field: 'lifespanKm', type: 'number' },
+                  { label: 'Ömür (Ay)', field: 'lifespanMonths', type: 'number' },
+                ].map(f => (
+                  <div key={f.field}>
+                    <p className="text-[8px] font-black text-stone-400 uppercase mb-1">{f.label}</p>
+                    <input type={f.type} value={(newPart as any)[f.field]} onChange={e => setNewPart({ ...newPart, [f.field]: f.type === 'number' ? Number(e.target.value) : e.target.value })}
+                      className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold outline-none dark:text-white" />
+                  </div>
+                ))}
+              </div>
+              <button onClick={handleAddPart} className="w-full py-2.5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
+                Listeye Ekle
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Part List */}
+        <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1 custom-scrollbar">
+          {partStatuses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center opacity-40">
+              <FaTools size={32} className="mb-3 text-stone-300" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Henüz parça eklenmedi</p>
+            </div>
+          ) : (
+            partStatuses.map(part => {
+              const statusColor = part.status === 'safe' ? 'bg-emerald-500' : part.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500';
+              const statusBg = part.status === 'safe' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900' : part.status === 'warning' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900' : 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900';
+              return (
+                <div key={part.id} className={`p-4 rounded-2xl border group transition-all hover:shadow-sm ${statusBg}`}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5 ${statusColor}`} />
+                      <div>
+                        <h4 className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-tight">{part.partName}</h4>
+                        <p className="text-[8px] font-bold text-stone-400 uppercase mt-0.5">Son: {(part.replacedKm || 0).toLocaleString()} KM • {format(parseISO(part.replacedDate), 'dd.MM.yyyy')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button onClick={() => setConfirmingMaintenance({ id: part.id!, partName: part.partName, replacedKm: vehicle?.currentKm || 0, replacedDate: format(new Date(), 'yyyy-MM-dd'), lifespanKm: part.lifespanKm, lifespanMonths: part.lifespanMonths })}
+                        className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:scale-110 transition-transform" title="Bakım Yapıldı">
+                        <FaCheckCircle size={12} />
+                      </button>
+                      <button onClick={() => part.id && deleteMaintenanceRecord(part.id)}
+                        className="p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-lg hover:scale-110 transition-transform opacity-0 group-hover:opacity-100">
+                        <FaTrash size={10} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[8px] font-black uppercase tracking-wider">
+                      <span className={part.status === 'critical' ? 'text-rose-500' : 'text-stone-400'}>{part.kmRemaining > 0 ? `${part.kmRemaining.toLocaleString()} KM kaldı` : 'KM doldu'}</span>
+                      <span className={part.status === 'critical' ? 'text-rose-500' : 'text-stone-400'}>{part.daysRemaining > 0 ? `${part.daysRemaining} gün kaldı` : 'Süre doldu'}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-stone-200/60 dark:bg-zinc-700/60 rounded-full overflow-hidden">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${part.overallProgress}%` }}
+                        className={`h-full rounded-full ${statusColor}`} />
+                    </div>
+                  </div>
+
+                  {part.history && part.history.length > 0 && (
+                    <div className="mt-3 pt-2 border-t border-stone-200/50 dark:border-zinc-700/30">
+                      <button onClick={() => toggleHistory(part.id!)} className="flex items-center gap-1.5 text-[8px] font-black text-stone-400 uppercase tracking-widest hover:text-stone-700 dark:hover:text-white transition-colors">
+                        <FaHistory size={8} />
+                        <span>Geçmiş ({part.history.length})</span>
+                        <motion.span animate={{ rotate: expandedHistories.has(part.id!) ? 180 : 0 }} className="ml-1">↓</motion.span>
+                      </button>
+                      <AnimatePresence>
+                        {expandedHistories.has(part.id!) && (
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-2 space-y-1">
+                            {part.history.map((h: any, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center text-[8px] font-bold text-stone-500 dark:text-zinc-400 bg-white/60 dark:bg-zinc-900/40 px-3 py-1.5 rounded-lg border border-stone-100/60 dark:border-zinc-800/40">
+                                <span>{format(parseISO(h.replacedDate), 'dd.MM.yyyy')}</span>
+                                <span>{h.replacedKm.toLocaleString()} KM</span>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          BÖLÜM 7 — AYLIK KM GİRİŞİ + YAKIT ANALİZİ
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+        {/* KM Entry Panel */}
+        <div className="bg-white dark:bg-zinc-900/60 rounded-3xl p-6 border border-stone-200/70 dark:border-zinc-800 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-stone-100 dark:bg-zinc-800 rounded-xl"><FaCalendarAlt className="text-stone-500 dark:text-zinc-400" size={14} /></div>
+              <div>
+                <h3 className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">Aylık KM Girişi</h3>
+                <p className="text-[9px] font-bold text-stone-400 uppercase">Sayaç Takip</p>
+              </div>
+            </div>
+            <span className="text-[9px] font-black px-2.5 py-1 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 rounded-xl border border-stone-200/60 dark:border-zinc-700">
+              {(vehicle?.currentKm || 0).toLocaleString()} KM
+            </span>
+          </div>
+
+          <AnimatePresence>
+            {editingLogId && (
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <p className="text-[10px] font-black text-amber-800 dark:text-amber-300 uppercase">
+                    {newLog.month ? format(parseISO(`${newLog.month}-01`), 'MMMM yyyy', { locale: dateLocale }) : 'Kayıt'} Düzenleniyor
+                  </p>
+                </div>
+                <button onClick={() => { setEditingLogId(null); setNewLog({ month: format(new Date(), 'yyyy-MM'), km: '' }); }} className="text-[9px] font-black text-amber-700 dark:text-amber-400 hover:underline uppercase">Vazgeç</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="space-y-3 bg-stone-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-stone-200/60 dark:border-zinc-800">
+            <div>
+              <label className="text-[8px] font-black text-stone-400 uppercase tracking-widest block mb-1.5">Dönem (Ay)</label>
+              <input type="month" value={newLog.month} onChange={e => setNewLog({ ...newLog, month: e.target.value })} disabled={!!editingLogId}
+                className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-black focus:outline-none focus:ring-2 focus:ring-stone-900/20 dark:focus:ring-white/20 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all" />
+            </div>
+            <div>
+              <label className="text-[8px] font-black text-stone-400 uppercase tracking-widest block mb-1.5">Ay Sonu KM Değeri</label>
+              <div className="relative">
+                <input type="text" inputMode="decimal" placeholder="Örn: 15.500" value={newLog.km}
+                  onChange={e => setNewLog({ ...newLog, km: e.target.value.replace(/[^0-9.,]/g, '') })}
+                  className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl pl-3 pr-12 py-2 text-xs font-black focus:outline-none focus:ring-2 focus:ring-stone-900/20 dark:focus:ring-white/20 dark:text-white transition-all placeholder:text-stone-400" />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-stone-400 pointer-events-none">KM</span>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              {editingLogId && (
+                <button onClick={() => { setEditingLogId(null); setNewLog({ month: format(new Date(), 'yyyy-MM'), km: '' }); }}
+                  className="flex-1 py-2.5 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 rounded-xl font-black text-[9px] uppercase tracking-wider hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all">İptal</button>
+              )}
+              <button onClick={() => {
+                const clean = parseFloat((newLog.km || '').replace(',', '.'));
+                if (!isNaN(clean) && clean > 0) handleAddLog(); else toast.error('Geçerli bir KM değeri girin');
+              }} className={`py-2.5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl font-black text-[9px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm ${editingLogId ? 'flex-[2]' : 'w-full'}`}>
+                <FaPlus size={9} /> {editingLogId ? 'Güncelle' : 'KM Kaydı Ekle'}
+              </button>
+            </div>
+          </div>
+
+          {/* Log list */}
+          <div className="mt-4 flex-1">
+            <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest mb-2">Kayıt Geçmişi ({logs.length})</p>
+            <div className="space-y-2 overflow-y-auto max-h-[220px] pr-1 custom-scrollbar">
+              {logs.length === 0 ? (
+                <div className="p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-stone-200 dark:border-zinc-800 text-center">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase">Henüz kayıt yok</p>
+                </div>
+              ) : (
+                logs.map(log => {
+                  const isSelected = editingLogId === log.id;
+                  return (
+                    <div key={log.id} className={`flex justify-between items-center p-3 rounded-xl border transition-all ${isSelected ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : 'bg-stone-50 dark:bg-zinc-800/30 border-stone-200/60 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'}`}>
+                      <div>
+                        <span className="text-[10px] font-black text-stone-800 dark:text-zinc-200 uppercase">{format(parseISO(`${log.month}-01`), 'MMMM yyyy', { locale: dateLocale })}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-stone-900 dark:text-white px-2 py-0.5 bg-stone-100 dark:bg-zinc-700 rounded-lg">{Number(log.km).toLocaleString('tr-TR')} KM</span>
+                        <button onClick={() => { setEditingLogId(log.id || null); setNewLog({ month: log.month, km: log.km.toString() }); }}
+                          className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-white bg-stone-100 dark:bg-zinc-800 rounded-lg transition-colors"><FaEdit size={10} /></button>
+                        <button onClick={() => log.id && deleteLog(log.id)}
+                          className="p-1.5 text-stone-400 hover:text-rose-600 bg-stone-100 dark:bg-zinc-800 hover:bg-rose-50 rounded-lg transition-colors"><FaTrash size={10} /></button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
 
-        {/* Fuel Consumption Analysis (Takes 2/3 space on large screens) */}
-        <div className="lg:col-span-2 bg-stone-50/50 dark:bg-zinc-800/30 rounded-[2rem] p-6 border border-stone-100 dark:border-zinc-800 overflow-hidden flex flex-col">
-          <h3 className="text-[11px] font-black text-stone-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
-            <FaGasPump className="text-stone-400 dark:text-zinc-500" /> Yakıt Tüketim Analizi
-          </h3>
-          <div className="flex-1 overflow-x-auto">
+        {/* Fuel Analysis Panel */}
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-900/60 rounded-3xl p-6 border border-stone-200/70 dark:border-zinc-800 shadow-sm flex flex-col">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-950/40 rounded-xl"><FaGasPump className="text-emerald-600 dark:text-emerald-400" size={14} /></div>
+              <div>
+                <h3 className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">Yakıt & Tüketim Analizi</h3>
+                <p className="text-[9px] font-bold text-stone-400 uppercase">Aylık harcama & KM maliyeti</p>
+              </div>
+            </div>
+            {vehicle?.fuelCategory && (
+              <span className="self-start sm:self-auto text-[9px] font-black px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40 flex items-center gap-1.5">
+                ⛽ {vehicle.fuelCategory}
+              </span>
+            )}
+          </div>
+
+          {/* Summary cards */}
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {[
+              { label: 'Toplam Yakıt', value: `${fuelSummary.totalFuel.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} TL`, color: 'text-stone-900 dark:text-white' },
+              { label: 'Toplam Yol', value: `${fuelSummary.totalKm.toLocaleString('tr-TR')} KM`, color: 'text-stone-900 dark:text-white' },
+              { label: 'Ort. KM Maliyeti', value: `${fuelSummary.avgCostPerKm.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`, color: 'text-emerald-600 dark:text-emerald-400' },
+            ].map((s, i) => (
+              <div key={i} className="p-3 bg-stone-50 dark:bg-zinc-800/40 rounded-2xl border border-stone-100 dark:border-zinc-800">
+                <p className="text-[7px] font-black text-stone-400 uppercase tracking-widest mb-1">{s.label}</p>
+                <p className={`text-sm font-black ${s.color} leading-none`}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden space-y-3 overflow-y-auto max-h-[320px] pr-1 custom-scrollbar flex-1">
+            {fuelAnalysis.length === 0 ? (
+              <div className="p-8 text-center bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-stone-200 dark:border-zinc-800">
+                <p className="text-[9px] font-bold text-stone-400 uppercase">Analiz için yeterli veri yok</p>
+              </div>
+            ) : fuelAnalysis.map((item, idx) => {
+              const isHigh = item.costPerKm > 6;
+              const isMed = item.costPerKm > 4 && item.costPerKm <= 6;
+              return (
+                <div key={idx} className="p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-stone-900 dark:text-white uppercase">{format(parseISO(`${item.month}-01`), 'MMMM yyyy', { locale: dateLocale })}</span>
+                    <span className={`text-[9px] font-black px-2.5 py-1 rounded-xl ${isHigh ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400' : isMed ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'}`}>
+                      {item.costPerKm.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺ / KM
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 bg-white/60 dark:bg-zinc-900/40 p-2 rounded-xl text-center">
+                    <div><p className="text-[7px] font-black text-stone-400 uppercase">Katedilen</p><p className="text-xs font-black dark:text-white">{item.drivenKm.toLocaleString('tr-TR')} KM</p></div>
+                    <div><p className="text-[7px] font-black text-stone-400 uppercase">Yakıt</p><p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{item.fuelTotal.toLocaleString('tr-TR')} TL</p></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto flex-1">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] border-b border-stone-100 dark:border-zinc-800">
-                  <th className="pb-3 pl-2">Dönem</th>
-                  <th className="pb-3 text-right">Yol (KM)</th>
-                  <th className="pb-3 text-right">Yakıt Toplam</th>
-                  <th className="pb-3 text-right pr-2">KM Maliyeti</th>
+                <tr className="text-[8px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest border-b border-stone-100 dark:border-zinc-800">
+                  <th className="pb-3 pl-3">Dönem</th>
+                  <th className="pb-3 text-right">Katedilen</th>
+                  <th className="pb-3 text-right">Yakıt</th>
+                  <th className="pb-3 text-right">KM Maliyeti</th>
+                  <th className="pb-3 text-right pr-3">Verimlilik</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-50 dark:divide-zinc-800/50">
                 {fuelAnalysis.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-12 text-center text-[10px] text-stone-400 font-black uppercase opacity-50">Analiz için yeterli veri yok</td>
-                  </tr>
-                ) : (
-                  fuelAnalysis.map((item, idx) => (
-                    <tr key={idx} className="group hover:bg-stone-50 dark:hover:bg-zinc-800/30 transition-colors">
-                      <td className="py-4 pl-2">
-                        <p className="text-xs font-black text-stone-900 dark:text-white uppercase tracking-tight">{format(parseISO(`${item.month}-01`), 'MMMM yyyy', { locale: dateLocale })}</p>
-                      </td>
-                      <td className="py-4 text-right">
-                        <p className="text-xs font-bold text-stone-500 dark:text-zinc-400">{Number(item.drivenKm).toLocaleString('tr-TR')} KM</p>
-                      </td>
-                      <td className="py-4 text-right">
-                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{Number(item.fuelTotal).toLocaleString('tr-TR')} TL</p>
-                      </td>
-                      <td className="py-4 text-right pr-2">
-                        <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-black ${item.costPerKm > 5 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'}`}>
-                          {Number(item.costPerKm).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                  <tr><td colSpan={5} className="py-12 text-center text-[9px] text-stone-400 font-bold uppercase">Analiz için yeterli veri bulunmuyor</td></tr>
+                ) : fuelAnalysis.map((item, idx) => {
+                  const isHigh = item.costPerKm > 6;
+                  const isMed = item.costPerKm > 4 && item.costPerKm <= 6;
+                  return (
+                    <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-zinc-800/30 transition-colors">
+                      <td className="py-3 pl-3 text-xs font-black text-stone-900 dark:text-white uppercase">{format(parseISO(`${item.month}-01`), 'MMMM yyyy', { locale: dateLocale })}</td>
+                      <td className="py-3 text-right text-xs font-bold text-stone-600 dark:text-zinc-300">{item.drivenKm.toLocaleString('tr-TR')} KM</td>
+                      <td className="py-3 text-right text-xs font-black text-stone-900 dark:text-white">{item.fuelTotal.toLocaleString('tr-TR')} TL</td>
+                      <td className="py-3 text-right text-xs font-black text-emerald-600 dark:text-emerald-400">{item.costPerKm.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</td>
+                      <td className="py-3 text-right pr-3">
+                        <span className={`text-[8px] font-black px-2.5 py-0.5 rounded-lg uppercase ${isHigh ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400' : isMed ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'}`}>
+                          {isHigh ? 'Yüksek' : isMed ? 'Normal' : 'Ekonomik'}
                         </span>
                       </td>
                     </tr>
-                  ))
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       </div>
+
       {/* Maintenance Confirmation Modal */}
       <AnimatePresence>
         {confirmingMaintenance && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border border-stone-100 dark:border-zinc-800"
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border border-stone-100 dark:border-zinc-800">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <FaCheckCircle size={32} />
-                </div>
-                <h3 className="text-lg font-black text-stone-900 dark:text-white uppercase tracking-tight">Bakım Tamamlandı mı?</h3>
-                <p className="text-xs font-bold text-stone-400 uppercase mt-1">{confirmingMaintenance.partName}</p>
+                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4"><FaCheckCircle size={32} /></div>
+                <h3 className="text-lg font-black text-stone-900 dark:text-white uppercase">Bakım Tamamlandı mı?</h3>
+                <p className="text-xs font-bold text-stone-400 mt-1">{confirmingMaintenance.partName}</p>
               </div>
-
               <div className="space-y-4 mb-8">
                 <div>
                   <label className="text-[9px] font-black text-stone-400 uppercase ml-2 mb-1 block tracking-widest">Değişim Kilometresi</label>
-                  <input
-                    type="number"
-                    value={confirmingMaintenance.replacedKm}
-                    onChange={e => setConfirmingMaintenance({ ...confirmingMaintenance, replacedKm: Number(e.target.value) })}
-                    className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm font-bold outline-none dark:text-white focus:border-stone-900 dark:focus:border-white transition-all"
-                  />
+                  <input type="number" value={confirmingMaintenance.replacedKm} onChange={e => setConfirmingMaintenance({ ...confirmingMaintenance, replacedKm: Number(e.target.value) })}
+                    className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm font-bold outline-none dark:text-white" />
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-stone-400 uppercase ml-2 mb-1 block tracking-widest">Değişim Tarihi</label>
-                  <input
-                    type="date"
-                    value={confirmingMaintenance.replacedDate}
-                    onChange={e => setConfirmingMaintenance({ ...confirmingMaintenance, replacedDate: e.target.value })}
-                    className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm font-bold outline-none dark:text-white focus:border-stone-900 dark:focus:border-white transition-all"
-                  />
+                  <input type="date" value={confirmingMaintenance.replacedDate} onChange={e => setConfirmingMaintenance({ ...confirmingMaintenance, replacedDate: e.target.value })}
+                    className="w-full bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm font-bold outline-none dark:text-white" />
                 </div>
               </div>
-
               <div className="flex gap-3">
-                <button
-                  onClick={() => setConfirmingMaintenance(null)}
-                  className="flex-1 py-4 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
-                >
-                  İptal
-                </button>
-                <button
-                  onClick={handlePartMaintenanceDone}
-                  className="flex-1 py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-stone-900/10 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all"
-                >
-                  Kaydet
-                </button>
+                <button onClick={() => setConfirmingMaintenance(null)} className="flex-1 py-4 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-stone-200 transition-all">İptal</button>
+                <button onClick={handlePartMaintenanceDone} className="flex-1 py-4 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all">Kaydet</button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Footer Section */}
-      <footer className="mt-12 pt-8 pb-4 border-t border-stone-200 dark:border-zinc-800">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+      {/* Footer */}
+      <footer className="mt-8 pt-6 pb-4 border-t border-stone-200 dark:border-zinc-800">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-3 px-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-stone-900 dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-stone-900 shadow-lg shadow-stone-900/10 dark:shadow-none">
+            <div className="w-8 h-8 bg-stone-900 dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-stone-900 shadow">
               <FaCar size={14} />
             </div>
             <div>
@@ -1588,20 +1505,12 @@ export default function VehicleTab() {
               <p className="text-[8px] font-bold text-stone-400 uppercase tracking-tighter mt-0.5">Smart Vehicle Management</p>
             </div>
           </div>
-
-          <div className="text-center">
-            <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-              © {new Date().getFullYear()} • Güvenli Sürüşler Dileriz
+          <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">© {new Date().getFullYear()} • Güvenli Sürüşler</p>
+          <div className="text-right">
+            <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest leading-none">Son Güncelleme</p>
+            <p className="text-[10px] font-bold text-stone-600 dark:text-zinc-400 mt-1">
+              {vehicle?.updatedAt ? format(new Date(vehicle.updatedAt), 'dd.MM.yyyy HH:mm') : format(new Date(), 'dd.MM.yyyy HH:mm')}
             </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest leading-none">Son Güncelleme</p>
-              <p className="text-[10px] font-bold text-stone-600 dark:text-zinc-400 mt-1">
-                {vehicle?.updatedAt ? format(new Date(vehicle.updatedAt), 'dd.MM.yyyy HH:mm') : format(new Date(), 'dd.MM.yyyy HH:mm')}
-              </p>
-            </div>
           </div>
         </div>
 

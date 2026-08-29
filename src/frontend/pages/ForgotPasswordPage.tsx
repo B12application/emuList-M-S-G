@@ -4,11 +4,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../backend/config/firebaseConfig';
 import { useLanguage } from '../context/LanguageContext';
-import { FaArrowLeft, FaEnvelope, FaKey, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { 
+  FaArrowLeft, 
+  FaEnvelope, 
+  FaKey, 
+  FaCheckCircle, 
+  FaShieldAlt, 
+  FaArrowRight 
+} from 'react-icons/fa';
 import '../index.css';
 
 export default function ForgotPasswordPage() {
   const { t, language, setLanguage } = useLanguage();
+  const isTr = language === 'tr';
   const [email, setEmail] = useState('');
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,88 +27,118 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     try {
-      await sendPasswordResetEmail(auth, email);
+      auth.languageCode = isTr ? 'tr' : 'en';
+      const actionCodeSettings = {
+        url: `${window.location.origin}/reset-password`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email.trim(), actionCodeSettings);
       setIsSent(true);
     } catch (err: any) {
       console.error(err);
-      setError(t('auth.passwordResetError') || 'Şifre sıfırlama e-postası gönderilemedi. Lütfen adresi kontrol edip tekrar deneyin.');
+      if (err.code === 'auth/user-not-found') {
+        setError(isTr ? 'Bu e-posta adresine kayıtlı kullanıcı bulunamadı.' : 'No user found with this email.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError(isTr ? 'Geçersiz bir e-posta adresi.' : 'Invalid email address.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError(isTr ? 'Çok fazla deneme yapıldı. Lütfen bekleyip tekrar deneyin.' : 'Too many attempts. Please wait.');
+      } else {
+        setError(t('auth.passwordResetError') || (isTr ? 'Sıfırlama e-postası gönderilemedi.' : 'Could not send reset email.'));
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-stone-50 dark:bg-black text-black dark:text-white font-sans selection:bg-emerald-500 selection:text-white overflow-hidden">
+    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-600 selection:text-white transition-colors duration-300 relative overflow-hidden">
       
-      {/* BACKGROUND ELEMENTS */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-emerald-500/10 blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full bg-amber-500/10 blur-[120px]" />
+      {/* Soft Ambient Lighting */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-[15%] -left-[10%] w-[55%] h-[55%] rounded-full bg-gradient-to-br from-indigo-500/10 to-emerald-500/10 dark:from-indigo-500/15 dark:to-emerald-500/10 blur-[130px]" />
+        <div className="absolute -bottom-[15%] -right-[10%] w-[55%] h-[55%] rounded-full bg-gradient-to-tl from-purple-500/10 to-sky-500/10 dark:from-purple-500/10 dark:to-sky-500/10 blur-[130px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:28px_28px] opacity-60 dark:opacity-60" />
       </div>
 
-      {/* HEADER / NAVIGATION */}
-      <div className="absolute top-0 w-full p-6 md:p-10 flex justify-between items-center z-50">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-4"
-        >
-          <Link to="/login" className="p-2.5 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all shadow-sm hover:shadow-md active:scale-95">
-            <FaArrowLeft />
+      {/* Top Floating Nav */}
+      <header className="absolute top-0 w-full px-6 py-6 sm:px-10 flex justify-between items-center z-50">
+        <div className="flex items-center gap-3.5">
+          <Link 
+            to="/login" 
+            className="p-2.5 rounded-xl bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs active:scale-95 backdrop-blur-md"
+          >
+            <FaArrowLeft className="text-xs" />
           </Link>
-          <span className="hidden md:block text-sm font-bold tracking-widest font-[Orbitron] text-emerald-600 dark:text-emerald-400">B12 SYSTEM</span>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-4"
-        >
-          <div className="flex bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md p-1 rounded-full border border-stone-200 dark:border-zinc-800 shadow-sm">
-            <button onClick={() => setLanguage('tr')} className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${language === 'tr' ? 'bg-emerald-600 text-white shadow-lg' : 'text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'}`}>TR</button>
-            <button onClick={() => setLanguage('en')} className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${language === 'en' ? 'bg-emerald-600 text-white shadow-lg' : 'text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'}`}>EN</button>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs tracking-wider shadow-sm shadow-indigo-600/30">
+              B12
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-black tracking-wider text-slate-900 dark:text-white uppercase font-[Orbitron]">
+                B12 OS
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-none">
+                {isTr ? 'Şifre Kurtarma' : 'Password Recovery'}
+              </span>
+            </div>
           </div>
-        </motion.div>
-      </div>
+        </div>
 
-      {/* MAIN CONTENT */}
-      <main className="w-full flex items-center justify-center p-6 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
-          <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl p-8 md:p-10 rounded-[32px] border border-stone-200/50 dark:border-zinc-800/50 shadow-2xl shadow-emerald-500/5">
+        {/* Language Switch */}
+        <div className="flex bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/90 dark:border-slate-700/80 shadow-xs">
+          <button 
+            type="button"
+            onClick={() => setLanguage('tr')} 
+            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${language === 'tr' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+          >
+            TR
+          </button>
+          <button 
+            type="button"
+            onClick={() => setLanguage('en')} 
+            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${language === 'en' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+          >
+            EN
+          </button>
+        </div>
+      </header>
+
+      {/* Main Centered Box */}
+      <main className="w-full flex items-center justify-center p-6 min-h-screen relative z-10">
+        <div className="w-full max-w-md">
+          <div className="bg-white/90 dark:bg-slate-850 p-8 sm:p-10 rounded-3xl border border-slate-200/90 dark:border-slate-750 shadow-xl space-y-6 backdrop-blur-md">
             
             <AnimatePresence mode="wait">
               {!isSent ? (
                 <motion.div
                   key="form"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="space-y-8"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="space-y-6"
                 >
-                  <div className="text-center space-y-3">
-                    <div className="inline-flex p-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl mb-2">
-                      <FaKey size={24} />
+                  <div className="space-y-2 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mx-auto mb-3 shadow-xs">
+                      <FaKey size={18} />
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight text-stone-900 dark:text-white">
-                      Şifremi Unuttum
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white">
+                      {isTr ? 'Şifremi Unuttum' : 'Forgot Password'}
                     </h1>
-                    <p className="text-stone-500 dark:text-zinc-400 text-sm leading-relaxed max-w-[280px] mx-auto">
-                      Sorun değil, e-posta adresinizi girin ve size bir kurtarma bağlantısı gönderelim.
+                    <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto">
+                      {isTr 
+                        ? 'E-posta adresinizi girin, güvenli şifre sıfırlama bağlantısını anında iletelim.' 
+                        : 'Enter your email address to receive a secure password reset link.'}
                     </p>
                   </div>
 
-                  <form onSubmit={handleResetPassword} className="space-y-6">
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-stone-400 dark:text-zinc-500 ml-1">
-                        E-posta Adresi
+                  <form onSubmit={handleResetPassword} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+                        {isTr ? 'E-Posta Adresi' : 'Email Address'}
                       </label>
-                      <div className="relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-emerald-500 transition-colors">
-                          <FaEnvelope size={18} />
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          <FaEnvelope size={14} />
                         </div>
                         <input
                           id="email"
@@ -108,83 +146,73 @@ export default function ForgotPasswordPage() {
                           required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="ornek@mail.com"
-                          className="w-full pl-12 pr-4 py-4 bg-stone-100 dark:bg-zinc-800/50 border border-transparent focus:border-emerald-500 focus:bg-white dark:focus:bg-zinc-800 rounded-2xl outline-none transition-all text-stone-900 dark:text-white font-medium"
+                          placeholder="name@example.com"
+                          className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 focus:border-indigo-500 rounded-2xl outline-none text-slate-900 dark:text-white text-sm transition-all placeholder:text-slate-400 font-medium"
                         />
                       </div>
                     </div>
 
                     {error && (
-                      <motion.div 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium border border-rose-100 dark:border-rose-900/30"
-                      >
-                        <FaExclamationCircle className="flex-shrink-0" />
+                      <div className="p-3.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-300 rounded-2xl text-xs font-medium">
                         {error}
-                      </motion.div>
+                      </div>
                     )}
 
                     <button
                       type="submit"
                       disabled={loading || !email}
-                      className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+                      className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-md shadow-indigo-600/25 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 text-sm mt-1"
                     >
-                      <span className="relative z-10 flex items-center justify-center gap-3">
-                        {loading ? (
-                          <>
-                            <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                            İşleniyor...
-                          </>
-                        ) : (
-                          'Sıfırlama Bağlantısı Gönder'
-                        )}
-                      </span>
-                      <div className="absolute inset-0 bg-linear-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                      {loading ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <span>{isTr ? 'Sıfırlama Bağlantısı Gönder' : 'Send Reset Link'}</span>
+                          <FaArrowRight className="text-xs" />
+                        </>
+                      )}
                     </button>
                   </form>
 
-                  <div className="text-center pt-2">
-                    <p className="text-sm text-stone-500 dark:text-zinc-500 font-medium">
-                      Hatırladınız mı? <Link to="/login" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline underline-offset-4 decoration-2">Giriş Yap</Link>
-                    </p>
+                  <div className="text-center pt-1">
+                    <Link to="/login" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold transition-colors">
+                      {isTr ? '← Giriş Sayfasına Dön' : '← Back to Sign In'}
+                    </Link>
                   </div>
                 </motion.div>
               ) : (
                 <motion.div
                   key="success"
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-center space-y-6 py-4"
+                  className="text-center space-y-5 py-2"
                 >
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
-                    className="inline-flex p-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full mb-2"
-                  >
-                    <FaCheckCircle size={48} />
-                  </motion.div>
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl mx-auto shadow-xs">
+                    <FaCheckCircle />
+                  </div>
                   
-                  <div className="space-y-3">
-                    <h2 className="text-3xl font-black text-stone-900 dark:text-white">Kontrol Edin!</h2>
-                    <p className="text-stone-500 dark:text-zinc-400 text-sm leading-relaxed max-w-[280px] mx-auto">
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{email}</span> adresine bir bağlantı gönderdik. Lütfen gelen kutunuzu kontrol edin.
+                  <div className="space-y-2">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                      {isTr ? 'E-postanızı Kontrol Edin' : 'Check Your Email'}
+                    </h2>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
+                      <span className="font-semibold text-slate-900 dark:text-white">{email}</span> {isTr ? 'adresine şifre sıfırlama bağlantısı gönderildi.' : 'has been sent a password reset link.'}
                     </p>
                   </div>
 
-                  <div className="pt-4 space-y-4">
+                  <div className="pt-3 space-y-2">
                     <Link
                       to="/login"
-                      className="inline-flex w-full justify-center py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]"
+                      className="inline-flex w-full justify-center py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs transition-colors"
                     >
-                      Giriş Sayfasına Dön
+                      {isTr ? 'Giriş Sayfasına Dön' : 'Return to Login'}
                     </Link>
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => setIsSent(false)}
-                      className="text-sm font-bold text-stone-400 dark:text-zinc-500 hover:text-stone-900 dark:hover:text-white transition-colors"
+                      className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                     >
-                      E-postayı yanlış mı girdiniz? Tekrar deneyin.
+                      {isTr ? 'Farklı bir e-posta dene' : 'Try another email'}
                     </button>
                   </div>
                 </motion.div>
@@ -193,10 +221,10 @@ export default function ForgotPasswordPage() {
 
           </div>
           
-          <p className="text-center mt-10 text-[10px] font-bold tracking-[0.2em] text-stone-400 dark:text-zinc-600 uppercase">
-            © {new Date().getFullYear()} B12 Sport Ecosystem
+          <p className="text-center mt-6 text-[11px] text-slate-400 font-mono">
+            B12 // SECURITY & RECOVERY ENGINE
           </p>
-        </motion.div>
+        </div>
       </main>
     </div>
   );

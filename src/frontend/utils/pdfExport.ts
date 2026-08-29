@@ -111,7 +111,8 @@ export function exportToPDF(items: MediaItem[], title: string = 'Medya Listem') 
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(156, 163, 175);
-        doc.text(`emuList - Sayfa ${i}/${pageCount}`, 105, 290, { align: 'center' });
+        doc.text(`B12 - Sayfa ${i}/${pageCount}`, 105, 290, { align: 'center' });
+
     }
 
     // İndir

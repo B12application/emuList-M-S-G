@@ -28,7 +28,9 @@ import PlannerPage from './pages/PlannerPage';
 import ExpensesPage from './pages/ExpensesPage';
 import TravelPlannerPage from './pages/TravelPlannerPage';
 import NotesPage from './pages/NotesPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { LanguageProvider } from './context/LanguageContext';
+
 import { NotificationProvider } from './context/NotificationContext';
 import { useAuth } from './context/AuthContext';
 
@@ -84,7 +86,29 @@ const router = createBrowserRouter([
     path: '/sifremi-unuttum',
     element: <ForgotPasswordPage />
   },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />
+  },
+  {
+    path: '/sifre-sifirla',
+    element: <ResetPasswordPage />
+  },
+  {
+    path: '/__/auth/action',
+    element: <ResetPasswordPage />
+  },
+  {
+    path: '/auth/action',
+    element: <ResetPasswordPage />
+  },
 ]);
+
+
 
 import { SoundProvider } from './context/SoundContext';
 

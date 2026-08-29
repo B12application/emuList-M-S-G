@@ -61,8 +61,8 @@ async function fetchIcsData(): Promise<string | null> {
 }
 
 export const getUpcomingGSMatches = async (forceRefresh = false): Promise<PlannerMeeting[]> => {
-  const CACHE_KEY = 'gs_matches_cache';
-  const CACHE_TIME_KEY = 'gs_matches_cache_time';
+  const CACHE_KEY = 'gs_matches_cache_v2';
+  const CACHE_TIME_KEY = 'gs_matches_cache_time_v2';
   const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
   // 1. Try reading from cache unless forceRefresh is triggered

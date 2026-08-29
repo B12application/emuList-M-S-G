@@ -70,11 +70,12 @@ export function normalizeTMDBRating(rating: number): string {
 }
 
 /**
- * Searches for movies or TV series on TMDB with Turkish language support
+ * Searches for movies or TV series on TMDB with configurable language support (defaults to 'tr-TR' for manual Turkish searches, or 'en-US')
  */
 export async function searchTMDB(
     query: string,
-    type: 'movie' | 'series'
+    type: 'movie' | 'series',
+    language: string = 'tr-TR'
 ): Promise<TMDBMovieResult[]> {
     if (!API_KEY) {
         throw new Error('TMDB API key bulunamadı. Lütfen .env dosyasını kontrol edin.');
@@ -88,7 +89,7 @@ export async function searchTMDB(
     const params = new URLSearchParams({
         api_key: API_KEY,
         query: query.trim(),
-        language: 'tr-TR',
+        language: language,
         include_adult: 'false',
         page: '1',
     });
@@ -114,7 +115,8 @@ export async function searchTMDB(
  */
 export async function getTMDBDetails(
     id: number | string,
-    type: 'movie' | 'series'
+    type: 'movie' | 'series',
+    language: string = 'en-US'
 ): Promise<TMDBMovieDetails> {
     if (!API_KEY) {
         throw new Error('TMDB API key bulunamadı. Lütfen .env dosyasını kontrol edin.');
@@ -123,7 +125,7 @@ export async function getTMDBDetails(
     const endpoint = type === 'movie' ? `/movie/${id}` : `/tv/${id}`;
     const params = new URLSearchParams({
         api_key: API_KEY,
-        language: 'tr-TR',
+        language: language,
         append_to_response: 'external_ids',
     });
 
@@ -144,13 +146,14 @@ export async function getTMDBDetails(
 }
 
 /**
- * Fetches trending movies or TV series from TMDB
+ * Fetches trending movies or TV series from TMDB (defaults to English / Global 'en-US')
  * type: 'movie' | 'series'
  * timeWindow: 'day' | 'week'
  */
 export async function getTMDBTrending(
     type: 'movie' | 'series',
-    timeWindow: 'day' | 'week' = 'week'
+    timeWindow: 'day' | 'week' = 'week',
+    language: string = 'en-US'
 ): Promise<TMDBMovieResult[]> {
     if (!API_KEY) {
         throw new Error('TMDB API key bulunamadı. Lütfen .env dosyasını kontrol edin.');
@@ -160,7 +163,7 @@ export async function getTMDBTrending(
     const endpoint = `/trending/${mediaType}/${timeWindow}`;
     const params = new URLSearchParams({
         api_key: API_KEY,
-        language: 'tr-TR',
+        language: language,
     });
 
     try {
@@ -178,4 +181,5 @@ export async function getTMDBTrending(
         throw new Error('TMDB trend verileri getirilirken bir hata oluştu');
     }
 }
+
 

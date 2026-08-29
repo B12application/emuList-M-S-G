@@ -8,8 +8,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "backend": "tsx src/backend/index.ts"
+    "backend": "tsx src/backend/index.ts",
+    "backup:media": "tsx scripts/backup-media.ts",
+    "backup:expenses": "tsx scripts/backup-expenses.ts",
+    "backup:all": "tsx scripts/backup-all.ts"
   },
+
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

@@ -3,8 +3,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-
 import { auth } from '../../backend/config/firebaseConfig';
+import { logUserLogin } from '../../backend/services/loginLogService';
 
 interface AuthContextType {
   user: User | null;
@@ -13,7 +13,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) { // 'ReactNode' tipi artık tanınıyor olmalı
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,6 +21,9 @@ export function AuthProvider({ children }: { children: ReactNode }) { // 'ReactN
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      if (currentUser) {
+        logUserLogin(currentUser);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -43,4 +46,4 @@ export function useAuth() {
     throw new Error('useAuth, AuthProvider içinde kullanılmalıdır');
   }
   return context;
-}
+}

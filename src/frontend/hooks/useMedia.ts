@@ -1,5 +1,3 @@
-// src/hooks/useMedia.ts
-// Refactored with React Query + Infinite Scroll for pagination
 import { useMemo } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { db, auth } from '../../backend/config/firebaseConfig';
@@ -14,6 +12,8 @@ import {
 } from 'firebase/firestore';
 import type { Query, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
+import { autoBackupToLocalStorage } from '../../backend/services/backupService';
+
 
 const PAGE_SIZE = 20;
 
@@ -60,9 +60,19 @@ async function fetchMediaPage(
     id: doc.id
   }));
 
+  // Auto-backup to localStorage snapshot if full collection is loaded
+  if (isSearchActive && items.length > 0) {
+    try {
+      autoBackupToLocalStorage(userId, items);
+    } catch {
+      // Non-blocking
+    }
+  }
+
   const lastDoc = documentSnapshots.docs.length > 0
     ? documentSnapshots.docs[documentSnapshots.docs.length - 1]
     : null;
+
 
   const hasMore = !isSearchActive && documentSnapshots.docs.length >= PAGE_SIZE;
 

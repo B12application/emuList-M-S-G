@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAppSound } from '../context/SoundContext';
@@ -9,11 +9,19 @@ import {
     FaArrowRight, FaUser, FaTimes, FaVolumeUp, FaVolumeMute, FaCloud, FaMoon,
     FaSun, FaPalette, FaBell, FaLanguage, FaInfoCircle, FaTrash, FaKey,
     FaUserEdit, FaEnvelope, FaCalendar, FaFingerprint, FaHistory, FaDownload,
-    FaEye, FaEyeSlash, FaSignOutAlt, FaCog, FaHome
+    FaEye, FaEyeSlash, FaSignOutAlt, FaCog, FaHome, FaSyncAlt, FaFileCode,
+    FaFileAlt, FaFileUpload, FaCheckCircle, FaSpinner, FaFilm, FaTv, FaBolt
 } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updateProfile, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../backend/config/firebaseConfig';
+import { syncAllMissingImdbIds } from '../../backend/services/imdbSyncService';
+import type { SyncProgress, SyncResult } from '../../backend/services/imdbSyncService';
+import {
+    downloadLibraryAsJson, downloadLibraryAsText, restoreLibraryFromJson, getLocalBackupInfo,
+    downloadExpensesAsJson, restoreExpensesFromJson
+} from '../../backend/services/backupService';
+
 import toast from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -59,7 +67,24 @@ export default function SettingsPage() {
 
     // Database usage estimation
     const [dbUsageBytes, setDbUsageBytes] = useState<number>(0);
-    const [activeTab, setActiveTab] = useState<'general' | 'profile' | 'security' | 'privacy'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'profile' | 'security' | 'privacy' | 'vault'>('general');
+
+    // IMDb Sync state
+    const [isSyncingImdb, setIsSyncingImdb] = useState(false);
+    const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
+    const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+
+    // Backup & Restore state
+    const [isExportingJson, setIsExportingJson] = useState(false);
+    const [isExportingText, setIsExportingText] = useState(false);
+    const [isRestoring, setIsRestoring] = useState(false);
+    const [localBackupInfo, setLocalBackupInfo] = useState<{ exists: boolean; count: number; dateString: string }>({ exists: false, count: 0, dateString: '' });
+    const [isRecoveryUnlocked, setIsRecoveryUnlocked] = useState(false);
+    const restoreFileInputRef = useRef<HTMLInputElement>(null);
+    const restoreExpensesFileInputRef = useRef<HTMLInputElement>(null);
+
+
+
 
     // Account info
     const [accountCreated, setAccountCreated] = useState<string>('');
@@ -281,16 +306,150 @@ export default function SettingsPage() {
         }
     };
 
+    // Load local backup info on mount
+    useEffect(() => {
+        if (user) {
+            setLocalBackupInfo(getLocalBackupInfo(user.uid));
+        }
+    }, [user]);
+
+    const handleSyncImdb = async () => {
+        if (!user) return;
+        setIsSyncingImdb(true);
+        setSyncProgress(null);
+        setSyncResult(null);
+        const toastId = toast.loading('Kütüphane taranıyor ve IMDb ID\'leri eşitleniyor...');
+
+        try {
+            const res = await syncAllMissingImdbIds(user.uid, (prog) => {
+                setSyncProgress(prog);
+            });
+            setSyncResult(res);
+            toast.success(`${res.updatedCount} içerik başarıyla IMDb ID ile eşitlendi!`, { id: toastId });
+            queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
+        } catch (error: any) {
+            console.error('IMDb sync error:', error);
+            toast.error('Senkronizasyon sırasında hata oluştu: ' + (error.message || 'Bilinmiyor'), { id: toastId });
+        } finally {
+            setIsSyncingImdb(false);
+        }
+    };
+
+    const handleDownloadJson = async () => {
+        if (!user) return;
+        setIsExportingJson(true);
+        const toastId = toast.loading('JSON veritabanı yedeği oluşturuluyor...');
+        try {
+            const count = await downloadLibraryAsJson(user.uid);
+            toast.success(`${count} içerik içeren JSON yedeği indirildi! 💾`, { id: toastId });
+            setLocalBackupInfo(getLocalBackupInfo(user.uid));
+        } catch (error: any) {
+            toast.error('Yedek indirilemedi: ' + (error.message || 'Hata'), { id: toastId });
+        } finally {
+            setIsExportingJson(false);
+        }
+    };
+
+    const handleDownloadText = async () => {
+        if (!user) return;
+        setIsExportingText(true);
+        const toastId = toast.loading('Okunabilir metin arşivi oluşturuluyor...');
+        try {
+            const count = await downloadLibraryAsText(user.uid);
+            toast.success(`${count} içerik içeren metin arşivi indirildi! 📄`, { id: toastId });
+        } catch (error: any) {
+            toast.error('Arşiv indirilemedi: ' + (error.message || 'Hata'), { id: toastId });
+        } finally {
+            setIsExportingText(false);
+        }
+    };
+
+    const handleFileRestoreChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!user || !e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        setIsRestoring(true);
+        const toastId = toast.loading('Yedek dosyası okunuyor ve geri yükleniyor...');
+
+        try {
+            const text = await file.text();
+            const res = await restoreLibraryFromJson(user.uid, text);
+            toast.success(`${res.importedCount} yeni içerik başarıyla geri yüklendi! (${res.skippedCount} mevcut içerik korundu)`, { id: toastId, duration: 5000 });
+            queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
+            setLocalBackupInfo(getLocalBackupInfo(user.uid));
+        } catch (error: any) {
+            console.error('Restore error:', error);
+            toast.error('Geri yükleme başarısız: ' + (error.message || 'Geçersiz JSON'), { id: toastId });
+        } finally {
+            setIsRestoring(false);
+            if (restoreFileInputRef.current) restoreFileInputRef.current.value = '';
+        }
+    };
+
+    const handleDownloadExpensesJson = async () => {
+        if (!user) return;
+        setIsExportingJson(true);
+        const toastId = toast.loading('Harcama veritabanı yedeği oluşturuluyor...');
+        try {
+            const count = await downloadExpensesAsJson(user.uid);
+            toast.success(`${count} harcama kaydı içeren JSON yedeği indirildi! 💳`, { id: toastId });
+        } catch (error: any) {
+            toast.error('Harcama yedeği indirilemedi: ' + (error.message || 'Hata'), { id: toastId });
+        } finally {
+            setIsExportingJson(false);
+        }
+    };
+
+    const handleExpensesRestoreChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!user || !e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        setIsRestoring(true);
+        const toastId = toast.loading('Harcama yedeği okunuyor ve geri yükleniyor...');
+
+        try {
+            const text = await file.text();
+            const res = await restoreExpensesFromJson(user.uid, text);
+            toast.success(`${res.importedCount} harcama kaydı başarıyla geri yüklendi!`, { id: toastId, duration: 5000 });
+            queryClient.invalidateQueries({ queryKey: ['expensedata'] });
+            queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        } catch (error: any) {
+            console.error('Expense restore error:', error);
+            toast.error('Geri yükleme başarısız: ' + (error.message || 'Geçersiz JSON'), { id: toastId });
+        } finally {
+            setIsRestoring(false);
+        }
+    };
+
     // Tab configuration
     const tabs = [
         { id: 'general' as const, label: 'Genel', icon: <FaCog />, description: 'Site ayarları ve tercihler' },
+        { id: 'vault' as const, label: 'Veri & Yedekleme', icon: <FaDatabase />, description: 'IMDb eşitleme & JSON/TXT yedek' },
         { id: 'profile' as const, label: 'Profil', icon: <FaUserEdit />, description: 'Kişisel bilgileriniz' },
         { id: 'security' as const, label: 'Güvenlik', icon: <FaShieldAlt />, description: 'Şifre ve hesap güvenliği' },
         { id: 'privacy' as const, label: 'Gizlilik', icon: <FaEye />, description: 'Veri ve gizlilik ayarları' },
     ];
 
+
     return (
         <div className="min-h-screen pb-12">
+            {/* Hidden File Input for Media Restore */}
+            <input
+                type="file"
+                ref={restoreFileInputRef}
+                onChange={handleFileRestoreChange}
+                accept=".json"
+                className="hidden"
+            />
+
+            {/* Hidden File Input for Expenses Restore */}
+            <input
+                type="file"
+                ref={restoreExpensesFileInputRef}
+                onChange={handleExpensesRestoreChange}
+                accept=".json"
+                className="hidden"
+            />
+
+
             {/* Header */}
             <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -301,7 +460,7 @@ export default function SettingsPage() {
                                 {t('settings.title')}
                             </h1>
                             <p className="text-stone-500 dark:text-zinc-400 mt-2">
-                                Hesap ayarlarınızı ve tercihlerinizi yönetin
+                                Hesap ayarlarınızı, IMDb senkronizasyonunu ve yedeklerinizi yönetin
                             </p>
                         </div>
                         <Link
@@ -317,26 +476,27 @@ export default function SettingsPage() {
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Tab Navigation - Modern Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
                     {tabs.map((tab) => (
                         <motion.button
                             key={tab.id}
                             whileHover={{ y: -2 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`p-4 rounded-2xl border text-left transition-all ${activeTab === tab.id
+                            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${activeTab === tab.id
                                 ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/25'
                                 : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700'
                                 }`}
                         >
                             <div className="text-xl mb-2">{tab.icon}</div>
                             <div className="font-bold text-sm">{tab.label}</div>
-                            <div className={`text-xs mt-1 ${activeTab === tab.id ? 'text-white/70' : 'text-stone-400 dark:text-zinc-500'}`}>
+                            <div className={`text-xs mt-1 ${activeTab === tab.id ? 'text-white/80' : 'text-stone-400 dark:text-zinc-500'}`}>
                                 {tab.description}
                             </div>
                         </motion.button>
                     ))}
                 </div>
+
 
                 {/* Content Sections */}
                 <AnimatePresence mode="wait">
@@ -566,9 +726,332 @@ export default function SettingsPage() {
                             </>
                         )}
 
+                        {activeTab === 'vault' && (
+                            <>
+                                {/* 1. IMDb ID SYNC CARD */}
+                                <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200 dark:border-zinc-800 p-6 sm:p-7 space-y-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-stone-100 dark:border-zinc-800">
+                                        <div className="flex items-center gap-3.5">
+                                            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-stone-950 flex items-center justify-center text-xl font-black shadow-md shadow-amber-400/20 shrink-0">
+                                                <FaBolt />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white flex items-center gap-2">
+                                                    IMDb ID Senkronizasyon Motoru
+                                                </h2>
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+                                                    Kütüphanedeki tüm film ve dizileri tarar, eksik IMDb ID'lerini otomatik eşitler.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleSyncImdb}
+                                            disabled={isSyncingImdb}
+                                            className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer active:scale-95 shrink-0"
+                                        >
+                                            {isSyncingImdb ? (
+                                                <>
+                                                    <FaSpinner className="animate-spin" />
+                                                    <span>Eşitleniyor...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FaSyncAlt />
+                                                    <span>IMDb ID'lerini Eşitle</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    {/* Progress Bar (While Syncing) */}
+                                    {isSyncingImdb && syncProgress && (
+                                        <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-amber-200/80 dark:border-amber-800/50 space-y-2.5 animate-fade-in">
+                                            <div className="flex items-center justify-between text-xs font-bold text-stone-800 dark:text-zinc-200">
+                                                <span className="truncate max-w-[250px] sm:max-w-md">
+                                                    Taranıyor: <strong className="text-amber-600 dark:text-amber-400">{syncProgress.currentItemTitle || '...'}</strong>
+                                                </span>
+                                                <span>
+                                                    {syncProgress.current} / {syncProgress.total} (%{Math.round((syncProgress.current / syncProgress.total) * 100)})
+                                                </span>
+                                            </div>
+                                            <div className="h-2.5 w-full bg-stone-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-amber-500 transition-all duration-300 rounded-full"
+                                                    style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                                                />
+                                            </div>
+                                            <div className="text-[11px] text-stone-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                                <FaCheckCircle className="text-emerald-500" />
+                                                Şu ana kadar {syncProgress.updatedCount} yeni IMDb ID veritabanına yazıldı.
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Summary (After Completed) */}
+                                    {syncResult && !isSyncingImdb && (
+                                        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/50 space-y-2 animate-fade-in">
+                                            <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300 text-sm">
+                                                <FaCheckCircle className="text-emerald-500" />
+                                                <span>Senkronizasyon Tamamlandı!</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                                                <div className="p-2.5 bg-white/80 dark:bg-zinc-900/80 rounded-xl border border-stone-200/50 dark:border-zinc-800">
+                                                    <span className="text-stone-400 block text-[10px]">Taranan İçerik</span>
+                                                    <strong className="text-sm text-stone-900 dark:text-white">{syncResult.totalChecked}</strong>
+                                                </div>
+                                                <div className="p-2.5 bg-white/80 dark:bg-zinc-900/80 rounded-xl border border-stone-200/50 dark:border-zinc-800">
+                                                    <span className="text-emerald-500 block text-[10px]">Yeni Eşitlenen</span>
+                                                    <strong className="text-sm text-emerald-600 dark:text-emerald-400">+{syncResult.updatedCount}</strong>
+                                                </div>
+                                                <div className="p-2.5 bg-white/80 dark:bg-zinc-900/80 rounded-xl border border-stone-200/50 dark:border-zinc-800">
+                                                    <span className="text-stone-400 block text-[10px]">Zaten IMDb ID'si Olan</span>
+                                                    <strong className="text-sm text-stone-900 dark:text-white">{syncResult.alreadyHadImdbCount}</strong>
+                                                </div>
+                                                <div className="p-2.5 bg-white/80 dark:bg-zinc-900/80 rounded-xl border border-stone-200/50 dark:border-zinc-800">
+                                                    <span className="text-stone-400 block text-[10px]">Eşleşmeyen</span>
+                                                    <strong className="text-sm text-stone-500">{syncResult.failedCount}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Features list */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-stone-600 dark:text-zinc-400">
+                                        <div className="p-3.5 bg-stone-50 dark:bg-zinc-800/60 rounded-2xl border border-stone-200/60 dark:border-zinc-800 flex items-start gap-2.5">
+                                            <FaCheck className="text-amber-500 mt-0.5 shrink-0" />
+                                            <span><strong>Çapraz Dil Eşitlemesi:</strong> Türkçe eklediğiniz bir film otomatik olarak İngilizce IMDb ID'sine bağlanır.</span>
+                                        </div>
+                                        <div className="p-3.5 bg-stone-50 dark:bg-zinc-800/60 rounded-2xl border border-stone-200/60 dark:border-zinc-800 flex items-start gap-2.5">
+                                            <FaCheck className="text-amber-500 mt-0.5 shrink-0" />
+                                            <span><strong>Dizi Sezon & Bölüm Uyumu:</strong> IMDb ID'si olan dizilerin tüm sezon bölüm sayıları otomatik senkronize olur.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 2. DATA VAULT & BACKUP / RESTORE CARD */}
+                                <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200 dark:border-zinc-800 p-6 sm:p-7 space-y-6">
+                                    <div className="flex items-center gap-3.5 pb-4 border-b border-stone-100 dark:border-zinc-800">
+                                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl font-black shadow-md shadow-indigo-600/20 shrink-0">
+                                            <FaDatabase />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white">
+                                                Veritabanı Koruma & Kurtarma Kasası
+                                            </h2>
+                                            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+                                                Veritabanınız silinse dahi tüm listeniz JSON ve TXT olarak korunur ve tek tıkla geri yüklenebilir.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Local Storage Backup Health Card */}
+                                    <div className="p-4 bg-gradient-to-r from-stone-900 via-zinc-900 to-black text-white rounded-2xl border border-stone-800 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                                                <span className="text-xs font-black text-emerald-400 uppercase tracking-wider">Otomatik Lokal Yedek Devrede</span>
+                                            </div>
+                                            <p className="text-xs text-stone-400">
+                                                {localBackupInfo.exists 
+                                                    ? `Tarayıcınızda ${localBackupInfo.count} içerik son haliyle güvence altında (${localBackupInfo.dateString}).`
+                                                    : 'Uygulamayı her açtığınızda kütüphaneniz cihazınızın yerel hafızasına da yedeklenir.'
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 1: Media Library Backups (Harmless Downloads) */}
+                                    <div className="space-y-2">
+                                        <h3 className="text-xs font-black uppercase text-stone-400 tracking-wider flex items-center gap-1.5">
+                                            <span>🎬 Medya Koleksiyonu İndirme & Yedekleme</span>
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {/* Download Media JSON */}
+                                            <button
+                                                type="button"
+                                                onClick={handleDownloadJson}
+                                                disabled={isExportingJson}
+                                                className="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 hover:bg-stone-100 dark:hover:bg-zinc-800 border border-stone-200/80 dark:border-zinc-700/80 text-left transition-all group cursor-pointer active:scale-95 disabled:opacity-50"
+                                            >
+                                                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm mb-2 group-hover:scale-110 transition-transform">
+                                                    <FaFileCode />
+                                                </div>
+                                                <h4 className="text-xs font-extrabold text-stone-900 dark:text-white">
+                                                    Medya JSON Yedeği İndir
+                                                </h4>
+                                                <p className="text-[10px] text-stone-500 dark:text-zinc-400 mt-0.5">
+                                                    IMDb ID'leri ve tam kütüphane veritabanı yedeği.
+                                                </p>
+                                            </button>
+
+                                            {/* Download Media TXT */}
+                                            <button
+                                                type="button"
+                                                onClick={handleDownloadText}
+                                                disabled={isExportingText}
+                                                className="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 hover:bg-stone-100 dark:hover:bg-zinc-800 border border-stone-200/80 dark:border-zinc-700/80 text-left transition-all group cursor-pointer active:scale-95 disabled:opacity-50"
+                                            >
+                                                <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm mb-2 group-hover:scale-110 transition-transform">
+                                                    <FaFileAlt />
+                                                </div>
+                                                <h4 className="text-xs font-extrabold text-stone-900 dark:text-white">
+                                                    Metin (TXT) Listesi İndir
+                                                </h4>
+                                                <p className="text-[10px] text-stone-500 dark:text-zinc-400 mt-0.5">
+                                                    Kategorize edilmiş kolay okunabilir metin arşivi.
+                                                </p>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 2: Expenses Backups */}
+                                    <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-zinc-800">
+                                        <h3 className="text-xs font-black uppercase text-stone-400 tracking-wider flex items-center gap-1.5">
+                                            <span>💳 Harcama & Bütçe Yedekleri</span>
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {/* Download Expenses JSON */}
+                                            <button
+                                                type="button"
+                                                onClick={handleDownloadExpensesJson}
+                                                disabled={isExportingJson}
+                                                className="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 hover:bg-stone-100 dark:hover:bg-zinc-800 border border-stone-200/80 dark:border-zinc-700/80 text-left transition-all group cursor-pointer active:scale-95 disabled:opacity-50"
+                                            >
+                                                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm mb-2 group-hover:scale-110 transition-transform">
+                                                    <FaDownload />
+                                                </div>
+                                                <h4 className="text-xs font-extrabold text-stone-900 dark:text-white">
+                                                    Harcama JSON Yedeği İndir
+                                                </h4>
+                                                <p className="text-[10px] text-stone-500 dark:text-zinc-400 mt-0.5">
+                                                    Tüm gelir, gider ve taksit kayıtlarını tam olarak indirir.
+                                                </p>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 3: Automated Scheduled Cron Jobs */}
+                                    <div className="p-4 sm:p-5 bg-stone-50 dark:bg-zinc-800/50 rounded-2xl border border-stone-200/80 dark:border-zinc-700/80 space-y-3">
+                                        <div className="flex items-center gap-2 text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">
+                                            <FaCalendar className="text-amber-500" />
+                                            <span>Proje İçi Otomatik Cron Job Takvimi</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                                            <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-stone-200/60 dark:border-zinc-800 space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-extrabold text-stone-900 dark:text-white">🎬 Günlük Medya Job'u</span>
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">Her Gece 00:00</span>
+                                                </div>
+                                                <p className="text-[11px] text-stone-500 dark:text-zinc-400">
+                                                    Siteye girmeseniz bile GitHub Actions projede <code className="text-amber-500 font-mono text-[10px]">/backups/media/</code> altına JSON ve TXT kaydeder.
+                                                </p>
+                                            </div>
+
+                                            <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-stone-200/60 dark:border-zinc-800 space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-extrabold text-stone-900 dark:text-white">💳 Aylık Harcama Job'u</span>
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">Her Ayın 15'i 00:00</span>
+                                                </div>
+                                                <p className="text-[11px] text-stone-500 dark:text-zinc-400">
+                                                    Her ayın 15'inde <code className="text-emerald-500 font-mono text-[10px]">/backups/expenses/</code> altına tam bütçe yedeğini işler.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 4: 🚨 GUARDED DISASTER RECOVERY (LOCKED BY DEFAULT) 🚨 */}
+                                    <div className="p-4 sm:p-5 bg-red-50/50 dark:bg-red-950/20 rounded-2xl border border-red-200/80 dark:border-red-900/40 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="p-2 rounded-xl bg-red-500/15 text-red-600 dark:text-red-400">
+                                                    <FaLock className="text-sm" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xs font-black text-red-900 dark:text-red-200 uppercase tracking-wider">
+                                                        🚨 Acil Durum Veri Kurtarma (Korumalı Alan)
+                                                    </h4>
+                                                    <p className="text-[10px] text-stone-500 dark:text-zinc-400">
+                                                        Yanlışlıkla basılmaması için kilitlidir. Yalnızca veritabanı silindiğinde kullanılır.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsRecoveryUnlocked(!isRecoveryUnlocked)}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${isRecoveryUnlocked
+                                                    ? 'bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300'
+                                                    : 'bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-600/20'
+                                                    }`}
+                                            >
+                                                {isRecoveryUnlocked ? '🔒 Kilitle' : '🔓 Kilidi Aç'}
+                                            </button>
+                                        </div>
+
+                                        {isRecoveryUnlocked && (
+                                            <div className="space-y-3 pt-3 border-t border-red-200/60 dark:border-red-900/50 animate-fade-in">
+                                                <div className="p-3 bg-red-100/70 dark:bg-red-900/30 rounded-xl text-[11px] text-red-900 dark:text-red-200 flex items-start gap-2 leading-relaxed">
+                                                    <FaExclamationTriangle className="text-red-600 dark:text-red-400 shrink-0 mt-0.5 text-xs" />
+                                                    <span>
+                                                        <strong>Uyarı:</strong> Bu işlem indirdiğiniz JSON dosyasındaki içerikleri Firebase veritabanınıza geri yazar. Var olan güncel kayıtlarınızın üzerine eski kayıt aktarmamak için sadece acil durumlarda kullanınız.
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (window.confirm('Kütüphane JSON yedeğini veritabanına aktarmak istediğinize emin misiniz?')) {
+                                                                restoreFileInputRef.current?.click();
+                                                            }
+                                                        }}
+                                                        disabled={isRestoring}
+                                                        className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-red-300 dark:border-red-800/80 text-left hover:border-red-500 transition-all group cursor-pointer disabled:opacity-50"
+                                                    >
+                                                        <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-extrabold text-xs mb-1">
+                                                            <FaFileUpload />
+                                                            <span>Medya JSON Yedeğini Firebase'e Aktar</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-stone-500 dark:text-zinc-400">
+                                                            JSON dosyasındaki film/dizileri Firestore'a aktarır.
+                                                        </p>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (window.confirm('Harcama JSON yedeğini veritabanına aktarmak istediğinize emin misiniz?')) {
+                                                                restoreExpensesFileInputRef.current?.click();
+                                                            }
+                                                        }}
+                                                        disabled={isRestoring}
+                                                        className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-red-300 dark:border-red-800/80 text-left hover:border-red-500 transition-all group cursor-pointer disabled:opacity-50"
+                                                    >
+                                                        <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-extrabold text-xs mb-1">
+                                                            <FaFileUpload />
+                                                            <span>Harcama JSON Yedeğini Firebase'e Aktar</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-stone-500 dark:text-zinc-400">
+                                                            JSON dosyasındaki harcama/bütçeyi Firestore'a aktarır.
+                                                        </p>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                </div>
+                            </>
+                        )}
+
+
+
                         {activeTab === 'profile' && (
                             <>
                                 {/* Profile Info Form */}
+
                                 <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
                                     <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
                                         <FaUserEdit className="text-amber-500" />

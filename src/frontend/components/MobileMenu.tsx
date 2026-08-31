@@ -4,7 +4,7 @@ import {
   FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaClone, 
   FaMap, FaCog, FaChartBar, FaSignOutAlt, FaHistory, 
   FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight, 
-  FaCompass, FaStickyNote, FaUsersCog, FaUserShield 
+  FaCompass, FaStickyNote, FaUsersCog, FaUserShield, FaFire, FaChartPie 
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { useShift } from '../context/ShiftContext';
 import { isAdmin } from '../../backend/config/adminConfig';
+import { useFeatureAccess } from '../hooks/useFeatureAccess';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { profile } = useUserProfile();
   const { t } = useLanguage();
   const { getShiftInfo } = useShift();
+  const { hasAccess } = useFeatureAccess();
 
   useEffect(() => {
     if (isOpen) {
@@ -96,12 +98,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         { to: '/notes', icon: FaStickyNote, label: t('nav.notes') || 'Notlarım' },
         { to: '/planner', icon: FaCalendarAlt, label: t('nav.calendar') || 'Takvim & Plan' },
         { to: '/expenses', icon: FaWallet, label: t('nav.expenses') || 'Harcamalar' },
-        { to: '/travel-planner', icon: FaCompass, label: 'Gezi Planlayıcı' },
+        { to: '/travel-planner', icon: FaCompass, label: t('nav.travelPlanner') || 'Gezi Planlayıcı' },
         { to: '/lists', icon: FaListUl, label: t('lists.title') || 'Listelerim' },
         { to: '/stats', icon: FaChartBar, label: t('home.stats') || 'İstatistikler' },
         { to: '/feed', icon: FaHistory, label: t('nav.feed') || 'Aktiviteler' },
         { to: '/map', icon: FaMap, label: t('nav.map') || 'Harita' },
         { to: '/all', icon: FaClone, label: t('nav.all') || 'Tüm Liste' },
+        ...(hasAccess('calorieAi') ? [{ to: '/calorie-details', icon: FaChartPie, label: 'Kalori Raporu' }] : []),
       ]
     }
   ];

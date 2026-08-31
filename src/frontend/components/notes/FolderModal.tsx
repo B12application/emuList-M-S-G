@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaFolder, FaTimes, FaCheck, FaChevronDown, FaSearch, FaLayerGroup, FaFolderOpen } from 'react-icons/fa';
 import type { NoteFolder } from '../../types/notes';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface FolderModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export default function FolderModal({
   folders,
   onSave,
 }: FolderModalProps) {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [color, setColor] = useState(FOLDER_COLORS[0]);
   const [parentId, setParentId] = useState<string | null>(null);
@@ -120,10 +122,10 @@ export default function FolderModal({
               </div>
               <div>
                 <h3 className="text-lg font-bold text-stone-900 dark:text-white">
-                  {folderToEdit ? 'Klasörü Düzenle' : 'Yeni Klasör Oluştur'}
+                  {folderToEdit ? t('notes.editFolderTitle') : t('notes.newFolderTitle')}
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-zinc-400">
-                  Notlarınızı organize etmek için klasör ve konum seçin
+                  {t('notes.folderModalDesc')}
                 </p>
               </div>
             </div>
@@ -139,13 +141,13 @@ export default function FolderModal({
             {/* Name */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-400 mb-1.5">
-                Klasör Adı <span className="text-red-500">*</span>
+                {t('notes.folderName')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="örn. İş Notları, Fikirler, Kitap Özetleri..."
+                placeholder={t('notes.folderNamePlaceholder')}
                 className="w-full px-4 py-3 rounded-2xl border border-stone-200 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-stone-900 dark:text-white focus:ring-2 focus:ring-amber-400 outline-none text-sm placeholder:text-stone-400 dark:placeholder:text-zinc-500 transition-all"
                 autoFocus
                 required
@@ -155,7 +157,7 @@ export default function FolderModal({
             {/* Custom Designed Combobox for Target Location */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-400 mb-1.5">
-                Nereye Eklenecek? (Konum / Üst Klasör)
+                {t('notes.whereToAdd')}
               </label>
               <div className="relative" ref={comboboxRef}>
                 {/* Trigger Button */}
@@ -182,7 +184,7 @@ export default function FolderModal({
                           <FaLayerGroup className="text-xs" />
                         </div>
                         <span className="font-semibold text-stone-800 dark:text-zinc-100 truncate">
-                          Ana Dizin (Kök Seviye)
+                          {t('notes.rootDir')}
                         </span>
                       </>
                     )}
@@ -212,7 +214,7 @@ export default function FolderModal({
                             type="text"
                             value={comboboxSearch}
                             onChange={(e) => setComboboxSearch(e.target.value)}
-                            placeholder="Klasörlerde ara..."
+                            placeholder={t('notes.searchFolders')}
                             className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-stone-100 dark:bg-zinc-800 text-xs text-stone-900 dark:text-white outline-none focus:ring-1 focus:ring-amber-400"
                             onClick={(e) => e.stopPropagation()}
                           />
@@ -235,7 +237,7 @@ export default function FolderModal({
                         >
                           <div className="flex items-center gap-2.5">
                             <FaLayerGroup className="text-sm opacity-80" />
-                            <span>Ana Dizin (Kök Seviye)</span>
+                            <span>{t('notes.rootDir')}</span>
                           </div>
                           {parentId === null && <FaCheck className="text-xs" />}
                         </button>
@@ -272,7 +274,7 @@ export default function FolderModal({
 
                         {filteredEligibleParents.length === 0 && comboboxSearch && (
                           <div className="p-3 text-center text-xs text-stone-400 dark:text-zinc-500">
-                            Klasör bulunamadı
+                            {t('notes.folderNotFound')}
                           </div>
                         )}
                       </div>
@@ -285,7 +287,7 @@ export default function FolderModal({
             {/* Color */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-400 mb-2">
-                Klasör Rengi
+                {t('notes.folderColor')}
               </label>
               <div className="flex flex-wrap gap-2.5">
                 {FOLDER_COLORS.map((c) => {
@@ -316,14 +318,14 @@ export default function FolderModal({
                 onClick={onClose}
                 className="px-4 py-2.5 rounded-2xl text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 text-sm font-semibold transition-colors"
               >
-                İptal
+                {t('notes.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={!name.trim() || loading}
                 className="px-6 py-2.5 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-stone-950 font-bold rounded-2xl shadow-md shadow-amber-500/20 text-sm transition-all flex items-center gap-2"
               >
-                {loading ? 'Kaydediliyor...' : folderToEdit ? 'Güncelle' : 'Klasör Oluştur'}
+                {loading ? t('notes.saving') : folderToEdit ? t('notes.update') : t('notes.createFolder')}
               </button>
             </div>
           </form>

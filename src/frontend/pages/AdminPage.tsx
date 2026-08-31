@@ -9,7 +9,7 @@ import {
     FaExclamationTriangle, FaUsers, FaEdit, FaTimes, FaCheck, FaSearch,
     FaEnvelope, FaMapMarkerAlt, FaCrown, FaArrowRight, FaUserShield,
     FaCalendar, FaVenusMars, FaQuoteRight, FaIdBadge, FaSignInAlt,
-    FaMobileAlt, FaDesktop, FaTabletAlt, FaGlobe, FaLaptop
+    FaMobileAlt, FaDesktop, FaTabletAlt, FaGlobe, FaLaptop, FaToggleOn, FaToggleOff
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { isAdmin } from '../../backend/config/adminConfig';
@@ -17,9 +17,11 @@ import { getAllComments, deleteCommentAsAdmin, getAllUsers, updateUserAsAdmin, d
 import type { CommentWithActivity, AdminUser } from '../../backend/services/adminService';
 import { getLoginLogs } from '../../backend/services/loginLogService';
 import type { LoginLog } from '../../backend/services/loginLogService';
+import { setFeatureAccess, getAllFeatureAccess, ALL_FEATURES, FEATURE_LABELS } from '../services/featureAccessService';
+import type { FeatureKey, FeatureAccessMap } from '../services/featureAccessService';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type TabType = 'users' | 'comments' | 'logins';
+type TabType = 'users' | 'comments' | 'logins' | 'features';
 
 export default function AdminPage() {
     const { user } = useAuth();
@@ -44,6 +46,12 @@ export default function AdminPage() {
     // Login logs state
     const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
     const [loginLogsLoading, setLoginLogsLoading] = useState(false);
+
+    // Feature access state
+    const [featureAccessMap, setFeatureAccessMap] = useState<Record<string, Record<FeatureKey, boolean>>>({});
+    const [featureAccessLoading, setFeatureAccessLoading] = useState(false);
+    const [togglingFeature, setTogglingFeature] = useState<string | null>(null);
+    const [featureSearchQuery, setFeatureSearchQuery] = useState('');
 
     // Admin kontrolü
     useEffect(() => {
@@ -97,6 +105,10 @@ export default function AdminPage() {
                     toast.error('Giriş logları yüklenirken hata oluştu');
                 })
                 .finally(() => setLoginLogsLoading(false));
+        }
+
+        if (activeTab === 'features' && Object.keys(featureAccessMap).length === 0) {
+            loadFeatureAccessData();
         }
     }, [user, activeTab, comments.length, loginLogs.length]);
 
@@ -199,6 +211,50 @@ export default function AdminPage() {
     const filteredUsers = users.filter(u =>
         u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Feature access helpers
+    const loadFeatureAccessData = async () => {
+        if (!user) return;
+        setFeatureAccessLoading(true);
+        try {
+            const map: Record<string, Record<FeatureKey, boolean>> = {};
+            for (const u of users) {
+                map[u.id] = await getAllFeatureAccess(u.id);
+            }
+            setFeatureAccessMap(map);
+        } catch (error) {
+            console.error('Feature access yüklenemedi:', error);
+        } finally {
+            setFeatureAccessLoading(false);
+        }
+    };
+
+    const handleToggleFeature = async (userId: string, feature: FeatureKey) => {
+        if (!user) return;
+        const current = featureAccessMap[userId]?.[feature] ?? false;
+        const newVal = !current;
+        setTogglingFeature(`${userId}-${feature}`);
+        try {
+            const success = await setFeatureAccess(user.uid, userId, feature, newVal);
+            if (success) {
+                setFeatureAccessMap(prev => ({
+                    ...prev,
+                    [userId]: { ...prev[userId], [feature]: newVal }
+                }));
+                const label = FEATURE_LABELS[feature]?.tr || feature;
+                toast.success(`${label}: ${newVal ? 'Açıldı ✅' : 'Kapatıldı ❌'}`);
+            }
+        } catch (error) {
+            toast.error('Güncelleme başarısız');
+        } finally {
+            setTogglingFeature(null);
+        }
+    };
+
+    const featureFilteredUsers = users.filter(u =>
+        u.displayName?.toLowerCase().includes(featureSearchQuery.toLowerCase()) ||
+        u.email?.toLowerCase().includes(featureSearchQuery.toLowerCase())
     );
 
     if (!user || !isAdmin(user.uid)) {
@@ -337,6 +393,17 @@ export default function AdminPage() {
                         <FaComments />
                         Yorumlar
                         <span className="text-xs opacity-75 ml-1">({comments.length})</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab('features')}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'features'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
+                            : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 hover:border-emerald-400'
+                            }`}
+                    >
+                        <FaToggleOn />
+                        Özellik Yönetimi
                     </button>
                 </div>
 
@@ -646,6 +713,101 @@ export default function AdminPage() {
                                                 </button>
                                             </div>
                                         </motion.div>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {/* FEATURES TAB */}
+                    {activeTab === 'features' && (
+                        <motion.div
+                            key="features"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
+                        >
+                            {/* Header */}
+                            <div className="px-5 sm:px-6 py-4 border-b border-stone-200 dark:border-zinc-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-base font-black text-stone-900 dark:text-white flex items-center gap-2">
+                                            <FaToggleOn className="text-emerald-500" />
+                                            Özellik Erişim Yönetimi
+                                        </h3>
+                                        <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+                                            Her kullanıcı için site özelliklerini açıp kapatabilirsiniz
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="relative">
+                                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
+                                    <input
+                                        type="text"
+                                        placeholder="Kullanıcı ara..."
+                                        value={featureSearchQuery}
+                                        onChange={(e) => setFeatureSearchQuery(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            {featureAccessLoading ? (
+                                <div className="flex items-center justify-center py-16">
+                                    <FaSpinner className="animate-spin text-3xl text-emerald-500" />
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-stone-100 dark:divide-zinc-800/80 max-h-[70vh] overflow-y-auto">
+                                    {featureFilteredUsers.map(u => (
+                                        <div key={u.id} className="px-5 sm:px-6 py-4 hover:bg-stone-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                                            {/* User Info */}
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-black shrink-0">
+                                                    {(u.displayName || u.email || '?')[0].toUpperCase()}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                                                        {u.displayName || 'İsimsiz'}
+                                                    </div>
+                                                    <div className="text-[11px] text-stone-400 dark:text-zinc-500 truncate">
+                                                        {u.email}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Feature Toggles Grid */}
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                                                {ALL_FEATURES.map(feature => {
+                                                    const isEnabled = featureAccessMap[u.id]?.[feature] ?? (feature !== 'calorieAi');
+                                                    const isToggling = togglingFeature === `${u.id}-${feature}`;
+                                                    const label = FEATURE_LABELS[feature];
+
+                                                    return (
+                                                        <button
+                                                            key={feature}
+                                                            onClick={() => handleToggleFeature(u.id, feature)}
+                                                            disabled={isToggling}
+                                                            className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer border ${
+                                                                isEnabled
+                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400'
+                                                                    : 'bg-stone-50 dark:bg-zinc-800/50 border-stone-200 dark:border-zinc-700/50 text-stone-400 dark:text-zinc-600'
+                                                            } ${isToggling ? 'opacity-50' : 'hover:shadow-md'}`}
+                                                        >
+                                                            <span className="text-sm">{label?.icon || '⚙️'}</span>
+                                                            <span className="truncate flex-1 text-left">{label?.tr || feature}</span>
+                                                            {isToggling ? (
+                                                                <FaSpinner className="animate-spin text-[10px] shrink-0" />
+                                                            ) : isEnabled ? (
+                                                                <FaToggleOn className="text-emerald-500 text-base shrink-0" />
+                                                            ) : (
+                                                                <FaToggleOff className="text-stone-300 dark:text-zinc-600 text-base shrink-0" />
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             )}

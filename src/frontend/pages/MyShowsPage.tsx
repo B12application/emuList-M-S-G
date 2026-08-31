@@ -87,11 +87,11 @@ export default function MyShowsPage() {
         const date = (ts as any).toDate ? (ts as any).toDate() : new Date(ts as any);
         const diff = Date.now() - date.getTime();
         const days = Math.floor(diff / 86400000);
-        if (days < 1) return 'Bugün';
-        if (days === 1) return 'Dün';
-        if (days < 7) return `${days}g`;
-        if (days < 30) return `${Math.floor(days / 7)}h`;
-        return `${Math.floor(days / 30)}a`;
+        if (days < 1) return t('home.today');
+        if (days === 1) return t('myShows.yesterdayLabel');
+        if (days < 7) return `${days} ${t('feed.daysAgo')}`;
+        if (days < 30) return `${Math.floor(days / 7)} ${t('feed.weeksAgo')}`;
+        return `${Math.floor(days / 30)} ${t('feed.monthsAgo')}`;
     };
 
     const stats = useMemo(() => {
@@ -135,7 +135,8 @@ export default function MyShowsPage() {
         try {
             await toggleEpisodeWatched(show.id, next.season, next.episode, show.watchedEpisodes || {});
             await updateCurrentProgress(show.id, next.season, next.episode);
-            toast.success(`S${next.season} E${next.episode} işaretlendi`);
+            const epLabel = `S${next.season} E${next.episode}`;
+            toast.success(t('myShows.episodeMarkedToast').replace('{episode}', epLabel));
             fetchShows();
         } catch (err) { console.error(err); }
     };
@@ -154,14 +155,14 @@ export default function MyShowsPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <FaTv className="text-slate-400 text-lg" />
-                        İzleme Listem
+                        {t('myShows.title')}
                     </h1>
                     <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm text-slate-500">{stats.total} dizi</span>
+                        <span className="text-sm text-slate-500">{stats.total} {t('media.series')}</span>
                         <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-zinc-700" />
-                        <span className="text-sm text-emerald-600 dark:text-emerald-400">{stats.completed} tamamlandı</span>
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400">{stats.completed} {t('myShows.statusCompletedLabel')}</span>
                         <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-zinc-700" />
-                        <span className="text-sm text-rose-500">{stats.inProgress} devam</span>
+                        <span className="text-sm text-rose-500">{stats.inProgress} {t('myShows.statusInProgressLabel')}</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -170,7 +171,7 @@ export default function MyShowsPage() {
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold rounded-xl hover:bg-slate-800 dark:hover:bg-zinc-200 transition active:scale-95"
                     >
                         <FaPlus className="text-xs" />
-                        Dizi Ekle
+                        {t('myShows.addShow')}
                     </Link>
                 </div>
             </div>
@@ -178,7 +179,7 @@ export default function MyShowsPage() {
             {/* ═══ İLERLEME BAR ═══ */}
             <div className="mb-8 p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">Genel İlerleme</span>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">{t('myShows.overallProgress')}</span>
                     <span className="text-sm font-bold text-slate-900 dark:text-white">{stats.pct}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
@@ -188,8 +189,8 @@ export default function MyShowsPage() {
                     />
                 </div>
                 <div className="flex justify-between mt-2 text-xs text-slate-400">
-                    <span>{stats.watchedEps} / {stats.totalEps} bölüm</span>
-                    <span>~{stats.hours} saat</span>
+                    <span>{stats.watchedEps} / {stats.totalEps} {t('myShows.episodes')}</span>
+                    <span>~{stats.hours} {t('myShows.totalHours')}</span>
                 </div>
             </div>
 
@@ -202,7 +203,7 @@ export default function MyShowsPage() {
                         type="text"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Dizi ara..."
+                        placeholder={t('myShows.searchPlaceholder')}
                         className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-slate-300 dark:focus:border-zinc-700 transition"
                     />
                     {searchQuery && (
@@ -222,7 +223,7 @@ export default function MyShowsPage() {
                             }`}
                     >
                         <FaFilter className="text-[10px]" />
-                        Filtre
+                        {t('myShows.filterButton')}
                     </button>
 
                     {/* Layout toggle */}
@@ -255,13 +256,13 @@ export default function MyShowsPage() {
                         <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 space-y-4">
                             {/* Kategori */}
                             <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Durum</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t('planner.status')}</p>
                                 <div className="flex gap-1.5 flex-wrap">
                                     {[
-                                        { key: 'all' as const, label: 'Tümü' },
-                                        { key: 'inProgress' as const, label: 'Devam Eden', color: 'rose' },
-                                        { key: 'notStarted' as const, label: 'Başlanmadı', color: 'slate' },
-                                        { key: 'completed' as const, label: 'Tamamlandı', color: 'emerald' },
+                                        { key: 'all' as const, label: t('myShows.filterAll') },
+                                        { key: 'inProgress' as const, label: t('myShows.statusInProgressLabel') },
+                                        { key: 'notStarted' as const, label: t('myShows.statusNotStartedLabel') },
+                                        { key: 'completed' as const, label: t('myShows.statusCompletedLabel') },
                                     ].map(f => (
                                         <button
                                             key={f.key}
@@ -280,7 +281,7 @@ export default function MyShowsPage() {
                             {/* Genre */}
                             {genres.length > 0 && (
                                 <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tür</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t('list.genreFilter')}</p>
                                     <div className="flex gap-1.5 flex-wrap">
                                         {genres.map(genre => (
                                             <button
@@ -309,10 +310,10 @@ export default function MyShowsPage() {
                         <FaTv className="text-2xl text-slate-300 dark:text-zinc-600" />
                     </div>
                     <p className="text-sm text-slate-500">
-                        {searchQuery ? 'Aramanızla eşleşen dizi bulunamadı.' : 'Henüz dizi eklenmemiş.'}
+                        {searchQuery ? t('myShows.noSearchResults') : t('myShows.noShows')}
                     </p>
                     <Link to="/create?type=series" className="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-slate-900 dark:text-white hover:underline">
-                        <FaPlus className="text-xs" /> İlk dizini ekle
+                        <FaPlus className="text-xs" /> {t('myShows.addFirstShow')}
                     </Link>
                 </div>
             ) : layoutMode === 'grid' ? (
@@ -351,7 +352,7 @@ export default function MyShowsPage() {
                                         <p className="text-xs font-bold text-white line-clamp-1 leading-tight">{show.title}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             {show.totalSeasons && (
-                                                <span className="text-[9px] text-white/70">{show.totalSeasons} sezon</span>
+                                                <span className="text-[9px] text-white/70">{show.totalSeasons} {t('seasons.season')}</span>
                                             )}
                                             {nextEp && cat === 'inProgress' && (
                                                 <span className="text-[9px] font-bold text-rose-300 bg-black/40 px-1.5 py-0.5 rounded">
@@ -450,8 +451,8 @@ export default function MyShowsPage() {
                                             </h3>
                                         </div>
                                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                            {show.totalSeasons && <span className="text-[11px] text-slate-400">{show.totalSeasons} sezon</span>}
-                                            {totalEps > 0 && <span className="text-[11px] text-slate-400">{totalEps} bölüm</span>}
+                                            {show.totalSeasons && <span className="text-[11px] text-slate-400">{show.totalSeasons} {t('seasons.season')}</span>}
+                                            {totalEps > 0 && <span className="text-[11px] text-slate-400">{totalEps} {t('myShows.episodes')}</span>}
                                             {show.rating && show.rating !== '0' && (
                                                 <span className="text-[11px] text-amber-500 flex items-center gap-0.5">
                                                     <FaStar className="text-[9px]" /> {show.rating}
@@ -537,12 +538,12 @@ export default function MyShowsPage() {
                                         <div className="absolute bottom-3 left-4 right-4">
                                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">{show.title}</h3>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                {show.totalSeasons && <span className="text-xs text-slate-500">{show.totalSeasons} sezon</span>}
+                                                {show.totalSeasons && <span className="text-xs text-slate-500">{show.totalSeasons} {t('seasons.season')}</span>}
                                                 {show.rating && show.rating !== '0' && (
                                                     <span className="text-xs text-amber-500 flex items-center gap-0.5"><FaStar className="text-[10px]" /> {show.rating}</span>
                                                 )}
                                                 <span className="text-xs text-slate-400">•</span>
-                                                <span className="text-xs text-slate-500">{getTotalWatched(show)}/{getTotalEpisodes(show)} bölüm</span>
+                                                <span className="text-xs text-slate-500">{getTotalWatched(show)}/{getTotalEpisodes(show)} {t('myShows.episodes')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -555,7 +556,9 @@ export default function MyShowsPage() {
                                                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 active:scale-[0.98] transition"
                                             >
                                                 <FaPlay className="text-[10px]" />
-                                                Sonraki: S{nextEp.season} Bölüm {nextEp.episode}
+                                                {t('myShows.nextEpisodeCta')
+                                                    .replace('{season}', String(nextEp.season))
+                                                    .replace('{episode}', String(nextEp.episode))}
                                             </button>
                                         </div>
                                     )}

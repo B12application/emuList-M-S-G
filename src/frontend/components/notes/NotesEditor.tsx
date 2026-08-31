@@ -54,6 +54,7 @@ import MarkdownRenderer from './MarkdownRenderer';
 import NoteThemePicker, { THEME_OPTIONS } from './NoteThemePicker';
 import ImageLightboxModal from './ImageLightboxModal';
 import toast from 'react-hot-toast';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface NotesEditorProps {
   note: NoteItem | null;
@@ -253,6 +254,7 @@ export default function NotesEditor({
   onBackToList,
   isMobile = false,
 }: NotesEditorProps) {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<NoteViewMode>('edit');
   const [isThemePickerOpen, setIsThemePickerOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -419,7 +421,7 @@ export default function NotesEditor({
         e.preventDefault();
         if (note) {
           onUpdateNote({ content: note.content });
-          toast.success('Not anında kaydedildi');
+          toast.success(t('notes.autoSaved'));
         }
       } else if (e.key === 'b') {
         e.preventDefault();
@@ -902,7 +904,7 @@ export default function NotesEditor({
                   }
                 }}
                 onBlur={handleAddTag}
-                placeholder="etiket..."
+                placeholder={t('notes.tagPlaceholder')}
                 className="bg-transparent text-xs text-stone-900 dark:text-white focus:outline-none w-20"
                 autoFocus
               />
@@ -913,7 +915,7 @@ export default function NotesEditor({
               className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-stone-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <FaPlus className="text-[9px]" />
-              <span>Etiket Ekle</span>
+              <span>{t('notes.addTag')}</span>
             </button>
           )}
         </div>
@@ -923,54 +925,54 @@ export default function NotesEditor({
       {viewMode !== 'preview' && (
         <div className="px-4 py-2 border-y border-stone-200/60 dark:border-zinc-800/60 bg-stone-50/70 dark:bg-zinc-900/60 flex items-center gap-1 flex-wrap shrink-0 text-xs">
           <button
-            onClick={() => insertMarkdownFormat('**', '**', 'kalın metin')}
+            onClick={() => insertMarkdownFormat('**', '**', t('notes.boldText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold"
-            title="Kalın (Ctrl+B)"
+            title={t('notes.boldTooltip')}
           >
             <FaBold />
           </button>
           <button
-            onClick={() => insertMarkdownFormat('*', '*', 'eğik metin')}
+            onClick={() => insertMarkdownFormat('*', '*', t('notes.italicText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 italic"
-            title="İtalik (Ctrl+I)"
+            title={t('notes.italicTooltip')}
           >
             <FaItalic />
           </button>
           <button
-            onClick={() => insertMarkdownFormat('~~', '~~', 'üstü çizili')}
+            onClick={() => insertMarkdownFormat('~~', '~~', t('notes.strikeText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Üstü Çizili"
+            title={t('notes.strikeTooltip')}
           >
             <FaStrikethrough />
           </button>
           <button
-            onClick={() => insertMarkdownFormat('==', '==', 'vurgulanan metin')}
+            onClick={() => insertMarkdownFormat('==', '==', t('notes.highlightText'))}
             className="px-1.5 py-0.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-amber-600 dark:text-amber-400 font-bold text-xs"
-            title="Obsidian Vurgusu (==vurgu==)"
+            title={t('notes.highlightTooltip')}
           >
-            ==Vurgu==
+            {t('notes.highlightBtn')}
           </button>
 
           <div className="w-px h-4 bg-stone-300 dark:bg-zinc-700 mx-1" />
 
           <button
-            onClick={() => insertMarkdownFormat('# ', '', 'Başlık 1')}
+            onClick={() => insertMarkdownFormat('# ', '', t('notes.h1'))}
             className="px-1.5 py-0.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold text-xs"
-            title="Başlık 1"
+            title={t('notes.h1')}
           >
             H1
           </button>
           <button
-            onClick={() => insertMarkdownFormat('## ', '', 'Başlık 2')}
+            onClick={() => insertMarkdownFormat('## ', '', t('notes.h2'))}
             className="px-1.5 py-0.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold text-xs"
-            title="Başlık 2"
+            title={t('notes.h2')}
           >
             H2
           </button>
           <button
-            onClick={() => insertMarkdownFormat('### ', '', 'Başlık 3')}
+            onClick={() => insertMarkdownFormat('### ', '', t('notes.h3'))}
             className="px-1.5 py-0.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold text-xs"
-            title="Başlık 3"
+            title={t('notes.h3')}
           >
             H3
           </button>
@@ -978,23 +980,23 @@ export default function NotesEditor({
           <div className="w-px h-4 bg-stone-300 dark:bg-zinc-700 mx-1" />
 
           <button
-            onClick={() => insertMarkdownFormat('- [ ] ', '', 'Yapılacak görev')}
+            onClick={() => insertMarkdownFormat('- [ ] ', '', t('notes.taskText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Kontrol Listesi / Görev (- [ ])"
+            title={t('notes.taskTooltip')}
           >
             <FaCheckSquare />
           </button>
           <button
-            onClick={() => insertMarkdownFormat('- ', '', 'Madde')}
+            onClick={() => insertMarkdownFormat('- ', '', t('notes.bulletText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Madde İşaretli Liste"
+            title={t('notes.bulletTooltip')}
           >
             <FaListUl />
           </button>
           <button
-            onClick={() => insertMarkdownFormat('1. ', '', 'Numaralı madde')}
+            onClick={() => insertMarkdownFormat('1. ', '', t('notes.numberText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Numaralı Liste"
+            title={t('notes.numberTooltip')}
           >
             <FaListOl />
           </button>
@@ -1002,23 +1004,23 @@ export default function NotesEditor({
           <div className="w-px h-4 bg-stone-300 dark:bg-zinc-700 mx-1" />
 
           <button
-            onClick={() => insertMarkdownFormat('> ', '', 'Alıntı')}
+            onClick={() => insertMarkdownFormat('> ', '', t('notes.quoteText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Alıntı Blok"
+            title={t('notes.quoteTooltip')}
           >
             <FaQuoteRight />
           </button>
           <button
-            onClick={() => insertMarkdownFormat('> [!NOTE]\n> ', '', 'Önemli not')}
+            onClick={() => insertMarkdownFormat('> [!NOTE]\n> ', '', t('notes.noteText'))}
             className="px-1.5 py-0.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-blue-600 dark:text-blue-400 font-bold text-xs"
-            title="Obsidian Callout Kutusu"
+            title={t('notes.noteTooltip')}
           >
             [!NOTE]
           </button>
           <button
-            onClick={() => insertMarkdownFormat('```javascript\n', '\n```', '// kod buraya')}
+            onClick={() => insertMarkdownFormat('```javascript\n', '\n```', t('notes.codeText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Kod Bloğu"
+            title={t('notes.codeTooltip')}
           >
             <FaCode />
           </button>
@@ -1029,7 +1031,7 @@ export default function NotesEditor({
               className={`p-1.5 rounded-lg text-stone-700 dark:text-zinc-300 transition-colors flex items-center justify-center cursor-pointer ${
                 isTablePopoverOpen ? 'bg-amber-400/25 text-amber-600 dark:text-amber-400' : 'hover:bg-stone-200 dark:hover:bg-zinc-800'
               }`}
-              title="Tablo Ekle (Grid ile seç)"
+              title={t('notes.tableTooltip')}
             >
               <FaTable />
             </button>
@@ -1044,7 +1046,7 @@ export default function NotesEditor({
                   className="absolute top-full left-0 mt-2 p-3 bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-[110] w-[180px] origin-top-left"
                 >
                   <div className="text-[10px] font-bold text-stone-500 dark:text-zinc-400 mb-2 uppercase tracking-wider text-center">
-                    Tablo Boyutu Seç
+                    {t('notes.tableSize')}
                   </div>
                   
                   {/* 5x5 Grid */}
@@ -1072,23 +1074,23 @@ export default function NotesEditor({
                   
                   {/* Grid Size label */}
                   <div className="text-[11px] text-center font-bold text-amber-500 bg-amber-500/5 py-1 rounded-lg border border-amber-500/10">
-                    {hoveredGrid.rows > 0 && hoveredGrid.cols > 0 ? `${hoveredGrid.rows} × ${hoveredGrid.cols} Tablo Ekle` : '0 × 0 Tablo'}
+                    {hoveredGrid.rows > 0 && hoveredGrid.cols > 0 ? t('notes.tableInsert').replace('{rows}', hoveredGrid.rows.toString()).replace('{cols}', hoveredGrid.cols.toString()) : t('notes.tableZero')}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
           <button
-            onClick={() => insertMarkdownFormat('[', '](https://)', 'Bağlantı')}
+            onClick={() => insertMarkdownFormat('[', '](https://)', t('notes.linkText'))}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Link Ekle (Ctrl+K)"
+            title={t('notes.linkTooltip')}
           >
             <FaLink />
           </button>
           <button
             onClick={() => insertMarkdownFormat('\n---\n')}
             className="p-1.5 rounded-lg hover:bg-stone-200 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300"
-            title="Yatay Çizgi"
+            title={t('notes.hrTooltip')}
           >
             <FaMinus />
           </button>
@@ -1198,21 +1200,21 @@ export default function NotesEditor({
           {saveStatus === 'saving' ? (
             <span className="flex items-center gap-1.5 text-amber-500 font-medium animate-pulse">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-              Kaydediliyor...
+              {t('notes.saving')}
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
               <FaCheck className="text-[10px]" />
-              Kaydedildi
+              {t('notes.saved')}
             </span>
           )}
         </div>
 
         {/* Word, Character, Reading info */}
         <div className="flex items-center gap-4">
-          <span>{wordsCount} Kelime</span>
-          <span>{charsCount} Karakter</span>
-          <span>~{readTimeMin} dk okuma süresi</span>
+          <span>{t('notes.wordCount').replace('{count}', wordsCount.toString())}</span>
+          <span>{t('notes.charCount').replace('{count}', charsCount.toString())}</span>
+          <span>{t('notes.readTime').replace('{time}', readTimeMin.toString())}</span>
         </div>
       </div>
 

@@ -94,14 +94,14 @@ export default function HomeFavoritesRail({
                 /* Cards Grid */
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     {slice.map((item, idx) => (
-                        <motion.button
-                            type="button"
+                        <motion.div
                             key={item.id}
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.06, duration: 0.3 }}
                             onClick={() => onSelect(item)}
-                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                            role="button"
+                            tabIndex={0}
                             className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left transition-all hover:border-slate-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
                         >
                             {/* Image Area */}
@@ -126,8 +126,10 @@ export default function HomeFavoritesRail({
                                 {/* Remove Favorite - top right */}
                                 <button
                                     type="button"
-                                    onClick={(e) => onRemoveFavorite(item, e)}
-                                    // HATA DÜZELTİLDİ: cursor-pointer eklendi
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRemoveFavorite(item, e);
+                                    }}
                                     className="absolute right-2.5 top-2.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-rose-500 shadow-sm opacity-0 transition-all hover:bg-rose-500 hover:text-white group-hover:opacity-100 dark:bg-zinc-900/90 dark:text-rose-400 dark:hover:bg-rose-500 dark:hover:text-white"
                                     title={t('home.removeFavorite')}
                                 >
@@ -169,7 +171,7 @@ export default function HomeFavoritesRail({
                                     </span>
                                 </div>
                             </div>
-                        </motion.button>
+                        </motion.div>
                     ))}
                 </div>
             )}

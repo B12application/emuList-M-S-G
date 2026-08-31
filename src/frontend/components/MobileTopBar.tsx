@@ -37,7 +37,7 @@ export default function MobileTopBar({ onMenuOpen }: MobileTopBarProps) {
     if (location.pathname.startsWith('/notes')) return t('nav.notes') || 'Notlarım';
     if (location.pathname.startsWith('/planner')) return t('nav.calendar') || 'Takvim & Plan';
     if (location.pathname.startsWith('/expenses')) return t('nav.expenses') || 'Harcamalar';
-    if (location.pathname.startsWith('/travel-planner')) return 'Gezi Planlayıcı';
+    if (location.pathname.startsWith('/travel-planner')) return t('nav.travelPlanner') || 'Gezi Planlayıcı';
     if (location.pathname.startsWith('/profile')) return t('nav.myProfile') || 'Profilim';
     if (location.pathname.startsWith('/stats')) return t('home.stats') || 'İstatistikler';
     if (location.pathname.startsWith('/lists')) return t('lists.title') || 'Listelerim';

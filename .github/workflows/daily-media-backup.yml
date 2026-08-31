@@ -16,6 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -36,8 +37,8 @@ jobs:
           VITE_MESSAGING_SENDER_ID: ${{ secrets.VITE_MESSAGING_SENDER_ID || '851837361679' }}
           VITE_APP_ID: ${{ secrets.VITE_APP_ID || '1:851837361679:web:84643d98dbe5edf6a5cd7a' }}
           VITE_ADMIN_UID: ${{ secrets.VITE_ADMIN_UID || 'ZKU7SObBkeNzMicltUKJjo6ybHH2' }}
-          FIREBASE_AUTH_EMAIL: ${{ secrets.FIREBASE_AUTH_EMAIL }}
-          FIREBASE_AUTH_PASSWORD: ${{ secrets.FIREBASE_AUTH_PASSWORD }}
+          FIREBASE_AUTH_EMAIL: ${{ secrets.FIREBASE_AUTH_EMAIL || secrets.BACKUP_AUTH_EMAIL }}
+          FIREBASE_AUTH_PASSWORD: ${{ secrets.FIREBASE_AUTH_PASSWORD || secrets.BACKUP_AUTH_PASSWORD }}
         run: npm run backup:media
 
       - name: Commit and Push Backups
@@ -49,6 +50,6 @@ jobs:
             echo "ℹ️ Yedekleme dosyasında değişiklik yok, commit atlanıyor."
           else
             git commit -m "chore(backup): automated daily media backup [skip ci]"
-            git push
+            git push origin HEAD
             echo "✅ Günlük medya yedeği repoya başarıyla pushlandı!"
           fi

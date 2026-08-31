@@ -21,6 +21,7 @@ import type { NoteItem, NoteFolder } from '../../types/notes';
 import type { FilterCategory } from '../../hooks/useNotes';
 import { formatDistanceToNow, format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface NotesListProps {
   notes: NoteItem[];
@@ -59,6 +60,7 @@ export default function NotesList({
   onMoveToFolder,
   onEmptyTrash,
 }: NotesListProps) {
+  const { t } = useLanguage();
   const [sortBy, setSortBy] = useState<SortOption>('updated_desc');
   const [activeMenuNoteId, setActiveMenuNoteId] = useState<string | null>(null);
 
@@ -68,18 +70,18 @@ export default function NotesList({
 
   // Determine current active folder name
   const currentFolderName = activeFolderId
-    ? folderMap.get(activeFolderId)?.name || 'Klasör'
-    : 'Notlar';
+    ? folderMap.get(activeFolderId)?.name || t('notes.folder')
+    : t('notes.notes');
 
   // Get current view title
   const getViewTitle = () => {
-    if (searchQuery) return `Arama: "${searchQuery}"`;
+    if (searchQuery) return `${t('notes.searchPrefix')}: "${searchQuery}"`;
     if (selectedTag) return `#${selectedTag}`;
-    if (filterCategory === 'pinned') return 'Sabitlenen Notlar';
-    if (filterCategory === 'favorites') return 'Favori Notlar';
-    if (filterCategory === 'trash') return 'Çöp Kutusu';
+    if (filterCategory === 'pinned') return t('notes.pinnedNotes');
+    if (filterCategory === 'favorites') return t('notes.favoriteNotes');
+    if (filterCategory === 'trash') return t('notes.trash');
     if (filterCategory === 'folder') return currentFolderName;
-    return 'Tüm Notlar';
+    return t('notes.allNotes');
   };
 
   // Sort notes
@@ -97,10 +99,10 @@ export default function NotesList({
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
     if (sortBy === 'title_asc') {
-      return (a.title || 'Başlıksız').localeCompare(b.title || 'Başlıksız');
+      return (a.title || t('notes.untitled')).localeCompare(b.title || t('notes.untitled'));
     }
     if (sortBy === 'title_desc') {
-      return (b.title || 'Başlıksız').localeCompare(a.title || 'Başlıksız');
+      return (b.title || t('notes.untitled')).localeCompare(a.title || t('notes.untitled'));
     }
     return 0;
   });
@@ -116,7 +118,7 @@ export default function NotesList({
       }
       return format(date, 'd MMM yyyy', { locale: tr });
     } catch {
-      return 'Bilinmiyor';
+      return t('notes.unknownDate');
     }
   };
 
@@ -134,7 +136,7 @@ export default function NotesList({
             <span>{getViewTitle()}</span>
           </h3>
           <p className="text-[11px] text-stone-400 dark:text-zinc-500">
-            {sortedNotes.length} Not listeleniyor
+            {sortedNotes.length} {t('notes.notesListed')}
           </p>
         </div>
 
@@ -143,15 +145,15 @@ export default function NotesList({
           {filterCategory === 'trash' && onEmptyTrash && sortedNotes.length > 0 && (
             <button
               onClick={() => {
-                if (confirm('Tüm çöp kutusunu kalıcı olarak silmek istediğinize emin misiniz?')) {
+                if (confirm(t('notes.confirmEmptyTrash'))) {
                   onEmptyTrash();
                 }
               }}
               className="text-[10px] sm:text-[11px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-red-500/20 shadow-sm"
-              title="Çöp Kutusunu Boşalt"
+              title={t('notes.emptyTrashTitle')}
             >
               <FaTrashAlt />
-              Boşalt
+              {t('notes.emptyTrash')}
             </button>
           )}
 
@@ -160,10 +162,10 @@ export default function NotesList({
             onChange={(e) => setSortBy(e.target.value as SortOption)}
             className="text-[11px] font-medium bg-white dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-stone-600 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-amber-400"
           >
-            <option value="updated_desc">Son Düzenlenen</option>
-            <option value="created_desc">Oluşturma Tarihi</option>
-            <option value="title_asc">Başlık (A-Z)</option>
-            <option value="title_desc">Başlık (Z-A)</option>
+            <option value="updated_desc">{t('notes.sortByUpdatedDesc')}</option>
+            <option value="created_desc">{t('notes.sortByCreatedDesc')}</option>
+            <option value="title_asc">{t('notes.sortByTitleAsc')}</option>
+            <option value="title_desc">{t('notes.sortByTitleDesc')}</option>
           </select>
         </div>
       </div>
@@ -176,10 +178,10 @@ export default function NotesList({
               <FaFolder />
             </div>
             <h4 className="text-sm font-bold text-stone-800 dark:text-zinc-200 mb-1">
-              Bu bölümde not bulunamadı
+              {t('notes.noNotesFound')}
             </h4>
             <p className="text-xs text-stone-400 dark:text-zinc-500 mb-4 max-w-[200px] mx-auto">
-              Hemen yeni bir not oluşturarak düşüncelerinizi ve ekran görüntülerinizi kaydedin.
+              {t('notes.noNotesDesc')}
             </p>
             {filterCategory !== 'trash' && (
               <button
@@ -187,7 +189,7 @@ export default function NotesList({
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:bg-amber-500 transition-all"
               >
                 <FaPlus className="text-[10px]" />
-                <span>Not Oluştur</span>
+                <span>{t('notes.createNote')}</span>
               </button>
             )}
           </div>
@@ -233,12 +235,12 @@ export default function NotesList({
                 <div className="flex items-start justify-between gap-2 mb-1 pl-1">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     {filterCategory !== 'trash' && (
-                      <span className="opacity-0 group-hover:opacity-60 text-stone-400 dark:text-zinc-500 text-[10px] -ml-1 shrink-0 cursor-grab" title="Klasöre sürükleyip bırakabilirsiniz">
+                      <span className="opacity-0 group-hover:opacity-60 text-stone-400 dark:text-zinc-500 text-[10px] -ml-1 shrink-0 cursor-grab" title={t('notes.dragToFolder')}>
                         <FaGripVertical />
                       </span>
                     )}
                     <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-white truncate flex-1">
-                      {note.title || 'Başlıksız Not'}
+                      {note.title || t('notes.untitledNote')}
                     </h4>
                   </div>
 
@@ -278,19 +280,19 @@ export default function NotesList({
                                 className="w-full flex items-center gap-2 px-3 py-2 text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 text-left font-medium"
                               >
                                 <FaUndo className="text-[10px] text-emerald-500" />
-                                <span>Geri Yükle</span>
+                                <span>{t('notes.restore')}</span>
                               </button>
                               <button
                                 onClick={() => {
                                   setActiveMenuNoteId(null);
-                                  if (confirm('Bu not kalıcı olarak silinecek. Emin misiniz?')) {
+                                  if (confirm(t('notes.confirmDeletePermanently'))) {
                                     onDeleteNote(note.id, true);
                                   }
                                 }}
                                 className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 text-left font-medium"
                               >
                                 <FaTrashAlt className="text-[10px]" />
-                                <span>Kalıcı Olarak Sil</span>
+                                <span>{t('notes.deletePermanently')}</span>
                               </button>
                             </>
                           ) : (
@@ -303,7 +305,7 @@ export default function NotesList({
                                 className="w-full flex items-center gap-2 px-3 py-2 text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 text-left font-medium"
                               >
                                 <FaThumbtack className="text-[10px] text-amber-500" />
-                                <span>{note.isPinned ? 'Sabitlemeyi Kaldır' : 'Başa Sabitle'}</span>
+                                <span>{note.isPinned ? t('notes.unpin') : t('notes.pin')}</span>
                               </button>
                               <button
                                 onClick={() => {
@@ -313,7 +315,7 @@ export default function NotesList({
                                 className="w-full flex items-center gap-2 px-3 py-2 text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 text-left font-medium"
                               >
                                 <FaStar className="text-[10px] text-amber-400" />
-                                <span>{note.isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}</span>
+                                <span>{note.isFavorite ? t('notes.unfavorite') : t('notes.favoriteAction')}</span>
                               </button>
                               <div className="h-px bg-stone-100 dark:bg-zinc-800 my-1" />
                               <button
@@ -324,7 +326,7 @@ export default function NotesList({
                                 className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 text-left font-medium"
                               >
                                 <FaTrash className="text-[10px]" />
-                                <span>Çöp Kutusuna Taşı</span>
+                                <span>{t('notes.moveToTrash')}</span>
                               </button>
                             </>
                           )}
@@ -337,7 +339,7 @@ export default function NotesList({
                 {/* Excerpt & Thumbnail Preview */}
                 <div className="flex gap-2 pl-1 mb-2">
                   <p className="text-[11px] text-stone-500 dark:text-zinc-400 line-clamp-2 leading-relaxed flex-1">
-                    {plainExcerpt || 'İçerik yok...'}
+                    {plainExcerpt || t('notes.noContent')}
                   </p>
                   {firstScreenshot && (
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-stone-100 dark:bg-zinc-800 shrink-0 border border-stone-200 dark:border-zinc-700 shadow-inner">

@@ -29,6 +29,8 @@ import ExpensesPage from './pages/ExpensesPage';
 import TravelPlannerPage from './pages/TravelPlannerPage';
 import NotesPage from './pages/NotesPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import CalorieChatPage from './pages/CalorieChatPage';
+import CalorieDetailsPage from './pages/CalorieDetailsPage';
 import { LanguageProvider } from './context/LanguageContext';
 
 import { NotificationProvider } from './context/NotificationContext';
@@ -71,6 +73,8 @@ const router = createBrowserRouter([
       { path: 'travel-planner', element: <TravelPlannerPage /> },
       { path: 'notes', element: <NotesPage /> },
       { path: 'notes/:noteId', element: <NotesPage /> },
+      { path: 'calorie-chat', element: <CalorieChatPage /> },
+      { path: 'calorie-details', element: <CalorieDetailsPage /> },
     ]
   },
 

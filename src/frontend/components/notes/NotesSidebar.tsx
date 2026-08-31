@@ -22,6 +22,7 @@ import {
 } from 'react-icons/fa';
 import type { NoteFolder, NoteItem } from '../../types/notes';
 import type { FilterCategory } from '../../hooks/useNotes';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface NotesSidebarProps {
   folders: NoteFolder[];
@@ -66,6 +67,7 @@ export default function NotesSidebar({
   isMobileDrawer = false,
   onCloseMobileDrawer,
 }: NotesSidebarProps) {
+  const { t } = useLanguage();
   const [collapsedFolders, setCollapsedFolders] = useState<Record<string, boolean>>(() => {
     try {
       const saved = localStorage.getItem('emulist_collapsed_folders');
@@ -223,7 +225,7 @@ export default function NotesSidebar({
                     className="w-full flex items-center gap-2 px-3 py-2 text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 text-left font-medium"
                   >
                     <FaPlus className="text-[10px] text-amber-500" />
-                    <span>Not Ekle</span>
+                    <span>{t('notes.addNote')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -233,19 +235,19 @@ export default function NotesSidebar({
                     className="w-full flex items-center gap-2 px-3 py-2 text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 text-left font-medium"
                   >
                     <FaEdit className="text-[10px]" />
-                    <span>Düzenle</span>
+                    <span>{t('notes.edit')}</span>
                   </button>
                   <button
                     onClick={() => {
                       setOpenFolderMenuId(null);
-                      if (confirm(`"${folder.name}" klasörünü silmek istediğinize emin misiniz?`)) {
+                      if (confirm(t('notes.confirmDeleteFolder').replace('{name}', folder.name))) {
                         onDeleteFolder(folder.id);
                       }
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 text-left font-medium"
                   >
                     <FaTrashAlt className="text-[10px]" />
-                    <span>Sil</span>
+                    <span>{t('notes.delete')}</span>
                   </button>
                 </div>
               )}
@@ -278,18 +280,18 @@ export default function NotesSidebar({
                 style={{ paddingLeft: `${12 + (depth + 1) * 14 + 18}px` }}
               >
                 <FaFileAlt className="opacity-70 shrink-0 text-stone-400 dark:text-zinc-500" />
-                <span className="truncate flex-1">{note.title || 'İsimsiz Not'}</span>
+                <span className="truncate flex-1">{note.title || t('notes.untitledNote')}</span>
                 
                 {onDeleteNote && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`"${note.title || 'İsimsiz Not'}" çöp kutusuna taşınacak. Emin misiniz?`)) {
+                      if (confirm(t('notes.confirmMoveToTrash').replace('{name}', note.title || t('notes.untitledNote')))) {
                         onDeleteNote(note.id, false);
                       }
                     }}
                     className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/10 text-stone-400 hover:text-red-500 rounded transition-all shrink-0"
-                    title="Çöp Kutusuna Taşı"
+                    title={t('notes.moveToTrash')}
                   >
                     <FaTrash className="text-[10px]" />
                   </button>
@@ -316,7 +318,7 @@ export default function NotesSidebar({
             </div>
             <div>
               <h2 className="text-sm font-black tracking-tight text-stone-900 dark:text-white">
-                Notlarım
+                {t('notes.myNotes')}
               </h2>
               <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                 Emu Note
@@ -328,17 +330,17 @@ export default function NotesSidebar({
             <button
               onClick={() => onOpenFolderModal(null)}
               className="p-2 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-xs"
-              title="Yeni Klasör Oluştur"
+              title={t('notes.createNewFolder')}
             >
               <FaFolder className="text-amber-500" />
             </button>
             <button
               onClick={() => onCreateNote(activeFolderId)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 font-bold transition-all text-xs shadow-sm shadow-amber-500/20"
-              title="Yeni Not Oluştur"
+              title={t('notes.createNewNote')}
             >
               <FaPlus className="text-[10px]" />
-              <span>Yeni Not</span>
+              <span>{t('notes.newNote')}</span>
             </button>
           </div>
         </div>
@@ -350,7 +352,7 @@ export default function NotesSidebar({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Notlarda, etiketlerde ara..."
+            placeholder={t('notes.searchPlaceholder')}
             className="w-full pl-8 pr-8 py-2 rounded-xl bg-stone-100/80 dark:bg-zinc-900 border border-stone-200/50 dark:border-zinc-800 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
           />
           {searchQuery && (
@@ -402,7 +404,7 @@ export default function NotesSidebar({
           >
             <div className="flex items-center gap-2.5">
               <FaLayerGroup className="text-sm opacity-80" />
-              <span>Tüm Notlar (Kök)</span>
+              <span>{t('notes.allNotesRoot')}</span>
             </div>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -427,7 +429,7 @@ export default function NotesSidebar({
           >
             <div className="flex items-center gap-2.5">
               <FaThumbtack className="text-sm text-amber-500 opacity-90" />
-              <span>Sabitlenenler</span>
+              <span>{t('notes.pinnedItems')}</span>
             </div>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -450,7 +452,7 @@ export default function NotesSidebar({
           >
             <div className="flex items-center gap-2.5">
               <FaStar className="text-sm text-amber-400 opacity-90" />
-              <span>Favoriler</span>
+              <span>{t('notes.favorites')}</span>
             </div>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -473,7 +475,7 @@ export default function NotesSidebar({
           >
             <div className="flex items-center gap-2.5">
               <FaTrash className="text-sm text-red-400 opacity-90" />
-              <span>Çöp Kutusu</span>
+              <span>{t('notes.trash')}</span>
             </div>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full ${
@@ -490,11 +492,11 @@ export default function NotesSidebar({
         {/* Folders Hierarchy */}
         <div>
           <div className="flex items-center justify-between px-3 mb-2 text-[10px] font-bold tracking-widest uppercase text-stone-400 dark:text-zinc-500">
-            <span>Klasörler</span>
+            <span>{t('notes.foldersList')}</span>
             <button
               onClick={() => onOpenFolderModal(null)}
               className="hover:text-amber-500 transition-colors"
-              title="Yeni Klasör"
+              title={t('notes.newFolder')}
             >
               <FaPlus />
             </button>
@@ -503,13 +505,13 @@ export default function NotesSidebar({
           {rootFolders.length === 0 && rootNotes.length === 0 ? (
             <div className="px-3 py-3 rounded-xl bg-stone-50 dark:bg-zinc-900/40 text-center border border-dashed border-stone-200 dark:border-zinc-800">
               <p className="text-xs text-stone-400 dark:text-zinc-500">
-                Henüz klasör yok
+                {t('notes.noFoldersYet')}
               </p>
               <button
                 onClick={() => onOpenFolderModal(null)}
                 className="mt-1 text-xs text-amber-600 dark:text-amber-400 font-bold hover:underline"
               >
-                + Klasör Oluştur
+                {t('notes.createFolderBtn')}
               </button>
             </div>
           ) : (
@@ -536,18 +538,18 @@ export default function NotesSidebar({
                   style={{ paddingLeft: `12px` }}
                 >
                   <FaFileAlt className="opacity-70 shrink-0 text-stone-400 dark:text-zinc-500" />
-                  <span className="truncate flex-1">{note.title || 'İsimsiz Not'}</span>
+                  <span className="truncate flex-1">{note.title || t('notes.untitledNote')}</span>
                   
                   {onDeleteNote && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(`"${note.title || 'İsimsiz Not'}" çöp kutusuna taşınacak. Emin misiniz?`)) {
+                        if (confirm(t('notes.confirmMoveToTrash').replace('{name}', note.title || t('notes.untitledNote')))) {
                           onDeleteNote(note.id, false);
                         }
                       }}
                       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/10 text-stone-400 hover:text-red-500 rounded transition-all shrink-0"
-                      title="Çöp Kutusuna Taşı"
+                      title={t('notes.moveToTrash')}
                     >
                       <FaTrash className="text-[10px]" />
                     </button>
@@ -562,13 +564,13 @@ export default function NotesSidebar({
         {allTags.length > 0 && (
           <div>
             <div className="flex items-center justify-between px-3 mb-2 text-[10px] font-bold tracking-widest uppercase text-stone-400 dark:text-zinc-500">
-              <span>Etiketler</span>
+              <span>{t('notes.tags')}</span>
               {selectedTag && (
                 <button
                   onClick={() => onSelectTag(null)}
                   className="text-amber-600 dark:text-amber-400 hover:underline capitalize text-[10px]"
                 >
-                  Temizle
+                  {t('notes.clear')}
                 </button>
               )}
             </div>
@@ -607,11 +609,11 @@ export default function NotesSidebar({
       <div className="p-3 border-t border-stone-200/70 dark:border-zinc-800/70 bg-stone-50/50 dark:bg-zinc-900/30 text-[11px] text-stone-400 dark:text-zinc-500 flex items-center justify-between shrink-0">
         <span className="flex items-center gap-1">
           <FaFileAlt className="text-[10px]" />
-          {totalNotesCount} Not
+          {totalNotesCount} {t('notes.noteCount')}
         </span>
         <span className="flex items-center gap-1">
           <FaFolder className="text-[10px]" />
-          {folders.length} Klasör
+          {folders.length} {t('notes.folderCount')}
         </span>
       </div>
     </div>

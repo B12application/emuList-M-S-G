@@ -18,44 +18,40 @@ const projectRoot = path.resolve(__dirname, '..');
 dotenv.config({ path: path.join(projectRoot, '.env') });
 
 const firebaseConfig = {
-    apiKey: process.env.VITE_API_KEY,
-    authDomain: process.env.VITE_AUTH_DOMAIN,
-    projectId: process.env.VITE_PROJECT_ID,
-    storageBucket: process.env.VITE_STORAGE_BUCKET,
-    messagingSenderId: process.env.VITE_MESSAGING_SENDER_ID,
-    appId: process.env.VITE_APP_ID,
+    apiKey: process.env.VITE_API_KEY || 'AIzaSyDbxNvt8gT5VUQjb1I0MS6sLTQaTTh9f_0',
+    authDomain: process.env.VITE_AUTH_DOMAIN || 'emucalendarbinbin.firebaseapp.com',
+    projectId: process.env.VITE_PROJECT_ID || 'emucalendarbinbin',
+    storageBucket: process.env.VITE_STORAGE_BUCKET || 'emucalendarbinbin.firebasestorage.app',
+    messagingSenderId: process.env.VITE_MESSAGING_SENDER_ID || '851837361679',
+    appId: process.env.VITE_APP_ID || '1:851837361679:web:84643d98dbe5edf6a5cd7a',
 };
 
-const targetUserId = process.env.VITE_ADMIN_UID || '';
-const authEmail = process.env.BACKUP_AUTH_EMAIL || process.env.BACKUP_EMAIL || process.env.FIREBASE_AUTH_EMAIL || process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL;
-const authPassword = process.env.BACKUP_AUTH_PASSWORD || process.env.BACKUP_PASSWORD || process.env.FIREBASE_AUTH_PASSWORD || process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD;
+const targetUserId = process.env.VITE_ADMIN_UID || 'ZKU7SObBkeNzMicltUKJjo6ybHH2';
+const authEmail = process.env.FIREBASE_AUTH_EMAIL || process.env.BACKUP_AUTH_EMAIL || process.env.BACKUP_EMAIL || process.env.ADMIN_EMAIL;
+const authPassword = process.env.FIREBASE_AUTH_PASSWORD || process.env.BACKUP_AUTH_PASSWORD || process.env.BACKUP_PASSWORD || process.env.ADMIN_PASSWORD;
 
 async function runMediaBackup() {
     console.log('🚀 [Media Backup Job] Medya yedekleme başlatılıyor...');
     console.log(`📅 Tarih: ${new Date().toLocaleString('tr-TR')}`);
 
-    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        throw new Error('Firebase yapılandırması .env dosyasında bulunamadı!');
-    }
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Oturum Açma (Firestore Güvenlik Kuralları auth kontrolü için)
+    // Oturum Açma (Firestore Güvenlik Kuralları yetkisi için)
     if (authEmail && authPassword) {
         try {
             console.log(`🔐 [Auth] '${authEmail}' ile Firebase oturumu açılıyor...`);
             await signInWithEmailAndPassword(auth, authEmail, authPassword);
             console.log('✅ [Auth] Başarıyla oturum açıldı.');
         } catch (authErr: any) {
-            console.warn('⚠️ [Auth Giriş Uyarısı]:', authErr.message);
+            console.error('❌ [Auth Giriş Hatası]:', authErr.message);
+            console.error('Lütfen GitHub Secrets veya .env içerisindeki FIREBASE_AUTH_EMAIL ve FIREBASE_AUTH_PASSWORD bilgilerini kontrol edin.');
+            throw authErr;
         }
     } else {
-        console.log('ℹ️  [Auth] .env dosyasında BACKUP_AUTH_EMAIL / BACKUP_AUTH_PASSWORD bulunamadı.');
-        console.log('💡 İpucu: Terminalden ve arka plandan otomatik yetkili yedek almak için .env içine ekleyin:');
-        console.log('   BACKUP_AUTH_EMAIL="hesabiniz@gmail.com"');
-        console.log('   BACKUP_AUTH_PASSWORD="sifreniz"\n');
+        console.warn('⚠️  [UYARI] Auth bilgileri (FIREBASE_AUTH_EMAIL & FIREBASE_AUTH_PASSWORD) bulunamadı.');
+        console.warn('Firestore güvenlik kuralları oturum gerektiriyorsa işlem yetki hatası verecektir.');
     }
 
     // Ensure output directories exist

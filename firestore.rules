@@ -192,5 +192,17 @@ service cloud.firestore {
       allow read, delete, update: if isOwnerByResource() || (isSignedIn() && isLegacyWithoutUserId());
       allow create: if isOwnerByRequest();
     }
+
+    // Calorie Chat Sessions
+    match /calorie_chats/{chatId} {
+      allow read, delete, update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Login Logs
+    match /loginLogs/{logId} {
+      allow create: if isOwnerByRequest();
+      allow read: if isSignedIn();
+    }
   }
 }

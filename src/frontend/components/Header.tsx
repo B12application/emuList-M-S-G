@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote, FaFire, FaTools, FaChartPie } from 'react-icons/fa';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
 import NotificationDropdown from './NotificationDropdown';
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useUserProfile from '../hooks/useUserProfile';
 import { isAdmin } from '../../backend/config/adminConfig';
 import { useShift } from '../context/ShiftContext';
+import { useFeatureAccess } from '../hooks/useFeatureAccess';
 
 interface NavLinkRenderProps {
   isActive: boolean;
@@ -38,12 +39,15 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
   const [showListsDropdown, setShowListsDropdown] = useState(false);
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const listsDropdownRef = useRef<HTMLDivElement | null>(null);
+  const toolsDropdownRef = useRef<HTMLDivElement | null>(null);
   const addDropdownRef = useRef<HTMLDivElement | null>(null);
   const { getShiftInfo } = useShift();
+  const { hasAccess } = useFeatureAccess();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -82,6 +86,9 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
       const target = event.target as Node;
       if (listsDropdownRef.current && !listsDropdownRef.current.contains(target)) {
         setShowListsDropdown(false);
+      }
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(target)) {
+        setShowToolsDropdown(false);
       }
       if (addDropdownRef.current && !addDropdownRef.current.contains(target)) {
         setShowAddDropdown(false);
@@ -195,7 +202,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 </div>
 
                 <NavLink to="/notes" className={getNavCls}>
-                  <span className="flex items-center gap-1.5"><FaStickyNote className="text-xs opacity-80" />Notlarım</span>
+                  <span className="flex items-center gap-1.5"><FaStickyNote className="text-xs opacity-80" />{t('nav.notes')}</span>
                 </NavLink>
                 <NavLink to="/planner" className={getNavCls}>
                   <span className="flex items-center gap-1.5"><FaCalendarAlt className="text-xs opacity-80" />{t('nav.calendar')}</span>
@@ -203,9 +210,56 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 <NavLink to="/expenses" className={getNavCls}>
                   <span className="flex items-center gap-1.5"><FaWallet className="text-xs opacity-80" />{t('expenses.title')}</span>
                 </NavLink>
-                <NavLink to="/travel-planner" className={getNavCls}>
-                  <span className="flex items-center gap-1.5"><FaCompass className="text-xs opacity-80" />Gezi</span>
-                </NavLink>
+
+                {/* Araçlar & Yaşam Dropdown */}
+                <div
+                  ref={toolsDropdownRef}
+                  className="relative group"
+                  onMouseEnter={() => setShowToolsDropdown(true)}
+                  onMouseLeave={() => setShowToolsDropdown(false)}
+                >
+                  <button
+                    onClick={() => setShowToolsDropdown((prev) => !prev)}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/travel-planner', '/calorie-details', '/calorie-chat'].some(path => location.pathname.startsWith(path))
+                      ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
+                      : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
+                      }`}
+                  >
+                    <span className="flex items-center gap-1.5"><FaTools className="text-xs opacity-80" />Araçlar</span>
+                    <motion.div
+                      animate={{ rotate: showToolsDropdown ? 180 : 0 }}
+                      className="flex items-center justify-center"
+                    >
+                      <FaChevronDown className="w-2.5 h-2.5" />
+                    </motion.div>
+                  </button>
+
+                  <AnimatePresence>
+                    {showToolsDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute top-full mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
+                      >
+                        <div className="flex flex-col">
+                          <NavLink to="/travel-planner" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                            <FaCompass className="text-sm opacity-70" />
+                            {t('nav.travelPlanner')}
+                          </NavLink>
+                          {hasAccess('calorieAi') && (
+                            <NavLink to="/calorie-details" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaChartPie className="text-sm text-amber-500" />
+                              <span>Kalori Raporu</span>
+                              <span className="ml-auto text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">Yeni</span>
+                            </NavLink>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </nav>
             )}
             </div>
@@ -319,7 +373,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
                     {[
                       { to: '/profile', label: t('nav.myProfile'), icon: 'bg-stone-800 dark:bg-white' },
-                      { to: '/notes', label: 'Notlarım', icon: 'bg-amber-500' },
+                      { to: '/notes', label: t('nav.notes') || 'Notlarım', icon: 'bg-amber-500' },
                       { to: '/stats', label: t('home.stats'), icon: 'bg-stone-500' },
                       { to: '/lists', label: t('lists.title'), icon: 'bg-stone-500' },
                       { to: '/map', label: t('nav.map'), icon: 'bg-stone-500' },

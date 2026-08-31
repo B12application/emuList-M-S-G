@@ -292,9 +292,8 @@ export default function HomePage() {
                     avatarUrl={getAvatar()}
                     onRandom={handleRandomPick}
                     t={t}
-                    previewItems={heroPreviewItems} onAvatarClick={function (): void {
-                        throw new Error('Function not implemented.');
-                    } }                />
+                    previewItems={heroPreviewItems}
+                />
 
                 {/* Pulse Stats */}
                 <HomeCommandLayer pulse={pulseStats} t={t} />

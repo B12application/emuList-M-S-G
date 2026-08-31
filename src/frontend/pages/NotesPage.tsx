@@ -12,6 +12,7 @@ import {
   FaChevronLeft,
   FaChevronRight
 } from 'react-icons/fa';
+import { useLanguage } from '../context/LanguageContext';
 import { useNotes } from '../hooks/useNotes';
 import NotesSidebar from '../components/notes/NotesSidebar';
 import NotesList from '../components/notes/NotesList';
@@ -20,6 +21,7 @@ import FolderModal from '../components/notes/FolderModal';
 import type { NoteFolder } from '../types/notes';
 
 export default function NotesPage() {
+  const { t } = useLanguage();
   const { noteId } = useParams<{ noteId?: string }>();
   const navigate = useNavigate();
 
@@ -107,7 +109,7 @@ export default function NotesPage() {
       <div className="min-h-[75vh] flex flex-col items-center justify-center">
         <FaSpinner className="animate-spin text-4xl text-amber-500 mb-4" />
         <p className="text-sm font-semibold text-stone-600 dark:text-zinc-400">
-          Notlar yükleniyor...
+          {t('notes.loadingNotes')}
         </p>
       </div>
     );
@@ -155,7 +157,7 @@ export default function NotesPage() {
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             className="absolute -left-3 top-[30%] -translate-y-1/2 p-1.5 rounded-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-md text-stone-500 hover:text-amber-500 transition-all text-xs"
-            title={isSidebarCollapsed ? 'Klasörleri Göster' : 'Klasörleri Gizle'}
+            title={isSidebarCollapsed ? t('notes.showFolders') : t('notes.hideFolders')}
           >
             {isSidebarCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
           </button>
@@ -191,7 +193,7 @@ export default function NotesPage() {
           <button
             onClick={() => setIsNotesListCollapsed(!isNotesListCollapsed)}
             className="absolute -left-3 top-[50%] -translate-y-1/2 p-1.5 rounded-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-md text-stone-500 hover:text-amber-500 transition-all text-xs"
-            title={isNotesListCollapsed ? 'Not Listesini Göster' : 'Not Listesini Gizle'}
+            title={isNotesListCollapsed ? t('notes.showNotesList') : t('notes.hideNotesList')}
           >
             {isNotesListCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
           </button>
@@ -226,7 +228,7 @@ export default function NotesPage() {
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-zinc-800 text-xs font-bold text-stone-700 dark:text-zinc-300"
               >
                 <FaBars className="text-amber-500" />
-                <span>Klasörler & Menü</span>
+                <span>{t('notes.foldersAndMenu')}</span>
               </button>
 
               <button
@@ -234,7 +236,7 @@ export default function NotesPage() {
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/25"
               >
                 <FaPlus />
-                <span>Yeni Not</span>
+                <span>{t('notes.newNote')}</span>
               </button>
             </div>
 

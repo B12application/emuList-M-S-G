@@ -1,8 +1,8 @@
 =======================================================
               EMULIST MEDYA KOLEKSIYON ARSIVI
-           Tarih: 29.08.2026 22:58:51
-           Toplam Icerik: 375
-           Filmler: 231 | Diziler: 76 | Oyunlar: 56 | Kitaplar: 12
+           Tarih: 30.08.2026 23:07:18
+           Toplam Icerik: 376
+           Filmler: 231 | Diziler: 77 | Oyunlar: 56 | Kitaplar: 12
 =======================================================
 
 🎬 FILMLER (231 Adet)
@@ -663,7 +663,7 @@
    Tur: Drama, History, Thriller
    Yil: 04 May 2018
 
-📺 DIZILER (76 Adet)
+📺 DIZILER (77 Adet)
 -------------------------------------------------------
 1. You [Puan: 7.7] [Durum: Izlendi] (IMDb: tt7335184) [5 Sezon]
    Tur: Crime, Drama, Romance
@@ -710,109 +710,111 @@
    Tur: Drama, Mystery, Romance
 23. Special Ops: Lioness [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt13111078) [3 Sezon]
    Tur: Dram, Savaş & Politik
-24. See [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt7949218) [3 Sezon]
+24. Mouse [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt13634792) [1 Sezon]
+   Tur: Action, Crime, Mystery
+25. See [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt7949218) [3 Sezon]
    Tur: Biography, Crime, Drama
-25. Fear The Walking Dead [Puan: 6.8] [Durum: Izlendi] (IMDb: tt3743822) [8 Sezon]
+26. Fear The Walking Dead [Puan: 6.8] [Durum: Izlendi] (IMDb: tt3743822) [8 Sezon]
    Tur: Drama, Horror, Sci-Fi
-26. Mr Inbetween [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt7472896) [3 Sezon]
+27. Mr Inbetween [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt7472896) [3 Sezon]
    Tur: Comedy, Crime, Drama
-27. 12 Monkeys [Puan: 8.0] [Durum: Izlendi] (IMDb: tt3148266) [4 Sezon]
+28. 12 Monkeys [Puan: 8.0] [Durum: Izlendi] (IMDb: tt3148266) [4 Sezon]
    Tur: Adventure, Drama, Mystery
-28. Young Sherlock [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt8599532) [1 Sezon]
+29. Young Sherlock [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt8599532) [1 Sezon]
    Tur: Action, Adventure, Mystery
-29. Task [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt28013708) [1 Sezon]
+30. Task [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt28013708) [1 Sezon]
    Tur: Crime, Drama
-30. Ripley [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt11016042) [1 Sezon]
+31. Ripley [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt11016042) [1 Sezon]
    Tur: Crime, Drama, Thriller
-31. Eric [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt16283824) [1 Sezon]
+32. Eric [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt16283824) [1 Sezon]
    Tur: Crime, Drama, Thriller
-32. Steal [Puan: 7.0] [Durum: Izlendi] (IMDb: tt32499731) [1 Sezon]
+33. Steal [Puan: 7.0] [Durum: Izlendi] (IMDb: tt32499731) [1 Sezon]
    Tur: Crime, Thriller
-33. Beckham [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt14524712) [1 Sezon]
+34. Beckham [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt14524712) [1 Sezon]
    Tur: Documentary, Biography, Sport
-34. Bloodhounds [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt26315487) [2 Sezon]
+35. Bloodhounds [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt26315487) [2 Sezon]
    Tur: Action, Crime, Drama
-35. SEAL Team [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt6473344) [7 Sezon]
+36. SEAL Team [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt6473344) [7 Sezon]
    Tur: Action, Drama, War
-36. The Walking Dead: Daryl Dixon [Puan: 7.7] [Durum: Izlendi] (IMDb: tt13062500) [4 Sezon]
+37. The Walking Dead: Daryl Dixon [Puan: 7.7] [Durum: Izlendi] (IMDb: tt13062500) [4 Sezon]
    Tur: Drama, Horror
-37. Prens [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt14533970) [3 Sezon]
+38. Prens [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt14533970) [3 Sezon]
    Tur: Komedi
-38. Sweetpea [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt11218290) [1 Sezon]
+39. Sweetpea [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt11218290) [1 Sezon]
    Tur: Comedy, Drama, Thriller
-39. Adolescence [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt31806037) [1 Sezon]
+40. Adolescence [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt31806037) [1 Sezon]
    Tur: Crime, Drama, Thriller
-40. Severance [Puan: 8.7] [Durum: Izlendi] (IMDb: tt11280740) [2 Sezon]
+41. Severance [Puan: 8.7] [Durum: Izlendi] (IMDb: tt11280740) [2 Sezon]
    Tur: Drama, Mystery, Sci-Fi
-41. Dexter: New Blood [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt14164730) [1 Sezon]
+42. Dexter: New Blood [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt14164730) [1 Sezon]
    Tur: Crime, Drama, Mystery
-42. Warrior [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt5743796) [3 Sezon]
+43. Warrior [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt5743796) [3 Sezon]
    Tur: Action, Drama, Fantasy
-43. The Walking Dead: Dead City [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt18546730) [2 Sezon]
+44. The Walking Dead: Dead City [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt18546730) [2 Sezon]
    Tur: Action, Adventure, Drama
-44. I Will Find You [Puan: 0] [Durum: Izlenecek] (IMDb: tt34771210) [1 Sezon]
+45. I Will Find You [Puan: 0] [Durum: Izlenecek] (IMDb: tt34771210) [1 Sezon]
    Tur: Crime, Drama, Mystery
-45. Çekiç ve Gül [Puan: 8.1] [Durum: Izlendi] (IMDb: tt21095396) [3 Sezon]
+46. Çekiç ve Gül [Puan: 8.1] [Durum: Izlendi] (IMDb: tt21095396) [3 Sezon]
    Tur: Action, Crime, Drama
-46. Fire Country [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt16098700) [5 Sezon]
+47. Fire Country [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt16098700) [5 Sezon]
    Tur: Drama
-47. Pluribus [Puan: 9.1] [Durum: Izlendi] (IMDb: tt22202452) [2 Sezon]
+48. Pluribus [Puan: 9.1] [Durum: Izlendi] (IMDb: tt22202452) [2 Sezon]
    Tur: Drama, Sci-Fi
-48. Patriot [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt4687882) [2 Sezon]
+49. Patriot [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt4687882) [2 Sezon]
    Tur: Comedy, Drama, Thriller
-49. 1899 [Puan: 7.3] [Durum: Izlenecek] (IMDb: tt9319668) [1 Sezon]
+50. 1899 [Puan: 7.3] [Durum: Izlenecek] (IMDb: tt9319668) [1 Sezon]
    Tur: Adventure, Drama, Thriller
-50. Succession [Puan: 8.8] [Durum: Izlenecek] (IMDb: tt7660850) [4 Sezon]
+51. Succession [Puan: 8.8] [Durum: Izlenecek] (IMDb: tt7660850) [4 Sezon]
    Tur: Comedy, Drama
-51. Karşılaşmalar [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt33998293) 
+52. Karşılaşmalar [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt33998293) 
    Tur: Comedy
-52. Berlin [Puan: 7.1] [Durum: Izlendi] (IMDb: tt16288804) [1 Sezon]
+53. Berlin [Puan: 7.1] [Durum: Izlendi] (IMDb: tt16288804) [1 Sezon]
    Tur: Action, Crime, Drama
-53. Outer Banks [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt10293938) [5 Sezon]
+54. Outer Banks [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt10293938) [5 Sezon]
    Tur: Action, Crime, Drama
-54. His & Hers [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt33035373) [1 Sezon]
+55. His & Hers [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt33035373) [1 Sezon]
    Tur: Crime, Drama, Mystery
-55. Reacher [Puan: 8.1] [Durum: Izlendi] (IMDb: tt9288030) [4 Sezon]
+56. Reacher [Puan: 8.1] [Durum: Izlendi] (IMDb: tt9288030) [4 Sezon]
    Tur: Action, Crime, Drama
-56. Off Campus [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt33546863) [1 Sezon]
+57. Off Campus [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt33546863) [1 Sezon]
    Tur: Drama, Romance, Sport
-57. Secret Invasion [Puan: 6.0] [Durum: Izlenecek] (IMDb: tt13157618) [1 Sezon]
+58. Secret Invasion [Puan: 6.0] [Durum: Izlenecek] (IMDb: tt13157618) [1 Sezon]
    Tur: Action, Adventure, Mystery
-58. Silicon Valley [Puan: 8] [Durum: Izlenecek] (IMDb: tt2575988) [6 Sezon]
+59. Silicon Valley [Puan: 8] [Durum: Izlenecek] (IMDb: tt2575988) [6 Sezon]
    Tur: Comedy
-59. Şahsiyet l ll [Puan: 8.3] [Durum: Izlendi]  
-60. Normal People [Puan: 8.4] [Durum: Izlendi] (IMDb: tt9059760) [1 Sezon]
+60. Şahsiyet l ll [Puan: 8.3] [Durum: Izlendi]  
+61. Normal People [Puan: 8.4] [Durum: Izlendi] (IMDb: tt9059760) [1 Sezon]
    Tur: Drama, Romance
-61. Sherlock [Puan: 9.0] [Durum: Izlenecek] (IMDb: tt1475582) [4 Sezon]
+62. Sherlock [Puan: 9.0] [Durum: Izlenecek] (IMDb: tt1475582) [4 Sezon]
    Tur: Crime, Drama, Mystery
-62. Dexter: Resurrection [Puan: 9.1] [Durum: Izlenecek] (IMDb: tt33043892) [1 Sezon]
+63. Dexter: Resurrection [Puan: 9.1] [Durum: Izlenecek] (IMDb: tt33043892) [1 Sezon]
    Tur: Crime, Drama, Thriller
-63. Sons of Anarchy [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1124373) [7 Sezon]
+64. Sons of Anarchy [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1124373) [7 Sezon]
    Tur: Crime, Drama, Thriller
-64. Shogun [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt2788316) [3 Sezon]
+65. Shogun [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt2788316) [3 Sezon]
    Tur: Action, Adventure, Drama
-65. Black Mirror [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt2085059) [7 Sezon]
+66. Black Mirror [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt2085059) [7 Sezon]
    Tur: Crime, Drama, Mystery
-66. Swimming with Sharks [Puan: 6.4] [Durum: Izlendi] (IMDb: tt11343686) [1 Sezon]
+67. Swimming with Sharks [Puan: 6.4] [Durum: Izlendi] (IMDb: tt11343686) [1 Sezon]
    Tur: Drama, Thriller
-67. Dept. Q [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt27995114) [1 Sezon]
+68. Dept. Q [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt27995114) [1 Sezon]
    Tur: Crime, Drama, Mystery
-68. Manifest [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt8421350) [4 Sezon]
+69. Manifest [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt8421350) [4 Sezon]
    Tur: Drama, Mystery, Sci-Fi
-69. Sekizinci Aile [Puan: 8] [Durum: Izlenecek] (IMDb: tt38781098) 
-70. Spider-Noir [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt30460310) [1 Sezon]
+70. Sekizinci Aile [Puan: 8] [Durum: Izlenecek] (IMDb: tt38781098) 
+71. Spider-Noir [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt30460310) [1 Sezon]
    Tur: Action, Adventure, Crime
-71. Supernatural [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt0460681) [15 Sezon]
+72. Supernatural [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt0460681) [15 Sezon]
    Tur: Drama, Fantasy, Horror
-72. Silo [Puan: 8.1] [Durum: Izlendi] (IMDb: tt14688458) [4 Sezon]
+73. Silo [Puan: 8.1] [Durum: Izlendi] (IMDb: tt14688458) [4 Sezon]
    Tur: Drama, Mystery, Sci-Fi
-73. Shameless [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1586680) [11 Sezon]
+74. Shameless [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1586680) [11 Sezon]
    Tur: Comedy, Drama
-74. Gassal [Puan: 8.1] [Durum: Izlendi] (IMDb: tt35082593) 
+75. Gassal [Puan: 8.1] [Durum: Izlendi] (IMDb: tt35082593) 
    Tur: Comedy, Drama
-75. Breaking Bad [Puan: 9.5] [Durum: Izlenecek] (IMDb: tt0903747) [5 Sezon]
+76. Breaking Bad [Puan: 9.5] [Durum: Izlenecek] (IMDb: tt0903747) [5 Sezon]
    Tur: Crime, Drama, Thriller
-76. The Walking Dead [Puan: 8.1] [Durum: Izlendi] (IMDb: tt1520211) [11 Sezon]
+77. The Walking Dead [Puan: 8.1] [Durum: Izlendi] (IMDb: tt1520211) [11 Sezon]
    Tur: Drama, Horror, Thriller
 
 🎮 OYUNLAR (56 Adet)

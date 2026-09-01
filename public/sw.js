@@ -1,6 +1,5 @@
-const CACHE_NAME = 'b12-cache-v1';
+const CACHE_NAME = 'b12-cache-v2';
 const urlsToCache = [
-    '/',
     '/titlelogo.png',
     '/logob12.png'
 ];
@@ -10,14 +9,14 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('Cache opened');
+                console.log('Cache opened:', CACHE_NAME);
                 return cache.addAll(urlsToCache);
             })
     );
     self.skipWaiting();
 });
 
-// Service Worker Activate
+// Service Worker Activate - Delete old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -34,7 +33,7 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch Strategy: Network First, fallback to Cache
+// Fetch Strategy:
 self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') return;
@@ -45,37 +44,39 @@ self.addEventListener('fetch', (event) => {
     // Skip API requests (Firebase, etc.)
     if (event.request.url.includes('firestore') ||
         event.request.url.includes('firebase') ||
-        event.request.url.includes('googleapis')) {
+        event.request.url.includes('googleapis') ||
+        event.request.url.includes('/api/')) {
         return;
     }
 
+    // For HTML navigation requests, always fetch fresh from network to guarantee latest deployments
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request)
+                .catch(() => {
+                    return caches.match('/') || new Response('Offline', { status: 503 });
+                })
+        );
+        return;
+    }
+
+    // For static assets, network first, fallback to cache
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                // Clone the response
-                const responseClone = response.clone();
-
-                // Cache the new response
-                caches.open(CACHE_NAME)
-                    .then((cache) => {
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, responseClone);
                     });
-
+                }
                 return response;
             })
             .catch(() => {
-                // If network fails, try cache
-                return caches.match(event.request)
-                    .then((response) => {
-                        if (response) {
-                            return response;
-                        }
-                        // Return offline page for navigation requests
-                        if (event.request.mode === 'navigate') {
-                            return caches.match('/') || new Response('Offline', { status: 503 });
-                        }
-                        return new Response('Not found', { status: 404 });
-                    });
+                return caches.match(event.request).then((response) => {
+                    if (response) return response;
+                    return new Response('Not found', { status: 404 });
+                });
             })
     );
 });

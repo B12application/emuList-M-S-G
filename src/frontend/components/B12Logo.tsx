@@ -22,8 +22,8 @@ interface B12LogoProps {
  * - Zero gradients, zero 3D, zero shadows, zero decorative noise
  * - Optical balance calibrated for 16px favicon through 512px billboard scale
  */
-export default function B12Logo({ 
-  className = '', 
+export default function B12Logo({
+  className = '',
   size = 'md',
   variant = 'current'
 }: B12LogoProps) {

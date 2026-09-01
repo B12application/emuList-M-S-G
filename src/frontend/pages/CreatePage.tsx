@@ -318,7 +318,7 @@ export default function CreatePage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="py-2 sm:py-6 px-2 sm:px-4 max-w-7xl mx-auto min-h-screen pb-36"
+      className="py-2 sm:py-6 w-full mx-auto min-h-screen pb-36"
     >
       {/* ═══ TOP HERO BANNER & STICKY CATEGORY PICKER ═══ */}
       <div ref={searchInputTopRef} className="relative mb-4 p-4 sm:p-7 rounded-3xl bg-gradient-to-br from-stone-900 via-zinc-900 to-black text-white shadow-2xl overflow-hidden border border-stone-800/80">

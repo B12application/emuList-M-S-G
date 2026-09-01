@@ -3,14 +3,16 @@ import { tr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../context/LanguageContext';
 import { useShift } from '../../context/ShiftContext';
 import { FaSun, FaMoon, FaBed, FaUserShield, FaCog } from 'react-icons/fa';
+import { PiSoccerBallFill } from 'react-icons/pi';
 
 interface PlannerHeaderProps {
   selectedDate: Date;
   meetingCount: number;
   onEditShifts?: () => void;
+  onOpenTeamFixtures?: () => void;
 }
 
-export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts }: PlannerHeaderProps) {
+export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts, onOpenTeamFixtures }: PlannerHeaderProps) {
   const { getShiftInfo, shiftSettings } = useShift();
   const shift = getShiftInfo(selectedDate);
   const { language, t } = useLanguage();
@@ -65,6 +67,17 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
             </span>
             {shift.startTime && <span className="opacity-60 font-medium">({shift.startTime} - {shift.endTime})</span>}
           </div>
+        )}
+
+        {onOpenTeamFixtures && (
+          <button
+            onClick={onOpenTeamFixtures}
+            className="px-3.5 py-2 rounded-2xl bg-amber-400/15 hover:bg-amber-400/25 text-amber-700 dark:text-amber-300 border border-amber-400/30 transition-all flex items-center gap-1.5 text-xs font-bold active:scale-95 shadow-sm cursor-pointer"
+            title="Takip edilen takım fikstürlerini seç"
+          >
+            <PiSoccerBallFill className="text-sm text-amber-500" />
+            <span>Takımlar & Fikstür</span>
+          </button>
         )}
 
         {onEditShifts && shiftSettings.enableShiftSystem && (

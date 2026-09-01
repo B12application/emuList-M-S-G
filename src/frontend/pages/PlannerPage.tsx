@@ -19,10 +19,11 @@ import CalendarAlertModal from '../components/planner/CalendarAlertModal';
 import ShiftSettingsModal from '../components/planner/ShiftSettingsModal';
 import SportAddModal from '../components/planner/SportAddModal';
 import SportTrackingModal from '../components/planner/SportTrackingModal';
+import TeamFixtureModal from '../components/planner/TeamFixtureModal';
 import { useAuth } from '../context/AuthContext';
 import { useShift } from '../context/ShiftContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
-import { getUpcomingGSMatches } from '../services/galatasarayService';
+import { getUpcomingFootballMatches } from '../services/footballFixtureService';
 import type { PlannerMeeting } from '../../backend/types/planner';
 import type { CalendarAlert } from '../../backend/types/planner';
 import { showMarqueeToast } from '../components/MarqueeToast';
@@ -34,7 +35,12 @@ export default function PlannerPage() {
   const [meetings, setMeetings] = useState<PlannerMeeting[]>(() => {
     try {
       const cached = localStorage.getItem(`planner_meetings_${user?.uid}`);
-      return cached ? JSON.parse(cached) : [];
+      if (cached) {
+        const parsed: PlannerMeeting[] = JSON.parse(cached);
+        // Eski sezon veya eski match tiplerini cache'ten temizle
+        return parsed.filter(m => m.itemType !== 'match');
+      }
+      return [];
     } catch { return []; }
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -49,6 +55,7 @@ export default function PlannerPage() {
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [isSportAddModalOpen, setIsSportAddModalOpen] = useState(false);
   const [isSportTrackingModalOpen, setIsSportTrackingModalOpen] = useState(false);
+  const [isTeamFixtureModalOpen, setIsTeamFixtureModalOpen] = useState(false);
   const [calendarAlerts, setCalendarAlerts] = useState<CalendarAlert[]>([]);
   // Mobilde daily, desktop'ta monthly başlat
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira'>(() =>
@@ -64,6 +71,11 @@ export default function PlannerPage() {
       searchParams.delete('todo');
       setSearchParams(searchParams, { replace: true });
     }
+    if (searchParams.get('fixtures') === 'true') {
+      setIsTeamFixtureModalOpen(true);
+      searchParams.delete('fixtures');
+      setSearchParams(searchParams, { replace: true });
+    }
   }, [searchParams, setSearchParams]);
 
   const loadData = async (isManualRefresh = false) => {
@@ -76,13 +88,15 @@ export default function PlannerPage() {
 
     try {
       // 1. Verileri PARALEL çek (Hız kazandırır)
-      const [dbMeetings, gsMatches, alerts] = await Promise.all([
+      const [dbMeetings, footballMatches, alerts] = await Promise.all([
         getUserMeetings(user.uid),
-        getUpcomingGSMatches(isManualRefresh),
+        getUpcomingFootballMatches(isManualRefresh),
         getUserCalendarAlerts(user.uid)
       ]);
 
-      const allMeetings = [...dbMeetings, ...gsMatches];
+      // DB'de eski kalan match kayıtları varsa temizle, tek kaynak footballMatches olsun
+      const cleanedDbMeetings = dbMeetings.filter(m => m.itemType !== 'match');
+      const allMeetings = [...cleanedDbMeetings, ...footballMatches];
       setMeetings(allMeetings);
       setCalendarAlerts(alerts);
 
@@ -241,7 +255,7 @@ export default function PlannerPage() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="pb-24 pt-4 max-w-5xl mx-auto px-4"
+      className="pb-24 pt-4 w-full max-w-6xl 2xl:max-w-[1700px] mx-auto"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 px-2 gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100">
@@ -270,6 +284,7 @@ export default function PlannerPage() {
           selectedDate={selectedDate}
           meetingCount={currentDayMeetings.length}
           onEditShifts={() => setIsShiftModalOpen(true)}
+          onOpenTeamFixtures={() => setIsTeamFixtureModalOpen(true)}
         />
 
         <HorizontalTimeline
@@ -507,6 +522,12 @@ export default function PlannerPage() {
         onClose={() => setIsSportTrackingModalOpen(false)}
         meetings={meetings}
         onUpdated={loadData}
+      />
+
+      <TeamFixtureModal
+        isOpen={isTeamFixtureModalOpen}
+        onClose={() => setIsTeamFixtureModalOpen(false)}
+        onSaved={() => loadData(true)}
       />
     </motion.div>
   );

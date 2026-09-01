@@ -285,7 +285,7 @@ export default function HomePage() {
             {/* Background gradient */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(251,191,36,0.22),transparent),radial-gradient(ellipse_50%_40%_at_100%_0%,rgba(139,92,246,0.18),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(251,191,36,0.12),transparent),radial-gradient(ellipse_50%_40%_at_100%_0%,rgba(139,92,246,0.15),transparent)]" />
 
-            <section className="relative mx-auto max-w-[1600px] px-4 pb-12 pt-6 sm:px-6 lg:px-8 lg:pt-8">
+            <section className="relative mx-auto w-full pb-12 pt-4 sm:pt-6">
                 {/* Hero */}
                 <HomeHero
                     displayName={displayName}

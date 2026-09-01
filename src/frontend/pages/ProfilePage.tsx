@@ -160,7 +160,7 @@ export default function ProfilePage() {
         <div className="min-h-screen pt-4 pb-0">
 
             {/* MAIN CONTAINER: Centered single column */}
-            <div className="px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto mb-16">
+            <div className="w-full max-w-5xl 2xl:max-w-6xl mx-auto mb-16">
 
                 {/* TOP CONTROLS */}
                 <div className="flex justify-between items-center mb-8">

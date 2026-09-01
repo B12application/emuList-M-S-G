@@ -451,8 +451,8 @@ export default function SettingsPage() {
 
 
             {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
+                <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
@@ -474,7 +474,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-2 sm:px-4">
                 {/* Tab Navigation - Modern Cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
                     {tabs.map((tab) => (

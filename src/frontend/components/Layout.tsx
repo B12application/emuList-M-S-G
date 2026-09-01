@@ -27,7 +27,7 @@ export default function Layout() {
 
       {/* pt-20 → mobilde üst nav bar için; md'de pt-24 */}
       <main className="pt-20 md:pt-24 pb-28 md:pb-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="w-full mx-auto max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] px-4 sm:px-6 lg:px-10 2xl:px-16 transition-all duration-300">
           <Outlet />
         </div>
       </main>

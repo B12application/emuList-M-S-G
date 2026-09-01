@@ -44,8 +44,8 @@ export default function ListsPage() {
     return (
         <div className="min-h-screen pb-12">
             {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
+                <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
@@ -78,7 +78,7 @@ export default function ListsPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full mx-auto">
                 {/* Loading State */}
                 {loading && (
                     <div className="flex justify-center items-center py-20">
@@ -91,15 +91,15 @@ export default function ListsPage() {
 
                 {/* Empty State */}
                 {!loading && lists.length === 0 && (
-                    <div className="text-center py-20">
-                        <div className="w-24 h-24 mx-auto mb-6 bg-violet-100 dark:bg-violet-900/20 rounded-full flex items-center justify-center">
-                            <FaListUl className="text-4xl text-violet-500" />
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-12 text-center border border-stone-200 dark:border-zinc-800 shadow-sm max-w-lg mx-auto">
+                        <div className="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 text-violet-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                            <FaListUl />
                         </div>
                         <h2 className="text-2xl font-bold text-stone-900 dark:text-white mb-2">
-                            {t('lists.emptyTitle') || 'Henüz liste yok'}
+                            {t('lists.noLists') || 'Henüz Liste Yok'}
                         </h2>
                         <p className="text-stone-500 dark:text-zinc-400 mb-6 max-w-md mx-auto">
-                            {t('lists.emptyDesc') || 'Özel listeler oluşturarak içeriklerinizi organize edin. "Marvel Filmleri", "2024 İzlenecekler" gibi...'}
+                            {t('lists.noListsDesc') || 'Film, dizi, oyun veya kitaplarınızı gruplamak için özel listeler oluşturun.'}
                         </p>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -114,7 +114,7 @@ export default function ListsPage() {
 
                 {/* Lists Grid */}
                 {!loading && lists.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-6">
                         {lists.map((list, index) => (
                             <motion.div
                                 key={list.id}

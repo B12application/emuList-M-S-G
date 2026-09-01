@@ -236,8 +236,8 @@ export default function TravelPlannerPage() {
   return (
     <div className="min-h-screen pb-4">
       {/* Header */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-4 rounded-2xl sm:rounded-3xl">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
@@ -280,7 +280,7 @@ export default function TravelPlannerPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto">
         {/* Stats */}
         <div className="mb-4">
           <TravelStats {...stats} />

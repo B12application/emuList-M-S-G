@@ -285,8 +285,8 @@ export default function StatsPage() {
     return (
         <div className="min-h-screen pb-12">
             {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
+                <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
@@ -308,7 +308,7 @@ export default function StatsPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full mx-auto">
                 {/* KEY METRICS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-stone-200 dark:border-zinc-800 relative overflow-hidden group hover:shadow-xl transition-shadow">

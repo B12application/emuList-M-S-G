@@ -22,6 +22,8 @@ export interface PlannerMeeting {
   priority?: 'urgent' | 'high' | 'medium' | 'low';
   category?: string;      // Görev kategorisi: 'araba', 'ev', 'kişisel', etc.
   categoryColor?: string; // Kategori rengi: '#f97316', '#10b981', etc.
+  teamBadge?: string;     // Futbol takımı logo URL
+  teamColor?: string;     // Futbol takımı ana rengi
 }
 
 export interface GoogleSheetMeeting {

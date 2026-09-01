@@ -116,7 +116,7 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="mt-6 md:mt-8 h-[calc(100vh-15rem)] md:h-[calc(100vh-11rem)] -mx-4 sm:-mx-6 lg:-mx-8 flex flex-col overflow-hidden bg-white/70 dark:bg-zinc-950/70 rounded-3xl border border-stone-200/80 dark:border-zinc-800/80 shadow-2xl backdrop-blur-2xl">
+    <div className="mt-6 md:mt-8 h-[calc(100vh-15rem)] md:h-[calc(100vh-11rem)] w-full flex flex-col overflow-hidden bg-white/70 dark:bg-zinc-950/70 rounded-3xl border border-stone-200/80 dark:border-zinc-800/80 shadow-2xl backdrop-blur-2xl">
       {/* DESKTOP LAYOUT (>= md) */}
       <div className="hidden md:flex h-full w-full overflow-hidden">
         {/* Left Sidebar (Collapsible) */}

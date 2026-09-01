@@ -149,7 +149,7 @@ export default function MyShowsPage() {
         );
     }
     return (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        <div className="w-full max-w-6xl 2xl:max-w-[1700px] mx-auto py-6">
             {/* ═══ HEADER ═══ */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
@@ -318,7 +318,7 @@ export default function MyShowsPage() {
                 </div>
             ) : layoutMode === 'grid' ? (
                 /* ═══ GRID LAYOUT ═══ */
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3 sm:gap-4">
                     {filteredShows.map(show => {
                         const cat = getCategory(show);
                         const progress = getSeriesProgress(show);

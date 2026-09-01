@@ -78,7 +78,7 @@ export default function ListDetailPage() {
     }
 
     return (
-        <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="min-h-screen pb-12 w-full mx-auto">
             {/* Header */}
             <div className="mb-8">
                 <Link
@@ -114,19 +114,26 @@ export default function ListDetailPage() {
                         {/* Privacy badge */}
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${currentList.isPublic
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                            : 'bg-gray-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
+                            : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
                             }`}>
-                            {currentList.isPublic ? <FaGlobe /> : <FaLock />}
-                            {currentList.isPublic ? (t('lists.public') || 'Herkese Açık') : (t('lists.private') || 'Özel')}
+                            {currentList.isPublic ? (
+                                <>
+                                    <FaGlobe size={12} /> {t('lists.public') || 'Herkese Açık'}
+                                </>
+                            ) : (
+                                <>
+                                    <FaLock size={12} /> {t('lists.private') || 'Gizli'}
+                                </>
+                            )}
                         </span>
 
-                        {/* Share button */}
+                        {/* Copy link button (if public) */}
                         {currentList.isPublic && (
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleCopyLink}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
                             >
                                 {copied ? <FaCheck /> : <FaCopy />}
                                 {t('lists.shareLink') || 'Paylaş'}
@@ -156,7 +163,7 @@ export default function ListDetailPage() {
 
             {/* Items Grid */}
             {listItems.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-6">
                     {listItems.map((item) => (
                         <div key={item.id} className="relative group">
                             <MediaCard item={item} refetch={refetch} />

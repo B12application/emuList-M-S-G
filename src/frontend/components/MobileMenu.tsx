@@ -6,6 +6,7 @@ import {
   FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight, 
   FaCompass, FaStickyNote, FaUsersCog, FaUserShield, FaFire, FaChartPie 
 } from 'react-icons/fa';
+import { PiSoccerBallFill } from 'react-icons/pi';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
@@ -83,6 +84,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   const menuGroups = [
     {
+      title: 'Ajanda & Planlama',
+      items: [
+        { to: '/planner', icon: FaCalendarAlt, label: t('nav.calendar') || 'Takvim & Planlayıcı' },
+        { to: '/notes', icon: FaStickyNote, label: t('nav.notes') || 'Notlarım' },
+        { to: '/planner?fixtures=true', icon: PiSoccerBallFill, label: 'Takımlar & Fikstür' },
+      ]
+    },
+    {
       title: 'Koleksiyonlar',
       items: [
         { to: '/movie', icon: FaFilm, label: t('nav.movies') || 'Filmler' },
@@ -95,8 +104,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     {
       title: 'Araçlar & Yaşam',
       items: [
-        { to: '/notes', icon: FaStickyNote, label: t('nav.notes') || 'Notlarım' },
-        { to: '/planner', icon: FaCalendarAlt, label: t('nav.calendar') || 'Takvim & Plan' },
         { to: '/expenses', icon: FaWallet, label: t('nav.expenses') || 'Harcamalar' },
         { to: '/travel-planner', icon: FaCompass, label: t('nav.travelPlanner') || 'Gezi Planlayıcı' },
         { to: '/lists', icon: FaListUl, label: t('lists.title') || 'Listelerim' },

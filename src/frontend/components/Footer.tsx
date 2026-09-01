@@ -1,5 +1,6 @@
 import { FaGithub, FaTwitter, FaInstagram, FaLinkedin, FaHeart } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
+import B12Logo from './B12Logo';
 
 export default function Footer() {
     const { t } = useLanguage();
@@ -9,17 +10,20 @@ export default function Footer() {
             {/* Decorative Gradient Line */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
 
-            <div className="bg-white/50 dark:bg-stone-900/50 backdrop-blur-xl py-8 px-4">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-white/50 dark:bg-stone-900/50 backdrop-blur-xl py-8 px-4 sm:px-6 lg:px-10 2xl:px-16">
+                <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
 
                     {/* Logo / Brand */}
-                    <div className="flex flex-col items-center md:items-start gap-1">
-                        <span className="text-xl font-black bg-gradient-to-r from-stone-700 to-amber-700 dark:from-stone-200 dark:to-amber-500 bg-clip-text text-transparent tracking-tight">
-                            B12 Mustafa Ulusoy
-                        </span>
-                        <p className="text-[10px] text-stone-500 dark:text-stone-500 font-medium tracking-widest uppercase">
-                            {t('footer.subtitle')}
-                        </p>
+                    <div className="flex items-center gap-3.5">
+                        <B12Logo size="sm" className="shrink-0" />
+                        <div className="flex flex-col items-center md:items-start gap-0.5">
+                            <span className="text-lg font-black bg-gradient-to-r from-stone-800 to-amber-600 dark:from-stone-100 dark:to-amber-400 bg-clip-text text-transparent tracking-tight">
+                                B12 Mustafa Ulusoy
+                            </span>
+                            <p className="text-[10px] text-stone-500 dark:text-stone-500 font-medium tracking-widest uppercase">
+                                {t('footer.subtitle')}
+                            </p>
+                        </div>
                     </div>
 
                     {/* Social Links */}

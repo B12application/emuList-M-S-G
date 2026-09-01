@@ -307,7 +307,7 @@ export default function AdminPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-1 sm:px-2">
+            <div className="w-full mx-auto px-1 sm:px-2">
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <motion.div

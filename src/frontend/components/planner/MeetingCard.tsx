@@ -17,8 +17,12 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
       ${isPast ? 'opacity-50 grayscale-[0.5]' : ''}`}>
       
       {/* Time block */}
-      <div className="flex flex-col items-center justify-center min-w-[3.5rem] py-2 bg-stone-50 dark:bg-zinc-950 rounded-xl border border-stone-100 dark:border-zinc-800">
-        <span className="text-sm font-bold text-rose-600 dark:text-rose-500">{meeting.startTime}</span>
+      <div className="flex flex-col items-center justify-center min-w-[3.5rem] px-2 py-2 bg-stone-50 dark:bg-zinc-950 rounded-xl border border-stone-100 dark:border-zinc-800 shrink-0 text-center">
+        {meeting.startTime && meeting.startTime !== 'TBD' && meeting.startTime !== '--:--' ? (
+          <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{meeting.startTime}</span>
+        ) : (
+          <span className="text-[10px] font-black uppercase text-stone-500 dark:text-zinc-400 leading-tight">Saat Belli Değil</span>
+        )}
         {meeting.endTime && (
           <span className="text-[10px] text-stone-500 mt-0.5">{meeting.endTime}</span>
         )}
@@ -84,9 +88,16 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
           )
         )}
 
-        {meeting.itemType === 'match' && meeting.description ? (
-          <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-[11px] font-bold text-rose-700 dark:text-rose-300">
-            <span>{meeting.description}</span>
+        {meeting.itemType === 'match' ? (
+          <div className="mt-2 flex items-center gap-2">
+            {meeting.teamBadge && (
+              <img src={meeting.teamBadge} alt="" className="w-4 h-4 object-contain shrink-0" />
+            )}
+            {meeting.description && (
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-400/30 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                <span>{meeting.description}</span>
+              </div>
+            )}
           </div>
         ) : !meeting.notes && meeting.description && (
           <p className="text-sm text-stone-500 dark:text-zinc-500 mt-1 line-clamp-2">

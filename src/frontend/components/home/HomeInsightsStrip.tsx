@@ -1,180 +1,163 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaArrowRight, FaStar, FaHistory, FaChartBar } from 'react-icons/fa';
+import { FaStar, FaHistory, FaArrowRight, FaCompass, FaFilm } from 'react-icons/fa';
 import type { MediaItem } from '../../../backend/types/media';
-import QuoteWidget from '../QuoteWidget';
 
 type TFn = (key: string) => string;
 
 interface HomeInsightsStripProps {
     t: TFn;
-    totalCount: number;
-    stats: { movieCount: number; seriesCount: number; gameCount: number; bookCount: number };
+    totalCount?: number;
+    stats?: { movieCount: number; seriesCount: number; gameCount: number; bookCount: number };
     spotlight: MediaItem | null;
     dustyItems: MediaItem[];
     onSelect: (item: MediaItem) => void;
-    formatDate: (timestamp: unknown) => string;
+    formatDate?: (timestamp: unknown) => string;
 }
-
-const STATS_CONFIG = [
-    { key: 'movieCount' as const, labelKey: 'nav.movies' as const, icon: '🎬', color: 'bg-sky-500 dark:bg-sky-400' },
-    { key: 'seriesCount' as const, labelKey: 'nav.series' as const, icon: '📺', color: 'bg-rose-500 dark:bg-rose-400' },
-    { key: 'gameCount' as const, labelKey: 'nav.games' as const, icon: '🎮', color: 'bg-amber-500 dark:bg-amber-400' },
-    { key: 'bookCount' as const, labelKey: 'nav.books' as const, icon: '📚', color: 'bg-violet-500 dark:bg-violet-400' },
-];
 
 export default function HomeInsightsStrip({
     t,
-    totalCount: _totalCount,
-    stats,
     spotlight,
     dustyItems,
     onSelect,
-    formatDate: _formatDate,
 }: HomeInsightsStripProps) {
-    const maxVal = Math.max(...Object.values(stats), 1);
+    if (!spotlight && dustyItems.length === 0) return null;
 
     return (
-        <div className="mt-8 space-y-4">
-            {/* ── Üst Başlık ── */}
-            <div className="flex items-center gap-2 px-1">
-                <FaChartBar className="text-slate-400 dark:text-zinc-500 text-xs" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                    {t('home.trendsTitle') || 'İçgörüler'}
-                </h2>
-            </div>
-
-            {/* ── 3 Sütunlu Kompakt Grid Düzeni ── */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
-                {/* ── KART 1: İstatistik Dağılımı ── */}
-                <div className="rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4 backdrop-blur-sm dark:border-zinc-800/60 dark:bg-zinc-900/40">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-3.5">
-                        {t('home.trendsTitle')}
-                    </p>
-                    <div className="space-y-2.5">
-                        {STATS_CONFIG.map((item) => {
-                            const value = stats[item.key];
-                            const percentage = (value / maxVal) * 100;
-                            return (
-                                <div key={item.key} className="flex items-center gap-2.5">
-                                    <span className="w-4 text-center text-xs shrink-0">{item.icon}</span>
-                                    <span className="w-14 shrink-0 text-xs font-medium text-slate-600 dark:text-zinc-400 truncate">
-                                        {t(item.labelKey)}
-                                    </span>
-                                    <div className="flex-1 h-1 rounded-full bg-slate-200/60 dark:bg-zinc-800 overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${percentage}%` }}
-                                            transition={{ duration: 0.5, ease: 'easeOut' }}
-                                            className={`h-full rounded-full ${item.color}`}
-                                        />
-                                    </div>
-                                    <span className="w-5 shrink-0 text-right text-xs font-bold tabular-nums text-slate-700 dark:text-zinc-300">
-                                        {value}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* ── KART 2: Spotlight (Öne Çıkan) ── */}
-                <div className="rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4 backdrop-blur-sm dark:border-zinc-800/60 dark:bg-zinc-900/40 flex flex-col justify-between">
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
+            {/* ── KART 1: Spotlight (Günün Öne Çıkanı) - 5 Kolon ── */}
+            {spotlight && (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className={`${dustyItems.length > 0 ? 'lg:col-span-5' : 'lg:col-span-12'} relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/60 to-amber-50/20 p-5 shadow-xs backdrop-blur-xl dark:border-zinc-800/80 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-amber-950/10`}
+                >
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-3.5">
-                            {t('home.spotlightTitle')}
-                        </p>
-                        {spotlight ? (
-                            <button
-                                type="button"
-                                onClick={() => onSelect(spotlight)}
-                                // HATA DÜZELTİLDİ: cursor-pointer eklendi
-                                className="group flex cursor-pointer items-start gap-3 w-full text-left"
-                            >
-                                <div className="h-14 w-10 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-                                    {spotlight.image ? (
-                                        <img src={spotlight.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                                    ) : (
-                                        <div className="flex h-full w-full items-center justify-center">
-                                            <FaStar className="text-slate-300 dark:text-zinc-600 text-xs" />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <h3 className="text-xs font-bold text-slate-900 line-clamp-1 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400">
-                                        {spotlight.title}
-                                    </h3>
-                                    <p className="mt-0.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400">
-                                        ★ {spotlight.rating} · {spotlight.type}
-                                    </p>
-                                </div>
-                            </button>
-                        ) : (
-                            <div className="flex h-14 items-center justify-center">
-                                <p className="text-xs text-slate-400 dark:text-zinc-500">{t('home.noSpotlight')}</p>
-                            </div>
-                        )}
-                    </div>
+                        <div className="mb-3.5 flex items-center justify-between">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300">
+                                <FaCompass className="text-amber-500 text-[9px]" />
+                                {t('home.spotlightTitle') || 'Günün Öne Çıkanı'}
+                            </span>
+                            <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500">
+                                En Yüksek Puanlı
+                            </span>
+                        </div>
 
-                    {spotlight && (
                         <button
                             type="button"
                             onClick={() => onSelect(spotlight)}
-                            // HATA DÜZELTİLDİ: cursor-pointer eklendi
-                            className="mt-2 inline-flex cursor-pointer items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 self-start"
+                            className="group flex w-full cursor-pointer items-start gap-3.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
                         >
-                            {t('home.inspectNow')} <FaArrowRight className="text-[8px]" />
-                        </button>
-                    )}
-                </div>
+                            <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+                                {spotlight.image ? (
+                                    <img
+                                        src={spotlight.image}
+                                        alt={spotlight.title}
+                                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-zinc-600">
+                                        <FaFilm className="text-xl" />
+                                    </div>
+                                )}
+                            </div>
 
-                {/* ── KART 3: Dusty Shelf (Tozlu Raflar) ── */}
-                <div className="rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4 backdrop-blur-sm dark:border-zinc-800/60 dark:bg-zinc-900/40">
-                    <div className="flex items-center justify-between mb-3.5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-                            <FaHistory className="inline mr-1 text-amber-500 text-[9px]" />
-                            {t('home.dustyShelf')}
-                        </p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200/60 text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
-                            {dustyItems.length}
-                        </span>
+                            <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-bold text-slate-900 line-clamp-1 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400 transition-colors">
+                                    {spotlight.title}
+                                </h3>
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+                                        <FaStar className="text-amber-500 text-[9px]" />
+                                        {spotlight.rating}
+                                    </span>
+                                    <span className="text-xs uppercase tracking-wider font-semibold text-slate-400 dark:text-zinc-500">
+                                        {spotlight.type}
+                                    </span>
+                                </div>
+                                {spotlight.description && (
+                                    <p className="mt-1.5 line-clamp-2 text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+                                        {spotlight.description}
+                                    </p>
+                                )}
+                            </div>
+                        </button>
                     </div>
 
-                    {dustyItems.length === 0 ? (
-                        <div className="flex h-14 items-center justify-center">
-                            <p className="text-xs text-slate-400 dark:text-zinc-500">{t('home.noDusty')}</p>
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400 dark:text-zinc-500">Kütüphanenden henüz izlenmedi</span>
+                        <button
+                            type="button"
+                            onClick={() => onSelect(spotlight)}
+                            className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                        >
+                            <span>{t('home.inspectNow') || 'Detayları Gör'}</span>
+                            <FaArrowRight className="text-[9px]" />
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* ── KART 2: Dusty Shelf (Tozlu Raflar / Zaman Kapsülü) - 7 Kolon ── */}
+            {dustyItems.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: 0.05 }}
+                    className={`${spotlight ? 'lg:col-span-7' : 'lg:col-span-12'} flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white/70 p-5 shadow-xs backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/60`}
+                >
+                    <div>
+                        <div className="mb-3.5 flex items-center justify-between">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100/80 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                <FaHistory className="text-amber-500 text-[9px]" />
+                                {t('home.dustyShelf') || 'Tozlu Raflar'}
+                            </span>
+                            <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500">
+                                Sırasını bekleyenler
+                            </span>
                         </div>
-                    ) : (
-                        <div className="flex gap-2.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                            {dustyItems.map((item) => (
+
+                        {/* Yatay afiş dizilimi */}
+                        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6">
+                            {dustyItems.slice(0, 6).map((item) => (
                                 <button
                                     key={item.id}
                                     type="button"
                                     onClick={() => onSelect(item)}
-                                    // HATA DÜZELTİLDİ: cursor-pointer eklendi
-                                    className="group flex shrink-0 cursor-pointer flex-col items-center gap-1 w-[52px]"
+                                    className="group relative flex flex-col items-center gap-1.5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
                                 >
-                                    <div className="h-[52px] w-[52px] overflow-hidden rounded-xl bg-white border border-slate-200 transition-all group-hover:border-amber-500 dark:bg-zinc-800 dark:border-zinc-700 dark:group-hover:border-amber-400 shadow-sm">
+                                    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100 shadow-2xs transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md dark:border-zinc-800 dark:bg-zinc-800">
                                         {item.image ? (
-                                            <img src={item.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                                            <img
+                                                src={item.image}
+                                                alt={item.title}
+                                                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                            />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-zinc-600">
-                                                <FaHistory className="text-xs" />
+                                                <FaFilm className="text-base" />
+                                            </div>
+                                        )}
+                                        {item.rating && (
+                                            <div className="absolute top-1 right-1 rounded-md bg-black/70 px-1 py-0.2 text-[8px] font-bold text-amber-400 backdrop-blur-xs">
+                                                ★ {item.rating}
                                             </div>
                                         )}
                                     </div>
-                                    <p className="w-full text-[10px] font-medium text-slate-500 text-center truncate dark:text-zinc-400">
+                                    <p className="w-full text-center text-[11px] font-medium text-slate-700 line-clamp-1 dark:text-zinc-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                                         {item.title}
                                     </p>
                                 </button>
                             ))}
                         </div>
-                    )}
-                </div>
-            </div>
+                    </div>
 
-            <QuoteWidget />
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500">
+                        <span>Listende uzun zamandır bekleyen içerikler</span>
+                        <span className="font-bold text-slate-600 dark:text-zinc-400 tabular-nums">{dustyItems.length} içerik</span>
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 }

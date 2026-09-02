@@ -1,40 +1,58 @@
 // src/App.tsx
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import Layout from './components/Layout';
-import MediaListPage from './pages/MediaListPage';
-import CreatePage from './pages/CreatePage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
-
-import ProfilePage from './pages/ProfilePage';
-import PublicProfilePage from './pages/PublicProfilePage';
-import SettingsPage from './pages/SettingsPage';
-import StatsPage from './pages/StatsPage';
-import WrappedPage from './pages/WrappedPage';
-import VisitedMapPage from './pages/VisitedMapPage';
-import FeedPage from './pages/FeedPage';
-import ListsPage from './pages/ListsPage';
-import ListDetailPage from './pages/ListDetailPage';
-import MigrationPage from './pages/MigrationPage';
-import AdminPage from './pages/AdminPage';
-import MyShowsPage from './pages/MyShowsPage';
-import PlannerPage from './pages/PlannerPage';
-import ExpensesPage from './pages/ExpensesPage';
-import TravelPlannerPage from './pages/TravelPlannerPage';
-import NotesPage from './pages/NotesPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import CalorieChatPage from './pages/CalorieChatPage';
-import CalorieDetailsPage from './pages/CalorieDetailsPage';
 import { LanguageProvider } from './context/LanguageContext';
-
 import { NotificationProvider } from './context/NotificationContext';
 import { useAuth } from './context/AuthContext';
+import { SoundProvider } from './context/SoundContext';
+
+// Dynamic lazy-loaded route components for high performance & minimal bundle size
+const MediaListPage = lazy(() => import('./pages/MediaListPage'));
+const CreatePage = lazy(() => import('./pages/CreatePage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const StatsPage = lazy(() => import('./pages/StatsPage'));
+const WrappedPage = lazy(() => import('./pages/WrappedPage'));
+const VisitedMapPage = lazy(() => import('./pages/VisitedMapPage'));
+const FeedPage = lazy(() => import('./pages/FeedPage'));
+const ListsPage = lazy(() => import('./pages/ListsPage'));
+const ListDetailPage = lazy(() => import('./pages/ListDetailPage'));
+const MigrationPage = lazy(() => import('./pages/MigrationPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const MyShowsPage = lazy(() => import('./pages/MyShowsPage'));
+const PlannerPage = lazy(() => import('./pages/PlannerPage'));
+const ExpensesPage = lazy(() => import('./pages/ExpensesPage'));
+const TravelPlannerPage = lazy(() => import('./pages/TravelPlannerPage'));
+const NotesPage = lazy(() => import('./pages/NotesPage'));
+const CalorieChatPage = lazy(() => import('./pages/CalorieChatPage'));
+const CalorieDetailsPage = lazy(() => import('./pages/CalorieDetailsPage'));
+
+// Lightweight, non-blocking Suspense fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh] w-full">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 border-3 border-amber-400/20 border-t-amber-400 rounded-full animate-spin" />
+      <span className="text-xs font-semibold text-stone-400 dark:text-zinc-500 tracking-wider">Yükleniyor...</span>
+    </div>
+  </div>
+);
+
+const LazyRoute = ({ component: Component }: { component: React.ComponentType }) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+);
 
 const router = createBrowserRouter([
   {
@@ -49,32 +67,32 @@ const router = createBrowserRouter([
         index: true,
         element: <HomePage />
       },
-      { path: 'movie', element: <MediaListPage /> },
-      { path: 'series', element: <MediaListPage /> },
-      { path: 'game', element: <MediaListPage /> },
-      { path: 'book', element: <MediaListPage /> },
-      { path: 'all', element: <MediaListPage /> },
-      { path: 'create', element: <CreatePage /> },
+      { path: 'movie', element: <LazyRoute component={MediaListPage} /> },
+      { path: 'series', element: <LazyRoute component={MediaListPage} /> },
+      { path: 'game', element: <LazyRoute component={MediaListPage} /> },
+      { path: 'book', element: <LazyRoute component={MediaListPage} /> },
+      { path: 'all', element: <LazyRoute component={MediaListPage} /> },
+      { path: 'create', element: <LazyRoute component={CreatePage} /> },
 
-      { path: 'map', element: <VisitedMapPage /> },
-      { path: 'feed', element: <FeedPage /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'user/:userId', element: <PublicProfilePage /> },
-      { path: 'settings', element: <SettingsPage /> },
-      { path: 'stats', element: <StatsPage /> },
-      { path: 'wrapped', element: <WrappedPage /> },
-      { path: 'lists', element: <ListsPage /> },
-      { path: 'lists/:id', element: <ListDetailPage /> },
-      { path: 'migration', element: <MigrationPage /> },
-      { path: 'admin', element: <AdminPage /> },
-      { path: 'my-shows', element: <MyShowsPage /> },
-      { path: 'planner', element: <PlannerPage /> },
-      { path: 'expenses', element: <ExpensesPage /> },
-      { path: 'travel-planner', element: <TravelPlannerPage /> },
-      { path: 'notes', element: <NotesPage /> },
-      { path: 'notes/:noteId', element: <NotesPage /> },
-      { path: 'calorie-chat', element: <CalorieChatPage /> },
-      { path: 'calorie-details', element: <CalorieDetailsPage /> },
+      { path: 'map', element: <LazyRoute component={VisitedMapPage} /> },
+      { path: 'feed', element: <LazyRoute component={FeedPage} /> },
+      { path: 'profile', element: <LazyRoute component={ProfilePage} /> },
+      { path: 'user/:userId', element: <LazyRoute component={PublicProfilePage} /> },
+      { path: 'settings', element: <LazyRoute component={SettingsPage} /> },
+      { path: 'stats', element: <LazyRoute component={StatsPage} /> },
+      { path: 'wrapped', element: <LazyRoute component={WrappedPage} /> },
+      { path: 'lists', element: <LazyRoute component={ListsPage} /> },
+      { path: 'lists/:id', element: <LazyRoute component={ListDetailPage} /> },
+      { path: 'migration', element: <LazyRoute component={MigrationPage} /> },
+      { path: 'admin', element: <LazyRoute component={AdminPage} /> },
+      { path: 'my-shows', element: <LazyRoute component={MyShowsPage} /> },
+      { path: 'planner', element: <LazyRoute component={PlannerPage} /> },
+      { path: 'expenses', element: <LazyRoute component={ExpensesPage} /> },
+      { path: 'travel-planner', element: <LazyRoute component={TravelPlannerPage} /> },
+      { path: 'notes', element: <LazyRoute component={NotesPage} /> },
+      { path: 'notes/:noteId', element: <LazyRoute component={NotesPage} /> },
+      { path: 'calorie-chat', element: <LazyRoute component={CalorieChatPage} /> },
+      { path: 'calorie-details', element: <LazyRoute component={CalorieDetailsPage} /> },
     ]
   },
 
@@ -84,37 +102,33 @@ const router = createBrowserRouter([
   },
   {
     path: '/signup',
-    element: <SignupPage />
+    element: <LazyRoute component={SignupPage} />
   },
   {
     path: '/sifremi-unuttum',
-    element: <ForgotPasswordPage />
+    element: <LazyRoute component={ForgotPasswordPage} />
   },
   {
     path: '/forgot-password',
-    element: <ForgotPasswordPage />
+    element: <LazyRoute component={ForgotPasswordPage} />
   },
   {
     path: '/reset-password',
-    element: <ResetPasswordPage />
+    element: <LazyRoute component={ResetPasswordPage} />
   },
   {
     path: '/sifre-sifirla',
-    element: <ResetPasswordPage />
+    element: <LazyRoute component={ResetPasswordPage} />
   },
   {
     path: '/__/auth/action',
-    element: <ResetPasswordPage />
+    element: <LazyRoute component={ResetPasswordPage} />
   },
   {
     path: '/auth/action',
-    element: <ResetPasswordPage />
+    element: <LazyRoute component={ResetPasswordPage} />
   },
 ]);
-
-
-
-import { SoundProvider } from './context/SoundContext';
 
 const SplashScreen = () => (
   <div className="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-black z-[100]">

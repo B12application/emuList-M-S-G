@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FaHeart, FaSpinner, FaStar, FaFilm, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
+import { FaStar, FaSpinner, FaChevronLeft, FaChevronRight, FaTimes, FaAward, FaFilm } from 'react-icons/fa';
 import type { MediaItem } from '../../../backend/types/media';
 
 type TFn = (key: string) => string;
@@ -31,19 +31,19 @@ export default function HomeFavoritesRail({
     const slice = favorites.slice(start, start + perPage);
 
     return (
-        <section>
+        <section className="mt-8">
             {/* Header */}
-            <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-500 dark:bg-rose-950 dark:text-rose-400">
-                        <FaHeart className="text-sm" />
+            <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/15 dark:text-amber-400">
+                        <FaAward className="text-sm" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                            {t('home.favorites')}
+                        <h2 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                            {t('home.favorites') || 'Koleksiyon Vitrini'}
                         </h2>
                         <p className="text-xs text-slate-500 dark:text-zinc-400">
-                            {favorites.length} {t('home.favoritesCountShort')}
+                            {favorites.length} seçkin başyapıt
                         </p>
                     </div>
                 </div>
@@ -54,20 +54,18 @@ export default function HomeFavoritesRail({
                             type="button"
                             disabled={page === 0}
                             onClick={() => onPageChange(Math.max(0, page - 1))}
-                            // HATA DÜZELTİLDİ: cursor-pointer ve disabled:cursor-default eklendi
-                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 disabled:cursor-default dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200/90 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
                         >
                             <FaChevronLeft className="text-[10px]" />
                         </button>
-                        <span className="text-xs font-medium text-slate-400 dark:text-zinc-500 tabular-nums">
-                            {page + 1}/{totalPages}
+                        <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums px-1">
+                            {page + 1} / {totalPages}
                         </span>
                         <button
                             type="button"
                             disabled={page >= totalPages - 1}
                             onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-                            // HATA DÜZELTİLDİ: cursor-pointer ve disabled:cursor-default eklendi
-                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 disabled:cursor-default dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200/90 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
                         >
                             <FaChevronRight className="text-[10px]" />
                         </button>
@@ -75,101 +73,73 @@ export default function HomeFavoritesRail({
                 )}
             </div>
 
-            {/* Loading State */}
+            {/* İçerik */}
             {loading ? (
-                <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-16 dark:border-zinc-800 dark:bg-zinc-950">
-                    <FaSpinner className="h-5 w-5 animate-spin text-slate-400" />
-                    <span className="text-sm text-slate-500 dark:text-zinc-400">{t('home.favoritesLoading')}</span>
+                <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-white/70 py-12 dark:border-zinc-800 dark:bg-zinc-900/60">
+                    <FaSpinner className="h-5 w-5 animate-spin text-amber-500" />
+                    <span className="text-sm text-slate-500 dark:text-zinc-400">Yükleniyor...</span>
                 </div>
             ) : favorites.length === 0 ? (
-                /* Empty State */
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-12 text-center dark:border-zinc-800 dark:bg-zinc-950/50">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-400 dark:bg-rose-950 dark:text-rose-600">
-                        <FaHeart className="text-2xl" />
-                    </div>
-                    <h3 className="mt-4 text-sm font-bold text-slate-900 dark:text-white">{t('home.noFavoritesTitle')}</h3>
-                    <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500 dark:text-zinc-400">{t('home.noFavoritesDesc')}</p>
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-10 text-center dark:border-zinc-800 dark:bg-zinc-900/30">
+                    <FaAward className="mx-auto text-2xl text-slate-300 dark:text-zinc-600 mb-2" />
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">Henüz vitrin içeriği yok</h3>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">Kütüphanenden beğendiğin filmleri yıldızlayarak buraya ekleyebilirsin.</p>
                 </div>
             ) : (
-                /* Cards Grid */
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    {slice.map((item, idx) => (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {slice.map((item) => (
                         <motion.div
                             key={item.id}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.06, duration: 0.3 }}
-                            onClick={() => onSelect(item)}
-                            role="button"
-                            tabIndex={0}
-                            className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left transition-all hover:border-slate-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+                            initial={{ opacity: 0, scale: 0.97 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:bg-zinc-900 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-lg dark:border-zinc-800/80"
                         >
-                            {/* Image Area */}
-                            <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-zinc-800">
+                            <div
+                                onClick={() => onSelect(item)}
+                                className="relative aspect-[2/3] w-full cursor-pointer overflow-hidden bg-slate-100 dark:bg-zinc-800"
+                            >
                                 {item.image ? (
                                     <img
                                         src={item.image}
-                                        alt=""
+                                        alt={item.title}
                                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                     />
                                 ) : (
                                     <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-zinc-600">
-                                        <FaFilm className="h-10 w-10" />
+                                        <FaFilm className="text-3xl" />
                                     </div>
                                 )}
 
-                                {/* Type Badge - top left */}
-                                <span className="absolute left-2.5 top-2.5 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm">
-                                    {item.type}
-                                </span>
+                                {/* Üst Rozetler */}
+                                <div className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-bold text-amber-400 backdrop-blur-xs">
+                                    <FaStar className="text-[9px]" />
+                                    <span>{item.rating || '—'}</span>
+                                </div>
 
-                                {/* Remove Favorite - top right */}
                                 <button
                                     type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRemoveFavorite(item, e);
-                                    }}
-                                    className="absolute right-2.5 top-2.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-rose-500 shadow-sm opacity-0 transition-all hover:bg-rose-500 hover:text-white group-hover:opacity-100 dark:bg-zinc-900/90 dark:text-rose-400 dark:hover:bg-rose-500 dark:hover:text-white"
-                                    title={t('home.removeFavorite')}
+                                    onClick={(e) => onRemoveFavorite(item, e)}
+                                    className="absolute top-2 right-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white/70 opacity-0 transition hover:bg-rose-600 hover:text-white group-hover:opacity-100"
+                                    title="Vitrinden Kaldır"
                                 >
                                     <FaTimes className="text-[10px]" />
                                 </button>
-                            </div>
 
-                            {/* Content */}
-                            <div className="flex flex-1 flex-col p-3.5">
-                                <h3 className="text-sm font-bold text-slate-900 line-clamp-1 dark:text-white">
-                                    {item.title}
-                                </h3>
-
-                                <div className="mt-auto flex items-center justify-between pt-2">
-                                    {/* Rating */}
-                                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-500">
-                                        <FaStar className="text-[10px]" />
-                                        {item.rating || '—'}
-                                    </span>
-
-                                    {/* Status */}
-                                    <span
-                                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.watched
-                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
-                                                : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'
-                                            }`}
-                                    >
-                                        {item.watched
-                                            ? item.type === 'book'
-                                                ? t('media.read')
-                                                : item.type === 'game'
-                                                    ? t('media.played')
-                                                    : t('media.watched')
-                                            : item.type === 'book'
-                                                ? t('media.notRead')
-                                                : item.type === 'game'
-                                                    ? t('media.notPlayed')
-                                                    : t('media.notWatched')}
+                                {/* Alt Degrade ve Tür */}
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2.5 pt-6">
+                                    <span className="rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur-xs">
+                                        {item.type}
                                     </span>
                                 </div>
+                            </div>
+
+                            <div className="p-3">
+                                <h4
+                                    onClick={() => onSelect(item)}
+                                    className="cursor-pointer text-xs font-bold text-slate-900 line-clamp-1 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400 transition-colors"
+                                >
+                                    {item.title}
+                                </h4>
                             </div>
                         </motion.div>
                     ))}

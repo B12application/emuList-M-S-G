@@ -17,9 +17,10 @@ import toast from 'react-hot-toast';
 interface HomeTrendingRailProps {
     onAdded: () => void;
     onSelect: (item: MediaItem) => void;
+    existingItems?: MediaItem[];
 }
 
-export default function HomeTrendingRail({ onAdded, onSelect }: HomeTrendingRailProps) {
+export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: HomeTrendingRailProps) {
     const { user } = useAuth();
     const { t } = useLanguage();
     
@@ -46,12 +47,15 @@ export default function HomeTrendingRail({ onAdded, onSelect }: HomeTrendingRail
             if (!user || items.length === 0) return;
 
             try {
-                const q = query(
-                    collection(db, 'mediaItems'),
-                    where('userId', '==', user.uid)
-                );
-                const snapshot = await getDocs(q);
-                const userItems = snapshot.docs.map(d => d.data() as MediaItem);
+                let userItems = existingItems;
+                if (!userItems) {
+                    const q = query(
+                        collection(db, 'mediaItems'),
+                        where('userId', '==', user.uid)
+                    );
+                    const snapshot = await getDocs(q);
+                    userItems = snapshot.docs.map(d => d.data() as MediaItem);
+                }
 
                 const existingMap: Record<string, boolean> = {};
                 for (const item of items) {
@@ -76,7 +80,7 @@ export default function HomeTrendingRail({ onAdded, onSelect }: HomeTrendingRail
         };
 
         checkExistingLibraryItems();
-    }, [user, items, mediaType]);
+    }, [user, items, mediaType, existingItems]);
 
     const handleCardClick = async (item: TMDBMovieResult) => {
         const title = mediaType === 'movie' ? (item.title || item.original_title || '') : (item.name || item.original_name || '');
@@ -236,7 +240,7 @@ export default function HomeTrendingRail({ onAdded, onSelect }: HomeTrendingRail
     };
 
     return (
-        <section className="mt-10 bg-white/40 dark:bg-zinc-950/30 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <section className="mt-10 bg-slate-50/80 dark:bg-zinc-900/50 border border-slate-200/60 dark:border-zinc-800/60 rounded-3xl p-5 sm:p-6 shadow-sm">
             {/* Header Area */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <div className="flex items-center gap-3">

@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
-import { motion, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     FaCheckCircle,
     FaClock,
-    FaHeart,
+    FaStar,
     FaPlay,
     FaCalendarWeek,
     FaChartLine,
     FaTv,
+    FaFilm,
+    FaGamepad,
+    FaBook,
 } from 'react-icons/fa';
 
 type TFn = (key: string) => string;
@@ -20,165 +23,151 @@ export interface PulseStats {
     weekAdded: number;
 }
 
+export interface MediaCountStats {
+    movieCount: number;
+    seriesCount: number;
+    gameCount: number;
+    bookCount: number;
+    totalCount: number;
+}
+
 interface HomeCommandLayerProps {
     pulse: PulseStats;
+    stats?: MediaCountStats;
     t: TFn;
 }
 
-// Yeni nesil yay (spring) animasyonları ve Typescript çözümü
-const container: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-    },
-};
+export default function HomeCommandLayer({ pulse, stats, t }: HomeCommandLayerProps) {
+    const categoryChips = stats ? [
+        { label: t('nav.movies') || 'Film', count: stats.movieCount, icon: FaFilm, color: 'text-sky-500 dark:text-sky-400', to: '/movie' },
+        { label: t('nav.series') || 'Dizi', count: stats.seriesCount, icon: FaTv, color: 'text-rose-500 dark:text-rose-400', to: '/series' },
+        { label: t('nav.games') || 'Oyun', count: stats.gameCount, icon: FaGamepad, color: 'text-amber-500 dark:text-amber-400', to: '/game' },
+        { label: t('nav.books') || 'Kitap', count: stats.bookCount, icon: FaBook, color: 'text-violet-500 dark:text-violet-400', to: '/book' },
+    ] : [];
 
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    show: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: { type: 'spring' as const, stiffness: 120, damping: 20 }
-    },
-};
-
-export default function HomeCommandLayer({ pulse, t }: HomeCommandLayerProps) {
-    // HATA ÇÖZÜMÜ: Çeviriden bağımsız, sabit bir 'id' eklendi.
-    // TASARIM: Her karta özel renk, gradient ve glow efektleri eklendi.
-    const metrics = [
+    const telemetryPills = [
         {
-            id: 'watched', // Sabit Key
+            id: 'watched',
             icon: FaCheckCircle,
-            label: t('home.watchedLabel'),
+            label: t('home.watchedLabel') || 'İzlendi',
             value: pulse.watched,
             color: 'text-emerald-500 dark:text-emerald-400',
-            bg: 'from-emerald-500/10 to-transparent',
-            border: 'border-emerald-500/20',
-            glow: 'group-hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]',
-            span: 'col-span-2 lg:col-span-2', // Bento Grid: Bu kart daha geniş
+            bg: 'bg-emerald-500/10 border-emerald-500/20',
         },
         {
             id: 'queue',
             icon: FaClock,
-            label: t('home.queueLabel'),
+            label: t('home.queueLabel') || 'Sırada',
             value: pulse.queue,
             color: 'text-sky-500 dark:text-sky-400',
-            bg: 'from-sky-500/10 to-transparent',
-            border: 'border-sky-500/20',
-            glow: 'group-hover:shadow-[0_0_20px_rgba(14,165,233,0.15)]',
-            span: 'col-span-1 lg:col-span-1',
-        },
-        {
-            id: 'favorites',
-            icon: FaHeart,
-            label: t('home.favoritesCountLabel'),
-            value: pulse.favorites,
-            color: 'text-rose-500 dark:text-rose-400',
-            bg: 'from-rose-500/10 to-transparent',
-            border: 'border-rose-500/20',
-            glow: 'group-hover:shadow-[0_0_20px_rgba(244,63,94,0.15)]',
-            span: 'col-span-1 lg:col-span-1',
+            bg: 'bg-sky-500/10 border-sky-500/20',
         },
         {
             id: 'inProgress',
             icon: FaPlay,
-            label: t('home.inProgressLabel'),
+            label: t('home.inProgressLabel') || 'Devam Eden',
             value: pulse.inProgress,
             color: 'text-violet-500 dark:text-violet-400',
-            bg: 'from-violet-500/10 to-transparent',
-            border: 'border-violet-500/20',
-            glow: 'group-hover:shadow-[0_0_20px_rgba(139,92,246,0.15)]',
-            span: 'col-span-1 lg:col-span-1',
+            bg: 'bg-violet-500/10 border-violet-500/20',
+        },
+        {
+            id: 'favorites',
+            icon: FaStar,
+            label: t('home.favoritesCountLabel') || 'Vitrin',
+            value: pulse.favorites,
+            color: 'text-amber-500 dark:text-amber-400',
+            bg: 'bg-amber-500/10 border-amber-500/20',
         },
         {
             id: 'weekAdded',
             icon: FaCalendarWeek,
-            label: t('home.weekAddedLabel'),
+            label: t('home.weekAddedLabel') || 'Bu Hafta',
             value: pulse.weekAdded,
-            color: 'text-amber-500 dark:text-amber-400',
-            bg: 'from-amber-500/10 to-transparent',
-            border: 'border-amber-500/20',
-            glow: 'group-hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]',
-            span: 'col-span-1 lg:col-span-1',
+            color: 'text-orange-500 dark:text-orange-400',
+            bg: 'bg-orange-500/10 border-orange-500/20',
         },
     ];
 
-    const dock = [
-        { to: '/stats', label: t('home.openStats'), icon: FaChartLine, primary: true },
-        { to: '/my-shows', label: t('home.openMyShows'), icon: FaTv, primary: false },
-    ];
-
     return (
-        <div className="mb-10 flex flex-col gap-6">
+        <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8 flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white/70 p-4 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/60 sm:p-5"
+        >
+            {/* Üst Bar: Kütüphane Dağılımı ve Hızlı Navigasyon */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-zinc-800/70">
+                <div className="flex flex-wrap items-center gap-2">
+                    {stats && (
+                        <div className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white shadow-xs dark:bg-zinc-800 dark:text-zinc-100">
+                            <span className="tabular-nums">{stats.totalCount}</span>
+                            <span className="text-[11px] font-medium text-slate-300 dark:text-zinc-400">{t('home.totalItems') || 'Kayıt'}</span>
+                        </div>
+                    )}
 
-            {/* ── ÜST KISIM (Header & Dock birleşti, Mobilde ve Desktop'ta tek kod) ── */}
-            <div className="flex flex-col gap-4 rounded-[2rem] border border-white/40 bg-white/30 p-6 shadow-sm backdrop-blur-md dark:border-zinc-800/50 dark:bg-zinc-950/30 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                        {t('home.pulseTitle')}
-                    </h2>
-                    <p className="mt-1 text-sm font-medium text-slate-500 dark:text-zinc-400">
-                        {t('home.quickDockTitle')}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        {categoryChips.map((chip) => {
+                            const Icon = chip.icon;
+                            return (
+                                <Link
+                                    key={chip.label}
+                                    to={chip.to}
+                                    className="group inline-flex items-center gap-1.5 rounded-lg border border-slate-200/80 bg-white/80 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white active:scale-95 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300 dark:hover:border-zinc-700"
+                                >
+                                    <Icon className={`${chip.color} text-[11px]`} />
+                                    <span>{chip.label}</span>
+                                    <span className="ml-0.5 rounded-md bg-slate-100 px-1.5 py-0.2 text-[10px] font-bold text-slate-600 dark:bg-zinc-800 dark:text-zinc-300 tabular-nums">
+                                        {chip.count}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    {dock.map(({ to, label, icon: Icon, primary }) => (
-                        <Link
-                            key={to}
-                            to={to}
-                            className={`group inline-flex flex-1 items-center justify-center gap-2.5 rounded-2xl px-5 py-3 text-xs font-bold uppercase tracking-widest transition-all active:scale-95 sm:flex-none ${primary
-                                ? 'bg-slate-900 text-white shadow-lg hover:bg-slate-800 hover:shadow-xl dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200'
-                                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800'
-                                }`}
-                        >
-                            <Icon className={`text-[14px] transition-transform group-hover:scale-110 ${primary ? 'text-amber-400 dark:text-amber-600' : 'text-slate-400 dark:text-zinc-500'}`} />
-                            {label}
-                        </Link>
-                    ))}
+                {/* Hızlı Bağlantılar */}
+                <div className="flex items-center gap-2 ml-auto">
+                    <Link
+                        to="/stats"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <FaChartLine className="text-amber-500 text-xs" />
+                        <span>{t('home.openStats') || 'İstatistikler'}</span>
+                    </Link>
+                    <Link
+                        to="/my-shows"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <FaTv className="text-rose-500 text-xs" />
+                        <span>{t('home.openMyShows') || 'Dizilerim'}</span>
+                    </Link>
                 </div>
             </div>
 
-            {/* ── BENTO METRICS GRID (Hata Giderildi ve Yenilendi) ── */}
-            <motion.div
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-6"
-            >
-                {metrics.map(({ id, icon: Icon, label, value, bg, color, border, glow, span }) => (
-                    <motion.div
-                        // HATA ÇÖZÜMÜ: key={id} sayesinde dil değişse bile bileşenler yeniden mount olmaz
-                        key={id}
-                        variants={itemVariants}
-                        layout // Layout geçişlerini yumuşatır
-                        className={`group relative overflow-hidden rounded-[2rem] border bg-gradient-to-br bg-white p-5 transition-all duration-300 hover:-translate-y-1 dark:bg-zinc-900 md:p-6 ${span} ${bg} ${border} ${glow}`}
-                    >
-                        {/* İç Tasarım - Modern yerleşim */}
-                        <div className="flex h-full flex-col justify-between gap-4">
-                            <div className="flex items-start justify-between">
-                                <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/60 shadow-sm backdrop-blur-md dark:bg-black/20 ${color}`}>
-                                    <Icon className="text-lg" />
-                                </div>
-                                <div className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
-                                    {label}
-                                </div>
+            {/* Alt Şerit: Kompakt Durum Telemetrisi (5 Hücre) */}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {telemetryPills.map((p) => {
+                    const Icon = p.icon;
+                    return (
+                        <div
+                            key={p.id}
+                            className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition hover:shadow-2xs ${p.bg}`}
+                        >
+                            <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/80 shadow-2xs dark:bg-black/30 ${p.color}`}>
+                                <Icon className="text-xs" />
                             </div>
-
-                            <div>
-                                <p className="text-4xl font-black tabular-nums tracking-tighter text-slate-900 dark:text-white md:text-5xl">
-                                    {value}
+                            <div className="min-w-0">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 truncate">
+                                    {p.label}
+                                </p>
+                                <p className="text-base font-extrabold tabular-nums text-slate-900 dark:text-white leading-tight">
+                                    {p.value}
                                 </p>
                             </div>
                         </div>
-
-                        {/* Hover arka plan parlaması */}
-                        <div className={`absolute -bottom-10 -right-10 h-32 w-32 rounded-full ${bg} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100`} />
-                    </motion.div>
-                ))}
-            </motion.div>
-        </div>
+                    );
+                })}
+            </div>
+        </motion.div>
     );
 }

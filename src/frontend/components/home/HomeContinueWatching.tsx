@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaPlay, FaArrowRight } from 'react-icons/fa';
+import { FaPlay, FaArrowRight, FaTv, FaCheck } from 'react-icons/fa';
 import type { MediaItem } from '../../../backend/types/media';
 import { getSeriesProgress } from '../../../backend/services/episodeTrackingService';
 import ImageWithFallback from '../ui/ImageWithFallback';
@@ -14,42 +14,40 @@ interface HomeContinueWatchingProps {
     onQuickMark: (show: MediaItem) => void;
 }
 
-const cardVariants = {
-    hidden: { opacity: 0, y: 16 },
-    show: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: { delay: i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
-    }),
-};
-
-export default function HomeContinueWatching({ shows, t, getNextEpisode, onQuickMark }: HomeContinueWatchingProps) {
+export default function HomeContinueWatching({
+    shows,
+    t,
+    getNextEpisode,
+    onQuickMark,
+}: HomeContinueWatchingProps) {
     if (shows.length === 0) return null;
 
     return (
-        <section>
+        <section className="mt-8">
             {/* Header */}
-            <div className="mb-5 flex items-end justify-between">
-                <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                        {t('myShows.continueWatching')}
-                    </h2>
-                    <p className="mt-0.5 text-sm text-slate-500 dark:text-zinc-400">
-                        {t('home.spotlightHint')}
-                    </p>
+            <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500 dark:bg-rose-500/15 dark:text-rose-400">
+                        <FaTv className="text-xs" />
+                    </div>
+                    <div>
+                        <h2 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                            {t('myShows.continueWatching') || 'İzlemeye Devam Et'}
+                        </h2>
+                    </div>
                 </div>
+
                 <Link
                     to="/my-shows"
-                    // HATA DÜZELTİLDİ: cursor-pointer eklendi
-                    className="group inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                    className="group inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
                 >
-                    {t('myShows.viewAll')}
-                    <FaArrowRight className="text-[10px] transition group-hover:translate-x-0.5" />
+                    <span>{t('myShows.viewAll') || 'Tümünü Gör'}</span>
+                    <FaArrowRight className="text-[9px] transition-transform group-hover:translate-x-0.5" />
                 </Link>
             </div>
 
-            {/* Cards Grid */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            {/* Streaming Cards Grid */}
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
                 {shows.map((show, i) => {
                     const progress = getSeriesProgress(show);
                     const nextEp = getNextEpisode(show);
@@ -57,58 +55,60 @@ export default function HomeContinueWatching({ shows, t, getNextEpisode, onQuick
                     return (
                         <motion.div
                             key={show.id}
-                            custom={i}
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="show"
-                            className="group relative flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05, duration: 0.3 }}
+                            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:bg-zinc-900 p-3.5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-zinc-800/80 dark:hover:border-zinc-700"
                         >
-                            {/* Poster */}
-                            <div className="relative h-[110px] w-[78px] shrink-0 overflow-hidden rounded-xl shadow-md ring-1 ring-black/5">
-                                <ImageWithFallback
-                                    src={show.image}
-                                    alt={show.title}
-                                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                                />
-                                {/* Progress badge */}
-                                <div className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
-                                    {progress.percentage}%
+                            <div className="flex gap-3">
+                                {/* Poster */}
+                                <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100 shadow-xs dark:bg-zinc-800">
+                                    <ImageWithFallback
+                                        src={show.image}
+                                        alt={show.title}
+                                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+
+                                {/* Bilgiler */}
+                                <div className="min-w-0 flex-1 flex flex-col justify-between py-0.5">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-900 line-clamp-1 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                            {show.title}
+                                        </h3>
+                                        <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
+                                            {progress.totalWatched} / {progress.totalEpisodes} bölüm
+                                        </p>
+                                    </div>
+
+                                    {/* Sonraki Bölüm Butonu */}
+                                    {nextEp && (
+                                        <button
+                                            type="button"
+                                            onClick={() => onQuickMark(show)}
+                                            className="group/btn inline-flex items-center gap-1.5 self-start rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-2xs transition hover:bg-amber-600 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-amber-500 dark:hover:text-zinc-950 cursor-pointer"
+                                            title="Bölümü izlendi olarak işaretle"
+                                        >
+                                            <FaCheck className="text-[9px] text-amber-400 group-hover/btn:text-white dark:group-hover/btn:text-zinc-950 transition-colors" />
+                                            <span>S{nextEp.season} · B{nextEp.episode}</span>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Content */}
-                            <div className="flex min-w-0 flex-1 flex-col justify-between">
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">
-                                        {show.title}
-                                    </h3>
-                                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                                        {progress.totalWatched}/{progress.totalEpisodes} {t('myShows.episodes')}
-                                    </p>
+                            {/* İlerleme Çubuğu */}
+                            <div className="mt-3">
+                                <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 dark:text-zinc-500 mb-1">
+                                    <span>İlerleme</span>
+                                    <span className="tabular-nums font-bold text-slate-600 dark:text-zinc-300">%{progress.percentage}</span>
                                 </div>
-
-                                {/* Progress bar - thin modern */}
-                                <div className="mt-2">
-                                    <div className="h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800">
-                                        <div
-                                            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500"
-                                            style={{ width: `${Math.max(progress.percentage, 4)}%` }}
-                                        />
-                                    </div>
+                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800">
+                                    <div
+                                        className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500"
+                                        style={{ width: `${Math.max(progress.percentage, 5)}%` }}
+                                    />
                                 </div>
-
-                                {/* Next episode button */}
-                                {nextEp && (
-                                    <button
-                                        type="button"
-                                        onClick={() => onQuickMark(show)}
-                                        // HATA DÜZELTİLDİ: cursor-pointer eklendi
-                                        className="mt-2.5 inline-flex cursor-pointer items-center gap-1.5 self-start rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white transition-all hover:bg-amber-600 hover:shadow-md active:scale-95 dark:bg-white dark:text-zinc-900 dark:hover:bg-amber-500 dark:hover:text-white"
-                                    >
-                                        <FaPlay className="text-[9px]" />
-                                        S{nextEp.season} E{nextEp.episode}
-                                    </button>
-                                )}
                             </div>
                         </motion.div>
                     );

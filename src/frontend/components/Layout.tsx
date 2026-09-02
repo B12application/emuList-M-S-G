@@ -5,6 +5,7 @@ import MobileMenu from './MobileMenu';
 import BottomNavBar from './BottomNavBar';
 import MobileTopBar from './MobileTopBar';
 import EmuAIWidget from './calorie-chat/EmuAIWidget';
+import ScrollToTopButton from './ScrollToTopButton';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -24,6 +25,9 @@ export default function Layout() {
 
       {/* Floating emuAI Chatbot Widget */}
       <EmuAIWidget />
+
+      {/* Floating Scroll to Top Widget */}
+      <ScrollToTopButton />
 
       {/* pt-20 → mobilde üst nav bar için; md'de pt-24 */}
       <main className="pt-20 md:pt-24 pb-28 md:pb-8">

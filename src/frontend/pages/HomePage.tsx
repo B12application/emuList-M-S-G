@@ -18,14 +18,11 @@ import { getSeriesProgress, toggleEpisodeWatched, updateCurrentProgress } from '
 
 import HomeHero from '../components/home/HomeHero';
 import HomeCommandLayer from '../components/home/HomeCommandLayer';
-import HomeStatsBento from '../components/home/HomeStatsBento';
 import HomeContinueWatching from '../components/home/HomeContinueWatching';
 import HomeFavoritesRail from '../components/home/HomeFavoritesRail';
 import HomeActivityFeed from '../components/home/HomeActivityFeed';
 import HomeInsightsStrip from '../components/home/HomeInsightsStrip';
-import HomeCategoryBento from '../components/home/HomeCategoryBento';
 import HomeBestRecommendations from '../components/home/HomeBestRecommendations';
-import HomeCollectionPicks from '../components/home/HomeCollectionPicks';
 import HomeClosingCta from '../components/home/HomeClosingCta';
 import HomeTrendingRail from '../components/home/HomeTrendingRail';
 
@@ -46,13 +43,7 @@ export default function HomePage() {
 
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
     const [recsLoading, setRecsLoading] = useState(false);
-    const [recsExpanded, setRecsExpanded] = useState(true);
     const [showAdminPanel, setShowAdminPanel] = useState(false);
-    const [collectionRecsExpanded, setCollectionRecsExpanded] = useState(true);
-
-    const [recFilmPage, setRecFilmPage] = useState(1);
-    const [recSeriesPage, setRecSeriesPage] = useState(1);
-    const RECS_PER_PAGE = 4;
 
     const { items: allItems, loading: allLoading, refetch: allRefetch } = useMedia('all', 'all', true);
 
@@ -76,19 +67,12 @@ export default function HomePage() {
         };
     }, [allItems]);
 
-    const statsLoading = allLoading;
     const { playClick } = useAppSound();
 
     const movieRecs = allItems.filter((item) => item.type === 'movie' && !item.watched);
     const seriesRecs = allItems.filter((item) => item.type === 'series' && !item.watched);
     const gameRecs = allItems.filter((item) => item.type === 'game' && !item.watched);
     const bookRecs = allItems.filter((item) => item.type === 'book' && !item.watched);
-
-    const movieRecommendation = movieRecs[0];
-    const seriesRecommendation = seriesRecs[0];
-    const gameRecommendation = gameRecs[0];
-    const bookRecommendation = bookRecs[0];
-    const recommendationsLoading = allLoading;
 
     const recentActivity = useMemo(
         () =>
@@ -286,7 +270,7 @@ export default function HomePage() {
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(251,191,36,0.22),transparent),radial-gradient(ellipse_50%_40%_at_100%_0%,rgba(139,92,246,0.18),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(251,191,36,0.12),transparent),radial-gradient(ellipse_50%_40%_at_100%_0%,rgba(139,92,246,0.15),transparent)]" />
 
             <section className="relative mx-auto w-full pb-12 pt-4 sm:pt-6">
-                {/* Hero */}
+                {/* 1. Hero */}
                 <HomeHero
                     displayName={displayName}
                     avatarUrl={getAvatar()}
@@ -295,88 +279,61 @@ export default function HomePage() {
                     previewItems={heroPreviewItems}
                 />
 
-                {/* Pulse Stats */}
-                <HomeCommandLayer pulse={pulseStats} t={t} />
+                {/* 2. Kompakt Telemetri & Kütüphane Dağılım Barı (Dev 377 kutusu yerine) */}
+                <HomeCommandLayer pulse={pulseStats} stats={stats} t={t} />
 
-                {/* ─── Insights Strip - Tam genişlik yatay ─── */}
+                {/* 3. Arşivden Keşfet: Günün Öne Çıkanı & Tozlu Raflar (Günün sözü & emojili grafik kaldırıldı) */}
                 <HomeInsightsStrip
-                    t={t}
-                    totalCount={stats.totalCount}
-                    stats={stats}
                     spotlight={spotlightPick}
                     dustyItems={dustyItems}
                     onSelect={setSelectedRecentItem}
-                    formatDate={formatDate}
+                    t={t}
                 />
 
-                {/* Ana grid - tek kolon */}
-                <div className="mt-10 space-y-12">
-                    <HomeStatsBento stats={stats} loading={statsLoading} t={t} />
+                {/* 4. İzlemeye Devam Et (Modern Streaming Platformu Tasarımı) */}
+                <HomeContinueWatching
+                    shows={continueWatchingShows}
+                    t={t}
+                    getNextEpisode={getNextEpisode}
+                    onQuickMark={handleQuickMarkHome}
+                />
 
-                    <HomeContinueWatching
-                        shows={continueWatchingShows}
-                        t={t}
-                        getNextEpisode={getNextEpisode}
-                        onQuickMark={handleQuickMarkHome}
-                    />
+                {/* 5. Dünyada Trendler (Canlı TMDB Akışı) */}
+                <HomeTrendingRail onAdded={allRefetch} onSelect={setSelectedRecentItem} existingItems={allItems} />
 
-                    {/* Trending Rail */}
-                    <HomeTrendingRail onAdded={allRefetch} onSelect={setSelectedRecentItem} />
+                {/* 6. Kişisel Başyapıtlar & Vitrin (Kalp ikonu yerine prestijli yıldız rozetli vitrin) */}
+                <HomeFavoritesRail
+                    loading={allLoading}
+                    items={allItems}
+                    page={favoritesPage}
+                    perPage={FAVORITES_PER_PAGE}
+                    onPageChange={setFavoritesPage}
+                    onSelect={setSelectedRecentItem}
+                    onRemoveFavorite={handleRemoveFavorite}
+                    t={t}
+                />
 
-                    <HomeFavoritesRail
-                        loading={allLoading}
-                        items={allItems}
-                        page={favoritesPage}
-                        perPage={FAVORITES_PER_PAGE}
-                        onPageChange={setFavoritesPage}
-                        onSelect={setSelectedRecentItem}
-                        onRemoveFavorite={handleRemoveFavorite}
-                        t={t}
-                    />
-
-                    <HomeActivityFeed
-                        loading={allLoading}
-                        items={recentActivity}
-                        onSelect={setSelectedRecentItem}
-                        formatDate={formatDate}
-                        t={t}
-                    />
-
-                    <HomeCategoryBento t={t} />
-                </div>
-
-                {/* Best Recommendations */}
+                {/* 7. Küratör & Editör Seçkisi (Eski forum görünümü yerine modern sekmeli kartlar) */}
                 <HomeBestRecommendations
                     recommendations={recommendations}
                     recsLoading={recsLoading}
-                    recsExpanded={recsExpanded}
-                    setRecsExpanded={setRecsExpanded}
                     userUid={user?.uid}
                     adminUid={ADMIN_UID}
                     onOpenAdmin={() => setShowAdminPanel(true)}
                     handleAddToCollection={handleAddToCollection}
-                    recFilmPage={recFilmPage}
-                    setRecFilmPage={setRecFilmPage}
-                    recSeriesPage={recSeriesPage}
-                    setRecSeriesPage={setRecSeriesPage}
-                    recsPerPage={RECS_PER_PAGE}
                     t={t}
                 />
 
-                {/* Collection Picks */}
-                <HomeCollectionPicks
-                    expanded={collectionRecsExpanded}
-                    onToggle={() => setCollectionRecsExpanded(!collectionRecsExpanded)}
-                    loading={recommendationsLoading}
-                    movie={movieRecommendation}
-                    series={seriesRecommendation}
-                    game={gameRecommendation}
-                    book={bookRecommendation}
-                    refetch={allRefetch}
+                {/* 8. Son Eklenenler (Az veri olduğunda sağda boşluk bırakmayan esnek grid) */}
+                <HomeActivityFeed
+                    loading={allLoading}
+                    items={recentActivity}
+                    onSelect={setSelectedRecentItem}
+                    formatDate={formatDate}
                     t={t}
                 />
 
-                {/* Closing CTA */}
+                {/* 9. Kapanış / Hızlı Eylem */}
                 <HomeClosingCta t={t} />
             </section>
 

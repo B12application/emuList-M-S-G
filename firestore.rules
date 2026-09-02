@@ -18,9 +18,9 @@ service cloud.firestore {
       return !(resource.data.userId is string);
     }
 
-    // AI Usage tracking - Needed for serverless functions
+    // AI Usage tracking - Protected for authenticated users
     match /ai_usage/{date} {
-      allow read, write: if true; // Public access for limit tracking
+      allow read, write: if isSignedIn();
     }
 
     // Media Items

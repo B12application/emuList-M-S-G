@@ -266,6 +266,36 @@ export default function CalorieChatPage() {
     setShowHistory(false);
   }, [user]);
 
+  const formatSessionDate = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return new Intl.DateTimeFormat('tr-TR', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
+
+  // Calculate total macros for active chat session
+  const totalMacros = useMemo(() => {
+    let calories = 0;
+    let protein = 0;
+    let carbs = 0;
+    let fat = 0;
+
+    for (const msg of messages) {
+      if (msg.mealData) {
+        calories += msg.mealData.totalCalories || 0;
+        protein += msg.mealData.totalProtein || 0;
+        carbs += msg.mealData.totalCarbs || 0;
+        fat += msg.mealData.totalFat || 0;
+      }
+    }
+
+    return { calories, protein, carbs, fat };
+  }, [messages]);
+
   // Access check
   if (accessLoading) {
     return (
@@ -303,37 +333,6 @@ export default function CalorieChatPage() {
       </div>
     );
   }
-
-  const formatSessionDate = (timestamp: any) => {
-    if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return new Intl.DateTimeFormat('tr-TR', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  };
-
-  // Calculate total macros for active chat session
-  const totalMacros = useMemo(() => {
-    let calories = 0;
-    let protein = 0;
-    let carbs = 0;
-    let fat = 0;
-
-    for (const msg of messages) {
-      if (msg.mealData) {
-        calories += msg.mealData.totalCalories || 0;
-        protein += msg.mealData.totalProtein || 0;
-        carbs += msg.mealData.totalCarbs || 0;
-        fat += msg.mealData.totalFat || 0;
-      }
-    }
-
-    return { calories, protein, carbs, fat };
-  }, [messages]);
-
   return (
     <div className="flex flex-col h-[calc(100dvh-185px)] md:h-[calc(100vh-140px)] max-w-4xl mx-auto relative rounded-3xl overflow-hidden border border-stone-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl shadow-2xl">
       {/* Header */}

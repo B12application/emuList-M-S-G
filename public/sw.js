@@ -1,4 +1,4 @@
-const CACHE_NAME = 'b12-cache-v2';
+const CACHE_NAME = 'b12-cache-v3';
 const urlsToCache = [
     '/titlelogo.png',
     '/logob12.png'
@@ -60,23 +60,45 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // For static assets, network first, fallback to cache
-    event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                if (response && response.status === 200) {
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
+    // For hashed static assets (/assets/*), use Cache-First for instant 0ms load
+    if (event.request.url.includes('/assets/')) {
+        event.respondWith(
+            caches.match(event.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
                 }
-                return response;
-            })
-            .catch(() => {
-                return caches.match(event.request).then((response) => {
-                    if (response) return response;
-                    return new Response('Not found', { status: 404 });
+                return fetch(event.request).then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const responseClone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseClone);
+                        });
+                    }
+                    return networkResponse;
                 });
             })
+        );
+        return;
+    }
+
+    // For other static assets, stale-while-revalidate (fast cache return, background refresh)
+    event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+            const fetchPromise = fetch(event.request)
+                .then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const responseClone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseClone);
+                        });
+                    }
+                    return networkResponse;
+                })
+                .catch(() => {
+                    return cachedResponse || new Response('Not found', { status: 404 });
+                });
+
+            return cachedResponse || fetchPromise;
+        })
     );
 });

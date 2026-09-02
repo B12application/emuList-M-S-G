@@ -2,7 +2,7 @@
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
 
 export interface TMDBMovieResult {
     id: number;
@@ -53,11 +53,14 @@ export interface TMDBMovieDetails {
 }
 
 /**
- * Gets full poster URL from relative TMDB poster path
+ * Gets full poster URL from relative TMDB poster path (defaults to optimized w342)
  */
-export function getTMDBPosterUrl(posterPath: string | null): string {
+export function getTMDBPosterUrl(
+    posterPath: string | null,
+    size: 'w185' | 'w342' | 'w500' | 'original' = 'w342'
+): string {
     if (!posterPath) return '';
-    return `${IMAGE_BASE_URL}${posterPath}`;
+    return `${IMAGE_BASE_URL}${size}${posterPath}`;
 }
 
 /**

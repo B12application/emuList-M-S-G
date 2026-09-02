@@ -9,6 +9,7 @@ interface ImageWithFallbackProps {
   fallbackIcon?: React.ReactNode;
   fallbackClassName?: string;
   wrapperClassName?: string;
+  loading?: 'lazy' | 'eager';
 }
 
 export default function ImageWithFallback({
@@ -18,11 +19,12 @@ export default function ImageWithFallback({
   fallbackIcon,
   fallbackClassName = '',
   wrapperClassName = '',
+  loading = 'lazy',
 }: ImageWithFallbackProps) {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // src değiştiğinde state'i resetle
+  // src değiştiğinde hata ve yüklenme durumunu güncelle
   useEffect(() => {
     if (!src || src === 'N/A' || (typeof src === 'string' && src.trim() === '')) {
       setHasError(false);
@@ -32,23 +34,6 @@ export default function ImageWithFallback({
 
     setHasError(false);
     setIsLoading(true);
-
-    // Resmin zaten yüklenmiş olup olmadığını kontrol et (cache'den geliyorsa)
-    const img = new Image();
-    img.onload = () => {
-      setIsLoading(false);
-      setHasError(false);
-    };
-    img.onerror = () => {
-      setHasError(true);
-      setIsLoading(false);
-    };
-    img.src = src;
-
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
   }, [src]);
 
   // Eğer src yoksa veya 'N/A' ise veya hata varsa fallback göster
@@ -67,7 +52,7 @@ export default function ImageWithFallback({
   if (shouldShowFallback) {
     return (
       <div
-        className={`flex items-center justify-center bg-stone-200 dark:bg-zinc-700 ${className} ${fallbackClassName}`}
+        className={`flex items-center justify-center bg-stone-200 dark:bg-zinc-800 ${className} ${fallbackClassName}`}
       >
         {fallbackIcon || (
           <FaImage className="text-stone-400 dark:text-zinc-500 text-2xl" />
@@ -80,7 +65,7 @@ export default function ImageWithFallback({
     <div className={`relative ${wrapperClassName}`}>
       {isLoading && (
         <div
-          className={`absolute inset-0 flex items-center justify-center bg-stone-200 dark:bg-zinc-700 animate-pulse ${className}`}
+          className={`absolute inset-0 flex items-center justify-center bg-stone-200 dark:bg-zinc-800 animate-pulse ${className}`}
         >
           {fallbackIcon || (
             <FaImage className="text-stone-400 dark:text-zinc-500 text-2xl" />
@@ -93,9 +78,9 @@ export default function ImageWithFallback({
         className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
         onError={handleError}
         onLoad={handleLoad}
-        loading="lazy"
+        loading={loading}
+        decoding="async"
       />
     </div>
   );
 }
-

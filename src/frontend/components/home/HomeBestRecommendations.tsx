@@ -1,21 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
     FaStar,
-    FaChevronDown,
-    FaChevronUp,
     FaCog,
-    FaFilm,
-    FaTv,
     FaSpinner,
     FaPlus,
+    FaCheck,
     FaChevronLeft,
     FaChevronRight,
-    FaGamepad,
-    FaBook,
-    FaTrophy,
-    FaCheck,
+    FaMagic,
+    FaFilm,
 } from 'react-icons/fa';
-import { groupRecommendationsByCategory } from '../../../backend/services/recommendationService';
 import type { Recommendation } from '../../../backend/types/recommendation';
 
 type TFn = (key: string) => string;
@@ -23,559 +18,253 @@ type TFn = (key: string) => string;
 interface HomeBestRecommendationsProps {
     recommendations: Recommendation[];
     recsLoading: boolean;
-    recsExpanded: boolean;
-    setRecsExpanded: (v: boolean) => void;
+    recsExpanded?: boolean;
+    setRecsExpanded?: (v: boolean) => void;
     userUid: string | undefined;
     adminUid: string;
     onOpenAdmin: () => void;
-    handleAddToCollection: (rec: Recommendation) => void;
-    recFilmPage: number;
-    setRecFilmPage: React.Dispatch<React.SetStateAction<number>>;
-    recSeriesPage: number;
-    setRecSeriesPage: React.Dispatch<React.SetStateAction<number>>;
-    recsPerPage: number;
+    handleAddToCollection: (rec: Recommendation) => Promise<void>;
+    recFilmPage?: number;
+    setRecFilmPage?: React.Dispatch<React.SetStateAction<number>>;
+    recSeriesPage?: number;
+    setRecSeriesPage?: React.Dispatch<React.SetStateAction<number>>;
+    recsPerPage?: number;
     t: TFn;
 }
 
-// ─── Mini Kart (Most Watched listeleri için) ───
-function RecCard({
-    rec,
-    onAdd,
-    accentColor,
+export default function HomeBestRecommendations({
+    recommendations,
+    recsLoading,
+    userUid,
+    adminUid,
+    onOpenAdmin,
+    handleAddToCollection,
     t,
-}: {
-    rec: Recommendation;
-    onAdd: (rec: Recommendation) => void;
-    accentColor: string;
-    t: TFn;
-}) {
-    const [status, setStatus] = useState<'idle' | 'adding' | 'added' | 'exists'>('idle');
-
-    const handleClick = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (status !== 'idle') return;
-
-        setStatus('adding');
-        try {
-            await onAdd(rec);
-            setStatus('added');
-            setTimeout(() => setStatus('idle'), 2000);
-        } catch (error: any) {
-            if (error?.message === 'already_exists') {
-                setStatus('exists');
-                setTimeout(() => setStatus('idle'), 2000);
-            } else {
-                setStatus('idle');
-            }
-        }
-    };
-
-    return (
-        <button
-            type="button"
-            onClick={handleClick}
-            disabled={status !== 'idle'}
-            className="group w-full text-left cursor-pointer transition-transform active:scale-[0.98]"
-        >
-            <div
-                className={`flex gap-3 rounded-xl border border-slate-200 bg-white p-3 transition-all hover:border-${accentColor}-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-${accentColor}-700`}
-            >
-                {/* Thumbnail */}
-                <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-zinc-800">
-                    {rec.image ? (
-                        <img
-                            src={rec.image}
-                            alt=""
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                        />
-                    ) : (
-                        <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-zinc-600">
-                            <FaFilm className="text-lg" />
-                        </div>
-                    )}
-                    {/* Hover overlay & Status */}
-                    <div
-                        className={`absolute inset-0 flex items-center justify-center transition ${status !== 'idle' ? 'bg-black/70 opacity-100' : 'bg-black/60 opacity-0 group-hover:opacity-100'}`}
-                    >
-                        {status === 'idle' && <FaPlus className="text-white text-sm" />}
-                        {status === 'adding' && <FaSpinner className="text-white text-sm animate-spin" />}
-                        {status === 'added' && <FaCheck className="text-emerald-400 text-sm" />}
-                        {status === 'exists' && (
-                            <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider text-center leading-tight">
-                                Zaten<br />Var
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                    <h5 className="text-sm font-bold text-slate-900 line-clamp-1 dark:text-white">
-                        {rec.title}
-                    </h5>
-                    {rec.description && (
-                        <p className="mt-0.5 text-[11px] text-slate-500 line-clamp-1 dark:text-zinc-400">
-                            {rec.description}
-                        </p>
-                    )}
-                    {rec.author && (
-                        <p className="text-[11px] text-slate-400 dark:text-zinc-500">{rec.author}</p>
-                    )}
-                    <div className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 dark:bg-amber-950">
-                        <FaStar className="text-[10px] text-amber-500" />
-                        <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                            {rec.rating}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </button>
-    );
-}
-
-// ─── Poster Kart (yatay scroll kategorileri için) ───
-function PosterCard({
-    rec,
-    onAdd,
-    badge,
-    badgeColor,
-    t,
-}: {
-    rec: Recommendation;
-    onAdd: (rec: Recommendation) => void;
-    badge?: string;
-    badgeColor?: string;
-    t: TFn;
-}) {
-    const [status, setStatus] = useState<'idle' | 'adding' | 'added' | 'exists'>('idle');
-
-    const handleClick = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (status !== 'idle') return;
-
-        setStatus('adding');
-        try {
-            await onAdd(rec);
-            setStatus('added');
-            setTimeout(() => setStatus('idle'), 2000);
-        } catch (error: any) {
-            if (error?.message === 'already_exists') {
-                setStatus('exists');
-                setTimeout(() => setStatus('idle'), 2000);
-            } else {
-                setStatus('idle');
-            }
-        }
-    };
-
-    return (
-        <button
-            type="button"
-            onClick={handleClick}
-            disabled={status !== 'idle'}
-            className="group w-40 shrink-0 text-left cursor-pointer transition-transform active:scale-[0.98]"
-        >
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:-translate-y-1 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950">
-                {/* Poster */}
-                <div className="relative aspect-[2/3] overflow-hidden bg-slate-100 dark:bg-zinc-800">
-                    {rec.image ? (
-                        <img
-                            src={rec.image}
-                            alt=""
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                        />
-                    ) : (
-                        <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-zinc-600">
-                            <FaFilm className="text-2xl" />
-                        </div>
-                    )}
-
-                    {/* Rating badge */}
-                    <div className="absolute top-2 right-2 flex items-center gap-1 rounded-lg bg-black/70 px-1.5 py-0.5 text-white backdrop-blur-sm">
-                        <FaStar className="text-[10px] text-amber-400" />
-                        <span className="text-[11px] font-bold">{rec.rating}</span>
-                    </div>
-
-                    {/* Award badge */}
-                    {badge && (
-                        <div
-                            className={`absolute top-2 left-2 rounded-lg ${badgeColor || 'bg-amber-500'} px-1.5 py-0.5 text-[10px] font-bold text-white`}
-                        >
-                            {badge}
-                        </div>
-                    )}
-
-                    {/* Hover overlay & Status */}
-                    <div
-                        className={`absolute inset-0 flex items-center justify-center transition ${status !== 'idle' ? 'bg-black/70 opacity-100' : 'bg-black/60 opacity-0 group-hover:opacity-100'}`}
-                    >
-                        {status === 'added' ? (
-                            <span className="rounded-lg bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm shadow-lg shadow-emerald-500/20">
-                                <FaCheck className="inline mr-1.5 text-[10px]" />
-                                Eklendi
-                            </span>
-                        ) : status === 'exists' ? (
-                            <span className="rounded-lg bg-amber-500/90 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur-sm shadow-lg shadow-amber-500/20">
-                                Zaten Ekli
-                            </span>
-                        ) : status === 'adding' ? (
-                            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
-                                <FaSpinner className="inline mr-1.5 text-[10px] animate-spin" />
-                                Ekleniyor...
-                            </span>
-                        ) : (
-                            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
-                                <FaPlus className="inline mr-1 text-[10px]" />
-                                {t('home.add')}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Title */}
-                <div className="p-2.5">
-                    <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-tight dark:text-white">
-                        {rec.title}
-                    </h4>
-                </div>
-            </div>
-        </button>
-    );
-}
-
-// ─── Ana Bileşen ───
-export default function HomeBestRecommendations(props: HomeBestRecommendationsProps) {
-    const {
-        recommendations,
-        recsLoading,
-        recsExpanded,
-        setRecsExpanded,
-        userUid,
-        adminUid,
-        onOpenAdmin,
-        handleAddToCollection,
-        recFilmPage,
-        setRecFilmPage,
-        recSeriesPage,
-        setRecSeriesPage,
-        recsPerPage,
-        t,
-    } = props;
-
+}: HomeBestRecommendationsProps) {
     const isAdmin = userUid === adminUid;
+    const [selectedTab, setSelectedTab] = useState<'all' | 'movie' | 'series'>('all');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [actionStatus, setActionStatus] = useState<Record<string, 'adding' | 'added' | 'exists'>>({});
+    const PAGE_SIZE = 4;
+
+    const filteredRecs = useMemo(() => {
+        if (selectedTab === 'all') return recommendations;
+        return recommendations.filter((r) => r.type === selectedTab);
+    }, [recommendations, selectedTab]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredRecs.length / PAGE_SIZE));
+    const currentItems = filteredRecs.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+    const onAdd = async (rec: Recommendation) => {
+        if (actionStatus[rec.id]) return;
+        setActionStatus((prev) => ({ ...prev, [rec.id]: 'adding' }));
+        try {
+            await handleAddToCollection(rec);
+            setActionStatus((prev) => ({ ...prev, [rec.id]: 'added' }));
+            setTimeout(() => {
+                setActionStatus((prev) => {
+                    const next = { ...prev };
+                    delete next[rec.id];
+                    return next;
+                });
+            }, 2500);
+        } catch (error: any) {
+            if (error?.message === 'already_exists') {
+                setActionStatus((prev) => ({ ...prev, [rec.id]: 'exists' }));
+                setTimeout(() => {
+                    setActionStatus((prev) => {
+                        const next = { ...prev };
+                        delete next[rec.id];
+                        return next;
+                    });
+                }, 2500);
+            } else {
+                setActionStatus((prev) => {
+                    const next = { ...prev };
+                    delete next[rec.id];
+                    return next;
+                });
+            }
+        }
+    };
 
     return (
-        <section className="mt-16">
+        <section className="mt-10">
             {/* Header */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-500 dark:bg-amber-950 dark:text-amber-400">
-                        <FaStar className="text-sm" />
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/15 dark:text-indigo-400">
+                        <FaMagic className="text-xs" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                            {t('home.bestRecsTitle')}
+                        <h2 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                            {t('home.bestRecommendations') || 'Küratör Seçkisi'}
                         </h2>
                         <p className="text-xs text-slate-500 dark:text-zinc-400">
-                            {recommendations.length} {t('home.bestRecsSeeAll')}
+                            Özenle derlenen sinematik tavsiyeler
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Sekmeler */}
+                    <div className="flex items-center rounded-xl border border-slate-200/90 bg-white/80 p-0.5 dark:border-zinc-800 dark:bg-zinc-900/80">
+                        {(['all', 'movie', 'series'] as const).map((tab) => (
+                            <button
+                                key={tab}
+                                type="button"
+                                onClick={() => {
+                                    setSelectedTab(tab);
+                                    setCurrentPage(0);
+                                }}
+                                className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                                    selectedTab === tab
+                                        ? 'bg-slate-900 text-white shadow-2xs dark:bg-zinc-700'
+                                        : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white'
+                                }`}
+                            >
+                                {tab === 'all' ? 'Tümü' : tab === 'movie' ? 'Filmler' : 'Diziler'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Admin Butonu */}
                     {isAdmin && (
                         <button
                             type="button"
                             onClick={onOpenAdmin}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                            title="Önerileri Yönet"
                         >
-                            <FaCog className="text-[10px]" />
-                            {t('home.adminManage')}
+                            <FaCog className="text-xs text-slate-500" />
+                            <span className="hidden sm:inline">Yönet</span>
                         </button>
                     )}
-                    <button
-                        type="button"
-                        onClick={() => setRecsExpanded(!recsExpanded)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                    >
-                        {recsExpanded ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
-                    </button>
+
+                    {/* Sayfalama */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                            <button
+                                type="button"
+                                disabled={currentPage === 0}
+                                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-slate-200/90 text-slate-500 transition hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                            >
+                                <FaChevronLeft className="text-[9px]" />
+                            </button>
+                            <button
+                                type="button"
+                                disabled={currentPage >= totalPages - 1}
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-slate-200/90 text-slate-500 transition hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                            >
+                                <FaChevronRight className="text-[9px]" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Content */}
-            {recsExpanded && (
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-                    {recsLoading ? (
-                        <div className="flex items-center justify-center gap-3 py-16">
-                            <FaSpinner className="h-5 w-5 animate-spin text-slate-400" />
-                            <span className="text-sm text-slate-500">{t('home.loading')}</span>
-                        </div>
-                    ) : recommendations.length === 0 ? (
-                        <div className="py-12 text-center">
-                            <FaStar className="mx-auto text-3xl text-slate-300 dark:text-zinc-600" />
-                            <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
-                                {t('home.noRecsTitle')}
-                            </h3>
-                            <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                                {t('home.noRecsBody')}
-                            </p>
-                            {isAdmin && (
-                                <button
-                                    type="button"
-                                    onClick={onOpenAdmin}
-                                    className="mt-4 rounded-lg bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700"
-                                >
-                                    {t('home.adminManage')}
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        (() => {
-                            const grouped = groupRecommendationsByCategory(recommendations);
+            {/* İçerik */}
+            {recsLoading ? (
+                <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-white/70 py-12 dark:border-zinc-800 dark:bg-zinc-900/60">
+                    <FaSpinner className="h-5 w-5 animate-spin text-indigo-500" />
+                    <span className="text-sm text-slate-500 dark:text-zinc-400">Öneriler hazırlanıyor...</span>
+                </div>
+            ) : currentItems.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-10 text-center dark:border-zinc-800 dark:bg-zinc-900/30">
+                    <p className="text-xs text-slate-400 dark:text-zinc-500">Bu kategoride henüz öneri bulunmuyor.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+                    {currentItems.map((rec) => {
+                        const status = actionStatus[rec.id];
 
-                            return (
-                                <div className="space-y-8">
-                                    {/* ── Most Watched 2025 ── */}
-                                    {grouped['most-watched-2025'].length > 0 &&
-                                        (() => {
-                                            const allFilms = grouped['most-watched-2025'].filter(
-                                                (rec) => rec.type === 'movie'
-                                            );
-                                            const allSeries = grouped['most-watched-2025'].filter(
-                                                (rec) => rec.type === 'series'
-                                            );
-                                            const totalFilmPages = Math.ceil(allFilms.length / recsPerPage);
-                                            const totalSeriesPages = Math.ceil(allSeries.length / recsPerPage);
-                                            const films = allFilms.slice(
-                                                (recFilmPage - 1) * recsPerPage,
-                                                recFilmPage * recsPerPage
-                                            );
-                                            const series = allSeries.slice(
-                                                (recSeriesPage - 1) * recsPerPage,
-                                                recSeriesPage * recsPerPage
-                                            );
+                        return (
+                            <motion.div
+                                key={rec.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:bg-zinc-900 p-3.5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-md dark:border-zinc-800/80"
+                            >
+                                <div className="flex gap-3">
+                                    {/* Afiş */}
+                                    <div className="relative h-28 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100 shadow-2xs dark:bg-zinc-800">
+                                        {rec.image ? (
+                                            <img
+                                                src={rec.image}
+                                                alt={rec.title}
+                                                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-zinc-600">
+                                                <FaFilm className="text-2xl" />
+                                            </div>
+                                        )}
 
-                                            return (
-                                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                                                    {/* Films */}
-                                                    {allFilms.length > 0 && (
-                                                        <div>
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <FaFilm className="text-sky-500 text-sm" />
-                                                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                                    {t('nav.movies')}
-                                                                </h4>
-                                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                                                                    ({allFilms.length})
-                                                                </span>
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                {films.map((rec) => (
-                                                                    <RecCard
-                                                                        key={rec.id}
-                                                                        rec={rec}
-                                                                        onAdd={handleAddToCollection}
-                                                                        accentColor="sky"
-                                                                        t={t}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                            {totalFilmPages > 1 && (
-                                                                <div className="flex items-center justify-center gap-3 mt-3">
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            setRecFilmPage((p) => Math.max(1, p - 1))
-                                                                        }
-                                                                        disabled={recFilmPage === 1}
-                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
-                                                                    >
-                                                                        <FaChevronLeft className="text-[10px]" />
-                                                                    </button>
-                                                                    <span className="text-xs text-slate-400 tabular-nums">
-                                                                        {recFilmPage}/{totalFilmPages}
-                                                                    </span>
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            setRecFilmPage((p) =>
-                                                                                Math.min(totalFilmPages, p + 1)
-                                                                            )
-                                                                        }
-                                                                        disabled={recFilmPage === totalFilmPages}
-                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
-                                                                    >
-                                                                        <FaChevronRight className="text-[10px]" />
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                        {rec.rating && (
+                                            <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[9px] font-bold text-amber-400 backdrop-blur-xs">
+                                                <FaStar className="text-[8px]" />
+                                                <span>{rec.rating}</span>
+                                            </div>
+                                        )}
+                                    </div>
 
-                                                    {/* Series */}
-                                                    {allSeries.length > 0 && (
-                                                        <div>
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <FaTv className="text-rose-500 text-sm" />
-                                                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                                    {t('nav.series')}
-                                                                </h4>
-                                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                                                                    ({allSeries.length})
-                                                                </span>
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                {series.map((rec) => (
-                                                                    <RecCard
-                                                                        key={rec.id}
-                                                                        rec={rec}
-                                                                        onAdd={handleAddToCollection}
-                                                                        accentColor="rose"
-                                                                        t={t}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                            {totalSeriesPages > 1 && (
-                                                                <div className="flex items-center justify-center gap-3 mt-3">
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            setRecSeriesPage((p) => Math.max(1, p - 1))
-                                                                        }
-                                                                        disabled={recSeriesPage === 1}
-                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
-                                                                    >
-                                                                        <FaChevronLeft className="text-[10px]" />
-                                                                    </button>
-                                                                    <span className="text-xs text-slate-400 tabular-nums">
-                                                                        {recSeriesPage}/{totalSeriesPages}
-                                                                    </span>
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            setRecSeriesPage((p) =>
-                                                                                Math.min(totalSeriesPages, p + 1)
-                                                                            )
-                                                                        }
-                                                                        disabled={recSeriesPage === totalSeriesPages}
-                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
-                                                                    >
-                                                                        <FaChevronRight className="text-[10px]" />
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })()}
-
-                                    {/* ── Best Movies ── */}
-                                    {grouped['best-movies'].length > 0 && (
+                                    {/* Detaylar */}
+                                    <div className="min-w-0 flex-1 flex flex-col justify-between py-0.5">
                                         <div>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <FaTrophy className="text-amber-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {t('home.bestRecsBestMovies')}
-                                                </h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                                                    ({grouped['best-movies'].length})
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="rounded bg-slate-100 px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+                                                    {rec.type}
                                                 </span>
                                             </div>
-                                            <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                                                {grouped['best-movies'].map((rec) => (
-                                                    <PosterCard
-                                                        key={rec.id}
-                                                        rec={rec}
-                                                        onAdd={handleAddToCollection}
-                                                        t={t}
-                                                    />
-                                                ))}
-                                            </div>
+                                            <h3 className="mt-1 text-sm font-bold text-slate-900 line-clamp-1 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                {rec.title}
+                                            </h3>
+                                            {rec.description && (
+                                                <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+                                                    {rec.description}
+                                                </p>
+                                            )}
                                         </div>
-                                    )}
 
-                                    {/* ── Award Winning ── */}
-                                    {grouped['award-winning'].length > 0 && (
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <FaStar className="text-amber-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {t('home.bestRecsAwardWinning')}
-                                                </h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                                                    ({grouped['award-winning'].length})
-                                                </span>
-                                            </div>
-                                            <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                                                {grouped['award-winning'].map((rec) => (
-                                                    <PosterCard
-                                                        key={rec.id}
-                                                        rec={rec}
-                                                        onAdd={handleAddToCollection}
-                                                        badge={rec.award}
-                                                        badgeColor="bg-amber-500"
-                                                        t={t}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ── Top Series ── */}
-                                    {grouped['top-series'].length > 0 && (
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <FaTv className="text-rose-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {t('home.bestRecsTopSeries')}
-                                                </h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                                                    ({grouped['top-series'].length})
-                                                </span>
-                                            </div>
-                                            <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                                                {grouped['top-series'].map((rec) => (
-                                                    <PosterCard
-                                                        key={rec.id}
-                                                        rec={rec}
-                                                        onAdd={handleAddToCollection}
-                                                        t={t}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ── Top Books ── */}
-                                    {grouped['top-books'].length > 0 && (
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <FaBook className="text-violet-500 text-sm" />
-                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {t('home.bestRecsTopBooks')}
-                                                </h3>
-                                                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                                                    ({grouped['top-books'].length})
-                                                </span>
-                                            </div>
-                                            <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                                                {grouped['top-books'].map((rec) => (
-                                                    <PosterCard
-                                                        key={rec.id}
-                                                        rec={rec}
-                                                        onAdd={handleAddToCollection}
-                                                        badge={rec.author}
-                                                        badgeColor="bg-violet-500"
-                                                        t={t}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                        {/* Ekle Aksiyon Butonu */}
+                                        <button
+                                            type="button"
+                                            onClick={() => onAdd(rec)}
+                                            disabled={!!status}
+                                            className={`mt-2.5 inline-flex cursor-pointer items-center justify-center gap-1.5 self-start rounded-lg px-2.5 py-1 text-xs font-bold transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 ${
+                                                status === 'added'
+                                                    ? 'bg-emerald-500 text-white'
+                                                    : status === 'exists'
+                                                    ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                                                    : 'bg-slate-900 text-white hover:bg-indigo-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-indigo-500'
+                                            }`}
+                                        >
+                                            {status === 'adding' ? (
+                                                <>
+                                                    <FaSpinner className="h-3 w-3 animate-spin" />
+                                                    <span>Ekleniyor</span>
+                                                </>
+                                            ) : status === 'added' ? (
+                                                <>
+                                                    <FaCheck className="h-3 w-3 text-white" />
+                                                    <span>Eklendi</span>
+                                                </>
+                                            ) : status === 'exists' ? (
+                                                <span>Zaten Ekli</span>
+                                            ) : (
+                                                <>
+                                                    <FaPlus className="text-[9px]" />
+                                                    <span>Kütüphaneye Ekle</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
-                            );
-                        })()
-                    )}
+                            </motion.div>
+                        );
+                    })}
                 </div>
             )}
         </section>

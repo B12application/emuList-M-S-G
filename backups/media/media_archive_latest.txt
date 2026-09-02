@@ -1,11 +1,11 @@
 =======================================================
               EMULIST MEDYA KOLEKSIYON ARSIVI
-           Tarih: 01.09.2026 22:59:09
-           Toplam Icerik: 376
-           Filmler: 231 | Diziler: 77 | Oyunlar: 56 | Kitaplar: 12
+           Tarih: 02.09.2026 22:58:05
+           Toplam Icerik: 377
+           Filmler: 232 | Diziler: 77 | Oyunlar: 56 | Kitaplar: 12
 =======================================================
 
-🎬 FILMLER (231 Adet)
+🎬 FILMLER (232 Adet)
 -------------------------------------------------------
 1. Cici [Puan: 6.5] [Durum: Izlendi] (IMDb: tt16452600)
    Tur: Comedy, Romance
@@ -74,7 +74,7 @@
    Tur: Biography, Comedy, Drama
    Yil: 14 Nov 2025
 23. Hwang-ya - tr Çöl Avcıları [Puan: 2.5] [Durum: Izlendi] 
-24. The Map That Leads to You [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt33549478)
+24. The Map That Leads to You [Puan: 6.2] [Durum: Izlendi] (IMDb: tt33549478)
    Tur: Drama, Romance
    Yil: 20 Aug 2025
 25. Source Code [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0945513)
@@ -647,19 +647,22 @@
    Tur: Comedy, Drama, Romance
    Yil: 08 Nov 2024
 226. Inseption [Puan: 8] [Durum: Izlenecek] 
-227. Weapons [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt26581740)
+227. Disclosure Day [Puan: 6.4] [Durum: Izlendi] (IMDb: tt15047880)
+   Tur: Action, Drama, Mystery
+   Yil: 12 Jun 2026
+228. Weapons [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt26581740)
    Tur: Horror, Mystery
    Yil: 08 Aug 2025
-228. Dangerous Animals [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt32299316)
+229. Dangerous Animals [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt32299316)
    Tur: Horror, Thriller
    Yil: 06 Jun 2025
-229. Old School [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt0302886)
+230. Old School [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt0302886)
    Tur: Comedy
    Yil: 21 Feb 2003
-230. 20 Days in Mariupol [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt24082438)
+231. 20 Days in Mariupol [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt24082438)
    Tur: Documentary, War
    Yil: 21 Nov 2023
-231. The 12th Man [Puan: 7.9] [Durum: Izlendi] (IMDb: tt3300980)
+232. The 12th Man [Puan: 7.9] [Durum: Izlendi] (IMDb: tt3300980)
    Tur: Drama, History, Thriller
    Yil: 04 May 2018
 

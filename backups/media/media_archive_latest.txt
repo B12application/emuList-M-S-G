@@ -1,6 +1,6 @@
 =======================================================
               EMULIST MEDYA KOLEKSIYON ARSIVI
-           Tarih: 02.09.2026 22:58:05
+           Tarih: 03.09.2026 22:58:58
            Toplam Icerik: 377
            Filmler: 232 | Diziler: 77 | Oyunlar: 56 | Kitaplar: 12
 =======================================================
@@ -837,12 +837,12 @@
 13. Remnant 2: The Awakened King [Puan: 8.8] [Durum: Oynanacak]
 14. Dying light 2 stay human [Puan: 7.5] [Durum: Oynanacak]
 15.  Expedition 33 [Puan: 6] [Durum: Oynanacak]
-16. Age of Mythology: Retold [Puan: 7.3] [Durum: Oynanacak]
+16. Age of Mythology: Retold [Puan: 7.3] [Durum: Oynandi]
 17. Grand Theft Auto V [Puan: 8.9] [Durum: Oynandi]
 18. Fallout: London [Puan: 6.0] [Durum: Oynanacak]
 19. God of War (2018) [Puan: 9.1] [Durum: Oynandi]
 20. Black Myth: Wukong [Puan: 8.6] [Durum: Oynanacak]
-21. Diablo IV [Puan: 7.5] [Durum: Oynanacak]
+21. Diablo IV [Puan: 7.5] [Durum: Oynandi]
 22. 007 First Light [Puan: 8.8] [Durum: Oynanacak]
 23. Path of Exile 2 [Puan: 6.7] [Durum: Oynanacak]
 24. Metro Exodus [Puan: 8.3] [Durum: Oynandi]

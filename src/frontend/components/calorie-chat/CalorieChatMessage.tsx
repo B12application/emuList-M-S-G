@@ -66,6 +66,11 @@ function MealDataCard({ mealData }: { mealData: MealData }) {
 function formatMessageText(text: string) {
   // Bold text: **text**
   let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Auto-link URLs
+  formatted = formatted.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" class="underline text-amber-600 dark:text-amber-400 font-bold hover:opacity-80 break-all">$1</a>'
+  );
   // Emoji bullets and line breaks
   formatted = formatted.replace(/\n/g, '<br/>');
   return formatted;
@@ -73,6 +78,27 @@ function formatMessageText(text: string) {
 
 export default function CalorieChatMessage({ message, isLast }: Props) {
   const isUser = message.role === 'user';
+  const isApiKeyIssue = !isUser && (
+    message.text.includes('API Anahtarı') ||
+    message.text.includes('GEMINI_API_KEY') ||
+    message.text.includes('API_KEY_SERVICE_BLOCKED') ||
+    message.text.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')
+  );
+
+  const handlePromptApiKey = () => {
+    const inputKey = window.prompt(
+      "Google AI Studio API Anahtarınızı girin:\n(https://aistudio.google.com/apikey adresinden aldığınız anahtarı buraya yapıştırın)"
+    );
+    if (!inputKey) return;
+    const trimmed = inputKey.trim();
+    if (trimmed.length >= 20) {
+      localStorage.setItem('user_gemini_api_key', trimmed);
+      window.alert('✅ Gemini API Anahtarınız başarıyla kaydedildi! Şimdi mesajınızı tekrar gönderebilirsiniz.');
+      window.location.reload();
+    } else {
+      window.alert('❌ Geçersiz anahtar uzunluğu! Lütfen Google AI Studio\'dan aldığınız anahtarı eksiksiz yapıştırın.');
+    }
+  };
 
   return (
     <motion.div
@@ -110,6 +136,18 @@ export default function CalorieChatMessage({ message, isLast }: Props) {
             __html: isUser ? message.text : formatMessageText(message.text)
           }}
         />
+
+        {/* Action button if API key issue */}
+        {isApiKeyIssue && (
+          <button
+            type="button"
+            onClick={handlePromptApiKey}
+            className="mt-2.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs shadow-md transition-all active:scale-95 flex items-center gap-1.5"
+          >
+            <span>🔑</span>
+            <span>API Anahtarını Şimdi Gir / Değiştir</span>
+          </button>
+        )}
 
         {/* Meal Data Card */}
         {!isUser && message.mealData && (

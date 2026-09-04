@@ -37,6 +37,7 @@ const TravelPlannerPage = lazy(() => import('./pages/TravelPlannerPage'));
 const NotesPage = lazy(() => import('./pages/NotesPage'));
 const CalorieChatPage = lazy(() => import('./pages/CalorieChatPage'));
 const CalorieDetailsPage = lazy(() => import('./pages/CalorieDetailsPage'));
+const BodyProfilePage = lazy(() => import('./pages/BodyProfilePage'));
 
 // Lightweight, non-blocking Suspense fallback
 const PageLoader = () => (
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
       { path: 'notes/:noteId', element: <LazyRoute component={NotesPage} /> },
       { path: 'calorie-chat', element: <LazyRoute component={CalorieChatPage} /> },
       { path: 'calorie-details', element: <LazyRoute component={CalorieDetailsPage} /> },
+      { path: 'body-profile', element: <LazyRoute component={BodyProfilePage} /> },
     ]
   },
 

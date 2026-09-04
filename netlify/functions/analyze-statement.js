@@ -61,7 +61,7 @@ export const handler = async (event, context) => {
             }
             try {
                 console.log('Starting native Gemini PDF analysis...');
-                const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+                const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
                 const prompt = `Sen uzman bir finansal veri analiz asistanısın. Bu banka hesap özeti dosyasından SADECE harcamaları ve giden transferleri ayıklamanı istiyorum.
         
 Kurallar:

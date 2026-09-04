@@ -25,8 +25,10 @@ import PasswordsTab from '../components/expenses/PasswordsTab';
 import InvestmentsTab from '../components/expenses/InvestmentsTab';
 import BudgetPlanner from '../components/expenses/BudgetPlanner';
 import ExpenseModals from '../components/expenses/ExpenseModals';
+import DuplicateExpensesModal from '../components/expenses/DuplicateExpensesModal';
 import { useExpenseMigration } from '../hooks/useExpenseMigration';
 import { useCategoryV2Migration } from '../hooks/useCategoryV2Migration';
+import { markPdfAsSaved, syncSavedPdfHistory } from '../services/pdfImportHistoryService';
 
 const ExpensesPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -118,13 +120,23 @@ const ExpensesPage: React.FC = () => {
   // Missing States Added Here
   const [isImportPreviewOpen, setIsImportPreviewOpen] = useState(false);
   const [importPreview, setImportPreview] = useState<ParsedTransaction[]>([]);
+  const [importedFileNames, setImportedFileNames] = useState<string[]>([]);
   const [isJsonImportModalOpen, setIsJsonImportModalOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
+
+  useEffect(() => {
+    if (user?.uid) {
+      syncSavedPdfHistory(user.uid);
+    }
+  }, [user?.uid]);
 
   // Delete Confirmation Modal
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [deleteItemTitle, setDeleteItemTitle] = useState('');
   const [confirmDeleteAction, setConfirmDeleteAction] = useState<() => void>(() => () => { });
+
+  // Duplicate Expenses Modal
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
 
   const [newExpense, setNewExpense] = useState<Partial<Expense>>({
     title: '',
@@ -457,8 +469,16 @@ const ExpensesPage: React.FC = () => {
         error: 'Kaydedilirken bir hata oluştu.',
       });
 
+      // SADECE "Hepsini Kaydet" butonuna basıldığında PDF geçmişine ekle!
+      if (user?.uid && importedFileNames.length > 0) {
+        for (const fileName of importedFileNames) {
+          await markPdfAsSaved(user.uid, fileName, expensesToSave.length);
+        }
+      }
+
       setIsImportPreviewOpen(false);
       setImportPreview([]);
+      setImportedFileNames([]);
     } catch (error) {
       console.error('Import error:', error);
     }
@@ -466,10 +486,41 @@ const ExpensesPage: React.FC = () => {
 
   const handleDeletePreviewItem = (idx: number) => setImportPreview(prev => prev.filter((_, i) => i !== idx));
 
-  const handlePdfImport = useCallback((transactions: ParsedTransaction[]) => {
+  const handlePdfImport = useCallback((transactions: ParsedTransaction[], fileNames?: string[]) => {
     setImportPreview(transactions);
+    setImportedFileNames(fileNames || []);
     setIsImportPreviewOpen(true);
   }, []);
+
+  // Sistemdeki mükerrer harcamaları bul (aynı tarih, aynı tutar, aynı başlık ve aynı yön)
+  const duplicateExpenseIds = useMemo(() => {
+    const seen = new Set<string>();
+    const duplicates: string[] = [];
+    const sorted = [...expenses].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    for (const exp of sorted) {
+      const key = `${exp.date}_${Number(exp.amount).toFixed(2)}_${exp.title.toLowerCase().trim()}_${exp.direction || 'giden'}`;
+      if (seen.has(key)) {
+        duplicates.push(exp.id);
+      } else {
+        seen.add(key);
+      }
+    }
+    return duplicates;
+  }, [expenses]);
+
+  const handleCleanExistingDuplicates = useCallback(() => {
+    if (duplicateExpenseIds.length === 0) {
+      toast.success('Herhangi bir mükerrer harcama bulunamadı.');
+      return;
+    }
+    setDeleteItemTitle(`${duplicateExpenseIds.length} mükerrer harcama`);
+    setConfirmDeleteAction(() => async () => {
+      await bulkDeleteExpenses(duplicateExpenseIds);
+      setIsDeleteConfirmModalOpen(false);
+      toast.success(`${duplicateExpenseIds.length} mükerrer harcama başarıyla temizlendi.`);
+    });
+    setIsDeleteConfirmModalOpen(true);
+  }, [duplicateExpenseIds, bulkDeleteExpenses]);
 
   const handleJsonParse = () => {
     try {
@@ -553,6 +604,18 @@ const ExpensesPage: React.FC = () => {
   return (
     <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
       <div className="mb-8 flex items-center justify-center sm:justify-end gap-2">
+        {/* Mükerrer Harcama İnceleme & Yönetme Butonu */}
+        {duplicateExpenseIds.length > 0 && (
+          <button
+            onClick={() => setIsDuplicateModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-2xl text-xs font-bold transition-all shadow-sm active:scale-95"
+            title={`${duplicateExpenseIds.length} mükerrer harcamayı incele ve yönet`}
+          >
+            <FaLayerGroup size={12} />
+            <span>{duplicateExpenseIds.length} Mükerrer Harcama</span>
+          </button>
+        )}
+
         {/* Mobil için Blur (Göz) Butonu */}
         <button
           onClick={() => setIsBlurred(!isBlurred)}
@@ -906,6 +969,10 @@ const ExpensesPage: React.FC = () => {
         bulkCategory={bulkCategory} setBulkCategory={setBulkCategory} applyBulkCategory={applyBulkCategory}
         selectedIds={selectedIds} isImportPreviewOpen={isImportPreviewOpen} setIsImportPreviewOpen={setIsImportPreviewOpen}
         importPreview={importPreview} confirmImport={confirmImport} handleDeletePreviewItem={handleDeletePreviewItem}
+        importedFileNames={importedFileNames}
+        expenses={expenses}
+        userId={user?.uid}
+        setImportPreview={setImportPreview}
         isInvestmentModalOpen={isInvestmentModalOpen}
         setIsInvestmentModalOpen={(open) => {
           setIsInvestmentModalOpen(open);
@@ -932,6 +999,18 @@ const ExpensesPage: React.FC = () => {
         newCategoryName={newCategoryName}
         setNewCategoryName={setNewCategoryName}
         handleAddCategorySubmit={handleAddCategorySubmit}
+      />
+
+      {/* Mükerrer Harcamaları İnceleme & Yönetme Modalı */}
+      <DuplicateExpensesModal
+        isOpen={isDuplicateModalOpen}
+        onClose={() => setIsDuplicateModalOpen(false)}
+        expenses={expenses}
+        onDeleteSelected={async (ids) => {
+          await bulkDeleteExpenses(ids);
+          toast.success(`${ids.length} mükerrer harcama başarıyla silindi.`);
+        }}
+        isDark={isDark}
       />
     </div>
   );

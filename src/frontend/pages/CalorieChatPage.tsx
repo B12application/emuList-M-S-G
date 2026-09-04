@@ -643,8 +643,10 @@ export default function CalorieChatPage() {
 
                       <div className="flex items-center gap-1 shrink-0">
                         <button
+                          type="button"
                           onClick={(e) => handleDeleteSession(session.id!, e)}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
+                          title="Sohbeti sil"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         >
                           <FaTrash className="text-[10px]" />
                         </button>

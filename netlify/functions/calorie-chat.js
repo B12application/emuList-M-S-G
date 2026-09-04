@@ -68,7 +68,6 @@ export const handler = async (event) => {
                 body: JSON.stringify({ error: 'Mesaj veya fotoğraf gerekli.' }),
             };
         }
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
         // Build content parts
         const parts = [];
         // Add conversation history context if exists
@@ -90,8 +89,18 @@ export const handler = async (event) => {
                 },
             });
         }
-        const result = await model.generateContent(parts);
-        const responseText = result.response.text();
+        let responseText = '';
+        try {
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+            const result = await model.generateContent(parts);
+            responseText = result.response.text();
+        }
+        catch (modelErr) {
+            console.warn('gemini-2.0-flash failed, falling back to gemini-1.5-flash...', modelErr?.message);
+            const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const result = await fallbackModel.generateContent(parts);
+            responseText = result.response.text();
+        }
         // Try to extract meal data JSON from response
         let mealData = null;
         const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);

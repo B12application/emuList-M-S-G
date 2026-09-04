@@ -9,13 +9,16 @@ import {
   PieChart, Pie, Cell, AreaChart, Area, Legend
 } from 'recharts';
 import { parsePdfFiles, type ParsedTransaction, type PdfParseProgress } from '../../utils/pdfParserService';
+import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
+import { isPdfPreviouslySaved } from '../../services/pdfImportHistoryService';
 
 interface ReportsTabProps {
   t: (key: string) => string;
   isDark: boolean;
   monthlyChartData: any[];
   monthlySummary: any[];
-  onPdfImport: (transactions: ParsedTransaction[]) => void;
+  onPdfImport: (transactions: ParsedTransaction[], fileNames?: string[]) => void;
   // Yeni props'lar - ana sayfadan gelecek
   expenses?: any[];
   categories?: string[];
@@ -35,6 +38,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   categories = [],
   isBlurred = false
 }) => {
+  const { user } = useAuth();
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<PdfParseProgress | null>(null);
@@ -153,19 +157,39 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   const handleFiles = useCallback(async (files: File[]) => {
     const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
     if (pdfFiles.length === 0) return;
+
+    const fileNames = pdfFiles.map(f => f.name);
+
+    // Daha önce kaydedilmiş mi kontrol et
+    if (user?.uid) {
+      const previouslySaved = fileNames.filter(name => isPdfPreviouslySaved(user.uid, name).isSaved);
+      if (previouslySaved.length > 0) {
+        toast(
+          `⚠️ Dikkat: "${previouslySaved.join(', ')}" dosyası daha önce sisteme kaydedilmiş! Mükerrer kayıt oluşturmamak için önizleme ekranını kontrol ediniz.`,
+          { duration: 7000, icon: '⚠️' }
+        );
+      }
+    }
+
     setSelectedFiles(pdfFiles);
     setIsProcessing(true);
     try {
       const transactions = await parsePdfFiles(pdfFiles, (p) => setProgress(p));
-      if (transactions.length > 0) onPdfImport(transactions);
+      if (transactions.length > 0) {
+        toast.success(`${transactions.length} adet işlem başarıyla okundu!`);
+        onPdfImport(transactions, fileNames);
+      } else {
+        toast.error('PDF dosyasından herhangi bir işlem okunamadı. Lütfen geçerli bir Enpara ekstresi yüklediğinizden emin olun.');
+      }
     } catch (error) {
       console.error('PDF parse error:', error);
+      toast.error('PDF işlenirken bir hata oluştu.');
     } finally {
       setIsProcessing(false);
       setProgress(null);
       setSelectedFiles([]);
     }
-  }, [onPdfImport]);
+  }, [onPdfImport, user?.uid]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); }, []);
   const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }, []);

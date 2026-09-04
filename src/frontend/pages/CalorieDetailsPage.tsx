@@ -6,12 +6,19 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FaArrowLeft, FaFire, FaChartPie, FaUtensils, FaCalendarAlt,
-  FaSearch, FaRobot, FaChevronRight, FaPlus, FaFilter, FaListAlt
+  FaSearch, FaRobot, FaChevronRight, FaPlus, FaFilter, FaListAlt, FaTrash, FaHeartbeat
 } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
-import { getChatSessions, formatBytes } from '../services/calorieChatService';
+import {
+  getChatSessions,
+  deleteMealItemFromSession,
+  deleteDayFromCalorieReport,
+  getDateKey,
+  formatBytes
+} from '../services/calorieChatService';
 import { useCalorieAiUsage } from '../services/calorieLimitService';
 import type { ChatSession, MealItem } from '../services/calorieChatService';
 
@@ -31,6 +38,9 @@ interface GroupedMealDay {
     fat: number;
     timestamp: any;
     sessionTitle?: string;
+    sessionId: string;
+    messageIndex: number;
+    itemIndex: number;
   }[];
 }
 
@@ -61,7 +71,8 @@ export default function CalorieDetailsPage() {
     for (const session of sessions) {
       if (!session.messages) continue;
 
-      for (const msg of session.messages) {
+      for (let msgIdx = 0; msgIdx < session.messages.length; msgIdx++) {
+        const msg = session.messages[msgIdx];
         if (msg.role === 'assistant' && msg.mealData && msg.mealData.items) {
           const dateObj = msg.timestamp?.toDate
             ? msg.timestamp.toDate()
@@ -69,7 +80,7 @@ export default function CalorieDetailsPage() {
               ? msg.timestamp
               : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
 
-          const dateKey = dateObj.toISOString().slice(0, 10);
+          const dateKey = getDateKey(dateObj);
           const displayDate = new Intl.DateTimeFormat('tr-TR', {
             weekday: 'long',
             day: 'numeric',
@@ -94,11 +105,15 @@ export default function CalorieDetailsPage() {
           map[dateKey].totalCarbs += msg.mealData.totalCarbs || 0;
           map[dateKey].totalFat += msg.mealData.totalFat || 0;
 
-          for (const item of msg.mealData.items) {
+          for (let itemIdx = 0; itemIdx < msg.mealData.items.length; itemIdx++) {
+            const item = msg.mealData.items[itemIdx];
             map[dateKey].items.push({
               ...item,
               timestamp: dateObj,
               sessionTitle: session.title,
+              sessionId: session.id!,
+              messageIndex: msgIdx,
+              itemIndex: itemIdx,
             });
           }
         }
@@ -108,6 +123,124 @@ export default function CalorieDetailsPage() {
     const sorted = Object.values(map).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
     return sorted;
   }, [sessions]);
+
+  // Tek bir besin öğesini rapordan sil
+  const handleDeleteItem = async (item: {
+    name: string;
+    sessionId: string;
+    messageIndex: number;
+    itemIndex: number;
+  }) => {
+    if (!window.confirm(`"${item.name}" besinini kalori raporundan silmek istediğinize emin misiniz?`)) {
+      return;
+    }
+
+    try {
+      await deleteMealItemFromSession(item.sessionId, item.messageIndex, item.itemIndex, item.name);
+
+      // Optimistik yerel state güncellemesi
+      setSessions(prevSessions => {
+        return prevSessions.map(session => {
+          if (session.id !== item.sessionId) return session;
+
+          const updatedMessages = [...(session.messages || [])];
+          const targetMsg = updatedMessages[item.messageIndex];
+          if (!targetMsg || !targetMsg.mealData) return session;
+
+          const updatedItems = [...targetMsg.mealData.items];
+          let targetIndex = item.itemIndex;
+          if (updatedItems[targetIndex]?.name !== item.name) {
+            const foundIdx = updatedItems.findIndex(i => i.name === item.name);
+            if (foundIdx !== -1) targetIndex = foundIdx;
+          }
+          updatedItems.splice(targetIndex, 1);
+
+          if (updatedItems.length === 0) {
+            updatedMessages[item.messageIndex] = {
+              ...targetMsg,
+              mealData: null,
+            };
+          } else {
+            const totalCalories = updatedItems.reduce((s, i) => s + (Number(i.calories) || 0), 0);
+            const totalProtein = updatedItems.reduce((s, i) => s + (Number(i.protein) || 0), 0);
+            const totalCarbs = updatedItems.reduce((s, i) => s + (Number(i.carbs) || 0), 0);
+            const totalFat = updatedItems.reduce((s, i) => s + (Number(i.fat) || 0), 0);
+
+            updatedMessages[item.messageIndex] = {
+              ...targetMsg,
+              mealData: {
+                items: updatedItems,
+                totalCalories,
+                totalProtein,
+                totalCarbs,
+                totalFat,
+              },
+            };
+          }
+
+          const sessionTotalCalories = updatedMessages.reduce(
+            (sum, msg) => sum + (msg.mealData?.totalCalories || 0),
+            0
+          );
+
+          return {
+            ...session,
+            messages: updatedMessages,
+            totalCalories: sessionTotalCalories,
+          };
+        });
+      });
+
+      toast.success(`"${item.name}" rapordan silindi.`);
+    } catch (err: any) {
+      console.error('Besin silinemedi:', err);
+      toast.error(err?.message || 'Silme işlemi başarısız oldu.');
+    }
+  };
+
+  // Bir günün tüm besin kayıtlarını rapordan temizle
+  const handleDeleteDay = async (dateKey: string, displayDate: string) => {
+    if (!user) return;
+    if (!window.confirm(`${displayDate} tarihindeki tüm öğünleri kalori raporundan silmek istediğinize emin misiniz?`)) {
+      return;
+    }
+
+    try {
+      await deleteDayFromCalorieReport(user.uid, dateKey);
+
+      setSessions(prevSessions => {
+        return prevSessions.map(session => {
+          if (!session.messages) return session;
+          let modified = false;
+          const updatedMessages = session.messages.map(msg => {
+            if (msg.role === 'assistant' && msg.mealData) {
+              const dateObj = msg.timestamp?.toDate
+                ? msg.timestamp.toDate()
+                : msg.timestamp instanceof Date
+                  ? msg.timestamp
+                  : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
+              const msgDateKey = getDateKey(dateObj);
+              if (msgDateKey === dateKey) {
+                modified = true;
+                return { ...msg, mealData: null };
+              }
+            }
+            return msg;
+          });
+          if (modified) {
+            const total = updatedMessages.reduce((sum, m) => sum + (m.mealData?.totalCalories || 0), 0);
+            return { ...session, messages: updatedMessages, totalCalories: total };
+          }
+          return session;
+        });
+      });
+
+      toast.success(`${displayDate} kayıtları temizlendi.`);
+    } catch (err: any) {
+      console.error('Gün silinemedi:', err);
+      toast.error('Kayıtlar silinirken hata oluştu.');
+    }
+  };
 
   // Overall totals
   const overallTotals = useMemo(() => {
@@ -125,7 +258,7 @@ export default function CalorieDetailsPage() {
       totalItems += day.items.length;
     }
 
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getDateKey(new Date());
     const todayData = groupedDays.find(d => d.dateKey === todayKey);
 
     return {
@@ -143,10 +276,10 @@ export default function CalorieDetailsPage() {
 
   // Filtered days
   const filteredDays = useMemo(() => {
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getDateKey(new Date());
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    const weekAgoKey = weekAgo.toISOString().slice(0, 10);
+    const weekAgoKey = getDateKey(weekAgo);
 
     return groupedDays.filter(day => {
       // Range filter
@@ -211,6 +344,14 @@ export default function CalorieDetailsPage() {
             <span>Kalan AI Limiti:</span>
             <span className="font-black">{quotaUsage.remainingToday} / {quotaUsage.dailyLimit}</span>
           </div>
+
+          <Link
+            to="/body-profile"
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-500/30 transition-colors shadow-sm"
+          >
+            <FaHeartbeat className="text-sm" />
+            <span className="hidden sm:inline">Beden Profilim</span>
+          </Link>
 
           <Link
             to="/calorie-chat"
@@ -373,7 +514,7 @@ export default function CalorieDetailsPage() {
                   </div>
                 </div>
 
-                {/* Day Macro Badges */}
+                {/* Day Macro Badges & Action */}
                 <div className="flex items-center gap-2 text-xs font-bold">
                   <span className="px-2.5 py-1 rounded-xl bg-amber-400/15 text-amber-700 dark:text-amber-400 font-black border border-amber-400/20">
                     🔥 {day.totalCalories} kcal
@@ -387,6 +528,16 @@ export default function CalorieDetailsPage() {
                   <span className="hidden sm:inline px-2 py-1 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[11px]">
                     🧈 {day.totalFat}g
                   </span>
+
+                  {/* Day Delete Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDay(day.dateKey, day.displayDate)}
+                    title={`${day.displayDate} gününün tüm kayıtlarını rapordan sil`}
+                    className="p-2 ml-1 text-stone-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all cursor-pointer"
+                  >
+                    <FaTrash className="text-xs" />
+                  </button>
                 </div>
               </div>
 
@@ -394,30 +545,45 @@ export default function CalorieDetailsPage() {
               <div className="divide-y divide-stone-100 dark:divide-zinc-800/60">
                 {day.items.map((item, idx) => (
                   <div
-                    key={idx}
-                    className="px-5 py-3.5 flex items-center justify-between hover:bg-stone-50/50 dark:hover:bg-zinc-800/30 transition-colors"
+                    key={`${item.sessionId}-${item.messageIndex}-${item.itemIndex}-${idx}`}
+                    className="px-5 py-3.5 flex items-center justify-between hover:bg-stone-50/50 dark:hover:bg-zinc-800/30 transition-colors group"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold">
+                    <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                      <div className="w-8 h-8 shrink-0 rounded-xl bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold">
                         🍽️
                       </div>
-                      <div>
-                        <div className="text-sm font-bold text-stone-900 dark:text-white">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold text-stone-900 dark:text-white truncate">
                           {item.name}
                         </div>
                         <div className="text-[11px] text-stone-400 dark:text-zinc-500 font-medium">
                           Porsiyon: {item.amount}
+                          {item.sessionTitle && (
+                            <span className="hidden md:inline ml-2 text-stone-300 dark:text-zinc-600">• {item.sessionTitle}</span>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <div className="text-sm font-black text-amber-600 dark:text-amber-400">
-                        {item.calories} kcal
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        <div className="text-sm font-black text-amber-600 dark:text-amber-400">
+                          {item.calories} kcal
+                        </div>
+                        <div className="text-[10px] text-stone-400 dark:text-zinc-500">
+                          {item.protein}g P • {item.carbs}g K • {item.fat}g Y
+                        </div>
                       </div>
-                      <div className="text-[10px] text-stone-400 dark:text-zinc-500">
-                        {item.protein}g P • {item.carbs}g K • {item.fat}g Y
-                      </div>
+
+                      {/* Item Delete Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteItem(item)}
+                        title={`"${item.name}" besinini rapordan sil`}
+                        className="p-2 text-stone-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all cursor-pointer opacity-80 sm:opacity-0 group-hover:opacity-100"
+                      >
+                        <FaTrash className="text-xs" />
+                      </button>
                     </div>
                   </div>
                 ))}

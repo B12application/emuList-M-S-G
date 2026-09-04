@@ -4,6 +4,7 @@ import { FaTimes, FaPlus, FaCheck, FaExclamationTriangle, FaTrash, FaTags } from
 import CalendarPicker from '../CalendarPicker';
 import CustomSelect from '../CustomSelect';
 import type { Expense } from '../../hooks/useExpenses';
+import { isPdfPreviouslySaved } from '../../services/pdfImportHistoryService';
 
 interface ExpenseModalsProps {
   t: (key: string) => string;
@@ -30,6 +31,10 @@ interface ExpenseModalsProps {
   importPreview: any[];
   confirmImport: () => void;
   handleDeletePreviewItem: (idx: number) => void;
+  importedFileNames?: string[];
+  expenses?: Expense[];
+  userId?: string;
+  setImportPreview?: React.Dispatch<React.SetStateAction<any[]>>;
   // JSON Import Modal
   isJsonImportModalOpen: boolean;
   setIsJsonImportModalOpen: (val: boolean) => void;
@@ -76,6 +81,10 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   importPreview,
   confirmImport,
   handleDeletePreviewItem,
+  importedFileNames = [],
+  expenses = [],
+  userId,
+  setImportPreview,
   isInvestmentModalOpen,
   setIsInvestmentModalOpen,
   newInvestment,
@@ -92,6 +101,32 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
   setNewCategoryName,
   handleAddCategorySubmit
 }) => {
+  // Check if any imported file was previously saved (only saved via "Hepsini Kaydet")
+  const previouslySavedFiles = React.useMemo(() => {
+    if (!importedFileNames || importedFileNames.length === 0) return [];
+    return importedFileNames.filter(name => isPdfPreviouslySaved(userId, name).isSaved);
+  }, [importedFileNames, userId]);
+
+  // Identify duplicate items with existing expenses
+  const duplicateIndices = React.useMemo(() => {
+    if (!expenses || !importPreview || expenses.length === 0) return new Set<number>();
+    const set = new Set<number>();
+    importPreview.forEach((item, idx) => {
+      const isDup = expenses.some(exp =>
+        exp.date === item.date &&
+        Math.abs(Number(exp.amount) - Number(item.amount)) < 0.01 &&
+        exp.title.trim().toLowerCase() === String(item.title).trim().toLowerCase()
+      );
+      if (isDup) set.add(idx);
+    });
+    return set;
+  }, [expenses, importPreview]);
+
+  const handleFilterDuplicates = () => {
+    if (setImportPreview && duplicateIndices.size > 0) {
+      setImportPreview(prev => prev.filter((_, idx) => !duplicateIndices.has(idx)));
+    }
+  };
   return (
     <>
       {/* Add/Edit Expense Modal */}
@@ -456,24 +491,81 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   </button>
                 </div>
 
-                <div className="max-h-[380px] overflow-y-auto pr-2 custom-scrollbar space-y-3 mb-6">
-                  {importPreview.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-stone-50/50 dark:bg-zinc-800/30 rounded-2xl border border-stone-100 dark:border-zinc-800/50 group">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-stone-900 dark:text-white truncate">{item.title}</p>
-                        <p className="text-[10px] text-stone-400">{item.date}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm font-black text-stone-900 dark:text-white">₺{item.amount.toLocaleString()}</span>
-                        <button
-                          onClick={() => handleDeletePreviewItem(idx)}
-                          className="p-2 text-stone-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <FaTrash size={12} />
-                        </button>
-                      </div>
+                {/* Previously Saved PDF Warning Banner */}
+                {previouslySavedFiles.length > 0 && (
+                  <div className="mb-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
+                    <FaExclamationTriangle className="mt-0.5 shrink-0 text-amber-500 text-base" />
+                    <div>
+                      <p className="font-black text-sm">Dikkat: Bu PDF daha önce kaydedilmiş!</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-amber-700/90 dark:text-amber-300/80">
+                        <span className="font-bold underline">{previouslySavedFiles.join(', ')}</span> isimli dosya daha önce "Hepsini Kaydet" ile sisteme kaydedilmiş. Tekrar kaydetmeniz mükerrer kayıtlara yol açabilir.
+                      </p>
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Duplicate Entries Detected Banner */}
+                {duplicateIndices.size > 0 && (
+                  <div className="mb-4 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <FaExclamationTriangle className="shrink-0 text-rose-500" />
+                      <span>
+                        Mevcut harcamalarınızda zaten bulunan <strong>{duplicateIndices.size}</strong> adet mükerrer kayıt tespit edildi.
+                      </span>
+                    </div>
+                    {setImportPreview && (
+                      <button
+                        type="button"
+                        onClick={handleFilterDuplicates}
+                        className="shrink-0 px-3 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-[11px] tracking-wide transition-all shadow-sm active:scale-95"
+                      >
+                        Mükerrerleri Ayıkla
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                <div className="max-h-[380px] overflow-y-auto pr-2 custom-scrollbar space-y-3 mb-6">
+                  {importPreview.map((item, idx) => {
+                    const isDuplicate = duplicateIndices.has(idx);
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all group ${
+                          isDuplicate
+                            ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-200/70 dark:border-rose-900/40'
+                            : 'bg-stone-50/50 dark:bg-zinc-800/30 border-stone-100 dark:border-zinc-800/50'
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-bold text-stone-900 dark:text-white truncate">{item.title}</p>
+                            {isDuplicate && (
+                              <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded bg-rose-500/20 text-rose-600 dark:text-rose-400 shrink-0">
+                                Zaten Ekli
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-[10px] text-stone-400">{item.date}</p>
+                            {item.category && (
+                              <span className="text-[10px] text-stone-400">• {item.category}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-black text-stone-900 dark:text-white">₺{item.amount.toLocaleString()}</span>
+                          <button
+                            onClick={() => handleDeletePreviewItem(idx)}
+                            className="p-2 text-stone-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Listeden Kaldır"
+                          >
+                            <FaTrash size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="flex gap-4">

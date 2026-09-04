@@ -77,8 +77,6 @@ export const handler: Handler = async (event): Promise<any> => {
       };
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
-
     // Build content parts
     const parts: any[] = [];
 
@@ -104,8 +102,17 @@ export const handler: Handler = async (event): Promise<any> => {
       });
     }
 
-    const result = await model.generateContent(parts);
-    const responseText = result.response.text();
+    let responseText = '';
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const result = await model.generateContent(parts);
+      responseText = result.response.text();
+    } catch (modelErr: any) {
+      console.warn('gemini-2.0-flash failed, falling back to gemini-1.5-flash...', modelErr?.message);
+      const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await fallbackModel.generateContent(parts);
+      responseText = result.response.text();
+    }
 
     // Try to extract meal data JSON from response
     let mealData = null;

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote, FaFire, FaTools, FaChartPie, FaUser, FaCog, FaListUl, FaMap, FaHistory } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote, FaFire, FaTools, FaChartPie, FaUser, FaCog, FaListUl, FaMap, FaHistory, FaHeartbeat } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
@@ -292,7 +292,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 >
                   <button
                     onClick={() => setShowToolsDropdown((prev) => !prev)}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/travel-planner', '/calorie-details', '/calorie-chat'].some(path => location.pathname.startsWith(path))
+                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/travel-planner', '/calorie-details', '/calorie-chat', '/body-profile'].some(path => location.pathname.startsWith(path))
                       ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
                       : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
                       }`}
@@ -325,6 +325,12 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                               <FaChartPie className="text-sm text-amber-500" />
                               <span>Kalori Raporu</span>
                               <span className="ml-auto text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">Yeni</span>
+                            </NavLink>
+                          )}
+                          {hasAccess('calorieAi') && (
+                            <NavLink to="/body-profile" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
+                              <FaHeartbeat className="text-sm text-rose-500" />
+                              <span>Beden Profili</span>
                             </NavLink>
                           )}
                         </div>

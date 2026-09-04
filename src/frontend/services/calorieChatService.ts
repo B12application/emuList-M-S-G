@@ -97,19 +97,78 @@ Ayrıca yanıtının EN SONUNA şu JSON bloğunu ekle (bu frontend tarafından p
 
 Eğer yemek fotoğrafı değilse veya genel bir soru ise, JSON bloğu EKLEME.`;
 
+/**
+ * Kullanıcının API anahtarıyla kullanılabilen ve generateContent destekleyen modelleri tespit eder
+ */
+async function getAvailableModels(apiKey: string): Promise<string[]> {
+  const endpoints = [
+    'https://generativelanguage.googleapis.com/v1beta/models',
+    'https://generativelanguage.googleapis.com/v1/models',
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      // 1. x-goog-api-key ile
+      let res = await fetch(`${endpoint}?key=${encodeURIComponent(apiKey)}`);
+      if (!res.ok) {
+        res = await fetch(endpoint, {
+          headers: { 'x-goog-api-key': apiKey },
+        });
+      }
+      if (!res.ok) {
+        res = await fetch(endpoint, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.models)) {
+          const valid = data.models
+            .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+            .map((m: any) => m.name.replace(/^models\//, ''));
+          if (valid.length > 0) {
+            console.log('Gemini API geçerli modelleri bulundu:', valid);
+            return valid;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Model listesi alınırken hata oluştu:', e);
+    }
+  }
+
+  // Fallback aday modeller (en güncel Flash modelleri öncelikli)
+  return [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash-002',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro'
+  ];
+}
+
+/**
+ * Gemini API ile doğrudan iletişim kur (Client-side)
+ */
 async function directGeminiCall(
   message: string,
   imageBase64?: string,
   mimeType?: string,
-  conversationHistory?: { role: string; text: string }[]
+  conversationHistory?: any[]
 ): Promise<{ text: string; mealData: MealData | null }> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '';
+  const apiKey = (
+    localStorage.getItem('user_gemini_api_key') ||
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    import.meta.env.GEMINI_API_KEY ||
+    ''
+  ).trim();
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY bulunamadı. Lütfen .env dosyanızı kontrol edin.');
+    throw new Error('GEMINI_API_KEY bulunamadı. Lütfen https://aistudio.google.com/apikey adresinden yeni bir API anahtarı ekleyin.');
   }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
   const parts: any[] = [];
   if (conversationHistory && conversationHistory.length > 0) {
@@ -131,8 +190,155 @@ async function directGeminiCall(
     });
   }
 
-  const result = await model.generateContent(parts);
-  const responseText = result.response.text();
+  // Gemini API çağrısı yapıcı (önce SDK, ardından REST fallback)
+  async function callModel(modelName: string, apiVersion: 'v1beta' | 'v1' = 'v1beta'): Promise<string> {
+    // 1. Standart SDK ile dene
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion });
+      const result = await model.generateContent(parts);
+      return result.response.text();
+    } catch (sdkError: any) {
+      const errMsg = sdkError?.message || '';
+      console.warn(`SDK çağrısı başarısız (${modelName}, ${apiVersion}):`, errMsg);
+
+      // 404 (model bulunamadı) ise direkt fırlat, döngü bir sonraki adayı denesin
+      if (errMsg.includes('404') || errMsg.includes('not found') || errMsg.includes('not supported')) {
+        throw sdkError;
+      }
+
+      // 2. Doğrudan REST çağrısı ile dene
+      try {
+        const restBody = JSON.stringify({
+          contents: [{ parts }]
+        });
+
+        // Deneme A: query param ile
+        let restRes = await fetch(
+          `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: restBody,
+          }
+        );
+
+        // Deneme B: x-goog-api-key header ile
+        if (!restRes.ok) {
+          restRes = await fetch(
+            `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey,
+              },
+              body: restBody,
+            }
+          );
+        }
+
+        // Deneme C: Bearer token ile
+        if (!restRes.ok && restRes.status === 401) {
+          restRes = await fetch(
+            `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: restBody,
+            }
+          );
+        }
+
+        if (restRes.ok) {
+          const data = await restRes.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+        } else {
+          const errData = await restRes.json().catch(() => ({}));
+          const reason = errData?.error?.details?.[0]?.reason || '';
+          if (reason === 'API_KEY_SERVICE_BLOCKED') {
+            throw new Error(
+              'API_KEY_SERVICE_BLOCKED: Bu API anahtarının ait olduğu Google Cloud projesinde "Generative Language API" etkinleştirilmemiş veya kısıtlanmış. Çözüm: https://aistudio.google.com/apikey adresinde "Create API key in new project" (Yeni projede oluştur) seçeneğini seçerek yeni bir anahtar oluşturun.'
+            );
+          }
+          if (restRes.status === 404) {
+            throw new Error(`models/${modelName} is not found for API version ${apiVersion}`);
+          }
+        }
+      } catch (restErr: any) {
+        if (restErr?.message?.includes('API_KEY_SERVICE_BLOCKED') || restErr?.message?.includes('not found')) {
+          throw restErr;
+        }
+      }
+
+      // Kimlik doğrulama hatası varsa kullanıcıya net rehberlik sun
+      if (errMsg.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED') || errMsg.includes('401')) {
+        throw new Error(
+          'Google API Kimlik Doğrulama Hatası (401 / ACCESS_TOKEN_TYPE_UNSUPPORTED). ' +
+          'Lütfen https://aistudio.google.com/apikey adresine gidin, "Create API key" butonuna tıklayıp mutlaka "Create API key in new project" (Yeni projede oluştur) seçeneğini seçin.'
+        );
+      }
+
+      throw sdkError;
+    }
+  }
+
+  // 1. Dinamik olarak kullanılabilir modelleri al ve önceliklendir (En üst düzey modeller önde)
+  const availableModels = await getAvailableModels(apiKey);
+  const prioritized = [
+    // 1. En üst düzey 3.x serisi (Gemini 3.7 Flash vb.)
+    ...availableModels.filter(m => m.includes('3.') && m.includes('flash')),
+    ...availableModels.filter(m => m.includes('3.')),
+    // 2. En yüksek akıl yürütme (Pro) modeli
+    ...availableModels.filter(m => m.includes('2.5') && m.includes('pro')),
+    // 3. Yeni nesil Flash modelleri
+    ...availableModels.filter(m => m.includes('2.5') && m.includes('flash')),
+    ...availableModels.filter(m => m.includes('2.0') && m.includes('flash')),
+    ...availableModels.filter(m => m.includes('flash') && !m.includes('lite')),
+    ...availableModels.filter(m => m.includes('flash')),
+    ...availableModels,
+    'gemini-3.7-flash',
+    'gemini-2.5-pro',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash-lite'
+  ];
+  const modelQueue = Array.from(new Set(prioritized));
+
+  let responseText = '';
+  let lastError: any = null;
+
+  for (const candidate of modelQueue) {
+    for (const ver of ['v1beta', 'v1'] as const) {
+      try {
+        responseText = await callModel(candidate, ver);
+        if (responseText) {
+          console.log(`Gemini başarıyla çalıştı: model=${candidate}, apiVersion=${ver}`);
+          break;
+        }
+      } catch (err: any) {
+        lastError = err;
+        const msg = err?.message || '';
+
+        // Yetki engeli varsa model değiştirmek işe yaramaz, direkt fırlat
+        if (msg.includes('API_KEY_SERVICE_BLOCKED') || msg.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')) {
+          throw err;
+        }
+
+        // 404 ise sıradaki versiyon veya modele geç
+        console.warn(`Model ${candidate} (${ver}) denemesi başarısız, sıradaki deneniyor...`);
+      }
+    }
+    if (responseText) break;
+  }
+
+  if (!responseText) {
+    throw lastError || new Error('Gemini API ile yanıt alınamadı. Lütfen daha sonra tekrar deneyin.');
+  }
 
   let mealData: MealData | null = null;
   const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
@@ -306,7 +512,194 @@ export async function getChatSession(sessionId: string): Promise<ChatSession | n
  * Chat session sil
  */
 export async function deleteChatSession(sessionId: string): Promise<void> {
-  await deleteDoc(doc(db, COLLECTION, sessionId));
+  if (!sessionId) return;
+  try {
+    await deleteDoc(doc(db, COLLECTION, sessionId));
+  } catch (err) {
+    console.error('deleteChatSession error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Yerel tarihe göre YYYY-MM-DD formatında anahtar üretir
+ */
+export function getDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Bir chat session'ındaki belirli bir besin öğesini siler ve toplamları günceller
+ */
+export async function deleteMealItemFromSession(
+  sessionId: string,
+  messageIndex: number,
+  itemIndex: number,
+  itemName?: string
+): Promise<void> {
+  if (!sessionId) throw new Error('Geçersiz oturum ID');
+  const sessionRef = doc(db, COLLECTION, sessionId);
+  const docSnap = await getDoc(sessionRef);
+  if (!docSnap.exists()) {
+    throw new Error('Sohbet oturumu bulunamadı');
+  }
+
+  const data = docSnap.data() as ChatSession;
+  const messages = [...(data.messages || [])];
+
+  if (!messages[messageIndex] || !messages[messageIndex].mealData) {
+    throw new Error('Öğün kaydı bulunamadı');
+  }
+
+  const mealData = { ...messages[messageIndex].mealData! };
+  const items = [...(mealData.items || [])];
+
+  let targetIndex = itemIndex;
+  // İsim verilmişse ve mevcut indeksteki isim uyuşmuyorsa, doğru indeksi isimle bul
+  if (itemName && items[targetIndex]?.name !== itemName) {
+    const foundIdx = items.findIndex(i => i.name === itemName);
+    if (foundIdx !== -1) {
+      targetIndex = foundIdx;
+    }
+  }
+
+  if (targetIndex < 0 || targetIndex >= items.length) {
+    throw new Error('Geçersiz öğe indeksi');
+  }
+
+  // Öğeyi listeden çıkar
+  items.splice(targetIndex, 1);
+
+  if (items.length === 0) {
+    // Bu mesajda başka yemek kalmadıysa mealData'yı temizle
+    messages[messageIndex] = {
+      ...messages[messageIndex],
+      mealData: null,
+    };
+  } else {
+    // Kalan öğelere göre toplamları yeniden hesapla
+    const totalCalories = items.reduce((sum, item) => sum + (Number(item.calories) || 0), 0);
+    const totalProtein = items.reduce((sum, item) => sum + (Number(item.protein) || 0), 0);
+    const totalCarbs = items.reduce((sum, item) => sum + (Number(item.carbs) || 0), 0);
+    const totalFat = items.reduce((sum, item) => sum + (Number(item.fat) || 0), 0);
+
+    messages[messageIndex] = {
+      ...messages[messageIndex],
+      mealData: {
+        items,
+        totalCalories,
+        totalProtein,
+        totalCarbs,
+        totalFat,
+      },
+    };
+  }
+
+  // Session genel kalorisini yeniden hesapla
+  const sessionTotalCalories = messages.reduce(
+    (sum, msg) => sum + (msg.mealData?.totalCalories || 0),
+    0
+  );
+
+  const estimatedSizeBytes = estimateSessionSize(messages);
+
+  await updateDoc(sessionRef, {
+    messages,
+    totalCalories: sessionTotalCalories,
+    estimatedSizeBytes,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Bir chat session'ından tek bir mesajı siler
+ */
+export async function deleteMessageFromSession(
+  sessionId: string,
+  messageIndex: number
+): Promise<void> {
+  if (!sessionId) throw new Error('Geçersiz oturum ID');
+  const sessionRef = doc(db, COLLECTION, sessionId);
+  const docSnap = await getDoc(sessionRef);
+  if (!docSnap.exists()) {
+    throw new Error('Sohbet oturumu bulunamadı');
+  }
+
+  const data = docSnap.data() as ChatSession;
+  const messages = [...(data.messages || [])];
+
+  if (messageIndex < 0 || messageIndex >= messages.length) {
+    throw new Error('Geçersiz mesaj indeksi');
+  }
+
+  messages.splice(messageIndex, 1);
+
+  const sessionTotalCalories = messages.reduce(
+    (sum, msg) => sum + (msg.mealData?.totalCalories || 0),
+    0
+  );
+
+  const estimatedSizeBytes = estimateSessionSize(messages);
+
+  await updateDoc(sessionRef, {
+    messages,
+    totalCalories: sessionTotalCalories,
+    estimatedSizeBytes,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Belirli bir güne ait tüm besin verilerini kalori raporundan siler
+ */
+export async function deleteDayFromCalorieReport(
+  userId: string,
+  dateKey: string
+): Promise<void> {
+  if (!userId || !dateKey) return;
+  const sessions = await getChatSessions(userId, 500);
+
+  for (const session of sessions) {
+    if (!session.id || !session.messages) continue;
+
+    let modified = false;
+    const updatedMessages = session.messages.map(msg => {
+      if (msg.role === 'assistant' && msg.mealData) {
+        const dateObj = msg.timestamp?.toDate
+          ? msg.timestamp.toDate()
+          : msg.timestamp instanceof Date
+            ? msg.timestamp
+            : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
+        const msgDateKey = getDateKey(dateObj);
+
+        if (msgDateKey === dateKey) {
+          modified = true;
+          return {
+            ...msg,
+            mealData: null,
+          };
+        }
+      }
+      return msg;
+    });
+
+    if (modified) {
+      const sessionTotalCalories = updatedMessages.reduce(
+        (sum, m) => sum + (m.mealData?.totalCalories || 0),
+        0
+      );
+      const estimatedSizeBytes = estimateSessionSize(updatedMessages);
+      await updateDoc(doc(db, COLLECTION, session.id), {
+        messages: updatedMessages,
+        totalCalories: sessionTotalCalories,
+        estimatedSizeBytes,
+        updatedAt: serverTimestamp(),
+      });
+    }
+  }
 }
 
 /**

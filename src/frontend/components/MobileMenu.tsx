@@ -4,7 +4,7 @@ import {
   FaHome, FaFilm, FaTv, FaGamepad, FaBook, FaClone, 
   FaMap, FaCog, FaChartBar, FaSignOutAlt, FaHistory, 
   FaListUl, FaTimes, FaCalendarAlt, FaWallet, FaChevronRight, 
-  FaCompass, FaStickyNote, FaUsersCog, FaUserShield, FaFire, FaChartPie 
+  FaCompass, FaStickyNote, FaUsersCog, FaUserShield, FaFire, FaChartPie, FaHeartbeat 
 } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 import { useAuth } from '../context/AuthContext';
@@ -111,7 +111,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         { to: '/feed', icon: FaHistory, label: t('nav.feed') || 'Aktiviteler' },
         { to: '/map', icon: FaMap, label: t('nav.map') || 'Harita' },
         { to: '/all', icon: FaClone, label: t('nav.all') || 'Tüm Liste' },
-        ...(hasAccess('calorieAi') ? [{ to: '/calorie-details', icon: FaChartPie, label: 'Kalori Raporu' }] : []),
+        ...(hasAccess('calorieAi') ? [
+          { to: '/calorie-details', icon: FaChartPie, label: 'Kalori Raporu' },
+          { to: '/body-profile', icon: FaHeartbeat, label: 'Beden Profili' },
+        ] : []),
       ]
     }
   ];

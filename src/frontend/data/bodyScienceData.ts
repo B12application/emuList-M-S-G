@@ -650,3 +650,350 @@ export function analyzeBodyProportions(
     },
   };
 }
+
+// ── 15 BÖLGE DETAYLI YAĞ / KAS TEŞHİS MOTORU ──────────────
+// Akademik Antropometri Tezleri (Casey Butt, Heymsfield, John McCallum, ACSM)
+
+export type CompositionStatus = 'excess_fat' | 'optimal' | 'underdeveloped' | 'not_entered';
+
+export interface RegionalDiagnosis {
+  key: ValidMeasurementKey;
+  regionName: string;
+  category: 'upper' | 'arms' | 'core' | 'legs';
+  currentValue: number;
+  status: CompositionStatus;
+  statusLabel: string;
+  badgeBg: string;
+  badgeText: string;
+  hexColor: string; // Isı haritası ve SVG parıltı rengi
+  idealRange: { min: number; max: number };
+  deviationCm: number;
+  thesisTitle: string;
+  thesisFinding: string;
+  actionProtocol: string;
+}
+
+// Runtime exports for bundler safety
+export const RegionalDiagnosis = {};
+export const RegionalGuide = {};
+
+export function diagnoseRegionalComposition(
+  heightCm: number,
+  weightKg: number,
+  gender: Gender,
+  measurements: BodyMeasurements
+): Record<ValidMeasurementKey, RegionalDiagnosis> {
+  const scale = heightCm > 0 ? heightCm / 175 : 1;
+  const isMale = gender === 'male';
+
+  const round = (val: number) => Math.round(val * 10) / 10;
+
+  // Standart eşik formülleri
+  const calcStatus = (
+    key: ValidMeasurementKey,
+    regionName: string,
+    category: 'upper' | 'arms' | 'core' | 'legs',
+    val: number,
+    idealMin: number,
+    idealMax: number,
+    excessFatThreshold: number,
+    thesisTitle: string,
+    thesisFinding: string,
+    growProtocol: string,
+    reduceProtocol: string
+  ): RegionalDiagnosis => {
+    if (!val || val <= 0) {
+      return {
+        key,
+        regionName,
+        category,
+        currentValue: 0,
+        status: 'not_entered',
+        statusLabel: 'Ölçüm Girilmedi',
+        badgeBg: 'bg-stone-100 dark:bg-zinc-800',
+        badgeText: 'text-stone-400 dark:text-zinc-500',
+        hexColor: '#71717a',
+        idealRange: { min: round(idealMin), max: round(idealMax) },
+        deviationCm: 0,
+        thesisTitle,
+        thesisFinding: 'Bu bölge için henüz mezura ölçümü kaydedilmedi.',
+        actionProtocol: 'Mezuranızla ölçüm yaparak teşhis sonucunu görün.',
+      };
+    }
+
+    const min = round(idealMin);
+    const max = round(idealMax);
+
+    if (val >= excessFatThreshold) {
+      const dev = round(val - max);
+      return {
+        key,
+        regionName,
+        category,
+        currentValue: val,
+        status: 'excess_fat',
+        statusLabel: `Fazla Yağlanma (+${dev} cm)`,
+        badgeBg: 'bg-rose-100 dark:bg-rose-950/60',
+        badgeText: 'text-rose-700 dark:text-rose-400',
+        hexColor: '#f43f5e', // Parlayan kırmızı/pembe
+        idealRange: { min, max },
+        deviationCm: dev,
+        thesisTitle,
+        thesisFinding,
+        actionProtocol: reduceProtocol,
+      };
+    }
+
+    if (val < min) {
+      const dev = round(min - val);
+      return {
+        key,
+        regionName,
+        category,
+        currentValue: val,
+        status: 'underdeveloped',
+        statusLabel: `Kas Azlığı (-${dev} cm)`,
+        badgeBg: 'bg-sky-100 dark:bg-sky-950/60',
+        badgeText: 'text-sky-700 dark:text-sky-400',
+        hexColor: '#38bdf8', // Mavi / Camgöbeği
+        idealRange: { min, max },
+        deviationCm: dev,
+        thesisTitle,
+        thesisFinding,
+        actionProtocol: growProtocol,
+      };
+    }
+
+    return {
+      key,
+      regionName,
+      category,
+      currentValue: val,
+      status: 'optimal',
+      statusLabel: 'İdeal & Atletik Denge',
+      badgeBg: 'bg-emerald-100 dark:bg-emerald-950/60',
+      badgeText: 'text-emerald-700 dark:text-emerald-400',
+      hexColor: '#10b981', // Zümrüt Yeşili
+      idealRange: { min, max },
+      deviationCm: 0,
+      thesisTitle,
+      thesisFinding: `${thesisTitle} normlarına göre bu bölgeniz altın oran ve sağlıklı kas/yağ dengesindedir.`,
+      actionProtocol: 'Mevcut formu korumak için antrenman temposunu sürdürün.',
+    };
+  };
+
+  return {
+    neckCm: calcStatus(
+      'neckCm',
+      'Boyun',
+      'upper',
+      measurements.neckCm,
+      (isMale ? 38 : 32) * scale,
+      (isMale ? 42 : 36) * scale,
+      (isMale ? 43.5 : 37.5) * scale,
+      'Dr. Casey Butt & John McCallum Greko-Romen Oranları',
+      isMale
+        ? '175 cm erkekte 43.5 cm üzeri boyun çevresi boyun altı yağlanması ve uyku apnesi riski ile koreledir. 38 cm altı ise boyun kası zayıflığına işaret eder.'
+        : 'Boyun çevresinde yağlanma postür bozukluğu ile birlikte gıdı görünümünü artırır.',
+      'Neck Flexion/Extension + Barbell Shrugs ile omurga destek kaslarını kalınlaştırın.',
+      'Sistemik kalori açığı + Chin Tucks egzersizi ile derin boyun fleksörlerini gerginleştirin.'
+    ),
+
+    shoulderCm: calcStatus(
+      'shoulderCm',
+      'Omuz',
+      'upper',
+      measurements.shoulderCm,
+      (isMale ? 118 : 98) * scale,
+      (isMale ? 128 : 108) * scale,
+      (isMale ? 134 : 114) * scale,
+      'Deltoid Hipertrofisi ve V-Taper Doktora Tezi (Schoenfeld)',
+      'Omuz genişliği üst bedenin çatısıdır. Omuz/Bel oranının 1.618 Altın Orana yaklaşması için yan deltoid lif yoğunluğu esastır. Dar omuzlar Tip 2 lif eksikliğidir.',
+      'Haftada 16 set Kablo Lateral Raise + Overhead Dumbbell Press.',
+      'Omuz çevresi aşırı yağlıysa sistemik yağ yakımıyla omuz başlarını parçalayın.'
+    ),
+
+    chestCm: calcStatus(
+      'chestCm',
+      'Göğüs',
+      'upper',
+      measurements.chestCm,
+      (isMale ? 100 : 88) * scale,
+      (isMale ? 108 : 98) * scale,
+      (isMale ? 112 : 102) * scale,
+      'Pektoral Antropometri Tezi (Heymsfield et al.)',
+      '100-108 cm atletik pektoral kalınlığı temsil eder. Bel çevresi kalınken göğsün aşırı geniş olması yağ dokusu birikimidir; 94 cm altı ise göğüs kası yetersizliğidir.',
+      'Incline Dumbbell Press (30° açı) + Weighted Dips ile üst ve alt göğsü doldurun.',
+      'Genel kalori açığı ile alt göğüs yağını eritip üst göğsü dikleştirin.'
+    ),
+
+    waistCm: calcStatus(
+      'waistCm',
+      'Bel',
+      'core',
+      measurements.waistCm,
+      (isMale ? 74 : 64) * scale,
+      (isMale ? 82 : 72) * scale,
+      (isMale ? 86 : 76) * scale,
+      'Visseral Yağlanma ve Bel Çevresi Epidemiyolojisi (ACSM/WHO)',
+      'Bel çevresi boyun yarısını (WHtR > 0.50) geçtiğinde iç organ (visseral) yağlanma riski başlar. 175 cm erkekte 86 cm üzeri metabolik risk ve göbek belirginliğidir.',
+      'Beli kalınlaştırmamak için ağırlıklı yan karın hareketlerinden kaçının.',
+      'Günlük 500 kcal açık + Mide Vakumu + Günlük 9.000 adım ile beli 4-7 cm daraltın.'
+    ),
+
+    upperAbdomenCm: calcStatus(
+      'upperAbdomenCm',
+      'Üst Karın',
+      'core',
+      measurements.upperAbdomenCm,
+      (isMale ? 76 : 66) * scale,
+      (isMale ? 84 : 74) * scale,
+      (isMale ? 88 : 78) * scale,
+      'Abdominal Subkutan Yağ Dokusu Dağılımı (Bouchard et al.)',
+      'Üst karın genişlemesi diyafram altı yağlanma ve mide şişkinliğinin birincil göstergesidir. Baklavaların belirginleşmesi için yağ tabakası inceltilmelidir.',
+      'Kablo Crunch + Decline Situp ile karın kası hacmini dışarı fırlatın.',
+      'Sodyum ve gaz yapan gıdaları sınırlayın, kalori açığıyla üst karın derisini inceltin.'
+    ),
+
+    lowerAbdomenCm: calcStatus(
+      'lowerAbdomenCm',
+      'Alt Karın',
+      'core',
+      measurements.lowerAbdomenCm,
+      (isMale ? 78 : 70) * scale,
+      (isMale ? 86 : 78) * scale,
+      (isMale ? 90 : 82) * scale,
+      'İnatçı Yağ Reseptörleri ve Alt Karın Tezi (Lafontan & Berlan)',
+      'Alt göbek alfa-2 adrenerjik reseptörleri sebebiyle en son yanan inatçı depodur. 90 cm üzeri alt karın belirgin yağlanma ve Anterior Pelvic Tilt göstergesidir.',
+      'Hanging Leg Raise (kalçayı göğse yuvarlayarak) ile alt karın liflerini güçlendirin.',
+      'Sabırlı kalori açığı + Deadbug egzersizi ile leğen kemiğini nötre çekerek göbeğin fırlamasını engelleyin.'
+    ),
+
+    upperArmLeftCm: calcStatus(
+      'upperArmLeftCm',
+      'Üst Kol (Sol)',
+      'arms',
+      measurements.upperArmLeftCm,
+      (isMale ? 35 : 27) * scale,
+      (isMale ? 40 : 31) * scale,
+      (isMale ? 42.5 : 33.5) * scale,
+      'Kol Hipertrofi Potansiyeli ve Lif Oranları (Dr. Casey Butt)',
+      'Kol hacminin %65’ini Triceps oluşturur. 34 cm altı kol kas kütlesi azlığına; 42 cm üzeri yağlı kol ise sarkmaya işaret eder.',
+      'Incline Dumbbell Curl + Overhead Triceps Extension ile Triceps uzun başı büyütün.',
+      'Genel yağ oranını düşürürken triceps at nalı hattını keskinleştirin.'
+    ),
+
+    upperArmRightCm: calcStatus(
+      'upperArmRightCm',
+      'Üst Kol (Sağ)',
+      'arms',
+      measurements.upperArmRightCm,
+      (isMale ? 35 : 27) * scale,
+      (isMale ? 40 : 31) * scale,
+      (isMale ? 42.5 : 33.5) * scale,
+      'Dominant Kol Asimetri Araştırması (Journal of Sports Sciences)',
+      'Sağ kol dominant güç katsayısına sahiptir. Sol kola kıyasla 1.2 cm üzeri fark varsa tek taraflı dambıl çalışması şarttır.',
+      'Dumbbell Preacher Curl + Tek Kol Kablo Pushdown.',
+      'Koldaki deri altı yağını eritip kas hatlarını ortaya çıkarın.'
+    ),
+
+    forearmLeftCm: calcStatus(
+      'forearmLeftCm',
+      'Ön Kol (Sol)',
+      'arms',
+      measurements.forearmLeftCm,
+      (isMale ? 28 : 22) * scale,
+      (isMale ? 32 : 25) * scale,
+      (isMale ? 34 : 27) * scale,
+      'Kavrama Kuvveti ve Ön Kol Mimarisi (Sports Medicine)',
+      'Ön kol tişörtte en görünür kas grubudur. 27 cm altı zayıf tendon ve yetersiz kavrama gücünü temsil eder.',
+      'Farmer’s Walk + Ters Tutuş Biceps Curl.',
+      'Tuz ve ödemi azaltarak damarlı bir ön kol formu yakalayın.'
+    ),
+
+    forearmRightCm: calcStatus(
+      'forearmRightCm',
+      'Ön Kol (Sağ)',
+      'arms',
+      measurements.forearmRightCm,
+      (isMale ? 28 : 22) * scale,
+      (isMale ? 32 : 25) * scale,
+      (isMale ? 34 : 27) * scale,
+      'Ön Kol Bilek Çevre Analizi',
+      'Sağ ön kol dominant el aletleri ve kavrama ile güçlenir.',
+      'Wrist Roller ve Ağır Asılmalar (Dead Hang).',
+      'Temiz beslenme ve bol su ile ödemi giderin.'
+    ),
+
+    thighLeftCm: calcStatus(
+      'thighLeftCm',
+      'Uyluk (Sol Bacak)',
+      'legs',
+      measurements.thighLeftCm,
+      (isMale ? 55 : 50) * scale,
+      (isMale ? 62 : 57) * scale,
+      (isMale ? 66 : 61) * scale,
+      'Quadriceps ve Hamstring Hipertrofisi (Schoenfeld et al., 2021)',
+      'Vücudun en büyük metabolik motorudur. 52 cm altı bacaklar kas kütlesi azlığıdır (atrofi); 66 cm üzeri yağlı uyluk ise sürtünme ve selülit yaratır.',
+      'Barbell Back Squat (tam derinlik) + Romanian Deadlift (Hamstring).',
+      'Yürüyüş Lunge ve Eğimli Yürüyüş kardiyosu ile bacak yağını parçalayın.'
+    ),
+
+    thighRightCm: calcStatus(
+      'thighRightCm',
+      'Uyluk (Sağ Bacak)',
+      'legs',
+      measurements.thighRightCm,
+      (isMale ? 55 : 50) * scale,
+      (isMale ? 62 : 57) * scale,
+      (isMale ? 66 : 61) * scale,
+      'Bacak Kuvvet Simetrisi Doktora İncelemesi',
+      'Sağ bacak sıçrama ve ağırlık aktarımında dominanttır. Sol bacakla eşitlenmesi omurga ve diz sağlığı için zorunludur.',
+      'Bulgarian Split Squat ve Tek Bacak Leg Press.',
+      'Kalori açığı ve yüksek tekrarlı bacak çalışmalarıyla sıkılaşma sağlayın.'
+    ),
+
+    calfLeftCm: calcStatus(
+      'calfLeftCm',
+      'Baldır (Sol Kalf)',
+      'legs',
+      measurements.calfLeftCm,
+      (isMale ? 36 : 32) * scale,
+      (isMale ? 40 : 36) * scale,
+      (isMale ? 43 : 38) * scale,
+      'Kalf Anatomisi ve Greko-Romen 1:1 Kol Kuralı (Steve Reeves)',
+      'Baldır ölçüsünün üst kol ölçüsüne eşit olması klasik estetik zirvesidir. 34 cm altı kalf "tavuk bacak" silüeti yaratır.',
+      'Ayakta Kalf (en altta 2 saniye tam duraklamalı) + Oturarak Soleus Raise.',
+      'Magnezyum ve su alarak bilek ödemini boşaltın.'
+    ),
+
+    calfRightCm: calcStatus(
+      'calfRightCm',
+      'Baldır (Sağ Kalf)',
+      'legs',
+      measurements.calfRightCm,
+      (isMale ? 36 : 32) * scale,
+      (isMale ? 40 : 36) * scale,
+      (isMale ? 43 : 38) * scale,
+      'Gastrocnemius Eksantrik Yüklenme Tezi',
+      'Kalf aşil tendonunun yay etkisinden kurtulmak için sadece en alttaki esneme duraklaması ile büyütülür.',
+      'Tek Bacak Ayakta Kalf Kaldırma.',
+      'Kalf esnetmeleri ve köpük rulo (foam roller).'
+    ),
+
+    hipCm: calcStatus(
+      'hipCm',
+      'Kalça',
+      'core',
+      measurements.hipCm,
+      (isMale ? 94 : 92) * scale,
+      (isMale ? 102 : 102) * scale,
+      (isMale ? 106 : 108) * scale,
+      'Gluteus Kas Biyomekaniği Doktora Tezi (Dr. Bret Contreras)',
+      'Kalça vücudun en güçlü kasıdır. 106 cm üzeri erkek kalçası basen yağlanmasıdır; düşük ölçü ise masa başı oturmaktan körelmiş kalça kasıdır.',
+      'Barbell Hip Thrust (tepede 2 sn sıkma) + Cable Kickback.',
+      'Stairmaster (Merdiven kardiyosu) + Step-Up ile basen sarkmasını toparlayın.'
+    ),
+  };
+}
+

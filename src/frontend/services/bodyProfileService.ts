@@ -39,6 +39,9 @@ export interface BodyMeasurements {
   calfCm?: number;
 }
 
+// Runtime export to ensure bundler / HMR compatibility
+export const BodyMeasurements = {};
+
 export type ValidMeasurementKey = keyof Omit<BodyMeasurements, 'upperArmCm' | 'thighCm' | 'calfCm'>;
 
 export interface MeasurementMeta {

@@ -41,6 +41,17 @@ self.addEventListener('fetch', (event) => {
     // Skip cross-origin requests
     if (!event.request.url.startsWith(self.location.origin)) return;
 
+    // Never intercept requests during local development or Vite internal endpoints
+    if (self.location.hostname === 'localhost' ||
+        self.location.hostname === '127.0.0.1' ||
+        event.request.url.includes('/@vite/') ||
+        event.request.url.includes('/@fs/') ||
+        event.request.url.includes('/node_modules/') ||
+        event.request.url.includes('/src/') ||
+        event.request.url.includes('?v=')) {
+        return;
+    }
+
     // Skip API requests (Firebase, etc.)
     if (event.request.url.includes('firestore') ||
         event.request.url.includes('firebase') ||

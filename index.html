@@ -33,25 +33,51 @@
     <div id="root"></div>
     <script type="module" src="/src/frontend/main.tsx"></script>
     
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration (Production Only) -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!window.__swReloading) {
-            window.__swReloading = true;
-            window.location.reload();
-          }
-        });
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered:', registration);
-              registration.update();
-            })
-            .catch((error) => {
-              console.log('SW registration failed:', error);
+        const isLocalhost = Boolean(
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '[::1]' ||
+          window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+        );
+
+        if (isLocalhost) {
+          // In development, immediately unregister any active Service Worker and purge cached chunks.
+          // This prevents Service Worker from serving stale Vite chunks that cause hook desynchronization errors.
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+              registration.unregister();
+              console.log('Dev mode: Unregistered active SW:', registration);
+            }
+          });
+          if ('caches' in window) {
+            caches.keys().then((cacheNames) => {
+              for (const name of cacheNames) {
+                caches.delete(name);
+                console.log('Dev mode: Cleared cache:', name);
+              }
             });
-        });
+          }
+        } else {
+          // Production deployment registration
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!window.__swReloading) {
+              window.__swReloading = true;
+              window.location.reload();
+            }
+          });
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then((registration) => {
+                console.log('SW registered:', registration);
+                registration.update();
+              })
+              .catch((error) => {
+                console.log('SW registration failed:', error);
+              });
+          });
+        }
       }
     </script>
   </body>

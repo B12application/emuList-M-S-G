@@ -1,6 +1,6 @@
 // src/App.tsx
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, useRouteError, isRouteErrorResponse, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
@@ -55,9 +55,49 @@ const LazyRoute = ({ component: Component }: { component: React.ComponentType })
   </Suspense>
 );
 
+function RouteErrorBoundary() {
+  const error = useRouteError();
+  const errorMessage = isRouteErrorResponse(error)
+    ? `${error.status} ${error.statusText}`
+    : error instanceof Error
+      ? error.message
+      : 'Bilinmeyen bir hata oluştu';
+
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center p-6">
+      <div className="max-w-md w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl p-6 text-center shadow-xl">
+        <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-black">
+          ⚠️
+        </div>
+        <h2 className="text-base font-black text-stone-900 dark:text-white mb-1">
+          Sayfa Yüklenirken Bir Hata Oluştu
+        </h2>
+        <p className="text-xs text-stone-500 dark:text-zinc-400 mb-4 leading-relaxed line-clamp-3 font-mono bg-stone-50 dark:bg-zinc-800/60 p-2.5 rounded-xl">
+          {errorMessage}
+        </p>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => window.location.reload()}
+            className="flex-1 py-2.5 px-4 rounded-xl bg-amber-400 text-stone-950 font-bold text-xs hover:bg-amber-300 transition-all cursor-pointer shadow-sm"
+          >
+            Yeniden Dene
+          </button>
+          <Link
+            to="/"
+            className="flex-1 py-2.5 px-4 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold text-xs hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-center"
+          >
+            Ana Sayfa
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
+    errorElement: <RouteErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Layout />

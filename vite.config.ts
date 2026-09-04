@@ -7,6 +7,21 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'three',
+      'framer-motion',
+      'react-icons/fa',
+      'react-hot-toast',
+      '@tanstack/react-query',
+    ],
+  },
   server: {
     proxy: {
       '/api/gold-price': {
@@ -21,6 +36,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-three': ['three'],
           'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
           'vendor-charts': ['recharts'],
           'vendor-maps': ['leaflet', 'react-leaflet'],

@@ -2,7 +2,7 @@
 // Beden Profili & Kalori Açığı — Orijinal 2 Sekmeli (Profile & Deficit) Düzeltilmiş Tasarım
 // 15 Bölge İnteraktif SVG + Kişisel Bilgiler + Bölgesel Ölçümler + Kalori Açığı Motoru
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,9 +16,10 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
 import { getChatSessions, getDateKey } from '../services/calorieChatService';
+import type {
+  Gender, ActivityLevel, BodyMeasurements, ValidMeasurementKey,
+} from '../services/bodyProfileService';
 import {
-  type Gender, type ActivityLevel, type BodyMeasurements,
-  type ValidMeasurementKey,
   ACTIVITY_LABELS, MEASUREMENT_LIST, MEASUREMENT_LABELS,
   calculateBMR, calculateTDEE, calculateBMI, getBMICategory,
   calculateBodyFat, getBodyFatCategory,
@@ -26,209 +27,23 @@ import {
   saveBodyProfile, getBodyProfile,
   emptyMeasurements,
 } from '../services/bodyProfileService';
+import type {
+  RegionalGuide,
+  RegionalDiagnosis,
+} from '../data/bodyScienceData';
 import {
   REGIONAL_GUIDES,
   analyzeBodyProportions,
-  type RegionalGuide,
+  diagnoseRegionalComposition,
 } from '../data/bodyScienceData';
+
+// Lazy-load 3D Three.js body model to ensure zero main-thread contention and clean lifecycle initialization
+const RotatableBody3D = lazy(() =>
+  import('../components/RotatableBody3D').then(m => ({ default: m.RotatableBody3D }))
+);
 
 // ── Tab definitions (Orijinal 2 Sekmeli Yapı) ───────────
 type ActiveTab = 'profile' | 'deficit';
-
-// ── SVG Human Body Component (15 Bölgeli İnteraktif Model) ───────
-function HumanBodySVG({
-  gender,
-  measurements,
-  selectedKey,
-  onMeasurementClick,
-}: {
-  gender: Gender;
-  measurements: BodyMeasurements;
-  selectedKey: ValidMeasurementKey | null;
-  onMeasurementClick: (key: ValidMeasurementKey) => void;
-}) {
-  const labelPositions: Record<ValidMeasurementKey, {
-    x: number;
-    y: number;
-    anchor: 'left' | 'right';
-    lineToX: number;
-    lineToY: number;
-  }> = {
-    // Sol Sütun (7 bölge)
-    shoulderCm: { x: 6, y: 65, anchor: 'left', lineToX: 180, lineToY: 108 },
-    upperArmRightCm: { x: 6, y: 120, anchor: 'left', lineToX: 165, lineToY: 155 },
-    forearmRightCm: { x: 6, y: 175, anchor: 'left', lineToX: 156, lineToY: 210 },
-    upperAbdomenCm: { x: 6, y: 230, anchor: 'left', lineToX: 212, lineToY: 180 },
-    lowerAbdomenCm: { x: 6, y: 285, anchor: 'left', lineToX: 212, lineToY: 230 },
-    thighRightCm: { x: 6, y: 345, anchor: 'left', lineToX: 202, lineToY: 320 },
-    calfRightCm: { x: 6, y: 410, anchor: 'left', lineToX: 204, lineToY: 400 },
-
-    // Sağ Sütun (8 bölge)
-    neckCm: { x: 332, y: 50, anchor: 'right', lineToX: 220, lineToY: 96 },
-    chestCm: { x: 332, y: 105, anchor: 'right', lineToX: 228, lineToY: 145 },
-    waistCm: { x: 332, y: 160, anchor: 'right', lineToX: 226, lineToY: 205 },
-    hipCm: { x: 332, y: 215, anchor: 'right', lineToX: 232, lineToY: 255 },
-    upperArmLeftCm: { x: 332, y: 270, anchor: 'right', lineToX: 275, lineToY: 155 },
-    forearmLeftCm: { x: 332, y: 325, anchor: 'right', lineToX: 284, lineToY: 210 },
-    thighLeftCm: { x: 332, y: 380, anchor: 'right', lineToX: 238, lineToY: 320 },
-    calfLeftCm: { x: 332, y: 435, anchor: 'right', lineToX: 236, lineToY: 400 },
-  };
-
-  return (
-    <svg viewBox="0 0 440 500" className="w-full max-w-[420px] mx-auto select-none" aria-label="İnsan vücudu ölçüm noktaları">
-      <defs>
-        <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity="0.06" />
-        </linearGradient>
-        <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-
-      {/* Silhouette centered by transform */}
-      <g transform="translate(20, 10)">
-        {gender === 'male' ? (
-          <g className="text-amber-500">
-            {/* Head */}
-            <ellipse cx="200" cy="48" rx="26" ry="30" fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
-            {/* Neck */}
-            <rect x="188" y="76" width="24" height="20" rx="6" fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="1.5" opacity="0.8" />
-            {/* Torso */}
-            <path
-              d="M148,96 Q140,96 138,110 L132,170 Q130,195 140,210 L148,230 Q155,248 172,250 L228,250 Q245,248 252,230 L260,210 Q270,195 268,170 L262,110 Q260,96 252,96 Z"
-              fill="url(#glowGrad)" stroke="currentColor" strokeWidth="2" opacity="0.85"
-            />
-            {/* Left arm */}
-            <path
-              d="M148,100 Q130,105 125,130 L118,180 Q115,200 120,210 L128,240 Q132,250 136,248 L142,240 Q148,220 146,200 L150,160 Q152,130 148,100 Z"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="1.5" opacity="0.75"
-            />
-            {/* Right arm */}
-            <path
-              d="M252,100 Q270,105 275,130 L282,180 Q285,200 280,210 L272,240 Q268,250 264,248 L258,240 Q252,220 254,200 L250,160 Q248,130 252,100 Z"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="1.5" opacity="0.75"
-            />
-            {/* Left leg */}
-            <path
-              d="M172,248 L165,310 Q162,340 164,370 L166,420 Q167,440 175,445 L185,445 Q190,440 188,420 L186,370 Q188,340 190,310 L195,260"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="2" opacity="0.8"
-            />
-            {/* Right leg */}
-            <path
-              d="M228,248 L235,310 Q238,340 236,370 L234,420 Q233,440 225,445 L215,445 Q210,440 212,420 L214,370 Q212,340 210,310 L205,260"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="2" opacity="0.8"
-            />
-            {/* Center line */}
-            <line x1="200" y1="96" x2="200" y2="248" stroke="currentColor" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 4" />
-          </g>
-        ) : (
-          <g className="text-rose-400">
-            {/* Head */}
-            <ellipse cx="200" cy="46" rx="24" ry="28" fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
-            {/* Hair hint */}
-            <path d="M176,38 Q172,20 185,12 Q200,6 215,12 Q228,20 224,38" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
-            {/* Neck */}
-            <rect x="190" y="72" width="20" height="22" rx="6" fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="1.5" opacity="0.8" />
-            {/* Torso */}
-            <path
-              d="M155,94 Q148,94 146,108 L142,155 Q140,170 145,185 L140,210 Q138,228 155,240 L168,250 Q180,258 200,258 Q220,258 232,250 L245,240 Q262,228 260,210 L255,185 Q260,170 258,155 L254,108 Q252,94 245,94 Z"
-              fill="url(#glowGrad)" stroke="currentColor" strokeWidth="2" opacity="0.85"
-            />
-            {/* Left arm */}
-            <path
-              d="M155,98 Q138,103 134,125 L128,175 Q126,195 130,208 L136,235 Q140,245 144,243 L148,235 Q152,218 150,198 L154,158 Q156,128 155,98 Z"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="1.5" opacity="0.75"
-            />
-            {/* Right arm */}
-            <path
-              d="M245,98 Q262,103 266,125 L272,175 Q274,195 270,208 L264,235 Q260,245 256,243 L252,235 Q248,218 250,198 L246,158 Q244,128 245,98 Z"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="1.5" opacity="0.75"
-            />
-            {/* Left leg */}
-            <path
-              d="M172,256 L166,315 Q163,345 165,375 L167,425 Q168,443 176,448 L186,448 Q191,443 189,425 L187,375 Q189,345 191,315 L196,265"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="2" opacity="0.8"
-            />
-            {/* Right leg */}
-            <path
-              d="M228,256 L234,315 Q237,345 235,375 L233,425 Q232,443 224,448 L214,448 Q209,443 211,425 L213,375 Q211,345 209,315 L204,265"
-              fill="url(#bodyGrad)" stroke="currentColor" strokeWidth="2" opacity="0.8"
-            />
-            {/* Center line */}
-            <line x1="200" y1="94" x2="200" y2="256" stroke="currentColor" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 4" />
-          </g>
-        )}
-      </g>
-
-      {/* Measurement labels with connection lines (15 Nokta) */}
-      {(Object.keys(labelPositions) as ValidMeasurementKey[]).map((key) => {
-        const pos = labelPositions[key];
-        const meta = MEASUREMENT_LABELS[key];
-        const value = measurements[key];
-        const hasValue = typeof value === 'number' && value > 0;
-        const isSelected = selectedKey === key;
-        const dotColor = isSelected ? '#ef4444' : hasValue ? '#f59e0b' : '#9ca3af';
-
-        return (
-          <g key={key} className="cursor-pointer group" onClick={() => onMeasurementClick(key)}>
-            {/* Connection line */}
-            <line
-              x1={pos.anchor === 'left' ? pos.x + 100 : pos.x}
-              y1={pos.y + 12}
-              x2={pos.lineToX}
-              y2={pos.lineToY}
-              stroke={dotColor}
-              strokeWidth={isSelected ? 1.8 : 1}
-              strokeDasharray={isSelected ? 'none' : '3 2'}
-              opacity={isSelected ? 1 : 0.65}
-            />
-            {/* Dot on body */}
-            <circle cx={pos.lineToX} cy={pos.lineToY} r={isSelected ? 6 : 4} fill={dotColor} opacity={0.95}>
-              <animate attributeName="r" values={isSelected ? '5.5;7;5.5' : '4;5.5;4'} dur="2s" repeatCount="indefinite" />
-            </circle>
-            {/* Label background */}
-            <rect
-              x={pos.x}
-              y={pos.y}
-              width={100}
-              height={24}
-              rx="7"
-              fill={
-                isSelected
-                  ? 'rgba(239,68,68,0.18)'
-                  : hasValue
-                    ? 'rgba(245,158,11,0.15)'
-                    : 'rgba(156,163,175,0.1)'
-              }
-              stroke={
-                isSelected
-                  ? '#ef4444'
-                  : hasValue
-                    ? 'rgba(245,158,11,0.5)'
-                    : 'rgba(156,163,175,0.25)'
-              }
-              strokeWidth={isSelected ? 1.5 : 1}
-              className="transition-all group-hover:scale-105"
-            />
-            {/* Label text */}
-            <text
-              x={pos.x + 6}
-              y={pos.y + 16}
-              className="text-[8.5px] font-bold fill-current select-none"
-              style={{
-                fill: isSelected ? '#ef4444' : hasValue ? '#d97706' : '#9ca3af',
-              }}
-            >
-              {meta.label}: {hasValue ? `${value} cm` : '—'}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
 
 // ── Number Input Component ─────────────────────────────
 function NumberInput({
@@ -410,6 +225,11 @@ export default function BodyProfilePage() {
   // Body proportions & personal sports science diagnostic
   const proportions = useMemo(() => {
     return analyzeBodyProportions(heightCm, weightKg, gender, measurements);
+  }, [heightCm, weightKg, gender, measurements]);
+
+  // 15 Bölge Detaylı Yağ vs Kas Teşhisi (Akademik Antropometri & Doktora Tezleri)
+  const regionalDiagnoses = useMemo(() => {
+    return diagnoseRegionalComposition(heightCm, weightKg, gender, measurements);
   }, [heightCm, weightKg, gender, measurements]);
 
   // Save handler
@@ -643,14 +463,28 @@ export default function BodyProfilePage() {
                   Vücut üzerindeki noktalara tıklayarak ilgili mezura ölçüsünü hızlıca girebilirsiniz.
                 </p>
 
-                <HumanBodySVG
-                  gender={gender}
-                  measurements={measurements}
-                  selectedKey={selectedKey}
-                  onMeasurementClick={key => setSelectedKey(key)}
-                />
+                <Suspense
+                  fallback={
+                    <div className="w-full h-[480px] flex flex-col items-center justify-center gap-3 bg-stone-50/50 dark:bg-zinc-800/30 rounded-3xl border border-dashed border-stone-200 dark:border-zinc-800">
+                      <div className="w-9 h-9 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs font-bold text-stone-400 dark:text-zinc-500 tracking-wide">
+                        3D Beden Simülatörü Yükleniyor...
+                      </span>
+                    </div>
+                  }
+                >
+                  <RotatableBody3D
+                    gender={gender}
+                    measurements={measurements}
+                    heightCm={heightCm}
+                    weightKg={weightKg}
+                    selectedKey={selectedKey}
+                    onSelectKey={key => setSelectedKey(key)}
+                    diagnoses={regionalDiagnoses}
+                  />
+                </Suspense>
 
-                {/* Tıklanan Noktanın Hızlı Düzenleme Kutusu (SVG Altı) */}
+                {/* Tıklanan Noktanın Hızlı Düzenleme Kutusu (3D Model Altı) */}
                 <AnimatePresence>
                   {selectedKey && activeMeta && (
                     <motion.div
@@ -699,6 +533,38 @@ export default function BodyProfilePage() {
                           <FaPlus className="text-[9px]" />
                         </button>
                       </div>
+
+                      {/* Canlı Bölgesel Teşhis Rozeti & Doktora Notu */}
+                      {(() => {
+                        const diag = regionalDiagnoses[selectedKey];
+                        if (!diag || diag.status === 'not_entered') return null;
+                        return (
+                          <div className={`mt-3 p-3 rounded-2xl border text-xs ${
+                            diag.status === 'excess_fat'
+                              ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900/60 text-rose-950 dark:text-rose-200'
+                              : diag.status === 'underdeveloped'
+                                ? 'bg-sky-50/80 dark:bg-sky-950/40 border-sky-300 dark:border-sky-900/60 text-sky-950 dark:text-sky-200'
+                                : 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-900/60 text-emerald-950 dark:text-emerald-200'
+                          }`}>
+                            <div className="flex items-center justify-between font-black mb-1">
+                              <span className="flex items-center gap-1.5">
+                                <span>{diag.status === 'excess_fat' ? '🔴' : diag.status === 'underdeveloped' ? '🔵' : '🟢'}</span>
+                                <span>Teşhis: {diag.statusLabel}</span>
+                              </span>
+                              <span className="text-[10.5px] opacity-80 font-mono">
+                                İdeal: {diag.idealRange.min}-{diag.idealRange.max} cm
+                              </span>
+                            </div>
+                            <p className="text-[11px] opacity-90 leading-relaxed mb-1.5">
+                              🔬 <strong>{diag.thesisTitle}:</strong> {diag.thesisFinding}
+                            </p>
+                            <div className="text-[11px] font-black pt-1.5 border-t border-current/20 flex items-center gap-1">
+                              <span>🎯 Reçete:</span>
+                              <span className="font-bold">{diag.actionProtocol}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Bilimsel Rehber Butonu */}
                       <button
@@ -1004,6 +870,76 @@ export default function BodyProfilePage() {
                       Ölçümleriniz dengeli dağılmış durumda. Tüm vücut hipertrofi programı ile genel kas kütlenizi artırmaya devam edin.
                     </p>
                   )}
+                </div>
+              </div>
+
+              {/* 15 BÖLGE DETAYLI YAĞ / KAS TEŞHİS RAPORU (DOKTORA VE AKADEMİK TEZLER BAZLI) */}
+              <div className="pt-4 border-t border-stone-100 dark:border-zinc-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <div>
+                    <h4 className="text-sm font-black text-stone-900 dark:text-white flex items-center gap-2">
+                      <span className="text-base">🔬</span>
+                      15 Bölge Yağlanma &amp; Kas Kütlesi Detaylı Teşhis Raporu
+                    </h4>
+                    <p className="text-[11px] text-stone-400 dark:text-zinc-500 mt-0.5">
+                      Akademik antropometri tezleri (Casey Butt, Heymsfield, McCallum, ACSM) normatif verilerine göre bölgesel durumunuz
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400">
+                      🔴 Fazla Yağlanma
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400">
+                      🔵 Kas Azlığı
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                      🟢 İdeal
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {MEASUREMENT_LIST.map(item => {
+                    const diag = regionalDiagnoses[item.key];
+                    if (!diag) return null;
+                    return (
+                      <div
+                        key={item.key}
+                        onClick={() => {
+                          setSelectedKey(item.key);
+                          setGuideModalKey(item.key);
+                        }}
+                        className={`p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] ${
+                          diag.status === 'excess_fat'
+                            ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/40 hover:border-rose-400'
+                            : diag.status === 'underdeveloped'
+                              ? 'bg-sky-50/70 dark:bg-sky-950/20 border-sky-300 dark:border-sky-900/40 hover:border-sky-400'
+                              : diag.status === 'optimal'
+                                ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-900/40 hover:border-emerald-400'
+                                : 'bg-stone-50 dark:bg-zinc-800/50 border-stone-200 dark:border-zinc-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-xs text-stone-900 dark:text-white flex items-center gap-1.5">
+                            <span>{item.emoji}</span>
+                            <span>{item.label}</span>
+                          </span>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${diag.badgeBg} ${diag.badgeText}`}>
+                            {diag.statusLabel}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-zinc-400 my-1">
+                          <span>Mevcut: <strong className="text-stone-900 dark:text-white font-mono">{diag.currentValue > 0 ? `${diag.currentValue} cm` : '—'}</strong></span>
+                          <span>İdeal Aralık: <strong className="text-stone-700 dark:text-zinc-300 font-mono">{diag.idealRange.min}-{diag.idealRange.max} cm</strong></span>
+                        </div>
+
+                        <p className="text-[10.5px] text-stone-600 dark:text-zinc-400 line-clamp-2 mt-1 italic">
+                          📚 {diag.thesisFinding}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

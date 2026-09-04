@@ -615,6 +615,176 @@ export async function deleteMealItemFromSession(
 }
 
 /**
+ * Bir besin öğesini veya mesajını başka bir güne taşır.
+ * targetDateKey: YYYY-MM-DD formatında (örneğin 2026-09-04)
+ */
+export async function moveMealItemToDate(
+  sessionId: string,
+  messageIndex: number,
+  itemIndex: number,
+  targetDateKey: string,
+  itemName?: string
+): Promise<void> {
+  if (!sessionId) throw new Error('Geçersiz oturum ID');
+  const sessionRef = doc(db, COLLECTION, sessionId);
+  const docSnap = await getDoc(sessionRef);
+  if (!docSnap.exists()) {
+    throw new Error('Sohbet oturumu bulunamadı');
+  }
+
+  const data = docSnap.data() as ChatSession;
+  const messages = [...(data.messages || [])];
+
+  if (!messages[messageIndex] || !messages[messageIndex].mealData) {
+    throw new Error('Öğün kaydı bulunamadı');
+  }
+
+  const sourceMsg = messages[messageIndex];
+  const mealData = { ...sourceMsg.mealData! };
+  const items = [...(mealData.items || [])];
+
+  let targetIndex = itemIndex;
+  if (itemName && items[targetIndex]?.name !== itemName) {
+    const foundIdx = items.findIndex(i => i.name === itemName);
+    if (foundIdx !== -1) targetIndex = foundIdx;
+  }
+
+  if (targetIndex < 0 || targetIndex >= items.length) {
+    throw new Error('Geçersiz öğe indeksi');
+  }
+
+  const [y, m, d] = targetDateKey.split('-').map(Number);
+
+  // Orijinal saati oku
+  const origDate = sourceMsg.timestamp?.toDate
+    ? sourceMsg.timestamp.toDate()
+    : sourceMsg.timestamp instanceof Date
+      ? sourceMsg.timestamp
+      : new Date();
+
+  const origH = origDate.getHours();
+  const origM = origDate.getMinutes();
+  const origS = origDate.getSeconds();
+
+  // Gece 00:00 - 05:00 arası girilip düne taşınıyorsa, dünün son öğünü (23:xx) olarak sıralanması için 23 ver
+  const targetH = origH < 5 ? 23 : origH;
+  const newDate = new Date(y, m - 1, d, targetH, origM, origS);
+  const newTimestamp = Timestamp.fromDate(newDate);
+
+  // Eğer mesajda yalnızca 1 besin varsa, doğrudan mesajın timestamp'ini güncelle
+  if (items.length === 1) {
+    messages[messageIndex] = {
+      ...sourceMsg,
+      timestamp: newTimestamp,
+    };
+  } else {
+    // Mesajda birden fazla besin varsa, taşınan besini ayırıp yeni bir mesaj kaydı olarak hedef güne taşı
+    const [movedItem] = items.splice(targetIndex, 1);
+
+    const totalCalories = items.reduce((s, i) => s + (Number(i.calories) || 0), 0);
+    const totalProtein = items.reduce((s, i) => s + (Number(i.protein) || 0), 0);
+    const totalCarbs = items.reduce((s, i) => s + (Number(i.carbs) || 0), 0);
+    const totalFat = items.reduce((s, i) => s + (Number(i.fat) || 0), 0);
+
+    messages[messageIndex] = {
+      ...sourceMsg,
+      mealData: {
+        items,
+        totalCalories,
+        totalProtein,
+        totalCarbs,
+        totalFat,
+      },
+    };
+
+    const newMsg: ChatMessage = {
+      id: `moved-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      role: 'assistant',
+      text: `🍽️ ${movedItem.name} (${targetDateKey} tarihine aktarıldı)`,
+      mealData: {
+        items: [movedItem],
+        totalCalories: Number(movedItem.calories) || 0,
+        totalProtein: Number(movedItem.protein) || 0,
+        totalCarbs: Number(movedItem.carbs) || 0,
+        totalFat: Number(movedItem.fat) || 0,
+      },
+      timestamp: newTimestamp,
+    };
+    messages.push(newMsg);
+  }
+
+  const sessionTotalCalories = messages.reduce(
+    (sum, msg) => sum + (msg.mealData?.totalCalories || 0),
+    0
+  );
+
+  const estimatedSizeBytes = estimateSessionSize(messages);
+
+  await updateDoc(sessionRef, {
+    messages,
+    totalCalories: sessionTotalCalories,
+    estimatedSizeBytes,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Belirli bir güne ait tüm öğünleri hedef tarihe taşır
+ */
+export async function moveAllDayMealsToDate(
+  userId: string,
+  sourceDateKey: string,
+  targetDateKey: string
+): Promise<void> {
+  if (!userId || !sourceDateKey || !targetDateKey) return;
+  const sessions = await getChatSessions(userId, 500);
+  const [y, m, d] = targetDateKey.split('-').map(Number);
+
+  for (const session of sessions) {
+    if (!session.id || !session.messages) continue;
+
+    let modified = false;
+    const updatedMessages = session.messages.map(msg => {
+      if (msg.role === 'assistant' && msg.mealData) {
+        const dateObj = msg.timestamp?.toDate
+          ? msg.timestamp.toDate()
+          : msg.timestamp instanceof Date
+            ? msg.timestamp
+            : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
+        const msgDateKey = getDateKey(dateObj);
+
+        if (msgDateKey === sourceDateKey) {
+          modified = true;
+          const origH = dateObj.getHours();
+          const origM = dateObj.getMinutes();
+          const targetH = origH < 5 ? 23 : origH;
+          const newDate = new Date(y, m - 1, d, targetH, origM, dateObj.getSeconds());
+          return {
+            ...msg,
+            timestamp: Timestamp.fromDate(newDate),
+          };
+        }
+      }
+      return msg;
+    });
+
+    if (modified) {
+      const sessionTotalCalories = updatedMessages.reduce(
+        (sum, m) => sum + (m.mealData?.totalCalories || 0),
+        0
+      );
+      const estimatedSizeBytes = estimateSessionSize(updatedMessages);
+      await updateDoc(doc(db, COLLECTION, session.id), {
+        messages: updatedMessages,
+        totalCalories: sessionTotalCalories,
+        estimatedSizeBytes,
+        updatedAt: serverTimestamp(),
+      });
+    }
+  }
+}
+
+/**
  * Bir chat session'ından tek bir mesajı siler
  */
 export async function deleteMessageFromSession(

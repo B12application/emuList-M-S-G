@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "exportedAt": "2026-09-03T22:58:58.911Z",
+  "exportedAt": "2026-09-02T22:58:05.399Z",
   "targetUserId": "ZKU7SObBkeNzMicltUKJjo6ybHH2",
   "totalCount": 377,
   "stats": {
@@ -1646,7 +1646,7 @@
       "rating": "7.3",
       "image": "https://media.rawg.io/media/games/2d5/2d5c758b9e4e978095d87b3a557c7e54.jpg",
       "description": "Gods will return.\nHeroes will rise.\nLegends will battle.",
-      "watched": true,
+      "watched": false,
       "genre": "Strategy"
     },
     {
@@ -2055,7 +2055,7 @@
       "rating": "7.5",
       "image": "https://media.rawg.io/media/games/77d/77d51f8f4a07c3eecb0f8504027b1bf0.jpg",
       "description": "Meet Your Maker\n\nLilith has returned to Sanctuary, summoned by a dark ritual after eons in exile. Her return ushers in an age of darkness and misery.\n\nSanctuary, a land once ravaged by war between the High Heavens and Burning Hells, has fallen once more into darkness. Lilith, daughter of Mephisto, Lord of Hatred, has been summoned by dark ritual after eons in exile. Now, hatred threatens to consume Sanctuary as evil spreads and a new wave of cultists and worshippers arise to embrace Lilith’s coming. Only a brave few dare to face this threat…\n\nForge your path through the corrupt lands of Sanctuary – a continuous, ever-growing, and fully explorable world, teeming with choices, quests, corruption, and loot. Join fellow adventurers, retake besieged towns, delve into nightmarish dungeons, and uncover lost secrets as you fight for the fate of the world. Every inch of Diablo IV is built for adventure, with multiple zones to explore freely, each ripe with non-linear quests, epic bosses, discoverable towns, and multitudes of demons to slay.\n\nCreate and customize your character to become steadfast in the face of darkness. Choose from one of five classes and forge your hero from an abundance of different cosmetics, talents, and abilities, creating a character that is uniquely your own. Grow stronger as your character progresses through powerful Skill Trees, developing even more unique end game specializations with Paragon Boards to dramatically impact your gameplay.\n\nDefeating great evil requires great gear. Discover and experiment with a vast arsenal of powerful weapons, armor, and more to fight back against the demons threatening these lands. Embrace the many powers of your collection by exploring unique combinations to battle in immersive, action-packed combat against the deadliest of enemies with devastating results.",
-      "watched": true,
+      "watched": false,
       "genre": "Action, RPG",
       "releaseDate": "2023-06-06"
     },

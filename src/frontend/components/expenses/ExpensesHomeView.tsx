@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp, FaGem, FaUndo, FaEyeSlash, FaEye, FaFilter, FaPlus, FaMinus } from 'react-icons/fa';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import type { Expense } from '../../hooks/useExpenses';
+import LoadMoreButton from '../ui/LoadMoreButton';
 
 interface ExpensesHomeViewProps {
   t: (key: string) => string;
@@ -276,8 +277,8 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
           </div>
         </div>
 
-        {/* List Content with enforced Scroll */}
-        <div className="flex-1 overflow-y-auto max-h-[600px] custom-scrollbar p-3">
+        {/* List Content */}
+        <div className="flex-1 sm:overflow-y-auto sm:max-h-[650px] custom-scrollbar p-2 sm:p-3">
           {filteredExpenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-stone-300 dark:text-zinc-700">
               <div className="w-20 h-20 rounded-full bg-stone-50 dark:bg-zinc-800 flex items-center justify-center mb-6">
@@ -418,14 +419,14 @@ const ExpensesHomeView: React.FC<ExpensesHomeViewProps> = ({
                 ))}
               </AnimatePresence>
 
-              {visibleCount < filteredExpenses.length && (
-                <button
-                  onClick={() => setVisibleCount(prev => prev + 50)}
-                  className="w-full py-6 text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-[0.3em] hover:text-stone-900 dark:hover:text-white transition-all"
-                >
-                  {t('actions.loadMore')}
-                </button>
-              )}
+              {visibleCount < filteredExpenses.length ? (
+                <div className="pt-6 pb-6 sm:pb-8 flex justify-center">
+                  <LoadMoreButton
+                    onClick={() => setVisibleCount(prev => prev + 50)}
+                    remainingCount={filteredExpenses.length - visibleCount}
+                  />
+                </div>
+              ) : null}
             </div>
           )}
         </div>

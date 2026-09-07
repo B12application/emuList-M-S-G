@@ -236,9 +236,20 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 ml-2">
-                      Kategori
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5 ml-2 mr-1">
+                      <label className="block text-[10px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-widest">
+                        Kategori
+                      </label>
+                      {setIsAddCategoryModalOpen && (
+                        <button
+                          type="button"
+                          onClick={() => setIsAddCategoryModalOpen(true)}
+                          className="text-[10px] font-black text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-1 uppercase tracking-wider transition-colors"
+                        >
+                          <FaPlus size={8} /> Kategori Ekle
+                        </button>
+                      )}
+                    </div>
                     <CustomSelect
                       value={newExpense.category || ''}
                       onChange={(val) => setNewExpense({ ...newExpense, category: val })}
@@ -323,7 +334,7 @@ const ExpenseModals: React.FC<ExpenseModalsProps> = ({
       {/* Add New Category Modal */}
       <AnimatePresence>
         {isAddCategoryModalOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[220] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

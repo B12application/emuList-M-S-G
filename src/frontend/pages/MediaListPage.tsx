@@ -8,6 +8,7 @@ import MediaListItem from '../components/MediaListItem';
 import DetailModal from '../components/DetailModal';
 import EmptyState from '../components/ui/EmptyState';
 import SkeletonCard from '../components/ui/SkeletonCard';
+import LoadMoreButton from '../components/ui/LoadMoreButton';
 import { exportToPDF } from '../utils/pdfExport';
 import { doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
@@ -1187,10 +1188,8 @@ export default function MediaListPage() {
           )}
 
           {!isSearchActive && hasMoreItems && (
-            <div className="flex justify-center py-8">
-              <button onClick={loadMore} disabled={loadingMore} className="group flex items-center gap-3 px-8 py-3 rounded-full bg-stone-50 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 font-semibold shadow-md border border-stone-300 dark:border-zinc-700 hover:shadow-lg hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-200 dark:hover:border-sky-800 transition-all transform hover:-translate-y-1">
-                {loadingMore ? <FaSpinner className="animate-spin h-5 w-5" /> : <><span>{t('actions.loadMore')}</span><FaArrowDown className="group-hover:animate-bounce" /></>}
-              </button>
+            <div className="flex justify-center py-6 sm:py-8">
+              <LoadMoreButton onClick={loadMore} loading={loadingMore} />
             </div>
           )}
 

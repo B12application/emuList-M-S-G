@@ -11,7 +11,7 @@ import useInvestments from '../hooks/useInvestments';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import type { ParsedTransaction } from '../utils/pdfParserService';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaPlus } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
 
 // Modular Components
@@ -395,10 +395,13 @@ const ExpensesPage: React.FC = () => {
   };
 
   const handleAddCategorySubmit = async () => {
-    if (!newCategoryName.trim()) return;
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
     try {
-      await addCategory(newCategoryName.trim());
-      toast.success(`"${newCategoryName.trim()}" kategorisi eklendi.`);
+      await addCategory(trimmed);
+      toast.success(`"${trimmed}" kategorisi eklendi.`);
+      setNewExpense(prev => ({ ...prev, category: trimmed }));
+      setActiveCategory(trimmed);
       setNewCategoryName('');
       setIsAddCategoryModalOpen(false);
     } catch (error) {
@@ -873,26 +876,46 @@ const ExpensesPage: React.FC = () => {
               <AnimatePresence>
                 {activeTab === 'harcamalar' && selectedIds.size > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="fixed bottom-24 sm:bottom-10 left-1/2 -translate-x-1/2 z-[120] flex items-center gap-4 bg-stone-900/95 dark:bg-white/95 backdrop-blur-xl px-6 py-3 rounded-full shadow-2xl border border-stone-800 dark:border-stone-100"
+                    initial={{ opacity: 0, y: -15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -15, scale: 0.95 }}
+                    className="fixed top-20 sm:top-24 left-1/2 -translate-x-1/2 z-[130] pointer-events-auto flex items-center gap-1.5 bg-stone-900/95 dark:bg-zinc-900/95 text-stone-100 backdrop-blur-xl px-2.5 py-1 rounded-full shadow-2xl border border-stone-700/60 dark:border-zinc-700/60"
                   >
-                    <span className="text-[10px] font-black text-white dark:text-stone-900 uppercase tracking-[0.2em]">
-                      {selectedIds.size} {t('expenses.selectedCount') || 'SEÇİLDİ'}
+                    <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-400 text-stone-950 font-black text-[10px] leading-none">
+                      {selectedIds.size}
                     </span>
-                    <div className="w-[1px] h-4 bg-white/20 dark:bg-black/20" />
-                    <div className="flex gap-2">
-                      <button onClick={() => setIsBulkCategoryModalOpen(true)} className="p-2 text-white dark:text-stone-900 hover:bg-white/10 dark:hover:bg-black/5 rounded-xl transition-all" title="Kategori Değiştir">
-                        <FaLayerGroup size={12} />
+                    <div className="w-[1px] h-3 bg-white/20" />
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        onClick={() => setIsBulkCategoryModalOpen(true)}
+                        className="p-1.5 text-stone-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                        title="Kategori Değiştir"
+                      >
+                        <FaLayerGroup size={11} />
                       </button>
-                      <button onClick={handleBulkExclude} className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-xl transition-all" title="Seçilenleri Liste Dışı Bırak">
-                        <FaEyeSlash size={12} />
+                      <button
+                        onClick={handleBulkExclude}
+                        className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-full transition-all"
+                        title="Seçilenleri Liste Dışı Bırak"
+                      >
+                        <FaEyeSlash size={11} />
                       </button>
-                      <button onClick={handleBulkDelete} className="p-2 text-red-400 hover:bg-red-500/20 rounded-xl transition-all" title="Seçilenleri Sil">
-                        <FaTrash size={12} />
+                      <button
+                        onClick={handleBulkDelete}
+                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-full transition-all"
+                        title="Seçilenleri Sil"
+                      >
+                        <FaTrash size={11} />
                       </button>
                     </div>
+                    <div className="w-[1px] h-3 bg-white/20" />
+                    <button
+                      onClick={() => setSelectedIds(new Set())}
+                      className="p-1 text-stone-400 hover:text-white hover:bg-white/15 rounded-full transition-all"
+                      title="Seçimi Kapat"
+                    >
+                      <FaTimes size={11} />
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>

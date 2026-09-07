@@ -187,11 +187,49 @@ export default function useExpenses() {
   const addCategoryMutation = useMutation({
     mutationFn: async (name: string) => {
       if (!user) throw new Error('User not authenticated');
-      if (dbCategories.find(c => c.name === name)) return;
-      const categoryData = { name, userId: user.uid, createdAt: Date.now() };
-      await addDoc(collection(db, 'categories'), categoryData);
+      const trimmedName = name.trim();
+      if (!trimmedName) throw new Error('Category name cannot be empty');
+
+      // Check existing in DB categories (case-insensitive)
+      const existing = dbCategories.find(
+        c => c.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+
+      if (existing) {
+        // Refresh createdAt to make sure it is considered active
+        const catRef = doc(db, 'categories', existing.id);
+        await updateDoc(catRef, { name: trimmedName, createdAt: Date.now() });
+        return { id: existing.id, name: trimmedName };
+      }
+
+      const categoryData = { name: trimmedName, userId: user.uid, createdAt: Date.now() };
+      const docRef = await addDoc(collection(db, 'categories'), categoryData);
+      return { id: docRef.id, name: trimmedName };
     },
-    onSuccess: () => {
+    onSuccess: (result, name) => {
+      const categoryName = (result?.name || name || '').trim();
+      if (categoryName && user?.uid) {
+        // Optimistically update categories query cache so it is immediately available without refresh
+        queryClient.setQueryData<Category[]>(['categories', user.uid], (old = []) => {
+          const idx = old.findIndex(
+            c => c.name.trim().toLowerCase() === categoryName.toLowerCase()
+          );
+          if (idx >= 0) {
+            const updated = [...old];
+            updated[idx] = { ...updated[idx], name: categoryName, createdAt: Date.now() };
+            return updated;
+          }
+          return [
+            ...old,
+            {
+              id: result?.id || ('cat_' + Date.now()),
+              name: categoryName,
+              userId: user.uid,
+              createdAt: Date.now()
+            }
+          ];
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['categories', user?.uid] });
     },
   });
@@ -409,23 +447,18 @@ export default function useExpenses() {
     },
   });
 
-  // Sadece aktif kullanılan ve yeni eklenen kategorileri al (V1 ve v2_ çöplerini temizle)
-  const activeExpenseCats = expenses.map(e => e.category2).filter(Boolean) as string[];
-  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-  
-  const cleanDbCats = dbCategories
-    .filter(c => !c.name.startsWith('v2_'))
-    .filter(c => {
-      const isUsed = activeExpenseCats.includes(c.name);
-      const isRecent = Date.now() - c.createdAt < SEVEN_DAYS_MS;
-      return isUsed || isRecent;
-    })
-    .map(c => c.name);
+  // Sadece aktif kullanılan ve kayıtlı kategorileri al (V1 ve legacy v2_ önekli çöpler hariç)
+  const activeExpenseCats = expenses
+    .map(e => (e.category2 || e.category || '').trim())
+    .filter(Boolean);
 
-  const categories = Array.from(new Set([
-    ...activeExpenseCats,
-    ...cleanDbCats
-  ])).filter(Boolean).sort();
+  const cleanDbCats = dbCategories
+    .map(c => (c.name || '').trim())
+    .filter(name => name && !name.startsWith('v2_'));
+
+  const categories = Array.from(
+    new Set([...activeExpenseCats, ...cleanDbCats])
+  ).filter(Boolean).sort((a, b) => a.localeCompare(b, 'tr'));
 
   return {
     expenses,

@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { FaTag, FaEdit, FaTrash, FaCheck, FaSearch, FaTimes, FaCalendarAlt, FaWallet, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import type { Expense } from '../../hooks/useExpenses';
+import LoadMoreButton from '../ui/LoadMoreButton';
 
 interface ExpensesTabProps {
   t: (key: string) => string;
@@ -220,7 +221,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
           )}
         </div>
 
-        <div className="max-h-[600px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
+        <div className="sm:max-h-[650px] sm:overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
           {filteredExpenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-stone-400 dark:text-zinc-500">
               <FaTag className="text-4xl mb-4 opacity-20" />
@@ -309,16 +310,14 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({
                 ))}
               </AnimatePresence>
               
-              {visibleCount < filteredExpenses.length && (
-                <div className="pt-6 pb-2 flex justify-center">
-                  <button
+              {visibleCount < filteredExpenses.length ? (
+                <div className="pt-6 pb-6 sm:pb-8 flex justify-center">
+                  <LoadMoreButton
                     onClick={() => setVisibleCount(prev => prev + 50)}
-                    className="px-6 py-3 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-600 dark:text-zinc-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
-                  >
-                    {t('actions.loadMore')}
-                  </button>
+                    remainingCount={filteredExpenses.length - visibleCount}
+                  />
                 </div>
-              )}
+              ) : null}
             </div>
           )}
         </div>

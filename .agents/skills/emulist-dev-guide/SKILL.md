@@ -1,26 +1,31 @@
 ---
 name: emulist-dev-guide
-description: Repository-specific guidelines, architecture constraints, and learned lessons for emuList-M-S-G
+description: Repository-specific guidelines, architecture constraints, and learned lessons for B12 (by EMU)
 ---
 
-# emuList-M-S-G Geliştirme Kılavuzu ve Mimari Standartlar
+# B12 Geliştirme Kılavuzu ve Mimari Standartlar (Yapımcı: EMU)
 
-Bu kılavuz; emuList-M-S-G projesindeki tüm mimari standartları, bileşen kurallarını ve geliştirme prensiplerini içerir. Projede kod yazarken veya yeni bir özellik eklerken bu kurallara eksiksiz uyulmalıdır.
+Bu kılavuz; **B12** platformundaki tüm mimari standartları, bileşen kurallarını ve geliştirme prensiplerini içerir. Projede kod yazarken veya yeni bir özellik eklerken bu kurallara eksiksiz uyulmalıdır.
 
 ---
 
-## 1. Dış Veri Güvenilirliği & Yerel Yedekler (External Data Resilience)
+## 1. Marka Kimliği ve İsimlendirme (MANDATORY)
+- **Platformun Resmi Adı**: Platformun adı kesinlikle **B12**'dir (veya *"B12 - Dijital Hafıza Vitaminin"*). Asla "emulist" olarak anılmamalı, başlıklandırılmamalı ve yazılmamalıdır.
+- **Yapımcı / Geliştirici**: Platformun yapımcısı **EMU**'dur.
+- Tüm arayüz metinlerinde, başlıklarda, dokümantasyonlarda ve kullanıcı diyaloglarında bu kimliğe koşulsuz uyulmalıdır.
+
+## 2. Dış Veri Güvenilirliği & Yerel Yedekler (External Data Resilience)
 - **Galatasaray Maç Fikstürü (ICS Feeds)**:
   - Harici CORS proxy servisleri (`allorigins.win`, `corsproxy.io` vb.) tarayıcı ortamlarında güvenilmezdir veya zaman zaman engellenebilir.
   - Proxy zincirinin sonunda mutlaka `public/gs_fallback.ics` dosyasına yerel statik fallback bulunmalıdır (`galatasarayService.ts`).
   - Arayüzün her koşulda %100 çalışmasını garanti eden yerel bir fallback olmadan harici veri çekimi bırakılmamalıdır.
 
-## 2. API Seçimi ve Arama Mantığı (Media API Strictness)
+## 3. API Seçimi ve Arama Mantığı (Media API Strictness)
 - **OMDb vs TMDb Seçimi**:
   - Kullanıcı hangi API'yi seçtiyse o tercihe kesinlikle sadık kalınmalıdır.
   - Bir API'de sonuç bulunamadığında arka planda sessizce diğerine geçilmemelidir. Kullanıcı tercihine saygı duyulmalı ve doğru API'nin sonucu bildirilmelidir.
 
-## 3. Responsive Yerleşim & Z-Index Katmanlama Standartları
+## 4. Responsive Yerleşim & Z-Index Katmanlama Standartları
 - **Mobil Alt Bar (`BottomNavBar`)**:
   - Mobilde `bottom-0`'da sabit, `z-[100]` ve ~72px yüksekliğindedir (`md:hidden`).
   - Yüzen eylem çubukları (örneğin sayfa altındaki kaydet çubuğu) `z-[110]` ve `bottom-24 md:bottom-6` kullanmalıdır; böylece `BottomNavBar`'ın üstünde güvenle yüzer.
@@ -29,7 +34,7 @@ Bu kılavuz; emuList-M-S-G projesindeki tüm mimari standartları, bileşen kura
 - **Genel Modallar**:
   - `z-[120]` katmanında ve `fixed inset-0` olarak konumlandırılmalıdır.
 
-## 4. Bütünleşik Modal ve Pop-up Mimarisi (MANDATORY STANDARD)
+## 5. Bütünleşik Modal ve Pop-up Mimarisi (MANDATORY STANDARD)
 Sitedeki tüm modal ve diyaloglar 4 standart tipe göre yapılandırılmalıdır:
 1. **Ekleme / Düzenleme Form Modalı (Add/Edit Modal)**:
    - **Arka Plan:** `bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm z-[120]`.
@@ -44,18 +49,18 @@ Sitedeki tüm modal ve diyaloglar 4 standart tipe göre yapılandırılmalıdır
 4. **Filtre / Hızlı Seçim Çekmecesi**:
    - Ekranı kaplamayan, kompakt ve hızlı kapatılabilir olmalıdır.
 
-## 5. Standart "Daha Fazla Yükle" Bileşeni (`LoadMoreButton`)
+## 6. Standart "Daha Fazla Yükle" Bileşeni (`LoadMoreButton`)
 - Listeleme veya sayfalama gereken hiçbir sayfada rastgele/ad-hoc "Daha Fazla Gör", "Daha Fazla Yükle" butonu yazılmamalıdır.
 - Her zaman [`LoadMoreButton.tsx`](file:///c:/GithubProjects/emuList-M-S-G/src/frontend/components/ui/LoadMoreButton.tsx) bileşeni kullanılmalıdır (`onClick`, `loading`, isteğe bağlı `remainingCount`).
 - `LoadMoreButton` içeren mobil listelerde iç içe kaydırma tuzağı oluşturan `max-h-[600px] overflow-y-auto` gibi yapay kısıtlar kullanılmamalıdır.
 
-## 6. Özellik Erişim & Admin Panel Yönetimi (Feature Access Governance)
+## 7. Özellik Erişim & Admin Panel Yönetimi (Feature Access Governance)
 - Sisteme YENİ BİR SAYFA, ARAÇ veya MODÜL eklendiğinde zorunlu olarak:
   1. [`featureAccessService.ts`](file:///c:/GithubProjects/emuList-M-S-G/src/frontend/services/featureAccessService.ts) içerisine yeni `FeatureKey` eklenmelidir.
   2. `DEFAULT_ACCESS` haritasında varsayılan durumu ve `FEATURE_LABELS` haritasında Türkçe/İngilizce adı ile emojisi tanımlanmalıdır.
   3. `App.tsx` yönlendirmesine yetki kontrolü (`useFeatureAccess`) eklenmeli; `MobileMenu.tsx`, `Sidebar.tsx` ve `AdminPage.tsx` içerisinde görünür kılınmalıdır.
 
-## 7. Mobil Alt Navigasyon Standartları (`BottomNavBar`)
+## 8. Mobil Alt Navigasyon Standartları (`BottomNavBar`)
 - `BottomNavBar` her zaman tek sayılı (5 öğeli) tam simetrik yapıda olmalıdır:
   1. **Ana Sayfa** (`/`)
   2. **Koleksiyon** (`/movie`)
@@ -64,11 +69,11 @@ Sitedeki tüm modal ve diyaloglar 4 standart tipe göre yapılandırılmalıdır
   5. **Menü** (`#`)
 - PWA güvenli alan desteği (`paddingBottom: max(env(safe-area-inset-bottom), 8px)`) her zaman korunmalıdır.
 
-## 8. Dizi Takip Mantığı (TV Series Tracking)
+## 9. Dizi Takip Mantığı (TV Series Tracking)
 - Tüm dizi ve bölüm durum güncellemeleri için `episodeTrackingService.ts` kullanılmalıdır.
 - İzlenen, devam eden ve izlenmeyen durumlar arayüzde doğru renk ve rozetlerle ayrıştırılmalıdır.
 
-## 9. Geliştirme ve Derleme Doğrulama Protokolü
+## 10. Geliştirme ve Derleme Doğrulama Protokolü
 - Herhangi bir geliştirme tamamlanmadan önce:
-  1. Yukarıdaki 8 mimari kural kontrol edilmelidir.
+  1. Yukarıdaki 10 mimari ve marka kuralı kontrol edilmelidir.
   2. Terminalde `npm run build` (`tsc -b && vite build`) komutu çalıştırılarak 0 TypeScript/derleme hatası teyit edilmelidir.

@@ -1,28 +1,35 @@
-# Project Rules & Learned Knowledge for emuList-M-S-G
+# Project Rules & Learned Knowledge for B12 (by EMU)
 
 This file contains repository-specific guidelines, architecture constraints, and learned lessons from past user interactions. Always consult these rules when developing features or fixing bugs in this repository.
 
 ---
 
-## 1. External Data Resilience & Fallbacks
+## 1. Brand Identity & Attribution (MANDATORY)
+- **Platform Name**: The official name of this platform is **B12** (or *"B12 - Dijital Hafıza Vitaminin"*). It must **NEVER** be referred to as "emulist".
+- **Creator / Developer**: The creator of this platform is **EMU**.
+- Always strictly uphold this branding across all UI titles, descriptions, documentation, code comments, and conversational responses.
+
+## 2. External Data Resilience & Fallbacks
 - **ICS Calendar Feeds (Galatasaray Fixture)**:
   - External CORS proxies (e.g., `allorigins.win`, `corsproxy.io`) are inherently unreliable or may block requests in browser environments.
   - ALWAYS maintain a local static fallback (e.g., `/gs_fallback.ics` in the `public/` directory) at the end of the proxy chain in `galatasarayService.ts`.
   - NEVER leave external data fetches without a local fallback that guarantees 100% availability for the user interface.
 
-## 2. API Selection & Search Logic
+## 3. API Selection & Search Logic
 - **Strict Media API Search**:
   - When the user selects an API (OMDb vs TMDb), respect their choice strictly.
   - DO NOT silently fall back to another API if no results are found. Respect user preference and report "no results" accurately for the active API.
 
-## 3. Responsive Layout & Z-Index Layering
+## 4. Responsive Layout & Z-Index Layering
 - **Mobile Bottom Navigation (`BottomNavBar`)**:
   - `BottomNavBar` sits fixed at `bottom-0` with `z-[100]` and height ~72px on mobile devices (`md:hidden`).
   - Floating action bars (such as the bottom save bar on `CreatePage`) MUST use `z-[110]` and `bottom-24 md:bottom-6` so they float safely above `BottomNavBar` on mobile without overlapping or getting hidden underneath.
 - **Search Dropdowns & Overlays**:
   - Auto-complete search result dropdowns must specify `z-50` or higher and ensure parent containers do not truncate them with `overflow-hidden`.
+- **Modals**:
+  - Global dialogs and modals must specify `z-[120]` and `fixed inset-0`.
 
-## 4. Modal Design & Mobile Adaptability (MANDATORY STANDARD)
+## 5. Modal Design & Mobile Adaptability (MANDATORY STANDARD)
 - **Unified Modal Architecture**:
   - All modal dialogs (Add/Edit forms, settings, selection sheets, detail views) MUST follow the standardized modal pattern:
     1. **Container & Backdrop**: Darkened backdrop with blur (`bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm z-[120]`).
@@ -32,14 +39,14 @@ This file contains repository-specific guidelines, architecture constraints, and
     5. **Sticky / Fixed Action Footer**: Action buttons (Cancel, Save/Submit, Delete) MUST sit in a separate, fixed/sticky footer at the bottom of the modal (`px-6 py-3.5 bg-stone-50 dark:bg-zinc-900/80 border-t border-stone-200 dark:border-zinc-800`), NEVER scroll out of view.
   - **Confirmation Dialogs**: Always reuse `ConfirmDialog.tsx` instead of native `window.confirm()` or ad-hoc custom confirm popups.
 
-## 5. Unified Pagination & "Load More" Standard
+## 6. Unified Pagination & "Load More" Standard
 - **Standard `LoadMoreButton` Component**:
   - NEVER write custom or ad-hoc "Daha Fazla Gör", "Daha Fazla Yükle", or pagination buttons across any list or page.
   - ALWAYS import and use [`LoadMoreButton.tsx`](file:///c:/GithubProjects/emuList-M-S-G/src/frontend/components/ui/LoadMoreButton.tsx).
   - Supply `onClick`, `loading`, and optional `remainingCount` props.
   - Mobile containers wrapping lists with `LoadMoreButton` MUST NOT have artificial fixed heights (`max-h-[600px] overflow-y-auto`) that trap scroll or hide the button behind mobile navigation bars.
 
-## 6. Feature Access & Admin Panel Integration
+## 7. Feature Access & Admin Panel Integration
 - **Strict Registration of New Pages & Modules**:
   - When creating ANY new page, feature, or tool in the system:
     1. Register the new `FeatureKey` in [`featureAccessService.ts`](file:///c:/GithubProjects/emuList-M-S-G/src/frontend/services/featureAccessService.ts).
@@ -47,11 +54,20 @@ This file contains repository-specific guidelines, architecture constraints, and
     3. Add routing and navigation guards in `App.tsx` and ensure it appears in `MobileMenu.tsx`, `Sidebar.tsx`, and Admin Panel (`AdminPage.tsx`).
     4. Use `useFeatureAccess` hook to gate access so admins can toggle it per user.
 
-## 7. Calendar & Planner Logic
+## 8. Mobile Bottom Navigation Standards (`BottomNavBar`)
+- `BottomNavBar` must always have an odd-numbered (5 items) symmetrical structure:
+  1. **Ana Sayfa** (`/`)
+  2. **Koleksiyon** (`/movie`)
+  3. **+ Ekle** (`/create`) — Centered, matching height and vertical alignment with other icons (`w-11 h-8 rounded-xl`). Never use disproportionate/protruding offsets that break the bar's balance.
+  4. **Harcamalar** (`/expenses`)
+  5. **Menü** (`#`)
+- PWA safe area insets (`paddingBottom: max(env(safe-area-inset-bottom), 8px)`) must be preserved.
+
+## 9. Calendar & Planner Logic
 - **Match Display**:
   - Do not aggressively purge past matches with strict `isAfter(now)` filters in calendar views. Allow users to view all matches for the currently displayed month.
 
-## 8. Development Verification Protocol
+## 10. Development Verification Protocol
 - Before finalizing ANY task:
-  1. Verify changes against these 8 core rules.
+  1. Verify changes against these 10 core rules.
   2. Run `npm run build` (`tsc -b && vite build`) to guarantee zero TypeScript or build regression.

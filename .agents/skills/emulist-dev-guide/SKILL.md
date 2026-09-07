@@ -73,7 +73,18 @@ Sitedeki tüm modal ve diyaloglar 4 standart tipe göre yapılandırılmalıdır
 - Tüm dizi ve bölüm durum güncellemeleri için `episodeTrackingService.ts` kullanılmalıdır.
 - İzlenen, devam eden ve izlenmeyen durumlar arayüzde doğru renk ve rozetlerle ayrıştırılmalıdır.
 
-## 10. Geliştirme ve Derleme Doğrulama Protokolü
+## 10. Zorunlu İki Dilli (TR / EN) Yerelleştirme (Mandatory Localization)
+- **Sıfır Sabit Metin (No Hardcoded Strings)**:
+  - Yeni bir sayfa, modal, buton, form etiketi veya bildirim eklendiğinde ASLA sadece Türkçe veya sadece İngilizce metin gömülmemelidir.
+  - Her zaman hem `src/frontend/translations/tr.ts` hem de `en.ts` dosyalarına karşılık gelen anahtarlar eklenmeli ve bileşenlerde `const { t } = useLanguage();` kullanılarak `t('...')` ile çağrılmalıdır.
+  - Dil değiştirici (TR/EN) tıklandığında ekrandaki hiçbir bileşen dilsiz veya çevrilmemiş kalmamalıdır.
+
+## 11. Git Yetkilendirme Protokolü (MANDATORY)
+- **İzinsiz Commit ve Push Yasağı**:
+  - Kullanıcı sohbet içerisinde AÇIKÇA *"commit at"*, *"commit yap"*, *"pushla"* veya *"git'e gönder"* demediği sürece ASLA `git commit` veya `git push` komutları çalıştırılmamalıdır.
+  - Tüm dosya değişiklikleri çalışma alanında (working tree) bırakılmalı, kullanıcı inceleyip onay verdikten sonra yalnızca kullanıcının talimatıyla commit'lenmelidir.
+
+## 12. Geliştirme ve Derleme Doğrulama Protokolü
 - Herhangi bir geliştirme tamamlanmadan önce:
-  1. Yukarıdaki 10 mimari ve marka kuralı kontrol edilmelidir.
+  1. Yukarıdaki 11 mimari, dil, marka ve izin kuralı kontrol edilmelidir.
   2. Terminalde `npm run build` (`tsc -b && vite build`) komutu çalıştırılarak 0 TypeScript/derleme hatası teyit edilmelidir.

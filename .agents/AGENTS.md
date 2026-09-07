@@ -67,7 +67,18 @@ This file contains repository-specific guidelines, architecture constraints, and
 - **Match Display**:
   - Do not aggressively purge past matches with strict `isAfter(now)` filters in calendar views. Allow users to view all matches for the currently displayed month.
 
-## 10. Development Verification Protocol
+## 10. Mandatory Localization (TR / EN)
+- **Zero Hardcoded Strings**:
+  - Whenever adding or modifying pages, components, modals, form labels, toasts, or error messages, NEVER hardcode static strings in only Turkish or only English.
+  - ALWAYS register new translation keys in BOTH `src/frontend/translations/tr.ts` and `src/frontend/translations/en.ts`.
+  - Use `const { t } = useLanguage();` and `t('...')` in components so switching between TR and EN immediately translates every visual element without untranslated gaps.
+
+## 11. Git Permission Protocol (MANDATORY)
+- **Strict Prohibition on Automatic Commits and Pushes**:
+  - NEVER execute `git commit` or `git push` autonomously without explicit instruction or approval from the user.
+  - All file edits must remain staged or in the working directory for user review. Only run git commits or pushes when the user explicitly requests it (e.g., "commit at", "pushla").
+
+## 12. Development Verification Protocol
 - Before finalizing ANY task:
-  1. Verify changes against these 10 core rules.
+  1. Verify changes against these 12 core rules.
   2. Run `npm run build` (`tsc -b && vite build`) to guarantee zero TypeScript or build regression.

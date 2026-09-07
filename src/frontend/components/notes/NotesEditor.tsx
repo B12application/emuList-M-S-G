@@ -574,10 +574,10 @@ export default function NotesEditor({
           <FaEdit />
         </div>
         <h3 className="text-lg font-bold text-stone-800 dark:text-zinc-200 mb-2">
-          Görüntülenecek Not Seçilmedi
+          {t('notes.noNoteSelectedTitle') || 'Görüntülenecek Not Seçilmedi'}
         </h3>
         <p className="text-xs text-stone-500 dark:text-zinc-400 max-w-sm">
-          Soldaki menüden bir not seçebilir veya yeni bir Obsidian notu oluşturabilirsiniz.
+          {t('notes.noNoteSelectedDesc') || 'Soldaki menüden bir not seçebilir veya yeni bir zengin not oluşturabilirsiniz.'}
         </p>
       </div>
     );
@@ -742,17 +742,17 @@ export default function NotesEditor({
             onClick={handleScreenCaptureClick}
             disabled={isCapturing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50"
-            title="Ekran Görüntüsü Al (Pencereler, Sekmeler veya Tam Ekran)"
+            title={t('notes.screenCaptureTooltip') || 'Ekran Görüntüsü Al (Pencereler, Sekmeler veya Tam Ekran)'}
           >
             <FaCamera className="text-xs" />
-            <span className="hidden sm:inline">Ekran Görüntüsü Al</span>
+            <span className="hidden sm:inline">{t('notes.screenCapture') || 'Ekran Görüntüsü Al'}</span>
           </button>
 
           {/* Upload Image Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
             className="p-2 rounded-xl text-stone-600 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors text-xs"
-            title="Görsel / Ekran Görüntüsü Yükle"
+            title={t('notes.uploadImageTooltip') || 'Görsel / Ekran Görüntüsü Yükle'}
           >
             <FaImage />
           </button>
@@ -774,7 +774,7 @@ export default function NotesEditor({
                 ? 'bg-amber-400/20 text-amber-600 dark:text-amber-400'
                 : 'text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300'
             }`}
-            title={note.isPinned ? 'Sabitlemeyi Kaldır' : 'Başa Sabitle'}
+            title={note.isPinned ? t('notes.unpin') : t('notes.pin')}
           >
             <FaThumbtack />
           </button>
@@ -786,7 +786,7 @@ export default function NotesEditor({
                 ? 'bg-amber-400/20 text-amber-500'
                 : 'text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300'
             }`}
-            title={note.isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}
+            title={note.isFavorite ? t('notes.unfavorite') : t('notes.favoriteAction')}
           >
             <FaStar />
           </button>
@@ -800,7 +800,7 @@ export default function NotesEditor({
                   ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white font-bold shadow-sm'
                   : 'text-stone-500 dark:text-zinc-400 hover:text-stone-800'
               }`}
-              title="Düzenleme Modu"
+              title={t('notes.editMode') || 'Düzenleme Modu'}
             >
               <FaEdit />
             </button>
@@ -813,7 +813,7 @@ export default function NotesEditor({
                     ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white font-bold shadow-sm'
                     : 'text-stone-500 dark:text-zinc-400 hover:text-stone-800'
                 }`}
-                title="Bölünmüş Görünüm (Canlı Önizleme)"
+                title={t('notes.splitMode') || 'Bölünmüş Görünüm (Canlı Önizleme)'}
               >
                 <FaColumns />
               </button>
@@ -826,7 +826,7 @@ export default function NotesEditor({
                   ? 'bg-white dark:bg-zinc-700 text-stone-900 dark:text-white font-bold shadow-sm'
                   : 'text-stone-500 dark:text-zinc-400 hover:text-stone-800'
               }`}
-              title="Önizleme / Okuma Modu"
+              title={t('notes.previewMode') || 'Önizleme / Okuma Modu'}
             >
               <FaEye />
             </button>
@@ -836,7 +836,7 @@ export default function NotesEditor({
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="p-2 rounded-xl text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors text-xs hidden sm:block"
-            title={isFullscreen ? 'Tam Ekrandan Çık' : 'Odaklanma Modu (Tam Ekran)'}
+            title={isFullscreen ? (t('notes.fullscreenExit') || 'Tam Ekrandan Çık') : (t('notes.fullscreenEnter') || 'Odaklanma Modu (Tam Ekran)')}
           >
             {isFullscreen ? <FaCompress /> : <FaExpand />}
           </button>
@@ -844,7 +844,7 @@ export default function NotesEditor({
           <button
             onClick={handleExportMarkdown}
             className="p-2 rounded-xl text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors text-xs"
-            title="Markdown Olarak İndir (.md)"
+            title={t('notes.exportMarkdown') || 'Markdown Olarak İndir (.md)'}
           >
             <FaFileDownload />
           </button>
@@ -852,7 +852,7 @@ export default function NotesEditor({
           <button
             onClick={() => onDeleteNote(note.id)}
             className="p-2 rounded-xl text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-xs"
-            title="Çöp Kutusuna Taşı"
+            title={t('notes.moveToTrash') || 'Çöp Kutusuna Taşı'}
           >
             <FaTrash />
           </button>
@@ -860,13 +860,13 @@ export default function NotesEditor({
       </div>
 
       {/* TITLE & TAGS SECTION */}
-      <div className="px-6 pt-5 pb-3 shrink-0 space-y-3">
+      <div className="px-6 pt-4 pb-2 shrink-0 space-y-2.5">
         {/* Title Input */}
         <input
           type="text"
           value={note.title || ''}
           onChange={(e) => onUpdateNote({ title: e.target.value })}
-          placeholder="Not Başlığı..."
+          placeholder={t('notes.noteTitlePlaceholder') || 'Not Başlığı...'}
           className="w-full bg-transparent text-2xl sm:text-3xl font-black text-stone-900 dark:text-white placeholder:text-stone-300 dark:placeholder:text-zinc-700 focus:outline-none tracking-tight"
         />
 
@@ -1107,13 +1107,18 @@ export default function NotesEditor({
             }`}
           >
             <div
-              className={`w-full h-full p-6 bg-transparent custom-scrollbar overflow-y-auto ${getFontFamilyClass(
+              onClick={() => {
+                if (editor && !editor.isFocused) {
+                  editor.commands.focus('end');
+                }
+              }}
+              className={`w-full h-full p-6 bg-transparent custom-scrollbar overflow-y-auto cursor-text flex flex-col ${getFontFamilyClass(
                 note.fontFamily
               )} ${getFontSizeClass(note.fontSize)} ${getLineHeightClass(
                 note.lineHeight
               )} text-stone-900 dark:text-zinc-100`}
             >
-              <EditorContent editor={editor} className="outline-none" />
+              <EditorContent editor={editor} className="outline-none min-h-full flex-1 flex flex-col" />
             </div>
           </div>
         )}
@@ -1142,7 +1147,7 @@ export default function NotesEditor({
         <div className="px-6 py-2.5 border-t border-stone-200/70 dark:border-zinc-800/70 bg-stone-50/90 dark:bg-zinc-900/90 shrink-0 flex items-center gap-3 overflow-x-auto custom-scrollbar">
           <span className="text-[11px] font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider shrink-0 flex items-center gap-1.5">
             <FaCamera className="text-amber-500 text-sm" />
-            <span>Eklenen Görseller ({note.attachments.length})</span>
+            <span>{(t('notes.addedImages') || 'Eklenen Görseller ({count})').replace('{count}', note.attachments.length.toString())}</span>
           </span>
 
           <div className="flex items-center gap-2.5">
@@ -1154,7 +1159,7 @@ export default function NotesEditor({
                   setLightboxAlt(att.name);
                 }}
                 className="group relative w-16 h-16 rounded-xl overflow-hidden bg-stone-200 dark:bg-zinc-800 border-2 border-stone-300 dark:border-zinc-700 hover:border-amber-500 dark:hover:border-amber-500 shrink-0 cursor-pointer shadow-sm hover:shadow-md hover:scale-105 transition-all"
-                title={`${att.name} (Tıklayarak büyüt)`}
+                title={`${att.name} (${t('notes.imageEnlargeTooltip') || 'Tıklayarak büyüt'})`}
               >
                 <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white text-xs">
@@ -1166,7 +1171,7 @@ export default function NotesEditor({
                       setLightboxAlt(att.name);
                     }}
                     className="p-1 rounded hover:bg-white/20 text-white"
-                    title="Büyüt"
+                    title={t('notes.imageEnlargeTooltip') || 'Büyüt'}
                   >
                     <FaEye />
                   </button>
@@ -1174,7 +1179,7 @@ export default function NotesEditor({
                     type="button"
                     onClick={(e) => handleInsertAttachmentTag(att, e)}
                     className="p-1 rounded hover:bg-white/20 text-amber-300"
-                    title="Metne Ekle"
+                    title={t('notes.insertIntoText') || 'Metne Ekle'}
                   >
                     <FaPlus />
                   </button>
@@ -1182,7 +1187,7 @@ export default function NotesEditor({
                     type="button"
                     onClick={(e) => handleDeleteAttachment(att.id, e)}
                     className="p-1 rounded hover:bg-red-500/50 text-red-300"
-                    title="Eki Sil"
+                    title={t('notes.deleteAttachment') || 'Eki Sil'}
                   >
                     <FaTrash />
                   </button>

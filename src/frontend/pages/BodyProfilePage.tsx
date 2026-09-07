@@ -13,6 +13,7 @@ import {
   FaDumbbell, FaExclamationTriangle, FaArrowUp, FaArrowDown, FaMedal
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
 import { getChatSessions, getDateKey } from '../services/calorieChatService';
@@ -297,37 +298,25 @@ export default function BodyProfilePage() {
   const activeMeta = selectedKey ? MEASUREMENT_LABELS[selectedKey] : null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 pb-28">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/calorie-details"
-            className="w-10 h-10 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 flex items-center justify-center text-stone-600 dark:text-zinc-300 hover:bg-amber-400/20 transition-colors shadow-sm shrink-0"
-            title="Kalori Raporuna Dön"
+    <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28">
+      {/* Header Banner */}
+      <PageHeaderBanner
+        title="Beden Profili"
+        subtitle="15 bölge mezura ölçümü, metabolizma analizi ve kalori açığı motoru"
+        icon={<FaHeartbeat className="text-rose-500 text-xl" />}
+        backTo="/calorie-details"
+        backLabel="Kalori Raporu"
+        action={
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-black text-xs hover:bg-amber-300 transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer shrink-0"
           >
-            <FaArrowLeft className="text-sm" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-              <FaHeartbeat className="text-rose-500 text-xl" />
-              Beden Profili
-            </h1>
-            <p className="text-xs text-stone-500 dark:text-zinc-400">
-              15 bölge mezura ölçümü, metabolizma analizi ve kalori açığı motoru
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-black text-xs hover:bg-amber-300 transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer shrink-0"
-        >
-          <FaSave className={`text-sm ${saving ? 'animate-spin' : ''}`} />
-          {saving ? 'Kaydediliyor...' : 'Tümünü Kaydet'}
-        </button>
-      </div>
+            <FaSave className={`text-sm ${saving ? 'animate-spin' : ''}`} />
+            {saving ? 'Kaydediliyor...' : 'Tümünü Kaydet'}
+          </button>
+        }
+      />
 
       {/* 2 Ana Sekme ve Sağ Tarafta BMI / Vücut Göstergesi */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">

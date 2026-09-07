@@ -8,7 +8,7 @@ import {
     PieChart, Pie, Cell, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area
 } from 'recharts';
 import { motion } from 'framer-motion';
-import Footer from '../components/Footer';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#e11d48']; // Blue, Emerald, Amber, Rose
 
@@ -284,29 +284,14 @@ export default function StatsPage() {
 
     return (
         <div className="min-h-screen pb-12">
-            {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
-                <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                                <FaChartPie className="text-amber-500" />
-                                {t('stats.title')}
-                            </h1>
-                            <p className="text-stone-500 dark:text-zinc-400 mt-2">
-                                İstatistiklerinizi ve aktivitelerinizi görüntüleyin
-                            </p>
-                        </div>
-                        <Link
-                            to="/profile"
-                            className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
-                        >
-                            <FaArrowRight className="rotate-180" />
-                            <span className="hidden sm:inline">Profile Dön</span>
-                        </Link>
-                    </div>
-                </div>
-            </div>
+            {/* Page Header Banner */}
+            <PageHeaderBanner
+                title={t('stats.title')}
+                subtitle="İstatistiklerinizi ve aktivitelerinizi görüntüleyin"
+                icon={<FaChartPie />}
+                backTo="/profile"
+                backLabel="Profile Dön"
+            />
 
             <div className="w-full mx-auto">
                 {/* KEY METRICS */}
@@ -752,8 +737,6 @@ export default function StatsPage() {
                         ))}
                     </div>
                 </div>
-
-                <Footer />
             </div>
         </div>
     );

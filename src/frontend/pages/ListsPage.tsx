@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus, FaListUl, FaLock, FaGlobe, FaTrash, FaTimes, FaCheck, FaSpinner, FaArrowRight, FaEllipsisV, FaEdit, FaShare } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import useCustomLists from '../hooks/useCustomLists';
 import { useLanguage } from '../context/LanguageContext';
-import Footer from '../components/Footer';
 
 const LIST_COLORS = [
     '#ef4444', '#f97316', '#f59e0b', '#84cc16',
@@ -43,40 +43,25 @@ export default function ListsPage() {
 
     return (
         <div className="min-h-screen pb-12">
-            {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
-                <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                                <FaListUl className="text-violet-500" />
-                                {t('lists.title') || 'Listelerim'}
-                            </h1>
-                            <p className="text-stone-500 dark:text-zinc-400 mt-2">
-                                Özel listelerinizi oluşturun ve yönetin
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Link
-                                to="/profile"
-                                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
-                            >
-                                <FaArrowRight className="rotate-180" />
-                                Profile Dön
-                            </Link>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setShowCreateModal(true)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all"
-                            >
-                                <FaPlus />
-                                <span className="hidden sm:inline">{t('lists.createNew') || 'Yeni Liste'}</span>
-                            </motion.button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Header Banner */}
+            <PageHeaderBanner
+                title={t('lists.title') || 'Listelerim'}
+                subtitle={t('lists.subtitle') || 'Özel listelerinizi oluşturun ve yönetin'}
+                icon={<FaListUl className="text-violet-500 text-xl" />}
+                backTo="/profile"
+                backLabel="Profile Dön"
+                action={
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowCreateModal(true)}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all cursor-pointer"
+                    >
+                        <FaPlus />
+                        <span className="hidden sm:inline">{t('lists.createNew') || 'Yeni Liste'}</span>
+                    </motion.button>
+                }
+            />
 
             <div className="w-full mx-auto">
                 {/* Loading State */}
@@ -343,8 +328,6 @@ export default function ListsPage() {
                     )}
                 </AnimatePresence>
             </div>
-
-            <Footer />
         </div>
     );
 }

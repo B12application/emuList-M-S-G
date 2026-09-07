@@ -26,6 +26,7 @@ import toast from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 
 export default function SettingsPage() {
     const { user } = useAuth();
@@ -450,29 +451,15 @@ export default function SettingsPage() {
             />
 
 
-            {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
-                <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                                <FaCog className="text-amber-500" />
-                                {t('settings.title')}
-                            </h1>
-                            <p className="text-stone-500 dark:text-zinc-400 mt-2">
-                                Hesap ayarlarınızı, IMDb senkronizasyonunu ve yedeklerinizi yönetin
-                            </p>
-                        </div>
-                        <Link
-                            to="/"
-                            className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
-                        >
-                            <FaHome />
-                            <span className="hidden sm:inline">Ana Sayfa</span>
-                        </Link>
-                    </div>
-                </div>
-            </div>
+            {/* Page Header Banner */}
+            <PageHeaderBanner
+                title={t('settings.title')}
+                subtitle="Hesap ayarlarınızı, IMDb senkronizasyonunu ve yedeklerinizi yönetin"
+                icon={<FaCog />}
+                backTo="/"
+                backLabel="Ana Sayfa"
+                className="max-w-5xl 2xl:max-w-6xl mx-auto"
+            />
 
             <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-2 sm:px-4">
                 {/* Tab Navigation - Modern Cards */}

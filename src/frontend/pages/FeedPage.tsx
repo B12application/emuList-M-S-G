@@ -6,9 +6,9 @@ import useActivities from '../hooks/useActivities';
 import ActivityCard from '../components/ActivityCard';
 import SearchBar from '../components/SearchBar';
 import { ActivityCardSkeleton } from '../components/ui/SkeletonLoader';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
-import Footer from '../components/Footer';
 
 export default function FeedPage() {
     const { activities, loading } = useActivities();
@@ -66,31 +66,14 @@ export default function FeedPage() {
     if (loading) {
         return (
             <div className="min-h-screen pb-16">
-                {/* Header */}
-                <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
-                    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                                    <div className="p-2.5 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl text-white shadow-lg shadow-rose-500/25">
-                                        <FaHistory className="text-2xl" />
-                                    </div>
-                                    {t('feed.title')}
-                                </h1>
-                                <p className="text-stone-500 dark:text-zinc-400 mt-2">
-                                    Son aktivitelerinizi takip edin
-                                </p>
-                            </div>
-                            <Link
-                                to="/profile"
-                                className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
-                            >
-                                <FaArrowRight className="rotate-180" />
-                                <span className="hidden sm:inline">Profile Dön</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+            {/* Header Banner */}
+            <PageHeaderBanner
+                title={t('feed.title') || 'Aktivite Akışı'}
+                subtitle="Son aktivitelerinizi takip edin"
+                icon={<FaHistory className="text-rose-500 text-xl" />}
+                backTo="/profile"
+                backLabel="Profile Dön"
+            />
 
                 <div className="w-full mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -116,33 +99,18 @@ export default function FeedPage() {
 
     return (
         <div className="min-h-screen pb-0">
-            {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl">
-                <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                                <div className="p-2.5 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl text-white shadow-lg shadow-rose-500/25">
-                                    <FaRss className="text-2xl" />
-                                </div>
-                                {t('feed.title')}
-                            </h1>
-                            <p className="text-stone-500 dark:text-zinc-400 mt-2">
-                                {groupedActivities.length > 0
-                                    ? `${groupedActivities.length} içerikte toplam ${activityStats.totalActivities} aktivite`
-                                    : 'Henüz aktivite yok'}
-                            </p>
-                        </div>
-                        <Link
-                            to="/profile"
-                            className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
-                        >
-                            <FaArrowRight className="rotate-180" />
-                            <span className="hidden sm:inline">Profile Dön</span>
-                        </Link>
-                    </div>
-                </div>
-            </div>
+            {/* Header Banner */}
+            <PageHeaderBanner
+                title={t('feed.title') || 'Aktivite Akışı'}
+                subtitle={
+                    groupedActivities.length > 0
+                        ? `${groupedActivities.length} içerikte toplam ${activityStats.totalActivities} aktivite`
+                        : 'Henüz aktivite yok'
+                }
+                icon={<FaRss className="text-rose-500 text-xl" />}
+                backTo="/profile"
+                backLabel="Profile Dön"
+            />
 
             <div className="w-full mx-auto mb-16">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -336,8 +304,6 @@ export default function FeedPage() {
                     </div>
                 </div>
             </div>
-
-            <Footer />
         </div>
     );
 }

@@ -80,5 +80,34 @@ This file contains repository-specific guidelines, architecture constraints, and
 
 ## 12. Development Verification Protocol
 - Before finalizing ANY task:
-  1. Verify changes against these 12 core rules.
+  1. Verify changes against these core rules.
   2. Run `npm run build` (`tsc -b && vite build`) to guarantee zero TypeScript or build regression.
+
+## 13. Navbar Açılır Menü Mimarisi ve Tasarım Bütünlüğü (MANDATORY STANDARD)
+- **Tek Tip Dropdown Mimarisi**:
+  - `Header.tsx` içindeki tüm açılır menüler (`listsDropdown`, `agendaDropdown`, `toolsDropdown`, `addDropdown` vb.) istisnasız **aynı tasarım dilini** taşımalıdır:
+    1. **Konteyner Boyutu & Efekt**: Eşit genişlik (`w-64`), yuvarlatılmış köşeler (`rounded-2xl`), cam efekti (`backdrop-blur-xl bg-white/95 dark:bg-zinc-900/95 border border-stone-200/80 dark:border-zinc-800/80 shadow-2xl`).
+    2. **İkon Kutusu Standardı**: Asla çıplak/renksiz ikon ile kutulu ikon bir arada kullanılmaz. Her menü öğesi özel renkli arka plana sahip bir ikon kutusuna (`w-8 h-8 rounded-xl flex items-center justify-center shrink-0`) sahip olmalıdır.
+    3. **İki Satırlı Hiyerarşi**: Her menü elemanı kalın bir başlık (`text-xs font-bold`) ve altında hafif bir açıklama metni (`text-[10px] text-stone-400 dark:text-zinc-400`) içermelidir.
+
+## 14. B12 Platform Kimliği: Kişisel Yaşam Asistanı (Personal Life Agent)
+- **Genişletilmiş Platform Kapsamı**:
+  - B12 platformu yalnızca dizi, film veya oyun kaydedilen bir arşiv sitesi değildir.
+  - B12; **Kişisel Yaşam Asistanı (Personal Life Agent) & Dijital Hafıza Vitaminin**'dir.
+  - Sitedeki footer, karşılama metinleri ve tanıtım bölümlerinde 4 temel yaşam sütunu eşit güçte temsil edilmelidir:
+    1. **Medya & Arşiv**: Filmler, Diziler, Oyunlar, Kitaplar, Özel Listeler
+    2. **Ajanda & Yaşam**: Takvim & Ajanda, Zengin Notlar, Spor / Maç Fikstürü
+    3. **Finans & Takip**: Harcamalar ve Bütçe Yönetimi
+    4. **Akıllı Araçlar**: Seyahat Planlayıcı, AI Destekli Beden & Kalori Takibi
+
+## 15. Standart Sayfa Bilgilendirme Bannerı (PageHeaderBanner)
+- Ayarlar ve İstatistikler sayfalarında uygulanan sayfa bilgilendirme başlığı mimarisi standarttır (`PageHeaderBanner`).
+- İlgili sayfalarda sayfa ikonu, kalın `h1` başlığı, açıklama metni ve hızlı geri/aksiyon butonu içeren bu düzen korunmalı ve tüm ana sayfalara uygulanmalıdır.
+
+## 16. Tam Ekran Akışkanlığı & Ekran Ölçeklenebilirliği (MANDATORY STANDARD)
+- **Sıkıştırılmış Dar Tasarımlara Kesin Yasak**:
+  - B12 platformu sağdan ve soldan yapay dar sınırlayıcılarla (`max-w-3xl`, `max-w-4xl`, `max-w-md` vb.) sıkıştırılmış, klostrofobik bir site **DEĞİLDİR**.
+  - Tüm sayfalar, araçlar (özellikle Kalori Raporu, AI Sohbet Asistanı, Beden Profili vb.) ve listeler, her inç masaüstü/geniş monitörden en küçük cep telefonu ekranına kadar tam uyumlu, ferah ve akışkan (`w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8`) genişlik ölçekleme mimarisine sahip olmalıdır.
+  - Sayfa ana gövdelerinde monitör genişliğini boşa harcayan yapay dar container sınırları asla kullanılmamalıdır.
+
+

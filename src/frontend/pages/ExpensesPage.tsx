@@ -13,6 +13,7 @@ import { useTheme } from '../context/ThemeContext';
 import type { ParsedTransaction } from '../utils/pdfParserService';
 import { FaBars, FaTimes, FaPlus } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 
 // Modular Components
 import CategorySidebar from '../components/expenses/CategorySidebar';
@@ -605,29 +606,37 @@ const ExpensesPage: React.FC = () => {
   };
 
   return (
-    <div className="pt-3 md:pt-6 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
-      <div className="mb-8 flex items-center justify-center sm:justify-end gap-2">
-        {/* Mükerrer Harcama İnceleme & Yönetme Butonu */}
-        {duplicateExpenseIds.length > 0 && (
-          <button
-            onClick={() => setIsDuplicateModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-2xl text-xs font-bold transition-all shadow-sm active:scale-95"
-            title={`${duplicateExpenseIds.length} mükerrer harcamayı incele ve yönet`}
-          >
-            <FaLayerGroup size={12} />
-            <span>{duplicateExpenseIds.length} Mükerrer Harcama</span>
-          </button>
-        )}
+    <div className="pt-1 selection:bg-stone-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-500">
+      {/* Header Banner */}
+      <PageHeaderBanner
+        title={t('expenses.title') || 'Harcamalarım & Bütçe'}
+        subtitle={t('expenses.subtitle') || 'Gelir, gider, taksitler, altın yatırımı ve bütçe planlaması'}
+        icon={<FaWallet className="text-emerald-500 text-xl" />}
+        action={
+          <div className="flex items-center gap-2">
+            {duplicateExpenseIds.length > 0 && (
+              <button
+                onClick={() => setIsDuplicateModalOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-2xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                title={`${duplicateExpenseIds.length} mükerrer harcamayı incele ve yönet`}
+              >
+                <FaLayerGroup size={12} />
+                <span>{duplicateExpenseIds.length} Mükerrer</span>
+              </button>
+            )}
 
-        {/* Mobil için Blur (Göz) Butonu */}
-        <button
-          onClick={() => setIsBlurred(!isBlurred)}
-          className="md:hidden flex items-center justify-center w-10 h-10 shrink-0 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-          title={isBlurred ? "Fiyatları Göster" : "Fiyatları Gizle"}
-        >
-          {isBlurred ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
-        </button>
+            <button
+              onClick={() => setIsBlurred(!isBlurred)}
+              className="flex items-center justify-center w-10 h-10 shrink-0 bg-white dark:bg-zinc-900 rounded-2xl border border-stone-200 dark:border-zinc-800 shadow-sm text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
+              title={isBlurred ? 'Fiyatları Göster' : 'Fiyatları Gizle'}
+            >
+              {isBlurred ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+            </button>
+          </div>
+        }
+      />
 
+      <div className="mb-6 flex items-center justify-center sm:justify-end gap-2">
         <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
           {/* Ana sekmeler - her zaman görünür */}
           {[

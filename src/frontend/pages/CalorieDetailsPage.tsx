@@ -11,6 +11,7 @@ import {
   FaCalendarDay, FaTimes, FaHistory
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
@@ -428,61 +429,50 @@ export default function CalorieDetailsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
-      {/* Header Bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/calorie-chat"
-            className="w-10 h-10 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 flex items-center justify-center text-stone-600 dark:text-zinc-300 hover:bg-amber-400/20 transition-colors shadow-sm"
-          >
-            <FaArrowLeft className="text-sm" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-              <FaUtensils className="text-amber-500 text-xl" />
-              Detaylı Kalori Raporu
-            </h1>
-            <p className="text-xs text-stone-500 dark:text-zinc-400">
-              emuAI tarafından analiz edilip kaydedilen tüm öğünleriniz
-            </p>
+    <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+      {/* Header Banner */}
+      <PageHeaderBanner
+        title="Detaylı Kalori Raporu"
+        subtitle="B12 AI tarafından analiz edilip kaydedilen tüm öğünleriniz, günlük kalori ve makro dağılımı"
+        icon={<FaUtensils className="text-amber-500 text-xl" />}
+        backTo="/calorie-chat"
+        backLabel="Sohbete Dön"
+        action={
+          <div className="flex items-center gap-2">
+            {/* Daily AI Quota Badge */}
+            <div
+              className={`hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border text-xs font-bold shadow-sm ${
+                quotaUsage.isLimitReached
+                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                  : quotaUsage.remainingToday <= 5
+                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300'
+                    : 'bg-amber-500/10 dark:bg-amber-400/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
+              }`}
+              title="Günlük AI analiz kotanız (Gece 00:00'da sıfırlanır)"
+            >
+              <FaFire className={`text-xs ${quotaUsage.isLimitReached ? 'text-rose-500' : 'text-amber-500 animate-pulse'}`} />
+              <span>Kalan AI Limiti:</span>
+              <span className="font-black">{quotaUsage.remainingToday} / {quotaUsage.dailyLimit}</span>
+            </div>
+
+            <Link
+              to="/body-profile"
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-500/30 transition-colors shadow-sm"
+            >
+              <FaHeartbeat className="text-sm" />
+              <span className="hidden sm:inline">Beden Profilim</span>
+            </Link>
+
+            <Link
+              to="/calorie-chat"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-bold text-xs hover:bg-amber-300 transition-colors shadow-md shadow-amber-500/20"
+            >
+              <FaRobot className="text-sm" />
+              <span>Sohbete Git</span>
+            </Link>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Daily AI Quota Badge */}
-          <div
-            className={`hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border text-xs font-bold shadow-sm ${
-              quotaUsage.isLimitReached
-                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                : quotaUsage.remainingToday <= 5
-                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300'
-                  : 'bg-amber-500/10 dark:bg-amber-400/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
-            }`}
-            title="Günlük AI analiz kotanız (Gece 00:00'da sıfırlanır)"
-          >
-            <FaFire className={`text-xs ${quotaUsage.isLimitReached ? 'text-rose-500' : 'text-amber-500 animate-pulse'}`} />
-            <span>Kalan AI Limiti:</span>
-            <span className="font-black">{quotaUsage.remainingToday} / {quotaUsage.dailyLimit}</span>
-          </div>
-
-          <Link
-            to="/body-profile"
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-500/30 transition-colors shadow-sm"
-          >
-            <FaHeartbeat className="text-sm" />
-            <span className="hidden sm:inline">Beden Profilim</span>
-          </Link>
-
-          <Link
-            to="/calorie-chat"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-bold text-xs hover:bg-amber-300 transition-colors shadow-md shadow-amber-500/20"
-          >
-            <FaRobot className="text-sm" />
-            <span>Sohbete Git</span>
-          </Link>
-        </div>
-      </div>
+        }
+      />
 
       {/* Mobile AI Quota Banner */}
       <div className="sm:hidden mb-4 p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 flex items-center justify-between text-xs">

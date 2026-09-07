@@ -222,8 +222,10 @@ html:not(.dark) body::after {
 /* TipTap ProseMirror Editor Custom Styling */
 .ProseMirror {
   outline: none;
-  min-height: 250px;
+  min-height: 100%;
+  flex: 1 1 auto;
   word-break: break-word;
+  cursor: text;
 }
 .ProseMirror p {
   margin-top: 0.5rem;

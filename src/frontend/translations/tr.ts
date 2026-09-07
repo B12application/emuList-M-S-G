@@ -20,6 +20,20 @@ export const translationsTR = {
         logout: 'Çıkış Yap',
         calendar: 'Takvim',
         travelPlanner: 'Gezi Planlayıcı',
+        tools: 'Araçlar',
+        myShowsSub: 'İzlenen dizi ve bölümler',
+        moviesSub: 'İzlenenler ve vizyon',
+        seriesSub: 'Sezon ve bölüm takibi',
+        gamesSub: 'Oynananlar ve puanlar',
+        booksSub: 'Okunanlar ve hedefler',
+        calendarSub: 'Aylık, haftalık ajanda',
+        notesSub: 'Klasörler & zengin notlar',
+        fixturesSub: 'Süper Lig & Avrupa maçları',
+        travelPlannerSub: 'Rotalar & seyahat listesi',
+        calorieSub: 'Günlük besin ve kalori',
+        bodySub: 'Vücut ölçüleri ve analiz',
+        createSub: 'Yeni medya kaydı ekle',
+        quickEventSub: 'Ajandaya plan ekle',
     },
 
     // Map Page
@@ -248,6 +262,22 @@ export const translationsTR = {
         trendingSubtitle: 'Bu ay en çok izlenen popüler içerikler',
         trendingMovies: 'Trend Filmler',
         trendingSeries: 'Trend Diziler',
+        bestRecommendations: 'Küratör Seçkisi',
+        curatorPicksSubtitle: 'Özenle derlenen sinematik tavsiyeler',
+        addToLibrary: 'Kütüphaneye Ekle',
+        addingToLibrary: 'Ekleniyor...',
+        addedToLibrary: 'Eklendi',
+        inLibrary: 'Kütüphanenizde',
+        recentActivitySubtitle: 'Kişisel arşivinize en son eklediğiniz kayıtlar',
+        archiveItem: 'Arşivinizde',
+        nextEpisodeWatch: '+1 Bölüm İzle',
+        continueWatchingSubtitle: 'Kaldığın yerden devam et',
+        spotlightSubtitle: 'Kütüphanenden henüz izlenmemiş en yüksek puanlı içerik',
+        waitingInQueue: 'Sırasını bekleyen içerikler',
+        trendingRankBadge: 'Trend Sıralaması',
+        footerBrandSlogan: 'Dijital Hafıza Vitaminin',
+        footerDeveloper: 'Geliştirici: EMU',
+        quickLinks: 'Hızlı Erişim',
         today: 'Bugün',
         thisWeek: 'Bu Hafta',
 
@@ -518,6 +548,7 @@ export const translationsTR = {
 
     // Common
     common: {
+        all: 'Tümü',
         loading: 'Yükleniyor...',
         error: 'Hata',
         success: 'Başarılı',
@@ -601,10 +632,34 @@ export const translationsTR = {
 
     // Footer
     footer: {
-        subtitle: 'Dijital Deneyim ve Tasarım',
+        subtitle: 'Dijital Hafıza Vitaminin',
+        slogan: 'Tüm izlediklerini, oynadıklarını ve keşfettiklerini unutulmaz bir deneyimle arşivle.',
         rights: 'Tüm Hakları Saklıdır.',
         prefix: 'Türkiye\'de',
         suffix: 'ile yapıldı',
+        developer: 'Geliştirici: EMU',
+        quickLinks: 'Hızlı Erişim',
+        home: 'Ana Sayfa',
+        movies: 'Filmler',
+        series: 'Diziler',
+        expenses: 'Harcamalar',
+        stats: 'İstatistikler',
+        profile: 'Profil',
+        pillarArchive: 'Koleksiyon & Arşiv',
+        pillarAgenda: 'Ajanda & Yaşam',
+        pillarFinance: 'Finans & Araçlar',
+        personalAgentTitle: 'Kişisel Yaşam Asistanı',
+        personalAgentDesc: 'Sadece bir medya arşivi değil; ajanda, bütçe, zengin notlar ve akıllı yaşam vitaminin.',
+        notes: 'Notlar',
+        calendar: 'Takvim',
+        fixtures: 'Maç Fikstürü',
+        travel: 'Seyahat Planlayıcı',
+        calorie: 'Kalori & Beden AI',
+        lists: 'Özel Listeler',
+        myShows: 'İzlediklerim',
+        collection: 'Koleksiyon',
+        agenda: 'Ajanda & Notlar',
+        tools: 'Akıllı Araçlar',
     },
 
     // Tags
@@ -799,7 +854,8 @@ export const translationsTR = {
 
     // Planner
     planner: {
-        title: 'Planlayıcı',
+        title: 'Takvim & Ajanda',
+        subtitle: 'Toplantılar, günlük planlar, maç takvimi ve vardiya yönetimi',
         tasks: 'Görevler',
         calendar: 'Takvim',
         jira: 'Jira Panosu',
@@ -1148,6 +1204,8 @@ export const translationsTR = {
         }
     },
     notes: {
+        title: 'Zengin Notlarım',
+        subtitle: 'Klasörler, etiketler, ekran alıntısı ve zengin metin düzenleyici',
         loadingNotes: 'Notlar yükleniyor...',
         showFolders: 'Klasörleri Göster',
         hideFolders: 'Klasörleri Gizle',
@@ -1263,7 +1321,23 @@ export const translationsTR = {
         autoSaved: 'Not anında kaydedildi',
         wordCount: '{count} Kelime',
         charCount: '{count} Karakter',
-        readTime: '~{time} dk okuma süresi'
+        readTime: '~{time} dk okuma süresi',
+        noNoteSelectedTitle: 'Görüntülenecek Not Seçilmedi',
+        noNoteSelectedDesc: 'Soldaki menüden bir not seçebilir veya yeni bir zengin not oluşturabilirsiniz.',
+        exportMarkdown: 'Markdown Olarak İndir (.md)',
+        fullscreenExit: 'Tam Ekrandan Çık',
+        fullscreenEnter: 'Odaklanma Modu (Tam Ekran)',
+        editMode: 'Düzenleme Modu',
+        splitMode: 'Bölünmüş Görünüm (Canlı Önizleme)',
+        previewMode: 'Önizleme / Okuma Modu',
+        screenCapture: 'Ekran Görüntüsü Al',
+        screenCaptureTooltip: 'Ekran Görüntüsü Al (Pencereler, Sekmeler veya Tam Ekran)',
+        uploadImageTooltip: 'Görsel / Ekran Görüntüsü Yükle',
+        noteTitlePlaceholder: 'Not Başlığı...',
+        addedImages: 'Eklenen Görseller ({count})',
+        imageEnlargeTooltip: 'Tıklayarak büyüt',
+        insertIntoText: 'Metne Ekle',
+        deleteAttachment: 'Eki Sil'
     },
 
     // emuAI Chat

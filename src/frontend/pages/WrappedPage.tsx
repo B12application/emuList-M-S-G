@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useMediaHistory from '../hooks/useMediaHistory';
 import { useLanguage } from '../context/LanguageContext';
 import { FaFilm, FaTv, FaGamepad, FaBook, FaStar, FaChevronLeft, FaChevronRight, FaCalendarAlt } from 'react-icons/fa';
-import Footer from '../components/Footer';
 
 const CARD_COLORS = [
     'from-purple-600 to-indigo-700',
@@ -355,8 +354,6 @@ export default function WrappedPage() {
                     </button>
                 </div>
             </div>
-
-            <Footer />
         </div>
     );
 }

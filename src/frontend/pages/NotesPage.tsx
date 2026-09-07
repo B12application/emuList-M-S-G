@@ -13,6 +13,7 @@ import {
   FaChevronRight
 } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useNotes } from '../hooks/useNotes';
 import NotesSidebar from '../components/notes/NotesSidebar';
 import NotesList from '../components/notes/NotesList';
@@ -116,9 +117,38 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="mt-6 md:mt-8 h-[calc(100vh-15rem)] md:h-[calc(100vh-11rem)] w-full flex flex-col overflow-hidden bg-white/70 dark:bg-zinc-950/70 rounded-3xl border border-stone-200/80 dark:border-zinc-800/80 shadow-2xl backdrop-blur-2xl">
-      {/* DESKTOP LAYOUT (>= md) */}
-      <div className="hidden md:flex h-full w-full overflow-hidden">
+    <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 pb-24 md:pb-6">
+      {/* Header Banner */}
+      <PageHeaderBanner
+        title={t('notes.title') || 'Zengin Notlarım'}
+        subtitle={t('notes.subtitle') || 'Klasörler, etiketler, ekran alıntısı ve zengin metin düzenleyici'}
+        icon={<FaStickyNote className="text-violet-500 text-xl" />}
+        action={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleOpenFolderModal()}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <FaFolderPlus className="text-xs text-violet-500" />
+              <span className="hidden sm:inline">{t('notes.newFolder') || 'Yeni Klasör'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleCreateNewNote(activeFolderId)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-500/20 active:scale-95 cursor-pointer"
+            >
+              <FaPlus className="text-xs" />
+              <span>{t('notes.newNote') || 'Yeni Not'}</span>
+            </button>
+          </div>
+        }
+      />
+
+      <div className="h-[calc(100dvh-11rem)] md:h-[calc(100dvh-7.5rem)] min-h-[640px] md:min-h-[820px] xl:min-h-[900px] w-full flex flex-col overflow-hidden bg-white/70 dark:bg-zinc-950/70 rounded-3xl border border-stone-200/80 dark:border-zinc-800/80 shadow-2xl backdrop-blur-2xl">
+        {/* DESKTOP LAYOUT (>= md) */}
+        <div className="hidden md:flex h-full w-full overflow-hidden">
         {/* Left Sidebar (Collapsible) */}
         <div
           className={`transition-all duration-300 relative ${isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64 lg:w-72 shrink-0'
@@ -352,6 +382,7 @@ export default function NotesPage() {
         folders={folders}
         onSave={handleSaveFolder}
       />
+      </div>
     </div>
   );
 }

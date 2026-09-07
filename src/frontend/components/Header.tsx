@@ -176,29 +176,124 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 15, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
+                        className="absolute top-full mt-2 w-64 p-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
                       >
-                        <div className="flex flex-col">
-                          <NavLink to="/my-shows" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <FaTv className="text-sm opacity-70" />
-                            {t('myShows.title')}
+                        <div className="flex flex-col gap-0.5">
+                          <NavLink
+                            to="/my-shows"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                              <FaTv className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('myShows.title') || 'İzlediklerim'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.myShowsSub') || 'İzlenen dizi ve bölümler'}
+                              </div>
+                            </div>
                           </NavLink>
-                          <div className="h-px bg-stone-100 dark:bg-zinc-800 my-1 mx-3" />
-                          <NavLink to="/movie" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <FaFilm className="text-sm opacity-70" />
-                            {t('nav.movies')}
+
+                          <div className="h-px bg-stone-100 dark:bg-zinc-800 my-0.5 mx-2" />
+
+                          <NavLink
+                            to="/movie"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                              <FaFilm className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.movies')}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.moviesSub') || 'İzlenenler ve vizyon'}
+                              </div>
+                            </div>
                           </NavLink>
-                          <NavLink to="/series" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <FaTv className="text-sm opacity-70" />
-                            {t('nav.series')}
+
+                          <NavLink
+                            to="/series"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                              <FaTv className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.series')}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.seriesSub') || 'Sezon ve bölüm takibi'}
+                              </div>
+                            </div>
                           </NavLink>
-                          <NavLink to="/game" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <FaGamepad className="text-sm opacity-70" />
-                            {t('nav.games')}
+
+                          <NavLink
+                            to="/game"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                              <FaGamepad className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.games')}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.gamesSub') || 'Oynananlar ve puanlar'}
+                              </div>
+                            </div>
                           </NavLink>
-                          <NavLink to="/book" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <FaBook className="text-sm opacity-70" />
-                            {t('nav.books')}
+
+                          <NavLink
+                            to="/book"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                              <FaBook className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.books')}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.booksSub') || 'Okunanlar ve hedefler'}
+                              </div>
+                            </div>
                           </NavLink>
                         </div>
                       </motion.div>
@@ -239,38 +334,77 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 15, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full mt-2 w-64 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
+                        className="absolute top-full mt-2 w-64 p-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
                       >
-                        <div className="flex flex-col">
-                          <NavLink to="/planner" className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <div className="w-8 h-8 rounded-xl bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <div className="flex flex-col gap-0.5">
+                          <NavLink
+                            to="/planner"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                               <FaCalendarAlt className="text-sm" />
                             </div>
-                            <div>
-                              <div className="font-bold text-stone-900 dark:text-white leading-tight">{t('nav.calendar') || 'Takvim & Planlayıcı'}</div>
-                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal">Aylık, haftalık, günlük ajanda</div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.calendar') || 'Takvim & Planlayıcı'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.calendarSub') || 'Aylık, haftalık ajanda'}
+                              </div>
                             </div>
                           </NavLink>
 
-                          <NavLink to="/notes" className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <div className="w-8 h-8 rounded-xl bg-violet-400/15 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                          <NavLink
+                            to="/notes"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
                               <FaStickyNote className="text-sm" />
                             </div>
-                            <div>
-                              <div className="font-bold text-stone-900 dark:text-white leading-tight">{t('nav.notes') || 'Notlarım'}</div>
-                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal">Klasörler & zengin notlar</div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.notes') || 'Notlarım'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.notesSub') || 'Klasörler & zengin notlar'}
+                              </div>
                             </div>
                           </NavLink>
 
-                          <div className="h-px bg-stone-100 dark:bg-zinc-800 my-1 mx-3" />
+                          <div className="h-px bg-stone-100 dark:bg-zinc-800 my-0.5 mx-2" />
 
-                          <NavLink to="/planner?fixtures=true" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 text-sm transition-colors text-stone-600 dark:text-zinc-300 hover:bg-amber-400/10 hover:text-amber-600 dark:hover:text-amber-400 font-medium`}>
-                            <div className="w-8 h-8 rounded-xl bg-red-400/15 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                          <NavLink
+                            to="/planner?fixtures=true"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-red-500/15 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
                               <PiSoccerBallFill className="text-sm" />
                             </div>
-                            <div>
-                              <div className="font-bold text-stone-900 dark:text-white leading-tight">Takımlar & Fikstür</div>
-                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal">Süper Lig & Şampiyonlar Ligi</div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                Takımlar & Fikstür
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.fixturesSub') || 'Süper Lig & Avrupa maçları'}
+                              </div>
                             </div>
                           </NavLink>
                         </div>
@@ -313,24 +447,84 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 15, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
+                        className="absolute top-full mt-2 w-64 p-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
                       >
-                        <div className="flex flex-col">
-                          <NavLink to="/travel-planner" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-stone-50 dark:bg-zinc-800/50 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                            <FaCompass className="text-sm opacity-70" />
-                            {t('nav.travelPlanner')}
+                        <div className="flex flex-col gap-0.5">
+                          <NavLink
+                            to="/travel-planner"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                              <FaCompass className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('nav.travelPlanner')}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.travelPlannerSub') || 'Rotalar & seyahat listesi'}
+                              </div>
+                            </div>
                           </NavLink>
+
                           {hasAccess('calorieAi') && (
-                            <NavLink to="/calorie-details" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaChartPie className="text-sm text-amber-500" />
-                              <span>Kalori Raporu</span>
-                              <span className="ml-auto text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">Yeni</span>
+                            <NavLink
+                              to="/calorie-details"
+                              className={({ isActive }) =>
+                                `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                  isActive
+                                    ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                    : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                                }`
+                              }
+                            >
+                              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <FaChartPie className="text-sm" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                    Kalori Raporu
+                                  </span>
+                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">
+                                    Yeni
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                  {t('nav.calorieSub') || 'Günlük besin ve kalori'}
+                                </div>
+                              </div>
                             </NavLink>
                           )}
+
                           {hasAccess('calorieAi') && (
-                            <NavLink to="/body-profile" className={({ isActive }) => `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${isActive ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold' : 'text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium'}`}>
-                              <FaHeartbeat className="text-sm text-rose-500" />
-                              <span>Beden Profili</span>
+                            <NavLink
+                              to="/body-profile"
+                              className={({ isActive }) =>
+                                `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                  isActive
+                                    ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                    : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                                }`
+                              }
+                            >
+                              <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                                <FaHeartbeat className="text-sm" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                  Beden Profili
+                                </div>
+                                <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                  {t('nav.bodySub') || 'Vücut ölçüleri ve analiz'}
+                                </div>
+                              </div>
                             </NavLink>
                           )}
                         </div>
@@ -369,26 +563,46 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 15, scale: 0.95 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="absolute top-full right-0 md:-right-12 mt-2 w-56 py-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top-right"
+                          className="absolute top-full right-0 md:-right-6 mt-2 w-64 p-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top-right"
                         >
-                          <div className="flex flex-col">
+                          <div className="flex flex-col gap-0.5">
                             <Link
                               to="/create"
-                              className="flex items-center gap-3 px-5 py-2.5 text-sm text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium transition-colors"
+                              className="flex items-center gap-3 px-3 py-2 rounded-xl text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium transition-colors"
                               onClick={() => setShowAddDropdown(false)}
                             >
-                              <FaPlus className="text-sm opacity-70" />
-                              {t('create.title')}
+                              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <FaPlus className="text-sm" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                  {t('create.title')}
+                                </div>
+                                <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                  {t('nav.createSub') || 'Yeni medya kaydı ekle'}
+                                </div>
+                              </div>
                             </Link>
+
                             <button
+                              type="button"
                               onClick={() => {
                                 setShowAddDropdown(false);
                                 setIsQuickAddOpen(true);
                               }}
-                              className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800/50 font-medium transition-colors text-left"
+                              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium transition-colors text-left cursor-pointer"
                             >
-                              <FaCalendarPlus className="text-sm opacity-70" />
-                              {t('actions.addNew')}
+                              <div className="w-8 h-8 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                                <FaCalendarPlus className="text-sm" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                  {t('actions.addNew')}
+                                </div>
+                                <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                  {t('nav.quickEventSub') || 'Ajandaya plan ekle'}
+                                </div>
+                              </div>
                             </button>
                           </div>
                         </motion.div>

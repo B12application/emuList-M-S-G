@@ -9,7 +9,6 @@ import { useLanguage } from '../context/LanguageContext';
 import MediaCard from '../components/MediaCard';
 import EmptyState from '../components/ui/EmptyState';
 import toast from 'react-hot-toast';
-import Footer from '../components/Footer';
 
 export default function ListDetailPage() {
     const { id: listId } = useParams<{ id: string }>();
@@ -186,8 +185,6 @@ export default function ListDetailPage() {
                     description={t('lists.emptyListDesc') || 'İçerik kartlarındaki "Listeye Ekle" butonunu kullanarak bu listeye içerik ekleyebilirsin.'}
                 />
             )}
-
-            <Footer />
         </div>
     );
 }

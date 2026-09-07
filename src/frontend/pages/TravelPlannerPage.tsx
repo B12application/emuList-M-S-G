@@ -11,6 +11,7 @@ import { serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 import TurkeyMap from '../components/TurkeyMap';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import TravelStats from '../components/travel/TravelStats';
 import CityDetailView from '../components/travel/CityDetailView';
 
@@ -235,49 +236,34 @@ export default function TravelPlannerPage() {
 
   return (
     <div className="min-h-screen pb-4">
-      {/* Header */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-4 rounded-2xl sm:rounded-3xl">
-        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                <div className="relative">
-                  <FaCompass className="text-sky-500" />
-                  <motion.div
-                    className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full"
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </div>
-                Gezi Planlayıcı
-              </h1>
-              <p className="text-stone-500 dark:text-zinc-400 mt-1 text-sm hidden sm:block">
-                Türkiye'nin güzelliklerini keşfet, planla ve gezdiğin yerleri kaydet
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {selectedCityId && (
-                <motion.button
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  onClick={() => setSelectedCityId(null)}
-                  className="flex items-center gap-2 px-4 py-2 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-all text-sm font-medium"
-                >
-                  <FaArrowLeft />
-                  <span className="hidden sm:inline">Haritaya Dön</span>
-                </motion.button>
-              )}
-              <Link
-                to="/map"
-                className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
+      {/* Header Banner */}
+      <PageHeaderBanner
+        title="Gezi & Seyahat Planlayıcı"
+        subtitle="Türkiye'nin güzelliklerini keşfet, rotanı planla ve gezdiğin yerleri interaktif haritada kaydet"
+        icon={<FaCompass className="text-sky-500 text-xl" />}
+        action={
+          <div className="flex items-center gap-2">
+            {selectedCityId && (
+              <motion.button
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                onClick={() => setSelectedCityId(null)}
+                className="flex items-center gap-2 px-3.5 py-2 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-all text-xs font-bold cursor-pointer"
               >
-                <FaMapMarkedAlt />
-                <span className="hidden sm:inline">Ziyaret Haritası</span>
-              </Link>
-            </div>
+                <FaArrowLeft className="text-xs" />
+                <span>Haritaya Dön</span>
+              </motion.button>
+            )}
+            <Link
+              to="/map"
+              className="flex items-center gap-2 px-3.5 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-xs font-bold shadow-xs cursor-pointer"
+            >
+              <FaMapMarkedAlt className="text-xs text-sky-500" />
+              <span>Ziyaret Haritası</span>
+            </Link>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Content */}
       <div className="w-full mx-auto">

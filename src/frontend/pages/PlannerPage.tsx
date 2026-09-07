@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks, FaDumbbell } from 'react-icons/fa';
+import { FaCalendarAlt, FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks, FaDumbbell } from 'react-icons/fa';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
+import { useLanguage } from '../context/LanguageContext';
 import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
 import ShiftLegend from '../components/planner/ShiftLegend';
@@ -30,6 +32,7 @@ import { showMarqueeToast } from '../components/MarqueeToast';
 
 export default function PlannerPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { shiftSettings } = useShift();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meetings, setMeetings] = useState<PlannerMeeting[]>(() => {
@@ -255,29 +258,55 @@ export default function PlannerPage() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="pb-24 pt-4 w-full max-w-6xl 2xl:max-w-[1700px] mx-auto"
+      className="pb-24 pt-2 w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-2 sm:px-4 lg:px-6"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 px-2 gap-4">
-        <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100">
-          Planlayıcı
-        </h1>
+      {/* Header Banner */}
+      <PageHeaderBanner
+        title={t('planner.title') || 'Takvim & Ajanda'}
+        subtitle={t('planner.subtitle') || 'Toplantılar, günlük planlar, maç takvimi ve vardiya yönetimi'}
+        icon={<FaCalendarAlt className="text-amber-500 text-xl" />}
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Sub-nav */}
+            <div className="flex items-center bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-2xl border border-stone-200/80 dark:border-zinc-700/80 shadow-xs">
+              {(['daily', 'weekly', 'monthly', 'jira'] as const).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-3 sm:px-4 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === tab
+                      ? 'bg-amber-400 text-stone-950 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white'
+                  }`}
+                >
+                  {tab === 'daily'
+                    ? t('planner.daily') || 'Günlük'
+                    : tab === 'weekly'
+                    ? t('planner.weekly') || 'Haftalık'
+                    : tab === 'monthly'
+                    ? t('planner.monthly') || 'Aylık'
+                    : 'Jira'}
+                </button>
+              ))}
+            </div>
 
-        {/* Sub-nav */}
-        <div className="flex items-center bg-stone-100 dark:bg-zinc-800/50 p-1 rounded-lg border border-stone-200 dark:border-zinc-800">
-          {(['daily', 'weekly', 'monthly', 'jira'] as const).map(tab => (
+            {/* Quick Add Button */}
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === tab
-                ? 'bg-white dark:bg-zinc-700 shadow-sm text-stone-900 dark:text-white'
-                : 'text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-700/50'
-                }`}
+              type="button"
+              onClick={() => {
+                setModalInitialData(null);
+                setModalInitialTab('meeting');
+                setIsModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold rounded-2xl text-xs hover:from-amber-400 hover:to-orange-400 transition-all shadow-sm active:scale-95 cursor-pointer"
             >
-              {tab === 'daily' ? 'Günlük' : tab === 'weekly' ? 'Haftalık' : tab === 'monthly' ? 'Aylık' : 'Jira'}
+              <FaCalendarPlus className="text-xs" />
+              <span>{t('planner.addEvent') || 'Etkinlik Ekle'}</span>
             </button>
-          ))}
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       <div className="space-y-6">
         <PlannerHeader

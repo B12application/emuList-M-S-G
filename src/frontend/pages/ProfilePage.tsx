@@ -13,7 +13,6 @@ import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
 import useMedia from '../hooks/useMedia';
-import Footer from '../components/Footer';
 import useMediaHistory from '../hooks/useMediaHistory';
 import DetailModal from '../components/DetailModal';
 import type { MediaItem } from '../../backend/types/media';
@@ -159,8 +158,8 @@ export default function ProfilePage() {
     return (
         <div className="min-h-screen pt-4 pb-0">
 
-            {/* MAIN CONTAINER: Centered single column */}
-            <div className="w-full max-w-5xl 2xl:max-w-6xl mx-auto mb-16">
+            {/* MAIN CONTAINER */}
+            <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] px-4 sm:px-6 lg:px-8 mx-auto mb-16">
 
                 {/* TOP CONTROLS */}
                 <div className="flex justify-between items-center mb-8">
@@ -739,8 +738,6 @@ export default function ProfilePage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            <Footer />
 
             <DetailModal
                 isOpen={!!selectedItem}

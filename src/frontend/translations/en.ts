@@ -22,6 +22,20 @@ export const translationsEN = {
         logout: 'Logout',
         calendar: 'Calendar',
         travelPlanner: 'Travel Planner',
+        tools: 'Tools',
+        myShowsSub: 'Tracked series & episodes',
+        moviesSub: 'Watched & upcoming films',
+        seriesSub: 'Season & episode progress',
+        gamesSub: 'Played games & scores',
+        booksSub: 'Read books & reading goals',
+        calendarSub: 'Monthly & weekly agenda',
+        notesSub: 'Folders & rich notes',
+        fixturesSub: 'League & Champions League',
+        travelPlannerSub: 'Itineraries & travel packing',
+        calorieSub: 'Daily meals & calories',
+        bodySub: 'Body metrics & analysis',
+        createSub: 'Add new media record',
+        quickEventSub: 'Add plan to calendar',
     },
 
     // Map Page
@@ -250,6 +264,22 @@ export const translationsEN = {
         trendingSubtitle: 'Most watched popular content worldwide',
         trendingMovies: 'Trending Movies',
         trendingSeries: 'Trending Series',
+        bestRecommendations: "Curator's Picks",
+        curatorPicksSubtitle: 'Carefully curated cinematic recommendations',
+        addToLibrary: 'Add to Library',
+        addingToLibrary: 'Adding...',
+        addedToLibrary: 'Added',
+        inLibrary: 'In Library',
+        recentActivitySubtitle: 'Your most recently added personal archive records',
+        archiveItem: 'In Archive',
+        nextEpisodeWatch: '+1 Ep Watch',
+        continueWatchingSubtitle: 'Pick up right where you left off',
+        spotlightSubtitle: 'Highest rated unwatched content from your library',
+        waitingInQueue: 'Items waiting in your queue',
+        trendingRankBadge: 'Trending Rank',
+        footerBrandSlogan: 'Your Digital Memory Vitamin',
+        footerDeveloper: 'Developer: EMU',
+        quickLinks: 'Quick Links',
         today: 'Today',
         thisWeek: 'This Week',
 
@@ -520,6 +550,7 @@ export const translationsEN = {
 
     // Common
     common: {
+        all: 'All',
         loading: 'Loading...',
         error: 'Error',
         success: 'Success',
@@ -602,10 +633,34 @@ export const translationsEN = {
 
     // Footer
     footer: {
-        subtitle: 'Digital Experience and Design',
+        subtitle: 'Your Digital Memory Vitamin',
+        slogan: 'Archive everything you watch, play, and discover with an unforgettable experience.',
         rights: 'All Rights Reserved.',
-        prefix: 'Made in',
+        prefix: 'Crafted in',
         suffix: 'with ❤️',
+        developer: 'Developer: EMU',
+        quickLinks: 'Quick Links',
+        home: 'Home',
+        movies: 'Movies',
+        series: 'Series',
+        expenses: 'Expenses',
+        stats: 'Statistics',
+        profile: 'Profile',
+        pillarArchive: 'Archive & Collection',
+        pillarAgenda: 'Agenda & Life',
+        pillarFinance: 'Finances & Tools',
+        personalAgentTitle: 'Personal Life Agent',
+        personalAgentDesc: 'Not just a media archive; your agenda, finances, rich notes, and smart life vitamin.',
+        notes: 'Notes',
+        calendar: 'Calendar',
+        fixtures: 'Match Fixtures',
+        travel: 'Travel Planner',
+        calorie: 'Calorie & Body AI',
+        lists: 'Custom Lists',
+        myShows: 'My Shows',
+        collection: 'Collection',
+        agenda: 'Agenda & Notes',
+        tools: 'Smart Tools',
     },
 
     // Tags
@@ -796,7 +851,8 @@ export const translationsEN = {
 
     // Planner
     planner: {
-        title: 'Planner',
+        title: 'Calendar & Planner',
+        subtitle: 'Meetings, daily plans, sports fixtures, and shift tracking',
         tasks: 'Tasks',
         calendar: 'Calendar',
         jira: 'Jira Board',
@@ -1145,6 +1201,8 @@ export const translationsEN = {
         }
     },
     notes: {
+        title: 'Rich Notes',
+        subtitle: 'Folders, tags, screenshot clipping, and rich text editor',
         loadingNotes: 'Loading notes...',
         showFolders: 'Show Folders',
         hideFolders: 'Hide Folders',
@@ -1260,7 +1318,23 @@ export const translationsEN = {
         autoSaved: 'Note auto-saved',
         wordCount: '{count} Words',
         charCount: '{count} Characters',
-        readTime: '~{time} min read time'
+        readTime: '~{time} min read time',
+        noNoteSelectedTitle: 'No Note Selected to Display',
+        noNoteSelectedDesc: 'You can select a note from the left menu or create a new rich note.',
+        exportMarkdown: 'Download as Markdown (.md)',
+        fullscreenExit: 'Exit Fullscreen',
+        fullscreenEnter: 'Focus Mode (Fullscreen)',
+        editMode: 'Edit Mode',
+        splitMode: 'Split View (Live Preview)',
+        previewMode: 'Preview / Reading Mode',
+        screenCapture: 'Take Screenshot',
+        screenCaptureTooltip: 'Take Screenshot (Windows, Tabs, or Entire Screen)',
+        uploadImageTooltip: 'Upload Image / Screenshot',
+        noteTitlePlaceholder: 'Note Title...',
+        addedImages: 'Attached Images ({count})',
+        imageEnlargeTooltip: 'Click to enlarge',
+        insertIntoText: 'Insert into text',
+        deleteAttachment: 'Delete attachment'
     },
 
     // emuAI Chat

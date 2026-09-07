@@ -23,7 +23,6 @@ import HomeFavoritesRail from '../components/home/HomeFavoritesRail';
 import HomeActivityFeed from '../components/home/HomeActivityFeed';
 import HomeInsightsStrip from '../components/home/HomeInsightsStrip';
 import HomeBestRecommendations from '../components/home/HomeBestRecommendations';
-import HomeClosingCta from '../components/home/HomeClosingCta';
 import HomeTrendingRail from '../components/home/HomeTrendingRail';
 
 const MALE_AVATAR_URL = 'https://www.pngall.com/wp-content/uploads/5/Profile-Male-PNG.png';
@@ -74,10 +73,21 @@ export default function HomePage() {
     const gameRecs = allItems.filter((item) => item.type === 'game' && !item.watched);
     const bookRecs = allItems.filter((item) => item.type === 'book' && !item.watched);
 
+    const getItemTimestampMs = (createdAt: any): number => {
+        if (!createdAt) return 0;
+        if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
+        if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
+        if (typeof createdAt.seconds === 'number') return createdAt.seconds * 1000;
+        if (createdAt instanceof Date) return createdAt.getTime();
+        if (typeof createdAt === 'number') return createdAt;
+        const parsed = new Date(createdAt).getTime();
+        return isNaN(parsed) ? 0 : parsed;
+    };
+
     const recentActivity = useMemo(
         () =>
             [...allItems]
-                .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+                .sort((a, b) => getItemTimestampMs(b.createdAt) - getItemTimestampMs(a.createdAt))
                 .slice(0, 6),
         [allItems]
     );
@@ -85,8 +95,15 @@ export default function HomePage() {
     const dustyItems = useMemo(
         () =>
             [...allItems]
-                .filter((item) => !item.watched && item.createdAt)
-                .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0))
+                .filter((item) => !item.watched)
+                .sort((a, b) => {
+                    const timeA = getItemTimestampMs(a.createdAt);
+                    const timeB = getItemTimestampMs(b.createdAt);
+                    if (timeA && timeB) return timeA - timeB;
+                    if (timeA) return -1;
+                    if (timeB) return 1;
+                    return 0;
+                })
                 .slice(0, 6),
         [allItems]
     );
@@ -124,9 +141,8 @@ export default function HomePage() {
         const now = Date.now();
         const weekMs = 7 * 24 * 60 * 60 * 1000;
         const weekAdded = allItems.filter((i) => {
-            const s = i.createdAt?.seconds;
-            if (s === undefined || s === null) return false;
-            return now - s * 1000 < weekMs;
+            const ms = getItemTimestampMs(i.createdAt);
+            return ms > 0 && now - ms < weekMs;
         }).length;
         return {
             watched: allItems.filter((i) => i.watched).length,
@@ -321,6 +337,7 @@ export default function HomePage() {
                     adminUid={ADMIN_UID}
                     onOpenAdmin={() => setShowAdminPanel(true)}
                     handleAddToCollection={handleAddToCollection}
+                    existingItems={allItems}
                     t={t}
                 />
 
@@ -332,9 +349,6 @@ export default function HomePage() {
                     formatDate={formatDate}
                     t={t}
                 />
-
-                {/* 9. Kapanış / Hızlı Eylem */}
-                <HomeClosingCta t={t} />
             </section>
 
             {/* Admin Panel */}

@@ -334,7 +334,8 @@ export default function CalorieChatPage() {
     );
   }
   return (
-    <div className="flex flex-col h-[calc(100dvh-185px)] md:h-[calc(100vh-140px)] max-w-4xl mx-auto relative rounded-3xl overflow-hidden border border-stone-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl shadow-2xl">
+    <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-2 sm:px-4 flex flex-col h-[calc(100dvh-185px)] md:h-[calc(100vh-140px)] relative">
+      <div className="flex flex-col flex-1 relative rounded-3xl overflow-hidden border border-stone-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl shadow-2xl">
       {/* Header */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-stone-200/80 dark:border-zinc-800/80 z-10">
         <div className="flex items-center gap-3">
@@ -347,7 +348,7 @@ export default function CalorieChatPage() {
           <div>
             <h1 className="text-base font-black text-stone-900 dark:text-white flex items-center gap-2">
               <span className="text-lg">🤖</span>
-              <span>emuAI</span>
+              <span>B12 AI</span>
             </h1>
             <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
               Fotoğraf ile Besin & Kalori Analizi
@@ -660,6 +661,7 @@ export default function CalorieChatPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

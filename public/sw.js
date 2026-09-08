@@ -1,7 +1,13 @@
-const CACHE_NAME = 'b12-cache-v3';
+const CACHE_NAME = 'b12-cache-v4';
 const urlsToCache = [
+    '/favicon.svg',
+    '/favicon-32x32.png',
+    '/favicon-16x16.png',
     '/titlelogo.png',
-    '/logob12.png'
+    '/logob12.png',
+    '/pwa-192x192.png',
+    '/pwa-512x512.png',
+    '/apple-touch-icon.png'
 ];
 
 // Service Worker Install

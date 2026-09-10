@@ -110,4 +110,22 @@ This file contains repository-specific guidelines, architecture constraints, and
   - Tüm sayfalar, araçlar (özellikle Kalori Raporu, AI Sohbet Asistanı, Beden Profili vb.) ve listeler, her inç masaüstü/geniş monitörden en küçük cep telefonu ekranına kadar tam uyumlu, ferah ve akışkan (`w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8`) genişlik ölçekleme mimarisine sahip olmalıdır.
   - Sayfa ana gövdelerinde monitör genişliğini boşa harcayan yapay dar container sınırları asla kullanılmamalıdır.
 
+## 17. Canlı Barındırma ve Dağıtım Altyapısı: Cloudflare Pages (MANDATORY STANDARD)
+- **Birincil Platform**: B12 platformunun resmi canlı barındırma platformu **Cloudflare Pages**'dir. (Netlify veya Vercel birincil platform değildir).
+- **Sunucusuz / Edge Mimarisi**:
+  - Tüm backend API ve edge fonksiyonları Cloudflare Pages Functions mimarisine (`functions/` dizini) göre yazılmalıdır.
+  - Global middleware `functions/_middleware.ts` üzerinden yürütülür.
+  - API uç noktaları `functions/api/...` altında konumlandırılır.
+- **CDN Başlıkları ve Yönlendirmeler**:
+  - Cloudflare Pages standartları olan [`public/_headers`](file:///c:/GithubProjects/emuList-M-S-G/public/_headers) ve [`public/_redirects`](file:///c:/GithubProjects/emuList-M-S-G/public/_redirects) dosyaları yetkili yapılandırma kaynaklarıdır.
+
+## 18. Sıfır Sızıntı API & Gizli Anahtar Güvenlik Standardı (Zero-Exposure Policy)
+- **İstemci Bundle'ına Gizli Anahtar Gömme Yasağı**:
+  - Özel veya kotalı API anahtarları (Gemini API, CollectAPI vb.) ASLA `VITE_` öneki ile frontend koduna gömülmemelidir. Vite, `VITE_` değişkenlerini derleme sırasında `dist/` JS dosyalarına açık metin olarak gömer.
+  - Sadece genel istemci kimlikleri (örneğin domain kısıtlamalı Firebase Client API Key) frontend'de bulunabilir.
+- **Güvenli Backend Proxy Zorunluluğu**:
+  - Gemini AI, hesap özeti analizi veya harici özel servis çağrıları doğrudan tarayıcıdan değil, Cloudflare Pages Functions (`functions/api/calorie-chat.ts`, `functions/api/gold-price.ts` vb.) üzerinden sunucu ortam değişkenleri (`context.env.GEMINI_API_KEY`) ile yürütülmelidir.
+- **Git Gizlilik Kuralı**:
+  - `.env`, `.env.*`, `*.key`, `*.pem`, `service-account*.json` vb. dosyalar asla Git'e eklenemez veya commit edilemez.
+
 

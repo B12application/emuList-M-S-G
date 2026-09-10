@@ -141,7 +141,7 @@ export async function downloadLibraryAsJson(userId: string) {
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
     const downloadAnchor = document.createElement('a');
-    const fileName = `emulist_vault_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    const fileName = `b12_medya_yedek_${new Date().toISOString().slice(0, 10)}.json`;
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchor);
@@ -313,7 +313,7 @@ export async function downloadExpensesAsJson(userId: string) {
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
     const downloadAnchor = document.createElement('a');
-    const fileName = `emulist_harcamalar_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    const fileName = `b12_harcamalar_yedek_${new Date().toISOString().slice(0, 10)}.json`;
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchor);

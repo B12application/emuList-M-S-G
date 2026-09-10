@@ -77,9 +77,21 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                   {format(day, 'd')}
                 </div>
                 {dayMatches.length > 0 && (
-                  <div className="mt-1 cursor-help" title={`${dayMatches[0].title} ${dayMatches[0].description ? `(${dayMatches[0].description}) ` : ''}— ${dayMatches[0].startTime}`}>
-                    <span className="text-sm">⚽</span>
-                    <span className="text-[9px] font-bold text-red-500 dark:text-red-400 ml-0.5">{dayMatches[0].startTime}</span>
+                  <div className="mt-1 flex flex-wrap items-center justify-center gap-1 cursor-help px-1">
+                    {dayMatches.map((dm, dmIdx) => (
+                      <div 
+                        key={dm.id || dmIdx} 
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/15 border border-amber-400/30 text-[9px] font-bold"
+                        title={`${dm.title} (${dm.description || ''}) — ${dm.startTime}`}
+                      >
+                        {dm.teamBadge ? (
+                          <img src={dm.teamBadge} alt="" className="w-3 h-3 object-contain shrink-0" />
+                        ) : (
+                          <span>⚽</span>
+                        )}
+                        <span className="text-stone-800 dark:text-zinc-200">{dm.startTime !== 'TBD' ? dm.startTime : 'TBD'}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -153,11 +165,23 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                       {isToday(day) ? t('planner.today') : format(day, 'd MMMM', { locale: dateLocale })}
                     </div>
                     {hasMatch && (
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-xs">⚽</span>
-                        <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tighter">
-                          {t('planner.matchDay')} {dayMatches[0].startTime}
-                        </span>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {dayMatches.map((dm, idx) => (
+                          <span
+                            key={dm.id || idx}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 rounded-lg"
+                          >
+                            {dm.teamBadge ? (
+                              <img src={dm.teamBadge} alt="" className="w-3.5 h-3.5 object-contain" />
+                            ) : (
+                              <span>⚽</span>
+                            )}
+                            <span>{dm.title.split('-')[0].trim()}</span>
+                            <span className="font-extrabold opacity-80">
+                              {dm.startTime !== 'TBD' ? dm.startTime : 'TBD'}
+                            </span>
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>

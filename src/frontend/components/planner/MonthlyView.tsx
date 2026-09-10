@@ -102,7 +102,13 @@ export default function MonthlyView({
         ? true
         : leagueFilter === 'superlig'
           ? (m.description?.includes('Süper Lig') || m.category?.includes('Süper Lig'))
-          : (m.description?.includes('Şampiyonlar') || m.category?.includes('Şampiyonlar') || m.description?.includes('Avrupa') || m.category?.includes('Avrupa'));
+          : (
+              m.description?.includes('Şampiyonlar') || 
+              m.category?.includes('Şampiyonlar') || 
+              m.description?.includes('Avrupa') || 
+              m.category?.includes('Avrupa') ||
+              ['La Liga', 'Premier League', 'Bundesliga', 'Serie A', 'Ligue 1'].includes(m.category || '')
+            );
 
       const matchSearch = searchQuery.trim() === ''
         || m.title.toLowerCase().includes(searchQuery.toLowerCase())

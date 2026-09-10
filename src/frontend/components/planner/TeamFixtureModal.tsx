@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaCheck, FaSync, FaShieldAlt, FaTrophy, FaStar } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaSync } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 import {
   AVAILABLE_FOOTBALL_TEAMS,
   getSelectedTeamIds,
-  saveSelectedTeamIds,
-  type FootballTeam
+  saveSelectedTeamIds
 } from '../../services/footballFixtureService';
+import { useLanguage } from '../../context/LanguageContext';
 import toast from 'react-hot-toast';
 
 interface TeamFixtureModalProps {
@@ -17,6 +17,7 @@ interface TeamFixtureModalProps {
 }
 
 export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtureModalProps) {
+  const { t, language } = useLanguage();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'superlig' | 'championsleague'>('all');
   const [isSaving, setIsSaving] = useState(false);
@@ -31,7 +32,7 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
     setSelectedIds(prev => {
       if (prev.includes(teamId)) {
         if (prev.length === 1) {
-          toast.error('En az bir takım seçili olmalıdır.');
+          toast.error(language === 'tr' ? 'En az bir takım seçili olmalıdır.' : 'At least one team must be selected.');
           return prev;
         }
         return prev.filter(id => id !== teamId);
@@ -55,11 +56,14 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
     setIsSaving(true);
     try {
       saveSelectedTeamIds(selectedIds);
-      toast.success(`${selectedIds.length} takımın maç takvimi güncellendi! ⚽`);
+      const msg = t('planner.fixturesSaved') 
+        ? t('planner.fixturesSaved').replace('{count}', String(selectedIds.length))
+        : (language === 'tr' ? `${selectedIds.length} takımın maç takvimi güncellendi! ⚽` : `Match calendar updated for ${selectedIds.length} teams! ⚽`);
+      toast.success(msg);
       onSaved();
       onClose();
     } catch {
-      toast.error('Ayarlar kaydedilemedi.');
+      toast.error(language === 'tr' ? 'Ayarlar kaydedilemedi.' : 'Failed to save settings.');
     } finally {
       setIsSaving(false);
     }
@@ -85,7 +89,7 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/70 backdrop-blur-md"
+          className="absolute inset-0 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm"
         />
 
         {/* Modal Container */}
@@ -104,13 +108,13 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
               </div>
               <div>
                 <h3 className="text-xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-                  Maç Takvimi & Takım Seçimi
+                  {t('planner.fixturesTitle') || (language === 'tr' ? 'Maç Takvimi & Takım Seçimi' : 'Match Fixtures & Team Selection')}
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-400 text-stone-950">
-                    {selectedIds.length} Seçili
+                    {selectedIds.length} {language === 'tr' ? 'Seçili' : 'Selected'}
                   </span>
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
-                  Seçtiğiniz takımların lig ve Avrupa maçları takviminizde otomatik görüntülenir.
+                  {t('planner.fixturesDesc') || (language === 'tr' ? 'Seçtiğiniz takımların lig ve Avrupa maçları takviminizde otomatik görüntülenir.' : 'League and European matches for selected teams will appear on your calendar.')}
                 </p>
               </div>
             </div>
@@ -134,7 +138,7 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
                     : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
-                Tümü ({AVAILABLE_FOOTBALL_TEAMS.length})
+                {language === 'tr' ? 'Tümü' : 'All'} ({AVAILABLE_FOOTBALL_TEAMS.length})
               </button>
               <button
                 onClick={() => setActiveTab('superlig')}
@@ -154,30 +158,32 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
                     : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
-                <span>🏆 Şampiyonlar Ligi</span>
+                <span>🏆 {language === 'tr' ? 'Şampiyonlar Ligi' : 'Champions League'}</span>
               </button>
             </div>
 
             {/* Fast Presets */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider hidden sm:inline">Hızlı:</span>
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider hidden sm:inline">
+                {language === 'tr' ? 'Hızlı:' : 'Quick:'}
+              </span>
               <button
                 onClick={() => handleSelectQuick('gs')}
                 className="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/25 transition-colors border border-amber-500/20"
               >
-                Sadece GS
+                {language === 'tr' ? 'Sadece GS' : 'Only GS'}
               </button>
               <button
                 onClick={() => handleSelectQuick('big4')}
                 className="px-2.5 py-1 text-xs font-bold rounded-lg bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-300 dark:hover:bg-zinc-700 transition-colors"
               >
-                4 Büyükler
+                {language === 'tr' ? '4 Büyükler' : 'Big 4'}
               </button>
               <button
                 onClick={() => handleSelectQuick('top_cl')}
                 className="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/25 transition-colors border border-indigo-500/20"
               >
-                GS + Avrupa Devleri
+                {language === 'tr' ? 'GS + Avrupa Devleri' : 'GS + European Giants'}
               </button>
             </div>
           </div>
@@ -209,7 +215,6 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
                           className="w-full h-full object-contain"
                           loading="lazy"
                           onError={(e) => {
-                            // Fallback icon if image fails
                             (e.target as HTMLElement).style.display = 'none';
                           }}
                         />
@@ -246,16 +251,18 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
           </div>
 
           {/* Footer Actions */}
-          <div className="px-6 py-4 border-t border-stone-100 dark:border-zinc-800/80 bg-stone-50/80 dark:bg-zinc-900/60 flex items-center justify-between gap-3 shrink-0">
-            <span className="text-xs text-stone-500 dark:text-zinc-400 font-medium">
-              Seçilen takımların maçları Aylık, Haftalık ve Günlük ajandaya senkronize edilir.
+          <div className="px-6 py-3.5 bg-stone-50 dark:bg-zinc-900/80 border-t border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 shrink-0">
+            <span className="text-xs text-stone-500 dark:text-zinc-400 font-medium hidden sm:inline">
+              {language === 'tr' 
+                ? 'Seçilen takımların maçları Aylık, Haftalık ve Günlük ajandaya senkronize edilir.' 
+                : 'Matches of selected teams will be synchronized with Monthly, Weekly and Daily views.'}
             </span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ml-auto">
               <button
                 onClick={onClose}
                 className="px-5 py-2.5 rounded-xl bg-stone-200 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold text-sm hover:bg-stone-300 dark:hover:bg-zinc-700 transition-colors"
               >
-                İptal
+                {language === 'tr' ? 'İptal' : 'Cancel'}
               </button>
               <motion.button
                 whileHover={{ scale: 1.03 }}
@@ -265,7 +272,7 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 font-black text-sm shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all flex items-center gap-2"
               >
                 {isSaving ? <FaSync className="animate-spin text-sm" /> : <FaCheck className="text-sm" />}
-                <span>Seçimi Kaydet ({selectedIds.length})</span>
+                <span>{language === 'tr' ? `Seçimi Kaydet (${selectedIds.length})` : `Save Selection (${selectedIds.length})`}</span>
               </motion.button>
             </div>
           </div>

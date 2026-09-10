@@ -9,7 +9,7 @@ interface MeetingCardProps {
 }
 
 export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isPast = new Date(`${meeting.date}T${meeting.startTime}`) < new Date();
 
   return (
@@ -21,7 +21,9 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
         {meeting.startTime && meeting.startTime !== 'TBD' && meeting.startTime !== '--:--' ? (
           <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{meeting.startTime}</span>
         ) : (
-          <span className="text-[10px] font-black uppercase text-stone-500 dark:text-zinc-400 leading-tight">Saat Belli Değil</span>
+          <span className="text-[10px] font-black uppercase text-stone-500 dark:text-zinc-400 leading-tight">
+            {language === 'tr' ? 'Belli Değil' : 'TBD'}
+          </span>
         )}
         {meeting.endTime && (
           <span className="text-[10px] text-stone-500 mt-0.5">{meeting.endTime}</span>

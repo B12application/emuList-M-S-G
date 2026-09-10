@@ -1,9 +1,9 @@
-name: Daily Media Backup Job (Gece 00:00 TRT)
+name: Media Backup Job (15 Günde Bir - Ayın 8 ve 22'si Gece 00:00 TRT)
 
 on:
   schedule:
-    # Runs every day at 21:00 UTC (00:00 Turkey Time / TRT UTC+3)
-    - cron: '0 21 * * *'
+    # Runs on the 7th and 21st of every month at 21:00 UTC (8th and 22nd at 00:00 Turkey Time / TRT UTC+3)
+    - cron: '0 21 7,21 * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions UI anytime
 
 permissions:
@@ -43,13 +43,13 @@ jobs:
 
       - name: Commit and Push Backups
         run: |
-          git config --global user.name "emuList Backup Bot"
-          git config --global user.email "backup-bot@emulist.local"
+          git config --global user.name "B12 Backup Bot"
+          git config --global user.email "backup-bot@b12.local"
           git add backups/media/
           if git diff --staged --quiet; then
             echo "ℹ️ Yedekleme dosyasında değişiklik yok, commit atlanıyor."
           else
-            git commit -m "chore(backup): automated daily media backup [skip ci]"
+            git commit -m "chore(backup): automated biweekly media backup [skip ci]"
             git push origin HEAD
-            echo "✅ Günlük medya yedeği repoya başarıyla pushlandı!"
+            echo "✅ 15 günlük medya yedeği repoya başarıyla pushlandı!"
           fi

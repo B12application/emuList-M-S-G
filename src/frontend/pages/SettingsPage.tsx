@@ -21,6 +21,7 @@ import {
     downloadLibraryAsJson, downloadLibraryAsText, restoreLibraryFromJson, getLocalBackupInfo,
     downloadExpensesAsJson, restoreExpensesFromJson
 } from '../../backend/services/backupService';
+import { isAdmin } from '../../backend/config/adminConfig';
 
 import toast from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
@@ -849,10 +850,18 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
+                                    {/* User-friendly Personal Data Notice */}
+                                    <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-2xl border border-blue-200/60 dark:border-blue-900/40 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200">
+                                        <FaShieldAlt className="text-blue-500 mt-0.5 shrink-0 text-sm" />
+                                        <span className="leading-relaxed">
+                                            {t('vault.userExportNotice')}
+                                        </span>
+                                    </div>
+
                                     {/* Section 1: Media Library Backups (Harmless Downloads) */}
                                     <div className="space-y-2">
                                         <h3 className="text-xs font-black uppercase text-stone-400 tracking-wider flex items-center gap-1.5">
-                                            <span>🎬 Medya Koleksiyonu İndirme & Yedekleme</span>
+                                            <span>🎬 {t('vault.mediaBackupTitle')}</span>
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {/* Download Media JSON */}
@@ -866,10 +875,10 @@ export default function SettingsPage() {
                                                     <FaFileCode />
                                                 </div>
                                                 <h4 className="text-xs font-extrabold text-stone-900 dark:text-white">
-                                                    Medya JSON Yedeği İndir
+                                                    {t('vault.downloadMediaJson')}
                                                 </h4>
                                                 <p className="text-[10px] text-stone-500 dark:text-zinc-400 mt-0.5">
-                                                    IMDb ID'leri ve tam kütüphane veritabanı yedeği.
+                                                    {t('vault.downloadMediaJsonDesc')}
                                                 </p>
                                             </button>
 
@@ -884,10 +893,10 @@ export default function SettingsPage() {
                                                     <FaFileAlt />
                                                 </div>
                                                 <h4 className="text-xs font-extrabold text-stone-900 dark:text-white">
-                                                    Metin (TXT) Listesi İndir
+                                                    {t('vault.downloadMediaTxt')}
                                                 </h4>
                                                 <p className="text-[10px] text-stone-500 dark:text-zinc-400 mt-0.5">
-                                                    Kategorize edilmiş kolay okunabilir metin arşivi.
+                                                    {t('vault.downloadMediaTxtDesc')}
                                                 </p>
                                             </button>
                                         </div>
@@ -896,7 +905,7 @@ export default function SettingsPage() {
                                     {/* Section 2: Expenses Backups */}
                                     <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-zinc-800">
                                         <h3 className="text-xs font-black uppercase text-stone-400 tracking-wider flex items-center gap-1.5">
-                                            <span>💳 Harcama & Bütçe Yedekleri</span>
+                                            <span>💳 {t('vault.expensesBackupTitle')}</span>
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {/* Download Expenses JSON */}
@@ -910,43 +919,63 @@ export default function SettingsPage() {
                                                     <FaDownload />
                                                 </div>
                                                 <h4 className="text-xs font-extrabold text-stone-900 dark:text-white">
-                                                    Harcama JSON Yedeği İndir
+                                                    {t('vault.downloadExpensesJson')}
                                                 </h4>
                                                 <p className="text-[10px] text-stone-500 dark:text-zinc-400 mt-0.5">
-                                                    Tüm gelir, gider ve taksit kayıtlarını tam olarak indirir.
+                                                    {t('vault.downloadExpensesJsonDesc')}
                                                 </p>
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* Section 3: Automated Scheduled Cron Jobs */}
-                                    <div className="p-4 sm:p-5 bg-stone-50 dark:bg-zinc-800/50 rounded-2xl border border-stone-200/80 dark:border-zinc-700/80 space-y-3">
-                                        <div className="flex items-center gap-2 text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">
-                                            <FaCalendar className="text-amber-500" />
-                                            <span>Proje İçi Otomatik Cron Job Takvimi</span>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                                            <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-stone-200/60 dark:border-zinc-800 space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-extrabold text-stone-900 dark:text-white">🎬 Günlük Medya Job'u</span>
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">Her Gece 00:00</span>
+                                    {/* Section 3: Automated Scheduled Cron Jobs (EMU / Admin Only) */}
+                                    {user && isAdmin(user.uid) && (
+                                        <div className="p-4 sm:p-5 bg-gradient-to-br from-stone-50 to-amber-50/20 dark:from-zinc-800/60 dark:to-zinc-800/30 rounded-2xl border border-amber-200/60 dark:border-amber-900/30 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2 text-xs font-black text-stone-900 dark:text-white uppercase tracking-wider">
+                                                    <FaCalendar className="text-amber-500" />
+                                                    <span>{t('vault.cronScheduleTitle')}</span>
                                                 </div>
-                                                <p className="text-[11px] text-stone-500 dark:text-zinc-400">
-                                                    Siteye girmeseniz bile GitHub Actions projede <code className="text-amber-500 font-mono text-[10px]">/backups/media/</code> altına JSON ve TXT kaydeder.
-                                                </p>
+                                                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                                                    {t('vault.cronAdminBadge')}
+                                                </span>
                                             </div>
+                                            <p className="text-[11px] text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                                {t('vault.cronAdminNotice')}
+                                            </p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                                                <div className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-stone-200/60 dark:border-zinc-800 space-y-1.5 shadow-sm">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-extrabold text-stone-900 dark:text-white flex items-center gap-1.5">
+                                                            <span>🎬</span>
+                                                            <span>{t('vault.biweeklyMediaJob')}</span>
+                                                        </span>
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                                                            {t('vault.biweeklyMediaTime')}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[11px] text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                                        {t('vault.biweeklyMediaJobDesc')}
+                                                    </p>
+                                                </div>
 
-                                            <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-stone-200/60 dark:border-zinc-800 space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-extrabold text-stone-900 dark:text-white">💳 Aylık Harcama Job'u</span>
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">Her Ayın 15'i 00:00</span>
+                                                <div className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-stone-200/60 dark:border-zinc-800 space-y-1.5 shadow-sm">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-extrabold text-stone-900 dark:text-white flex items-center gap-1.5">
+                                                            <span>💳</span>
+                                                            <span>{t('vault.biweeklyExpensesJob')}</span>
+                                                        </span>
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                                            {t('vault.biweeklyExpensesTime')}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[11px] text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                                        {t('vault.biweeklyExpensesJobDesc')}
+                                                    </p>
                                                 </div>
-                                                <p className="text-[11px] text-stone-500 dark:text-zinc-400">
-                                                    Her ayın 15'inde <code className="text-emerald-500 font-mono text-[10px]">/backups/expenses/</code> altına tam bütçe yedeğini işler.
-                                                </p>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Section 4: 🚨 GUARDED DISASTER RECOVERY (LOCKED BY DEFAULT) 🚨 */}
                                     <div className="p-4 sm:p-5 bg-red-50/50 dark:bg-red-950/20 rounded-2xl border border-red-200/80 dark:border-red-900/40 space-y-4">

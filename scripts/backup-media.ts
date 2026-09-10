@@ -122,7 +122,7 @@ async function runMediaBackup() {
 
     // 3. Generate Human-Readable Text File
     let txt = `=======================================================\n`;
-    txt += `              EMULIST MEDYA KOLEKSIYON ARSIVI\n`;
+    txt += `               B12 MEDYA KOLEKSIYON ARSIVI\n`;
     txt += `           Tarih: ${new Date().toLocaleString('tr-TR')}\n`;
     txt += `           Toplam Icerik: ${items.length}\n`;
     txt += `           Filmler: ${movies.length} | Diziler: ${series.length} | Oyunlar: ${games.length} | Kitaplar: ${books.length}\n`;
@@ -168,7 +168,7 @@ async function runMediaBackup() {
     }
 
     txt += `=======================================================\n`;
-    txt += `Otomatik Yedekleme Tamamlandi (Job: Daily Media Guard)\n`;
+    txt += `Otomatik Yedekleme Tamamlandi (Job: Biweekly Media Guard)\n`;
 
     const latestTxtPath = path.join(backupDir, 'media_archive_latest.txt');
     fs.writeFileSync(latestTxtPath, txt, 'utf-8');

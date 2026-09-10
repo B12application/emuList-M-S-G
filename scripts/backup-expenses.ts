@@ -26,7 +26,7 @@ const firebaseConfig = {
     appId: process.env.VITE_APP_ID,
 };
 
-const targetUserId = process.env.VITE_ADMIN_UID || '';
+const targetUserId = process.env.VITE_ADMIN_UID || 'ZKU7SObBkeNzMicltUKJjo6ybHH2';
 const authEmail = process.env.BACKUP_AUTH_EMAIL || process.env.BACKUP_EMAIL || process.env.FIREBASE_AUTH_EMAIL || process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL;
 const authPassword = process.env.BACKUP_AUTH_PASSWORD || process.env.BACKUP_PASSWORD || process.env.FIREBASE_AUTH_PASSWORD || process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD;
 
@@ -61,8 +61,10 @@ async function runExpensesBackup() {
     // Ensure output directories exist
     const backupDir = path.join(projectRoot, 'backups', 'expenses');
     const monthlyDir = path.join(backupDir, 'monthly');
+    const historyDir = path.join(backupDir, 'history');
     fs.mkdirSync(backupDir, { recursive: true });
     fs.mkdirSync(monthlyDir, { recursive: true });
+    fs.mkdirSync(historyDir, { recursive: true });
 
     // Fetch expensedata collection
     let q;
@@ -135,13 +137,17 @@ async function runExpensesBackup() {
     const latestJsonPath = path.join(backupDir, 'expenses_backup_latest.json');
     fs.writeFileSync(latestJsonPath, JSON.stringify(payload, null, 2), 'utf-8');
 
-    // 2. Write Monthly JSON (Her ayın 15'i veya çalıştığı tarih)
+    // 2. Write Monthly JSON
     const monthlyJsonPath = path.join(monthlyDir, `expenses_backup_${yearMonth}.json`);
     fs.writeFileSync(monthlyJsonPath, JSON.stringify(payload, null, 2), 'utf-8');
 
+    // 2b. Write Timestamped JSON in history (15 günlük geçmiş arşivi)
+    const historyJsonPath = path.join(historyDir, `expenses_backup_${dateStr}.json`);
+    fs.writeFileSync(historyJsonPath, JSON.stringify(payload, null, 2), 'utf-8');
+
     // 3. Generate Human-Readable Text Summary
     let txt = `=======================================================\n`;
-    txt += `              EMULIST HARCAMA VE BUTCE RAPORU\n`;
+    txt += `               B12 HARCAMA VE BUTCE RAPORU\n`;
     txt += `           Tarih: ${new Date().toLocaleString('tr-TR')}\n`;
     txt += `           Toplam Kayit: ${activeExpenses.length} Aktif Harcama\n`;
     txt += `=======================================================\n\n`;
@@ -171,13 +177,14 @@ async function runExpensesBackup() {
     });
 
     txt += `\n=======================================================\n`;
-    txt += `Otomatik Harcama Yedekleme Tamamlandi (Job: Monthly Expenses Guard)\n`;
+    txt += `Otomatik Harcama Yedekleme Tamamlandi (Job: Biweekly Expenses Guard)\n`;
 
     const latestTxtPath = path.join(backupDir, 'expenses_summary_latest.txt');
     fs.writeFileSync(latestTxtPath, txt, 'utf-8');
 
     console.log(`✅ [Expenses Backup Job] Başarıyla kaydedildi:`);
     console.log(`   📄 JSON: ${latestJsonPath}`);
+    console.log(`   📁 HIST: ${historyJsonPath}`);
     console.log(`   📝 TXT : ${latestTxtPath}`);
     process.exit(0);
 }

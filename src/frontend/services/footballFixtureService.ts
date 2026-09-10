@@ -1,7 +1,10 @@
+// src/frontend/services/footballFixtureService.ts
+// B12 Kişisel Yaşam Asistanı - Resmi Fikstür ve Canlı Maç Servisi
 import type { PlannerMeeting } from '../../backend/types/planner';
 
 export interface FootballTeam {
   id: string;
+  slug: string;
   name: string;
   shortName: string;
   league: 'superlig' | 'championsleague' | 'europe';
@@ -16,6 +19,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   // ─── TÜRKİYE SÜPER LİG ──────────────────────────────────────────────────────────
   {
     id: 'galatasaray',
+    slug: 'galatasaray',
     name: 'Galatasaray',
     shortName: 'GS',
     league: 'superlig',
@@ -27,6 +31,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'fenerbahce',
+    slug: 'fenerbahce',
     name: 'Fenerbahçe',
     shortName: 'FB',
     league: 'superlig',
@@ -37,6 +42,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'besiktas',
+    slug: 'besiktas',
     name: 'Beşiktaş',
     shortName: 'BJK',
     league: 'superlig',
@@ -47,6 +53,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'trabzonspor',
+    slug: 'trabzonspor',
     name: 'Trabzonspor',
     shortName: 'TS',
     league: 'superlig',
@@ -57,6 +64,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'basaksehir',
+    slug: 'istanbul-basaksehir-fk',
     name: 'Başakşehir FK',
     shortName: 'IBFK',
     league: 'superlig',
@@ -67,6 +75,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'samsunspor',
+    slug: 'samsunspor',
     name: 'Samsunspor',
     shortName: 'SAM',
     league: 'superlig',
@@ -77,6 +86,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'eyupspor',
+    slug: 'eyupspor',
     name: 'Eyüpspor',
     shortName: 'EYP',
     league: 'superlig',
@@ -87,6 +97,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'sivasspor',
+    slug: 'sivasspor',
     name: 'Sivasspor',
     shortName: 'SIV',
     league: 'superlig',
@@ -99,6 +110,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   // ─── UEFA ŞAMPİYONLAR LİGİ & AVRUPA DEVLERİ ───────────────────────────────────
   {
     id: 'realmadrid',
+    slug: 'real-madrid',
     name: 'Real Madrid',
     shortName: 'RMA',
     league: 'championsleague',
@@ -109,6 +121,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'mancity',
+    slug: 'manchester-city',
     name: 'Manchester City',
     shortName: 'MCI',
     league: 'championsleague',
@@ -119,6 +132,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'arsenal',
+    slug: 'arsenal',
     name: 'Arsenal',
     shortName: 'ARS',
     league: 'championsleague',
@@ -129,6 +143,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'barcelona',
+    slug: 'fc-barcelona',
     name: 'FC Barcelona',
     shortName: 'FCB',
     league: 'championsleague',
@@ -139,6 +154,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'bayern',
+    slug: 'bayern-munchen',
     name: 'Bayern München',
     shortName: 'BAY',
     league: 'championsleague',
@@ -149,6 +165,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'inter',
+    slug: 'inter',
     name: 'Inter Milano',
     shortName: 'INT',
     league: 'championsleague',
@@ -159,6 +176,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'liverpool',
+    slug: 'liverpool',
     name: 'Liverpool',
     shortName: 'LIV',
     league: 'championsleague',
@@ -169,6 +187,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'psg',
+    slug: 'paris-saint-germain',
     name: 'Paris Saint-Germain',
     shortName: 'PSG',
     league: 'championsleague',
@@ -179,6 +198,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'bayerleverkusen',
+    slug: 'bayer-leverkusen',
     name: 'Bayer Leverkusen',
     shortName: 'B04',
     league: 'championsleague',
@@ -189,6 +209,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'atleticomadrid',
+    slug: 'atletico-madrid',
     name: 'Atlético Madrid',
     shortName: 'ATM',
     league: 'championsleague',
@@ -199,6 +220,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
   },
   {
     id: 'juventus',
+    slug: 'juventus',
     name: 'Juventus',
     shortName: 'JUV',
     league: 'championsleague',
@@ -210,9 +232,9 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
 ];
 
 const STORAGE_KEY_SELECTED_TEAMS = 'b12_selected_football_teams_v6';
-const FIXTURES_CACHE_KEY = 'b12_football_fixtures_cache_v20';
-const FIXTURES_CACHE_TIME = 'b12_football_fixtures_time_v20';
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const FIXTURES_CACHE_KEY = 'b12_football_fixtures_cache_v21';
+const FIXTURES_CACHE_TIME = 'b12_football_fixtures_time_v21';
+const CACHE_TTL = 30 * 60 * 1000; // 30 dakika
 
 export const getSelectedTeamIds = (): string[] => {
   try {
@@ -232,215 +254,36 @@ export const getSelectedTeamIds = (): string[] => {
 export const saveSelectedTeamIds = (teamIds: string[]) => {
   try {
     localStorage.setItem(STORAGE_KEY_SELECTED_TEAMS, JSON.stringify(teamIds));
-    localStorage.removeItem(FIXTURES_CACHE_KEY); // Invalidate cache immediately
+    localStorage.removeItem(FIXTURES_CACHE_KEY); // Cache'i anında geçersiz kıl
   } catch (e) {
     console.error("Failed to save selected teams:", e);
   }
 };
 
-// ─── 2026/2027 SEZONU RESMİ TFF & UEFA ŞAMPİYONLAR LİGİ FİKSTÜRLERİ ────────────
-const OFFICIAL_2026_2027_FIXTURES: Record<string, { opponent: string; date: string; time: string; comp: string; isHome: boolean; isCl?: boolean }[]> = {
-  galatasaray: [
-    // 🏆 UEFA ŞAMPİYONLAR LİGİ (LİG AŞAMASI RESMİ MAÇLARI)
-    { opponent: 'Sporting CP', date: '2026-09-09', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Barcelona', date: '2026-10-13', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Lille', date: '2026-10-21', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Stuttgart', date: '2026-11-03', time: '20:45', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Aston Villa', date: '2026-11-24', time: '20:45', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'AEK', date: '2026-12-08', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Feyenoord', date: '2027-01-19', time: '20:45', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'PSG', date: '2027-01-27', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-
-    // ⚽ TRENDYOL SÜPER LİG (2026/2027 RESMİ SEZON FİKSTÜRÜ)
-    { opponent: 'İstanbul Başakşehir', date: '2026-09-04', time: '20:00', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Kocaelispor', date: '2026-09-13', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Trabzonspor (Derbi)', date: '2026-09-20', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Alanyaspor', date: '2026-09-27', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Antalyaspor', date: '2026-10-04', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Fenerbahçe (Kıtalararası Derbi)', date: '2026-10-18', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Kasımpaşa', date: '2026-10-25', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Bodrum FK', date: '2026-11-01', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Samsunspor', date: '2026-11-08', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Beşiktaş (Derbi)', date: '2026-11-22', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Sivasspor', date: '2026-11-29', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Kayserispor', date: '2026-12-06', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Göztepe', date: '2026-12-13', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Eyüpspor', date: '2026-12-20', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Çorum FK', date: '2027-01-17', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Erzurumspor', date: '2027-01-24', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Göztepe', date: '2027-01-31', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Başakşehir FK', date: '2027-02-07', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Kocaelispor', date: '2027-02-14', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Trabzonspor (Derbi)', date: '2027-02-21', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Alanyaspor', date: '2027-02-28', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Antalyaspor', date: '2027-03-07', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Fenerbahçe (Derbi)', date: '2027-03-14', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Kasımpaşa', date: '2027-03-21', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Bodrum FK', date: '2027-04-04', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Samsunspor', date: '2027-04-11', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Beşiktaş (Derbi)', date: '2027-04-18', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Sivasspor', date: '2027-04-25', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Kayserispor', date: '2027-05-02', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Göztepe', date: '2027-05-09', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Eyüpspor', date: '2027-05-16', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true }
-  ],
-  fenerbahce: [
-    { opponent: 'Kasımpaşa', date: '2026-09-14', time: '17:00', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Union Saint-Gilloise', date: '2026-09-24', time: '19:45', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Antalyaspor', date: '2026-09-28', time: '19:00', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Twente', date: '2026-10-02', time: '22:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Samsunspor', date: '2026-10-19', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Manchester United', date: '2026-10-23', time: '22:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Bodrum FK', date: '2026-10-26', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Trabzonspor (Derbi)', date: '2026-11-02', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'AZ Alkmaar', date: '2026-11-06', time: '23:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Sivasspor', date: '2026-11-09', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Kayserispor', date: '2026-11-23', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Slavia Prag', date: '2026-11-27', time: '23:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Gaziantep FK', date: '2026-12-02', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Beşiktaş (Derbi)', date: '2026-12-07', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Athletic Bilbao', date: '2026-12-10', time: '18:30', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Başakşehir FK', date: '2026-12-14', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Lyon', date: '2027-01-22', time: '20:45', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Midtjylland', date: '2027-01-29', time: '23:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Galatasaray (Derbi)', date: '2027-03-14', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true }
-  ],
-  besiktas: [
-    { opponent: 'Trabzonspor (Derbi)', date: '2026-09-14', time: '20:00', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Eyüpspor', date: '2026-09-22', time: '20:00', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Ajax', date: '2026-09-25', time: '22:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Kayserispor', date: '2026-09-29', time: '20:00', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Eintracht Frankfurt', date: '2026-10-02', time: '22:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Gaziantep FK', date: '2026-10-06', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Konyaspor', date: '2026-10-20', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Lyon', date: '2026-10-23', time: '22:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Galatasaray (Derbi)', date: '2026-11-22', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Kasımpaşa', date: '2026-11-02', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Malmö', date: '2026-11-05', time: '18:30', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Başakşehir FK', date: '2026-11-09', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Göztepe', date: '2026-11-23', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Maccabi Tel Aviv', date: '2026-11-27', time: '20:45', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Hatayspor', date: '2026-12-02', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false },
-    { opponent: 'Fenerbahçe (Derbi)', date: '2026-12-07', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: true },
-    { opponent: 'Athletic Bilbao', date: '2027-01-21', time: '18:30', comp: 'UEFA Avrupa Ligi 🏆', isHome: true },
-    { opponent: 'Twente', date: '2027-01-29', time: '23:00', comp: 'UEFA Avrupa Ligi 🏆', isHome: false },
-    { opponent: 'Galatasaray (Derbi)', date: '2027-04-18', time: 'TBD', comp: 'Trendyol Süper Lig ⚽', isHome: false }
-  ],
-  realmadrid: [
-    { opponent: 'Real Sociedad', date: '2026-09-14', time: '22:00', comp: 'La Liga 🇪🇸', isHome: false },
-    { opponent: 'Stuttgart', date: '2026-09-17', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Espanyol', date: '2026-09-21', time: '22:00', comp: 'La Liga 🇪🇸', isHome: true },
-    { opponent: 'Alaves', date: '2026-09-24', time: '22:00', comp: 'La Liga 🇪🇸', isHome: true },
-    { opponent: 'Atlético Madrid (Derbi)', date: '2026-09-29', time: '22:00', comp: 'La Liga 🇪🇸', isHome: false },
-    { opponent: 'Lille', date: '2026-10-02', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Villarreal', date: '2026-10-05', time: '22:00', comp: 'La Liga 🇪🇸', isHome: true },
-    { opponent: 'Celta Vigo', date: '2026-10-19', time: '22:00', comp: 'La Liga 🇪🇸', isHome: false },
-    { opponent: 'Borussia Dortmund', date: '2026-10-22', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Barcelona (El Clásico)', date: '2026-10-26', time: '22:00', comp: 'La Liga 🇪🇸', isHome: true },
-    { opponent: 'Valencia', date: '2026-11-02', time: '23:00', comp: 'La Liga 🇪🇸', isHome: false },
-    { opponent: 'Milan', date: '2026-11-05', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Osasuna', date: '2026-11-09', time: '16:00', comp: 'La Liga 🇪🇸', isHome: true },
-    { opponent: 'Liverpool', date: '2026-11-27', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Getafe', date: '2026-12-01', time: '18:15', comp: 'La Liga 🇪🇸', isHome: true },
-    { opponent: 'Atalanta', date: '2026-12-10', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Salzburg', date: '2027-01-22', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Brest', date: '2027-01-29', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Barcelona (El Clásico)', date: '2027-05-11', time: 'TBD', comp: 'La Liga 🇪🇸', isHome: false }
-  ],
-  mancity: [
-    { opponent: 'Brentford', date: '2026-09-14', time: '17:00', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: true },
-    { opponent: 'Inter Milano', date: '2026-09-18', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Arsenal (Zirve Maçı)', date: '2026-09-22', time: '18:30', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: true },
-    { opponent: 'Newcastle United', date: '2026-09-28', time: '14:30', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: false },
-    { opponent: 'Slovan Bratislava', date: '2026-10-01', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Fulham', date: '2026-10-05', time: '17:00', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: true },
-    { opponent: 'Wolves', date: '2026-10-20', time: '16:00', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: false },
-    { opponent: 'Sparta Prag', date: '2026-10-23', time: '22:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Southampton', date: '2026-10-26', time: '17:00', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: true },
-    { opponent: 'Sporting CP', date: '2026-11-05', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Tottenham', date: '2026-11-23', time: '20:30', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: true },
-    { opponent: 'Feyenoord', date: '2026-11-26', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true },
-    { opponent: 'Liverpool', date: '2026-12-01', time: '19:00', comp: 'Premier League 🏴󠁧󠁢󠁥󠁮󠁧󠁿', isHome: false },
-    { opponent: 'Juventus', date: '2026-12-11', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'PSG', date: '2027-01-22', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: false, isCl: true },
-    { opponent: 'Club Brugge', date: '2027-01-29', time: '23:00', comp: 'UEFA Şampiyonlar Ligi 🏆', isHome: true, isCl: true }
-  ]
-};
-
-// ─── GENERATE MATCHES FOR TEAM ────────────────────────────────────────────────
-function generateMatchesForTeam(team: FootballTeam): PlannerMeeting[] {
-  const seedList = OFFICIAL_2026_2027_FIXTURES[team.id];
-  
-  if (seedList && seedList.length > 0) {
-    return seedList.map((m) => {
-      const title = m.isHome ? `${team.name} - ${m.opponent}` : `${m.opponent} - ${team.name}`;
-      return {
-        id: `fixture-${team.id}-${m.date}`,
-        userId: 'football-system',
-        title: title,
-        date: m.date,
-        startTime: m.time,
-        itemType: 'match',
-        category: (m.isCl || m.comp.includes('Şampiyonlar')) ? 'Şampiyonlar Ligi' : (m.comp.includes('Avrupa') ? 'Avrupa Ligi' : 'Süper Lig'),
-        description: `${team.name} • ${m.comp}`,
-        teamBadge: team.logo,
-        teamColor: team.color,
-      };
-    });
-  }
-
-  const matches: PlannerMeeting[] = [];
-  const superligOpps = ['Fenerbahçe', 'Galatasaray', 'Beşiktaş', 'Trabzonspor', 'Başakşehir', 'Sivasspor', 'Samsunspor', 'Eyüpspor', 'Konyaspor', 'Alanyaspor', 'Antalyaspor', 'Kasımpaşa', 'Göztepe', 'Rizespor'];
-  const clOpps = ['Real Madrid', 'Manchester City', 'Bayern München', 'Barcelona', 'Inter', 'Arsenal', 'PSG', 'Liverpool', 'Bayer Leverkusen', 'Atlético Madrid', 'Juventus'];
-  const oppList = team.league === 'superlig' ? superligOpps : clOpps;
-
-  const seasonDates = [
-    { date: '2026-09-14', time: '20:00' },
-    { date: '2026-09-21', time: '20:00' },
-    { date: '2026-09-28', time: '19:00' },
-    { date: '2026-10-05', time: '19:00' },
-    { date: '2026-10-19', time: '19:00' },
-    { date: '2026-10-26', time: '19:00' },
-    { date: '2026-11-02', time: '19:00' },
-    { date: '2026-11-09', time: '19:00' },
-    { date: '2026-11-23', time: '19:00' },
-    { date: '2026-11-30', time: '19:00' },
-    { date: '2026-12-07', time: '19:00' },
-    { date: '2026-12-14', time: 'TBD' },
-    { date: '2027-01-18', time: 'TBD' },
-    { date: '2027-01-25', time: 'TBD' },
-    { date: '2027-02-15', time: 'TBD' },
-    { date: '2027-03-08', time: 'TBD' },
-    { date: '2027-04-12', time: 'TBD' },
-    { date: '2027-05-17', time: 'TBD' }
-  ];
-
-  seasonDates.forEach((schedule, index) => {
-    let opp = oppList[(index + team.name.length) % oppList.length];
-    if (opp.toLowerCase().includes(team.name.toLowerCase())) {
-      opp = oppList[(index + 1) % oppList.length];
+/**
+ * public/data/fixtures.json dosyasından resmi fikstür veri bankasını okur.
+ */
+async function loadLocalFixturesDatabase(): Promise<Record<string, PlannerMeeting[]>> {
+  try {
+    const res = await fetch('/data/fixtures.json', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.fixtures) {
+        return data.fixtures;
+      }
     }
-    const isHome = index % 2 === 0;
-    const compName = team.league === 'superlig' ? 'Trendyol Süper Lig ⚽' : `${team.leagueName} ⚽`;
-
-    matches.push({
-      id: `fixture-${team.id}-${schedule.date}`,
-      userId: 'football-system',
-      title: isHome ? `${team.name} - ${opp}` : `${opp} - ${team.name}`,
-      date: schedule.date,
-      startTime: schedule.time,
-      itemType: 'match',
-      category: team.league === 'championsleague' ? 'Şampiyonlar Ligi' : 'Süper Lig',
-      description: `${team.name} • ${compName}`,
-      teamBadge: team.logo,
-      teamColor: team.color,
-    });
-  });
-
-  return matches;
+  } catch (e) {
+    console.warn("[Fixtures] Failed to load local fixtures database:", e);
+  }
+  return {};
 }
 
-// ─── MAIN EXPORTED FUNCTION: GET ALL MATCHES FOR SELECTED TEAMS ───────────────
+/**
+ * Seçili takımların tüm resmi lig, kupa ve Avrupa maçlarını getirir.
+ * 1. Adım: LocalStorage önbelleği (anında açılış)
+ * 2. Adım: /data/fixtures.json yerel veri tabanı (19 takımın 2026/2027 resmi fikstürü)
+ * 3. Adım: Netlify / Proxy canlı fonksiyonu (saat güncellemeleri)
+ */
 export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<PlannerMeeting[]> => {
   const selectedTeamIds = getSelectedTeamIds();
   const selectedTeams = AVAILABLE_FOOTBALL_TEAMS.filter(t => selectedTeamIds.includes(t.id));
@@ -449,7 +292,7 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
     return [];
   }
 
-  // 1. Check cache if not force refresh
+  // 1. Önbellek kontrolü
   if (!forceRefresh) {
     try {
       const cached = localStorage.getItem(FIXTURES_CACHE_KEY);
@@ -458,33 +301,37 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
         const age = Date.now() - parseInt(cachedTime, 10);
         if (age < CACHE_TTL) {
           const parsed: PlannerMeeting[] = JSON.parse(cached);
-          const filtered = parsed.filter(m => selectedTeamIds.some(tId => m.id?.includes(tId) || m.description?.toLowerCase().includes(tId)));
+          const filtered = parsed.filter(m => 
+            selectedTeamIds.some(tId => (m as any).teamId === tId || m.id?.includes(tId) || m.description?.toLowerCase().includes(tId))
+          );
           if (filtered.length > 0) return filtered;
         }
       }
     } catch (e) {
-      console.warn("Error reading football matches cache:", e);
+      console.warn("[Fixtures] Cache read warning:", e);
     }
   }
 
-  const allMatches: PlannerMeeting[] = [];
   const matchMap = new Map<string, PlannerMeeting>();
 
-  // 2. Load official season schedule (Champions League + Süper Lig)
-  for (const team of selectedTeams) {
-    const teamMatches = generateMatchesForTeam(team);
-    teamMatches.forEach(m => {
-      const key = `${team.id}-${m.date}`;
-      matchMap.set(key, m);
-    });
+  // 2. Yerel Kapsamlı Veri Tabanını Yükle (/data/fixtures.json)
+  const localDb = await loadLocalFixturesDatabase();
+  for (const teamId of selectedTeamIds) {
+    const teamMatches = localDb[teamId];
+    if (Array.isArray(teamMatches)) {
+      teamMatches.forEach(m => {
+        const key = `${teamId}-${m.date}`;
+        matchMap.set(key, m);
+      });
+    }
   }
 
-  // 3. Attempt to fetch dynamic web-scraped updates (TFF / live function)
+  // 3. Canlı Netlify / Proxy Servisinden Saat Güncellemelerini Al (Non-blocking, 3.5s timeout)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 sec non-blocking timeout
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const res = await fetch('/.netlify/functions/fetch-fixtures', {
+    const res = await fetch(`/.netlify/functions/fetch-fixtures?teams=${selectedTeamIds.join(',')}`, {
       signal: controller.signal
     }).catch(() => null);
 
@@ -497,39 +344,55 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
           const key = `${sm.teamId}-${sm.date}`;
           if (matchMap.has(key)) {
             const existing = matchMap.get(key)!;
-            // Update TBD time if scraped match contains finalized time
-            if (sm.time && sm.time !== 'TBD' && existing.startTime === 'TBD') {
+            // Saat kesinleştiyse güncelle (örn: TBD -> 21:00)
+            if (sm.time && sm.time !== 'TBD') {
               existing.startTime = sm.time;
+            }
+          } else {
+            // Yeni eklenmiş maç varsa listeye ekle
+            const team = AVAILABLE_FOOTBALL_TEAMS.find(t => t.id === sm.teamId);
+            if (team) {
+              matchMap.set(key, {
+                id: `match-${sm.teamId}-${sm.date}`,
+                teamId: sm.teamId,
+                userId: 'football-system',
+                title: sm.title || sm.opponent,
+                date: sm.date,
+                startTime: sm.time || 'TBD',
+                itemType: 'match',
+                category: sm.category || 'Süper Lig',
+                description: `${team.name} • ${sm.comp || team.leagueName}`,
+                teamBadge: team.logo,
+                teamColor: team.color,
+              } as PlannerMeeting);
             }
           }
         });
       }
     }
-  } catch (e) {
-    // Non-blocking catch to ensure 100% UI resilience
-    console.debug("Web scraping fetcher fallback active");
+  } catch {
+    // Non-blocking, yerel veriler 100% korur
   }
 
-  matchMap.forEach(m => allMatches.push(m));
+  const allMatches: PlannerMeeting[] = Array.from(matchMap.values());
 
-  // 4. Sort all matches chronologically
+  // 4. Kronolojik Sıralama
   allMatches.sort((a, b) => {
     const timeA = a.startTime === 'TBD' ? '12:00' : (a.startTime || '12:00');
     const timeB = b.startTime === 'TBD' ? '12:00' : (b.startTime || '12:00');
     return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
   });
 
-  // 5. Save to cache
+  // 5. Önbelleğe Kaydet
   try {
     localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify(allMatches));
     localStorage.setItem(FIXTURES_CACHE_TIME, Date.now().toString());
   } catch (e) {
-    console.warn("Failed to write fixtures cache:", e);
+    console.warn("[Fixtures] Cache write warning:", e);
   }
 
   return allMatches;
 };
 
-// Backward compatibility alias
+// Geriye dönük uyumluluk takma adı
 export const getUpcomingGSMatches = getUpcomingFootballMatches;
-

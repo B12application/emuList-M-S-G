@@ -150,7 +150,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                     <button
                         onClick={handleMarkNext}
                         disabled={marking}
-                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-white font-semibold transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] shadow-sm"
+                        className="cursor-pointer w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-white font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-sm"
                         style={{ background: 'linear-gradient(135deg, #b91c1c, #7f1d1d)' }}
                     >
                         <div className="flex items-center gap-2.5">
@@ -173,7 +173,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
             {compact && !showGrid && (
                 <button
                     onClick={() => setShowGrid(true)}
-                    className="w-full flex items-center justify-center gap-2 py-2 text-[11px] font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded-lg transition-colors"
+                    className="cursor-pointer w-full flex items-center justify-center gap-2 py-2 text-[11px] font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 rounded-lg transition-colors"
                 >
                     <FaChevronDown size={9} />
                     {t('episodes.showDetails')}
@@ -186,7 +186,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                     {compact && showGrid && (
                         <button
                             onClick={() => setShowGrid(false)}
-                            className="w-full flex items-center justify-center gap-2 py-2 text-[11px] font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                            className="cursor-pointer w-full flex items-center justify-center gap-2 py-2 text-[11px] font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                         >
                             <FaChevronUp size={9} /> {t('episodes.hideDetails')}
                         </button>
@@ -205,7 +205,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                                     key={season}
                                     onClick={() => setActiveSeason(season)}
                                     className={`
-                                        relative flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all
+                                        relative cursor-pointer flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all
                                         ${activeSeason === season
                                             ? 'text-white shadow-sm'
                                             : complete
@@ -237,7 +237,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                             <button
                                 onClick={handleMarkAllSeason}
                                 disabled={isSeasonComplete}
-                                className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold rounded-md bg-zinc-100 text-zinc-600 dark:bg-zinc-700/40 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700/60 disabled:opacity-30 transition-colors border border-zinc-200/40 dark:border-zinc-600/25"
+                                className="cursor-pointer flex items-center gap-1 px-2 py-1 text-[9px] font-bold rounded-md bg-zinc-100 text-zinc-600 dark:bg-zinc-700/40 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border border-zinc-200/40 dark:border-zinc-600/25"
                                 title={t('episodes.markAllSeason')}
                             >
                                 <FaCheckDouble size={8} />
@@ -246,7 +246,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                             <button
                                 onClick={handleClearSeason}
                                 disabled={seasonEps.length === 0}
-                                className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold rounded-md bg-zinc-50 text-zinc-400 dark:bg-zinc-800/40 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700/40 disabled:opacity-30 transition-colors border border-zinc-200/30 dark:border-zinc-700/25"
+                                className="cursor-pointer flex items-center gap-1 px-2 py-1 text-[9px] font-bold rounded-md bg-zinc-50 text-zinc-400 dark:bg-zinc-800/40 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border border-zinc-200/30 dark:border-zinc-700/25"
                                 title={t('seasons.clearAll')}
                             >
                                 <FaUndo size={7} />
@@ -268,7 +268,7 @@ export default function EpisodeTracker({ item, onUpdate, compact = false }: Epis
                                             key={epNum}
                                             onClick={() => handleToggleEpisode(activeSeason, epNum)}
                                             className={`
-                                                aspect-square rounded-lg flex items-center justify-center text-[12px] font-bold transition-all duration-100
+                                                cursor-pointer aspect-square rounded-lg flex items-center justify-center text-[12px] font-bold transition-all duration-100
                                                 ${isWatched
                                                     ? 'bg-red-600 text-white shadow-sm'
                                                     : 'bg-zinc-100 dark:bg-zinc-700/40 text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 dark:hover:text-red-400 border border-zinc-200/50 dark:border-zinc-600/30'

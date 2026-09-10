@@ -1,20 +1,15 @@
 import { format, isToday, isTomorrow } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../context/LanguageContext';
-import { useShift } from '../../context/ShiftContext';
-import { FaSun, FaMoon, FaBed, FaUserShield, FaCog } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 
 interface PlannerHeaderProps {
   selectedDate: Date;
   meetingCount: number;
-  onEditShifts?: () => void;
   onOpenTeamFixtures?: () => void;
 }
 
-export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts, onOpenTeamFixtures }: PlannerHeaderProps) {
-  const { getShiftInfo, shiftSettings } = useShift();
-  const shift = getShiftInfo(selectedDate);
+export default function PlannerHeader({ selectedDate, meetingCount, onOpenTeamFixtures }: PlannerHeaderProps) {
   const { language, t } = useLanguage();
   const dateLocale = language === 'tr' ? tr : enUS;
   
@@ -48,27 +43,6 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        {shiftSettings.enableShiftSystem && (
-          <div className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-bold shadow-sm ${
-            shift.type === 'Sabah' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' :
-            shift.type === 'Akşam' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400' :
-            shift.type === 'Nöbet' ? 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400' :
-            'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-          }`}>
-            {shift.type === 'Sabah' && <FaSun className="text-amber-500 text-sm" />}
-            {shift.type === 'Akşam' && <FaMoon className="text-indigo-500 text-sm" />}
-            {shift.type === 'Nöbet' && <FaUserShield className="text-rose-500 text-sm" />}
-            {shift.type === 'Tatil' && <FaBed className="text-emerald-500 text-sm" />}
-            <span>
-              {shift.type === 'Sabah' ? (language === 'tr' ? 'Mesai' : 'Work') : 
-               shift.type === 'Akşam' ? (language === 'tr' ? 'Akşam Vardiyası' : 'Evening') :
-               shift.type === 'Nöbet' ? (language === 'tr' ? 'Nöbet Vardiyası' : 'On-call') :
-               (language === 'tr' ? 'Tatil / İzin' : 'Day Off')}
-            </span>
-            {shift.startTime && <span className="opacity-60 font-medium">({shift.startTime} - {shift.endTime})</span>}
-          </div>
-        )}
-
         {onOpenTeamFixtures && (
           <button
             onClick={onOpenTeamFixtures}
@@ -77,16 +51,6 @@ export default function PlannerHeader({ selectedDate, meetingCount, onEditShifts
           >
             <PiSoccerBallFill className="text-sm text-amber-500" />
             <span>Takımlar & Fikstür</span>
-          </button>
-        )}
-
-        {onEditShifts && shiftSettings.enableShiftSystem && (
-          <button
-            onClick={onEditShifts}
-            className="px-3.5 py-2 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-stone-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-800 transition-all flex items-center gap-1.5 text-xs font-bold active:scale-95 shadow-sm cursor-pointer"
-          >
-            <FaCog className="text-xs" />
-            <span>Vardiya Düzenle</span>
           </button>
         )}
       </div>

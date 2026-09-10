@@ -9,7 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import type { MediaItem } from '../../backend/types/media';
 import { getSeriesProgress, toggleEpisodeWatched, updateCurrentProgress } from '../../backend/services/episodeTrackingService';
 import EpisodeTracker from '../components/EpisodeTracker';
-import ImageWithFallback from '../components/ui/ImageWithFallback';
+import ImageWithFallback, { preloadImages } from '../components/ui/ImageWithFallback';
 import { useModalLock } from '../hooks/useModalLock';
 import Portal from '../components/ui/Portal';
 
@@ -42,12 +42,33 @@ export default function MyShowsPage() {
         try {
             const q = query(collection(db, 'mediaItems'), where('userId', '==', user.uid), where('type', '==', 'series'), orderBy('createdAt', 'desc'));
             const snap = await getDocs(q);
-            setShows(snap.docs.map(d => ({ id: d.id, ...d.data() } as MediaItem)));
+            const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as MediaItem));
+            setShows(items);
+            preloadImages(items.map(s => s.image));
+            try {
+                localStorage.setItem(`b12_my_shows_cache_${user.uid}`, JSON.stringify(items));
+            } catch { }
         } catch (err) { console.error(err); }
         setLoading(false);
     };
 
-    useEffect(() => { fetchShows(); }, [user]);
+    useEffect(() => {
+        if (!user) return;
+        // SWR önbellek: Kullanıcı önceki verilerini anında (0ms) görsün
+        try {
+            const cached = localStorage.getItem(`b12_my_shows_cache_${user.uid}`);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setShows(parsed);
+                    setLoading(false);
+                    preloadImages(parsed.map(s => s.image));
+                }
+            }
+        } catch { }
+
+        fetchShows();
+    }, [user]);
 
     const getCategory = (show: MediaItem): ShowCategory => {
         const p = getSeriesProgress(show);
@@ -217,7 +238,7 @@ export default function MyShowsPage() {
                 <div className="flex items-center gap-1.5">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${showFilters || selectedGenre || activeFilter !== 'all'
+                        className={`cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${showFilters || selectedGenre || activeFilter !== 'all'
                             ? 'border-slate-900 dark:border-white bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                             : 'border-slate-200 dark:border-zinc-800 text-slate-500 hover:border-slate-300 dark:hover:border-zinc-700'
                             }`}
@@ -232,7 +253,7 @@ export default function MyShowsPage() {
                             <button
                                 key={mode}
                                 onClick={() => setLayoutMode(mode)}
-                                className={`px-2.5 py-2 text-[10px] font-bold uppercase tracking-wider transition ${layoutMode === mode
+                                className={`cursor-pointer px-2.5 py-2 text-[10px] font-bold uppercase tracking-wider transition ${layoutMode === mode
                                     ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300'
                                     }`}
@@ -267,7 +288,7 @@ export default function MyShowsPage() {
                                         <button
                                             key={f.key}
                                             onClick={() => setActiveFilter(f.key)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${activeFilter === f.key
+                                            className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold transition ${activeFilter === f.key
                                                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                                                 : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-700'
                                                 }`}
@@ -287,7 +308,7 @@ export default function MyShowsPage() {
                                             <button
                                                 key={genre}
                                                 onClick={() => setSelectedGenre(selectedGenre === genre ? null : genre)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${selectedGenre === genre
+                                                className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold transition ${selectedGenre === genre
                                                     ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                                                     : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-700'
                                                     }`}
@@ -331,7 +352,7 @@ export default function MyShowsPage() {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     onClick={() => setExpandedShow(isExpanded ? null : show.id)}
-                                    className={`group relative aspect-[2/3] rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800 w-full ${cat === 'completed' ? 'opacity-50' : ''
+                                    className={`cursor-pointer group relative aspect-[2/3] rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800 w-full ${cat === 'completed' ? 'opacity-50' : ''
                                         } ${isExpanded ? 'ring-2 ring-rose-500 ring-offset-2 dark:ring-offset-zinc-950' : ''}`}
                                 >
                                     <ImageWithFallback src={show.image} alt={show.title} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
@@ -399,7 +420,7 @@ export default function MyShowsPage() {
                                     {nextEp && cat === 'inProgress' && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleQuickMark(show); }}
-                                            className="shrink-0 px-2 py-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-bold rounded hover:bg-rose-600 dark:hover:bg-rose-500 dark:hover:text-white transition"
+                                            className="cursor-pointer shrink-0 px-2 py-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-bold rounded hover:bg-rose-600 dark:hover:bg-rose-500 dark:hover:text-white transition"
                                         >
                                             S{nextEp.season}E{nextEp.episode}
                                         </button>
@@ -474,7 +495,7 @@ export default function MyShowsPage() {
                                         {nextEp && cat === 'inProgress' && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleQuickMark(show); }}
-                                                className="flex items-center gap-1 px-3 py-1.5 bg-rose-500 text-white text-[11px] font-bold rounded-lg hover:bg-rose-600 active:scale-95 transition"
+                                                className="cursor-pointer flex items-center gap-1 px-3 py-1.5 bg-rose-500 text-white text-[11px] font-bold rounded-lg hover:bg-rose-600 active:scale-95 transition"
                                             >
                                                 <FaPlay className="text-[8px]" />
                                                 S{nextEp.season}E{nextEp.episode}
@@ -531,7 +552,7 @@ export default function MyShowsPage() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-zinc-950 via-white/60 dark:via-zinc-950/60 to-transparent" />
                                         <button
                                             onClick={() => setExpandedShow(null)}
-                                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition backdrop-blur-sm"
+                                            className="cursor-pointer absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition backdrop-blur-sm"
                                         >
                                             <FaTimes className="text-sm" />
                                         </button>
@@ -553,7 +574,7 @@ export default function MyShowsPage() {
                                         <div className="px-4 pt-3">
                                             <button
                                                 onClick={() => handleQuickMark(show)}
-                                                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 active:scale-[0.98] transition"
+                                                className="cursor-pointer w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 active:scale-[0.98] transition"
                                             >
                                                 <FaPlay className="text-[10px]" />
                                                 {t('myShows.nextEpisodeCta')

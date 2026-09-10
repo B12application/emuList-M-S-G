@@ -5,10 +5,9 @@ import {
 import { tr, enUS } from 'date-fns/locale';
 import { useState, useRef, useMemo } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { useShift } from '../../context/ShiftContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
-import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaMapMarkerAlt } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 
 interface MonthlyViewProps {
@@ -26,7 +25,6 @@ export default function MonthlyView({
   onSelectDate,
   calendarAlerts = []
 }: MonthlyViewProps) {
-  const { getShiftInfo } = useShift();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [showMatches, setShowMatches] = useState(false);
@@ -177,7 +175,6 @@ export default function MonthlyView({
           {/* TAKVİM HÜCRE GRİDİ */}
           <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-stone-100 dark:divide-zinc-800/60">
             {days.map((day, idx) => {
-              const shift = getShiftInfo(day);
               const dateStr = format(day, 'yyyy-MM-dd');
               const dayMeetings = meetings.filter(m => {
                 if (m.itemType === 'jira') {
@@ -192,41 +189,6 @@ export default function MonthlyView({
               const isToday = isSameDay(day, new Date());
               const alertInfos = getAlertInfoForDay(day, idx);
 
-              let cellClass = '';
-              let shiftBadge = null;
-
-              if (shift) {
-                if (shift.type === 'Sabah') {
-                  cellClass = 'border-t-[3px] border-t-amber-400 bg-amber-500/[0.02] dark:bg-amber-500/[0.01]';
-                  shiftBadge = (
-                    <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 tracking-tight">
-                      {language === 'tr' ? 'Sabah' : 'Morning'}
-                    </div>
-                  );
-                } else if (shift.type === 'Akşam') {
-                  cellClass = 'border-t-[3px] border-t-indigo-400 bg-indigo-500/[0.02] dark:bg-indigo-500/[0.01]';
-                  shiftBadge = (
-                    <div className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 tracking-tight">
-                      {language === 'tr' ? 'Akşam' : 'Evening'}
-                    </div>
-                  );
-                } else if (shift.type === 'Nöbet') {
-                  cellClass = 'border-t-[3px] border-t-rose-400 bg-rose-500/[0.02] dark:bg-rose-500/[0.01]';
-                  shiftBadge = (
-                    <div className="text-[10px] font-bold text-rose-700 dark:text-rose-400 tracking-tight">
-                      {language === 'tr' ? 'Nöbet' : 'On-call'}
-                    </div>
-                  );
-                } else if (shift.type === 'Tatil') {
-                  cellClass = 'border-t-[3px] border-t-stone-300 dark:border-t-zinc-700 bg-stone-500/[0.01]';
-                  shiftBadge = (
-                    <div className="text-[10px] font-bold text-stone-500 dark:text-zinc-500 tracking-tight">
-                      {language === 'tr' ? 'Tatil' : 'Off'}
-                    </div>
-                  );
-                }
-              }
-
               return (
                 <div
                   key={day.toString()}
@@ -234,7 +196,6 @@ export default function MonthlyView({
                   onClick={() => onSelectDate(day)}
                   className={`min-h-[90px] sm:min-h-[130px] p-2 sm:p-2.5 cursor-pointer transition-colors hover:bg-stone-50/80 dark:hover:bg-zinc-900/80 relative group flex flex-col justify-between
                     ${!isCurrentMonth ? 'opacity-30 pointer-events-none bg-stone-50/40 dark:bg-zinc-950/40' : ''}
-                    ${cellClass}
                     ${dayMatches.length > 0 && showMatches ? 'bg-amber-400/5 dark:bg-amber-400/[0.03]' : ''}
                   `}
                 >
@@ -250,17 +211,35 @@ export default function MonthlyView({
                       </span>
                     </div>
 
-                    {isCurrentMonth && (
-                      <div className="flex flex-col items-end gap-0.5">
-                        {shiftBadge}
-                        {shift && shift.isOverride && (
-                          <span className="text-[10px]" title={language === 'tr' ? 'Manuel Vardiya' : 'Manual Override'}>
-                            ⚙️
-                          </span>
-                        )}
+                    {isCurrentMonth && alertInfos.length > 0 && (
+                      <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: alertInfos[0].alert.color || '#ef4444' }}>
+                        <FaMapMarkerAlt className="text-[10px]" />
                       </div>
                     )}
                   </div>
+
+                  {/* ─── ÖZEL TAKVİM UYARILARI (BAŞLIK, İKON VE RENKLİ ROZET) ─── */}
+                  {alertInfos.length > 0 && isCurrentMonth && (
+                    <div className="my-1 space-y-1">
+                      {alertInfos.map((info, aIdx) => (
+                        <div
+                          key={`${info.alert.id}-${aIdx}`}
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-black border transition-all truncate shadow-2xs"
+                          style={{
+                            backgroundColor: `${info.alert.color || '#ef4444'}18`,
+                            borderColor: `${info.alert.color || '#ef4444'}45`,
+                            color: info.alert.color || '#ef4444',
+                          }}
+                          title={`${info.alert.label} (${info.alert.startDate} → ${info.alert.endDate})`}
+                        >
+                          <FaMapMarkerAlt className="shrink-0 text-[9px]" />
+                          <span className="truncate leading-tight tracking-tight">
+                            {info.alert.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* ─── MAÇ KARTLARI (UZAKTAN BAKILDIĞINDA ANLAŞILIR VE BELİRGİN) ─── */}
                   {dayMatches.length > 0 && (

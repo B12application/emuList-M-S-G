@@ -9,6 +9,7 @@ import DetailModal from '../components/DetailModal';
 import EmptyState from '../components/ui/EmptyState';
 import SkeletonCard from '../components/ui/SkeletonCard';
 import LoadMoreButton from '../components/ui/LoadMoreButton';
+import { preloadImages } from '../components/ui/ImageWithFallback';
 import { exportToPDF } from '../utils/pdfExport';
 import { doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
@@ -273,6 +274,13 @@ export default function MediaListPage() {
   // Game sort mode: fetch all to allow full reorder
   const isGameSortMode = type === 'game' && gameSortMode;
   const { items, loading, refetch, loadMore, loadingMore, hasMoreItems } = useMedia(type, fetchFilter, isSearchActive || isAdvancedFilterActive || filter === 'watched' || isGameSortMode);
+
+  // Görselleri arka planda önceden yükle (pre-warm browser cache)
+  useEffect(() => {
+    if (items.length > 0) {
+      preloadImages(items.map(i => i.image), 40);
+    }
+  }, [items]);
 
   // Compute all available genres from items
   const allGenres = useMemo(() => {

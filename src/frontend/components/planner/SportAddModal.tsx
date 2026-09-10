@@ -2,18 +2,17 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaDumbbell, FaWalking, FaSwimmer, FaBiking } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import { useAppSound } from '../../context/SoundContext';
-import { useLanguage } from '../../context/LanguageContext';
-import { useShift } from '../../context/ShiftContext';
 import { addMeeting } from '../../../backend/services/plannerService';
-import { format, addMinutes } from 'date-fns';
 import { showMarqueeToast } from '../MarqueeToast';
+import { useAppSound } from '../../context/SoundContext';
+import { format, addMinutes } from 'date-fns';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface SportAddModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDate: Date;
   onAdded: () => void;
+  selectedDate: Date;
 }
 
 const SPORT_TYPES = [
@@ -23,38 +22,21 @@ const SPORT_TYPES = [
   { id: 'Cycling', label: 'Bisiklet', icon: FaBiking, color: 'bg-rose-500' },
 ];
 
-export default function SportAddModal({ isOpen, onClose, selectedDate, onAdded }: SportAddModalProps) {
+export default function SportAddModal({ isOpen, onClose, onAdded, selectedDate }: SportAddModalProps) {
   const { user } = useAuth();
   const { playSuccess } = useAppSound();
-  const { t, language } = useLanguage();
-  const { getShiftInfo } = useShift();
+  const { language, t } = useLanguage();
 
   const [sportType, setSportType] = useState('Fitness');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startTime, setStartTime] = useState('18:30');
+  const [endTime, setEndTime] = useState('20:00');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [suggestedMessage, setSuggestedMessage] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      const shift = getShiftInfo(selectedDate);
-      
-      // Varsayılan saatleri vardiyaya göre ayarla
-      if (shift.type === 'Sabah') {
-        setStartTime('18:30');
-        setEndTime('20:00');
-        setSuggestedMessage(language === 'tr' ? 'Çalışma gününde olduğun için mesai sonrası saatler (18:30) önerildi.' : 'Evening hours suggested after work shift.');
-      } else if (shift.type === 'Akşam') {
-        setStartTime('09:30');
-        setEndTime('11:00');
-        setSuggestedMessage(language === 'tr' ? 'Akşam vardiyasında olduğun için sabah saatleri önerildi.' : 'Morning hours suggested due to evening shift.');
-      } else {
-        // Tatil veya nöbet
-        setStartTime('10:00');
-        setEndTime('11:30');
-        setSuggestedMessage(language === 'tr' ? 'Tatil gününde istediğin saatte spor yapabilirsin!' : 'You can exercise anytime on your day off!');
-      }
+      setStartTime('18:30');
+      setEndTime('20:00');
       setNotes('');
     }
   }, [isOpen, selectedDate]);
@@ -130,10 +112,10 @@ export default function SportAddModal({ isOpen, onClose, selectedDate, onAdded }
           </div>
 
           <form onSubmit={handleSubmit} className="p-5 space-y-5 flex-1 overflow-y-auto custom-scrollbar pb-10 sm:pb-5">
-            {/* Vardiya Mesajı */}
+            {/* Bilgilendirme */}
             <div className="bg-orange-100/50 dark:bg-orange-900/30 p-3 rounded-xl border border-orange-200 dark:border-orange-800/50">
               <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">
-                💡 {suggestedMessage}
+                💡 {language === 'tr' ? 'Düzenli egzersiz zindelik ve enerji kazandırır. Hedef saatini seç!' : 'Regular exercise boosts your energy. Pick your target time!'}
               </p>
             </div>
 

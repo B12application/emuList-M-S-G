@@ -861,7 +861,7 @@ export const translationsEN = {
     // Planner
     planner: {
         title: 'Calendar & Planner',
-        subtitle: 'Meetings, daily plans, sports fixtures, and shift tracking',
+        subtitle: 'Meetings, daily plans, sports fixtures, and special events',
         tasks: 'Tasks',
         calendar: 'Calendar',
         jira: 'Jira Board',
@@ -1003,7 +1003,12 @@ export const translationsEN = {
         existingAlerts: 'Existing Alerts',
         addNewAlert: 'Add New Alert',
         titleDescription: 'Title / Description',
-        alertPlaceholder: 'e.g., Istanbul Trip',
+        alertTitlePurpose: 'Alert Title / Purpose',
+        alertPlaceholder: 'e.g., Istanbul Trip, Exam Week, Annual Leave etc.',
+        customCalendarAlertDesc: 'Highlight travel, vacations, exam weeks, projects, or milestones with colored banners across your calendar.',
+        activeAlertBanner: 'Active Calendar Alert',
+        calendarAlertPreviewNote: 'Will appear on the calendar cell like this:',
+        noAlertsDesc: 'No custom calendar alerts added yet.',
         start: 'Start',
         end: 'End',
         color: 'Color',

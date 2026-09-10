@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { tr, enUS } from 'date-fns/locale';
 import { FaCalendarAlt, FaCalendarPlus, FaSyncAlt, FaHistory, FaMapMarkerAlt, FaTasks, FaDumbbell } from 'react-icons/fa';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useLanguage } from '../context/LanguageContext';
 import PlannerHeader from '../components/planner/PlannerHeader';
 import HorizontalTimeline from '../components/planner/HorizontalTimeline';
-import ShiftLegend from '../components/planner/ShiftLegend';
 import MeetingCard from '../components/planner/MeetingCard';
 import TodoCard from '../components/planner/TodoCard';
 import QuickAddModal from '../components/planner/QuickAddModal';
@@ -18,12 +18,10 @@ import RecurringManagerModal from '../components/planner/RecurringManagerModal';
 import TodoManagerModal from '../components/planner/TodoManagerModal';
 import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
 import CalendarAlertModal from '../components/planner/CalendarAlertModal';
-import ShiftSettingsModal from '../components/planner/ShiftSettingsModal';
 import SportAddModal from '../components/planner/SportAddModal';
 import SportTrackingModal from '../components/planner/SportTrackingModal';
 import TeamFixtureModal from '../components/planner/TeamFixtureModal';
 import { useAuth } from '../context/AuthContext';
-import { useShift } from '../context/ShiftContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
 import { getUpcomingFootballMatches } from '../services/footballFixtureService';
 import type { PlannerMeeting } from '../../backend/types/planner';
@@ -32,8 +30,7 @@ import { showMarqueeToast } from '../components/MarqueeToast';
 
 export default function PlannerPage() {
   const { user } = useAuth();
-  const { t } = useLanguage();
-  const { shiftSettings } = useShift();
+  const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meetings, setMeetings] = useState<PlannerMeeting[]>(() => {
     try {
@@ -55,7 +52,6 @@ export default function PlannerPage() {
   const [modalInitialData, setModalInitialData] = useState<PlannerMeeting | null>(null);
   const [modalInitialTab, setModalInitialTab] = useState<'meeting' | 'todo' | 'jira'>('meeting');
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [isSportAddModalOpen, setIsSportAddModalOpen] = useState(false);
   const [isSportTrackingModalOpen, setIsSportTrackingModalOpen] = useState(false);
   const [isTeamFixtureModalOpen, setIsTeamFixtureModalOpen] = useState(false);
@@ -240,6 +236,11 @@ export default function PlannerPage() {
   };
 
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+  const dateLocale = language === 'tr' ? tr : enUS;
+
+  const activeAlertsForDay = calendarAlerts.filter(
+    a => selectedDateStr >= a.startDate && selectedDateStr <= a.endDate
+  );
 
   // Filter lists
   const currentDayAll = meetings.filter(m => m.date === selectedDateStr);
@@ -263,7 +264,7 @@ export default function PlannerPage() {
       {/* Header Banner */}
       <PageHeaderBanner
         title={t('planner.title') || 'Takvim & Ajanda'}
-        subtitle={t('planner.subtitle') || 'Toplantılar, günlük planlar, maç takvimi ve vardiya yönetimi'}
+        subtitle={t('planner.subtitle') || 'Toplantılar, günlük planlar, maç takvimi ve özel etkinlikler'}
         icon={<FaCalendarAlt className="text-amber-500 text-xl" />}
         action={
           <div className="flex flex-wrap items-center gap-2">
@@ -312,7 +313,6 @@ export default function PlannerPage() {
         <PlannerHeader
           selectedDate={selectedDate}
           meetingCount={currentDayMeetings.length}
-          onEditShifts={() => setIsShiftModalOpen(true)}
           onOpenTeamFixtures={() => setIsTeamFixtureModalOpen(true)}
         />
 
@@ -322,7 +322,54 @@ export default function PlannerPage() {
         />
 
         {activeTab === 'daily' && (
-          <div className="space-y-8">
+          <div className="space-y-6">
+            {/* AKTİF ÖZEL TAKVİM UYARILARI BANNERI */}
+            {activeAlertsForDay.length > 0 && (
+              <div className="space-y-2.5">
+                {activeAlertsForDay.map(alert => (
+                  <div
+                    key={alert.id}
+                    className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border shadow-xs transition-all"
+                    style={{
+                      backgroundColor: `${alert.color || '#ef4444'}12`,
+                      borderColor: `${alert.color || '#ef4444'}35`,
+                    }}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
+                        style={{ backgroundColor: alert.color || '#ef4444' }}
+                      >
+                        <FaMapMarkerAlt className="text-sm" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md text-white shrink-0 shadow-2xs"
+                            style={{ backgroundColor: alert.color || '#ef4444' }}
+                          >
+                            {t('planner.activeAlertBanner') || 'Aktif Takvim Uyarısı'}
+                          </span>
+                          <h4 className="text-sm sm:text-base font-black text-stone-900 dark:text-zinc-100 truncate">
+                            {alert.label}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5 font-medium">
+                          {format(new Date(alert.startDate.includes('T') ? alert.startDate : `${alert.startDate}T12:00:00`), 'd MMMM', { locale: dateLocale })} — {format(new Date(alert.endDate.includes('T') ? alert.endDate : `${alert.endDate}T12:00:00`), 'd MMMM yyyy', { locale: dateLocale })}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsAlertModalOpen(true)}
+                      className="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-800/90 hover:bg-white dark:hover:bg-zinc-800 border border-stone-200/80 dark:border-zinc-700/80 transition shadow-xs text-stone-700 dark:text-zinc-200 shrink-0 cursor-pointer active:scale-95"
+                    >
+                      {t('planner.edit') || 'Düzenle'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             {/* MEETINGS SECTION */}
             <div className="space-y-4">
               <div className="flex items-center justify-between px-1">
@@ -461,6 +508,7 @@ export default function PlannerPage() {
             <WeeklyView
               currentDate={selectedDate}
               meetings={meetings}
+              calendarAlerts={calendarAlerts}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 setActiveTab('daily');
@@ -484,8 +532,6 @@ export default function PlannerPage() {
             />
           </div>
         )}
-
-        {shiftSettings.enableShiftSystem && <ShiftLegend />}
       </div>
 
       <QuickAddModal
@@ -531,12 +577,6 @@ export default function PlannerPage() {
         onClose={() => setIsAlertModalOpen(false)}
         onAdded={loadData}
         existingAlerts={calendarAlerts}
-      />
-
-      <ShiftSettingsModal
-        isOpen={isShiftModalOpen}
-        onClose={() => setIsShiftModalOpen(false)}
-        initialDate={selectedDate}
       />
 
       <SportAddModal

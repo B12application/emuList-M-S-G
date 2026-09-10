@@ -24,8 +24,8 @@ interface NavLinkRenderProps {
 
 const getNavCls = ({ isActive }: NavLinkRenderProps) => {
   return isActive
-    ? "relative px-5 py-2.5 text-sm font-black text-stone-950 bg-amber-400 dark:bg-amber-400 rounded-full transition-all duration-300 shadow-md shadow-amber-500/25 border border-amber-300 dark:border-amber-300 scale-105"
-    : "relative px-5 py-2.5 text-sm font-bold text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-300 hover:bg-amber-400/10 rounded-full border border-transparent";
+    ? "relative px-5 py-2.5 text-sm font-black text-stone-950 bg-amber-400 dark:bg-amber-400 rounded-full transition-all duration-300 shadow-md shadow-amber-500/25 border border-amber-300 dark:border-amber-300 scale-105 cursor-pointer"
+    : "relative px-5 py-2.5 text-sm font-bold text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-300 hover:bg-amber-400/10 rounded-full border border-transparent cursor-pointer";
 };
 
 interface HeaderProps {
@@ -155,7 +155,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 >
                   <button
                     onClick={() => setShowListsDropdown((prev) => !prev)}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
+                    className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/movie', '/series', '/game', '/book'].some(path => location.pathname.startsWith(path))
                       ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
                       : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
                       }`}
@@ -310,7 +310,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 >
                   <button
                     onClick={() => setShowAgendaDropdown((prev) => !prev)}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/planner', '/notes'].some(path => location.pathname.startsWith(path))
+                    className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/planner', '/notes'].some(path => location.pathname.startsWith(path))
                       ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
                       : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
                       }`}
@@ -426,7 +426,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 >
                   <button
                     onClick={() => setShowToolsDropdown((prev) => !prev)}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/travel-planner', '/calorie-details', '/calorie-chat', '/body-profile'].some(path => location.pathname.startsWith(path))
+                    className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${['/travel-planner', '/calorie-details', '/calorie-chat', '/body-profile'].some(path => location.pathname.startsWith(path))
                       ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
                       : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
                       }`}
@@ -551,7 +551,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   >
                     <button
                       onClick={() => setShowAddDropdown((prev) => !prev)}
-                      className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
+                      className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
                     >
                       <FaPlus className="w-4 h-4" />
                     </button>
@@ -615,14 +615,14 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
 
                 <button
                   onClick={toggleTheme}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
+                  className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-full text-stone-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
                 >
                   {isDark ? <FaMoon className="w-4 h-4" /> : <FaSun className="w-4 h-4" />}
                 </button>
 
                 <button
                   onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-xs font-bold text-stone-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
+                  className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-full text-xs font-bold text-stone-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:text-stone-900 dark:hover:text-white transition-all shadow-sm"
                 >
                   {language === 'tr' ? 'EN' : 'TR'}
                 </button>
@@ -633,7 +633,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                 <div className="relative group shrink-0">
                   <Link
                     to="/profile"
-                    className="group relative flex items-center justify-center p-1 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800 transition-all"
+                    className="cursor-pointer group relative flex items-center justify-center p-1 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800 transition-all"
                   >
                     <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden shadow-sm z-10 relative ring-2 transition-all ${location.pathname === '/profile' ? 'ring-amber-500 ring-offset-2 dark:ring-offset-zinc-950' :
                       location.pathname === '/stats' ? 'ring-stone-400 dark:ring-zinc-500' :

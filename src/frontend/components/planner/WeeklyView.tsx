@@ -3,17 +3,18 @@ import { format, startOfWeek, addDays, isToday } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
-import type { PlannerMeeting } from '../../../backend/types/planner';
-import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle, FaDumbbell } from 'react-icons/fa';
+import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
+import { FaCalendarAlt, FaTasks, FaFutbol, FaCheckCircle, FaDumbbell, FaMapMarkerAlt } from 'react-icons/fa';
 import { SiJira } from 'react-icons/si';
 
 interface WeeklyViewProps {
   currentDate: Date;
   meetings: PlannerMeeting[];
   onSelectDate: (date: Date) => void;
+  calendarAlerts?: CalendarAlert[];
 }
 
-export default function WeeklyView({ currentDate, meetings, onSelectDate }: WeeklyViewProps) {
+export default function WeeklyView({ currentDate, meetings, onSelectDate, calendarAlerts = [] }: WeeklyViewProps) {
   // Start week from Monday (weekStartsOn: 1)
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const { language, t } = useLanguage();
@@ -101,6 +102,8 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
 
         <div className="grid grid-cols-7 min-h-[400px]">
           {weekDays.map((day, idx) => {
+            const dateStr = format(day, 'yyyy-MM-dd');
+            const dayAlerts = calendarAlerts.filter(a => dateStr >= a.startDate && dateStr <= a.endDate);
             const dayItems = getItemsForDay(day).filter(m => m.itemType !== 'match');
             return (
               <div
@@ -109,6 +112,23 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                 onClick={() => onSelectDate(day)}
               >
                 <div className="flex flex-col gap-2">
+                  {/* Custom Calendar Alerts */}
+                  {dayAlerts.map((alert, aIdx) => (
+                    <div
+                      key={`${alert.id}-${aIdx}`}
+                      className="px-1.5 py-0.5 rounded-lg text-[10px] font-black border flex items-center gap-1 truncate shadow-2xs"
+                      style={{
+                        backgroundColor: `${alert.color || '#ef4444'}18`,
+                        borderColor: `${alert.color || '#ef4444'}45`,
+                        color: alert.color || '#ef4444',
+                      }}
+                      title={`${alert.label} (${alert.startDate} → ${alert.endDate})`}
+                    >
+                      <FaMapMarkerAlt size={9} className="shrink-0" />
+                      <span className="truncate">{alert.label}</span>
+                    </div>
+                  ))}
+
                   {dayItems.map((item, idxx) => (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -133,20 +153,24 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
 
       {/* --- MOBILE VIEW: Vertical List Layout --- */}
       <div className="md:hidden flex flex-col divide-y divide-stone-200 dark:divide-zinc-800">
-        {weekDays.map((day, idx) => {
-          const dayItems = getItemsForDay(day);
-          const hasMatch = dayItems.some(m => m.itemType === 'match');
-          const dayMatches = dayItems.filter(m => m.itemType === 'match');
-          const otherItems = dayItems.filter(m => m.itemType !== 'match');
+        {weekDays.map((day, dIdx) => {
+          const dateStr = format(day, 'yyyy-MM-dd');
+          const dayAlerts = calendarAlerts.filter(a => dateStr >= a.startDate && dateStr <= a.endDate);
+          const allDayItems = getItemsForDay(day);
+          const dayMatches = allDayItems.filter(m => m.itemType === 'match');
+          const otherItems = allDayItems.filter(m => m.itemType !== 'match');
+          const hasMatch = dayMatches.length > 0;
 
           return (
             <div 
-              key={idx} 
+              key={dIdx} 
               className={`p-4 transition-colors ${isToday(day) ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}
-              onClick={() => onSelectDate(day)}
             >
-              {/* Mobile Card Header */}
-              <div className="flex items-center justify-between mb-3">
+              {/* Header: Date + Matches */}
+              <div 
+                className="flex items-center justify-between cursor-pointer mb-3"
+                onClick={() => onSelectDate(day)}
+              >
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center border ${
                     isToday(day) 
@@ -164,8 +188,22 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate }: Week
                     <div className={`text-sm font-bold ${isToday(day) ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-white'}`}>
                       {isToday(day) ? t('planner.today') : format(day, 'd MMMM', { locale: dateLocale })}
                     </div>
-                    {hasMatch && (
+                    {(hasMatch || dayAlerts.length > 0) && (
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {dayAlerts.map((alert, aIdx) => (
+                          <span
+                            key={`${alert.id}-${aIdx}`}
+                            className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-lg border shadow-2xs"
+                            style={{
+                              backgroundColor: `${alert.color || '#ef4444'}18`,
+                              borderColor: `${alert.color || '#ef4444'}45`,
+                              color: alert.color || '#ef4444',
+                            }}
+                          >
+                            <FaMapMarkerAlt size={9} className="shrink-0" />
+                            <span className="truncate">{alert.label}</span>
+                          </span>
+                        ))}
                         {dayMatches.map((dm, idx) => (
                           <span
                             key={dm.id || idx}

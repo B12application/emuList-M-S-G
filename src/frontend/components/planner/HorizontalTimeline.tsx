@@ -2,7 +2,6 @@ import { useRef, useEffect } from 'react';
 import { addDays, format, isSameDay } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../context/LanguageContext';
-import { useShift } from '../../context/ShiftContext';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface HorizontalTimelineProps {
@@ -14,7 +13,6 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const { language } = useLanguage();
-  const { getShiftInfo } = useShift();
   const dateLocale = language === 'tr' ? tr : enUS;
 
   const today = new Date();
@@ -56,31 +54,28 @@ export default function HorizontalTimeline({ selectedDate, onSelectDate }: Horiz
       >
         <div className="flex gap-2 min-w-max px-6">
           {days.map((date, idx) => {
-            const shift = getShiftInfo(date);
             const isSelected = isSameDay(date, selectedDate);
-
-            let shiftIndicator = 'bg-stone-300 dark:bg-zinc-650'; // Tatil
-            if (shift.type === 'Sabah') shiftIndicator = 'bg-amber-400';
-            if (shift.type === 'Akşam') shiftIndicator = 'bg-indigo-500';
-            if (shift.type === 'Nöbet') shiftIndicator = 'bg-rose-500';
+            const isCurrentToday = isSameDay(date, today);
 
             return (
               <button
                 key={idx}
                 ref={isSelected ? activeRef : null}
                 onClick={() => onSelectDate(date)}
-                className={`flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl border transition-all duration-200 ${isSelected
+                className={`flex flex-col items-center justify-center min-w-[4.25rem] h-18 rounded-2xl border transition-all duration-200 cursor-pointer ${isSelected
                   ? 'bg-rose-500 text-white border-rose-600 shadow-md scale-105'
                   : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800'
                   }`}
               >
-                <span className={`text-xs font-medium mb-1 ${isSelected ? 'text-white/80' : 'opacity-70'}`}>
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${isSelected ? 'text-white/80' : 'opacity-70'}`}>
                   {format(date, 'EEE', { locale: dateLocale })}
                 </span>
-                <span className="text-xl font-bold mb-1">
+                <span className="text-lg font-black my-0.5">
                   {format(date, 'd')}
                 </span>
-                <div className={`w-3 h-3 rounded-full mt-auto ${shiftIndicator} ${isSelected ? 'ring-2 ring-white' : ''}`} title={shift.type} />
+                {isCurrentToday && (
+                  <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-rose-500'}`} />
+                )}
               </button>
             );
           })}

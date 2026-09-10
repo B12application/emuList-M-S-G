@@ -864,7 +864,7 @@ export const translationsTR = {
     // Planner
     planner: {
         title: 'Takvim & Ajanda',
-        subtitle: 'Toplantılar, günlük planlar, maç takvimi ve vardiya yönetimi',
+        subtitle: 'Toplantılar, günlük planlar, maç takvimi ve özel etkinlikler',
         tasks: 'Görevler',
         calendar: 'Takvim',
         jira: 'Jira Panosu',
@@ -1005,7 +1005,12 @@ export const translationsTR = {
         existingAlerts: 'Mevcut Uyarılar',
         addNewAlert: 'Yeni Uyarı Ekle',
         titleDescription: 'Başlık / Açıklama',
-        alertPlaceholder: 'Örn: İstanbul Yolculuğu',
+        alertTitlePurpose: 'Uyarı Başlığı / Amacı',
+        alertPlaceholder: 'Örn: İstanbul Seyahati, Vize Haftası, Yıllık İzin vb.',
+        customCalendarAlertDesc: 'Seyahat, tatil, sınav haftası, proje veya önemli dönemlerinizi takvimde renkli başlık şeritleriyle öne çıkarın.',
+        activeAlertBanner: 'Aktif Takvim Uyarısı',
+        calendarAlertPreviewNote: 'Takvim hücresinde bu şekilde görünecektir:',
+        noAlertsDesc: 'Henüz eklenmiş bir özel takvim uyarısı bulunmuyor.',
         start: 'Başlangıç',
         end: 'Bitiş',
         color: 'Renk',

@@ -25,6 +25,22 @@
   }
 }
 
+/* Global button and interactive element pointer cursor (reversing Tailwind v4 default: cursor: default) */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  cursor: not-allowed;
+}
+
 /* Avoid using heavy backdrop-filter on full viewport body::after to prevent scroll stutter/jank (60-120 FPS guaranteed) */
 html:not(.dark) body::after {
   content: "";

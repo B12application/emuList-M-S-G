@@ -2,6 +2,25 @@
 import { useState, useEffect } from 'react';
 import { FaImage } from 'react-icons/fa';
 
+// Bellek içi görsel önbelleği: Zaten yüklenmiş görsellerde skeleton flaşlamasını ve gecikmeyi tamamen engeller
+const loadedImagesCache = new Set<string>();
+
+/**
+ * Verilen görsel URL'lerini arka planda tarayıcı önbelleğine önceden yükler (pre-warm)
+ */
+export function preloadImages(urls: (string | undefined | null)[], limit: number = 30) {
+  if (typeof window === 'undefined') return;
+  const validUrls = urls
+    .filter((u): u is string => typeof u === 'string' && u.trim() !== '' && u !== 'N/A' && !loadedImagesCache.has(u))
+    .slice(0, limit);
+
+  validUrls.forEach(url => {
+    const img = new Image();
+    img.src = url;
+    img.onload = () => loadedImagesCache.add(url);
+  });
+}
+
 interface ImageWithFallbackProps {
   src?: string;
   alt: string;
@@ -21,12 +40,19 @@ export default function ImageWithFallback({
   wrapperClassName = '',
   loading = 'lazy',
 }: ImageWithFallbackProps) {
+  const isAlreadyLoaded = Boolean(src && loadedImagesCache.has(src));
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isAlreadyLoaded);
 
   // src değiştiğinde hata ve yüklenme durumunu güncelle
   useEffect(() => {
     if (!src || src === 'N/A' || (typeof src === 'string' && src.trim() === '')) {
+      setHasError(false);
+      setIsLoading(false);
+      return;
+    }
+
+    if (loadedImagesCache.has(src)) {
       setHasError(false);
       setIsLoading(false);
       return;
@@ -45,6 +71,7 @@ export default function ImageWithFallback({
   };
 
   const handleLoad = () => {
+    if (src) loadedImagesCache.add(src);
     setIsLoading(false);
     setHasError(false);
   };

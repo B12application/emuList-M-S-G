@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { checkRateLimit, getClientIp } from './utils/rateLimiter';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -54,6 +55,23 @@ export const handler: Handler = async (event): Promise<any> => {
       statusCode: 405,
       headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: 'Method Not Allowed' }),
+    };
+  }
+
+  // Rate Limiting (20 req / minute per IP)
+  const clientIp = getClientIp(event.headers as Record<string, string | undefined>);
+  const limitCheck = checkRateLimit(clientIp, { windowMs: 60 * 1000, maxRequests: 20 });
+  if (!limitCheck.allowed) {
+    return {
+      statusCode: 429,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+        'Retry-After': String(limitCheck.retryAfterSeconds),
+      },
+      body: JSON.stringify({
+        error: 'Çok fazla istek gönderildi. Lütfen bir süre sonra tekrar deneyin.',
+      }),
     };
   }
 

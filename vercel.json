@@ -2,6 +2,38 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/.env(.*)",
+      "destination": "/404.html",
+      "permanent": false
+    },
+    {
+      "source": "/.git(.*)",
+      "destination": "/404.html",
+      "permanent": false
+    },
+    {
+      "source": "/(.*).php(.*)",
+      "destination": "/404.html",
+      "permanent": false
+    },
+    {
+      "source": "/phpinfo(.*)",
+      "destination": "/404.html",
+      "permanent": false
+    },
+    {
+      "source": "/wp-(.*)",
+      "destination": "/404.html",
+      "permanent": false
+    },
+    {
+      "source": "/tmp/(.*)",
+      "destination": "/404.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/gold-price",

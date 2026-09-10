@@ -1,1 +1,31 @@
-/* /index.html 200
+# Security Blocks: Immediately block malicious scanners and vulnerability probes
+/.env*          /404.html 404
+/.git*          /404.html 404
+/*.php*         /404.html 404
+/phpinfo*       /404.html 404
+/wp-*           /404.html 404
+/wordpress*     /404.html 404
+/tmp/*          /404.html 404
+/temp/*         /404.html 404
+/etc/*          /404.html 404
+/proc/*         /404.html 404
+/var/*          /404.html 404
+/debug/*        /404.html 404
+/telescope/*    /404.html 404
+/actuator/*     /404.html 404
+/cgi-bin/*      /404.html 404
+/.aws*          /404.html 404
+/.ssh*          /404.html 404
+/server-status* /404.html 404
+/xmlrpc*        /404.html 404
+/*.sql          /404.html 404
+/*.bak          /404.html 404
+/*.tar*         /404.html 404
+/*.zip          /404.html 404
+/*.gz           /404.html 404
+/*.ini          /404.html 404
+/*.conf         /404.html 404
+/*.sh           /404.html 404
+
+# SPA Catch-all routing
+/*              /index.html 200

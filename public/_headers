@@ -7,6 +7,12 @@
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Permitted-Cross-Domain-Policies: none
+
+# 404 & Blocked Responses - Never Cache or Index
+/404.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store, no-cache, must-revalidate
 
 # Immutable caching for hashed Vite assets
 /assets/*

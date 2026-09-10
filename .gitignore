@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment & Secrets (NEVER commit these)
+.env
+.env.*
+.env.local
+.env.production
+.env.development
+.env.test
+cloudflare_env_variables.txt
+*.key
+*.pem
+*.cert
+*.crt
+service-account*.json
+firebase-admin*.json
+*.backup
+*.dump
+credentials.json

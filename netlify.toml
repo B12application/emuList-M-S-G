@@ -26,6 +26,119 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+[[edge_functions]]
+  function = "security-shield"
+  path = "/*"
+
+# Security Blocks: Prevent scanners from discovering sensitive files
+[[redirects]]
+  from = "/.env*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.git*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/*.php*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/phpinfo*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/wp-*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/wordpress*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/tmp/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/temp/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/etc/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/proc/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/debug/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/telescope/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/actuator/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/cgi-bin/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.aws*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.ssh*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/*.sql"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/*.bak"
+  to = "/404.html"
+  status = 404
+  force = true
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

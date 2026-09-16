@@ -187,6 +187,8 @@ export const translationsTR = {
         toggleStatus: 'Durumu Değiştir',
         addFavorite: 'Favorilere ekle',
         removeFavorite: 'Favorilerden çıkar',
+        markWatched: 'İzlendi Olarak İşaretle',
+        markUnwatched: 'İzlenmedi Yap',
     },
 
     // CreatePage
@@ -277,6 +279,10 @@ export const translationsTR = {
         addingToLibrary: 'Ekleniyor...',
         addedToLibrary: 'Eklendi',
         inLibrary: 'Kütüphanenizde',
+        viewInLibrary: 'Kütüphanede Gör',
+        watched: 'İzlendi',
+        watching: 'İzleniyor',
+        inLibraryWatched: 'Kütüphanenizde • İzlendi',
         recentActivitySubtitle: 'Kişisel arşivinize en son eklediğiniz kayıtlar',
         archiveItem: 'Arşivinizde',
         nextEpisodeWatch: '+1 Bölüm İzle',

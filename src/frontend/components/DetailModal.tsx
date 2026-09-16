@@ -10,6 +10,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
+import Portal from './ui/Portal';
 
 interface DetailModalProps {
   isOpen?: boolean;
@@ -64,7 +65,8 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Portal>
+      <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-[9999]" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
@@ -140,5 +142,6 @@ export default function DetailModal({ isOpen = true, onClose, item, refetch = ()
         </div>
       </Dialog>
     </Transition>
+    </Portal>
   );
 }

@@ -2,6 +2,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { FaExclamationTriangle } from 'react-icons/fa';
+import Portal from './Portal';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -36,8 +37,9 @@ export default function ConfirmDialog({
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+    <Portal>
+      <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-[10010]" onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -47,10 +49,10 @@ export default function ConfirmDialog({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/50" />
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto">
+        <div className="fixed inset-0 overflow-y-auto z-[10010]">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
@@ -111,6 +113,7 @@ export default function ConfirmDialog({
         </div>
       </Dialog>
     </Transition>
+    </Portal>
   );
 }
 

@@ -189,6 +189,8 @@ export const translationsEN = {
         toggleStatus: 'Toggle Status',
         addFavorite: 'Add to favorites',
         removeFavorite: 'Remove from favorites',
+        markWatched: 'Mark as Watched',
+        markUnwatched: 'Mark as Unwatched',
     },
 
     // CreatePage
@@ -279,6 +281,10 @@ export const translationsEN = {
         addingToLibrary: 'Adding...',
         addedToLibrary: 'Added',
         inLibrary: 'In Library',
+        viewInLibrary: 'View in Library',
+        watched: 'Watched',
+        watching: 'Watching',
+        inLibraryWatched: 'In Library • Watched',
         recentActivitySubtitle: 'Your most recently added personal archive records',
         archiveItem: 'In Archive',
         nextEpisodeWatch: '+1 Ep Watch',

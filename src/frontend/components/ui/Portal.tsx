@@ -6,14 +6,13 @@ interface PortalProps {
 }
 
 export default function Portal({ children }: PortalProps) {
-    const [mounted, setMounted] = useState(false);
+    const [mounted, setMounted] = useState(() => typeof document !== 'undefined');
 
     useEffect(() => {
         setMounted(true);
-        return () => setMounted(false);
     }, []);
 
-    if (!mounted) return null;
+    if (!mounted || typeof document === 'undefined') return null;
 
     return createPortal(children, document.body);
 }

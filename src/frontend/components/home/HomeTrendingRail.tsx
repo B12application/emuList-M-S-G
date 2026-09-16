@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaFire,
@@ -12,6 +13,9 @@ import {
     FaChevronRight,
     FaGlobeAmericas,
     FaTrophy,
+    FaExternalLinkAlt,
+    FaBookmark,
+    FaPlay,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -21,7 +25,7 @@ import { getTMDBTrending, getTMDBDetails, getTMDBPosterUrl, normalizeTMDBRating 
 import type { TMDBMovieResult } from '../../../backend/services/tmdbApi';
 import type { MediaItem } from '../../../backend/types/media';
 import { getAllSeriesEpisodeCounts } from '../../../backend/services/omdbApi';
-import { saveEpisodesPerSeason } from '../../../backend/services/episodeTrackingService';
+import { saveEpisodesPerSeason, getSeriesProgress } from '../../../backend/services/episodeTrackingService';
 import { createActivity } from '../../../backend/services/activityService';
 import { checkDuplicateMediaItem, normalizeMediaTitle } from '../../../backend/services/mediaDeduplicationService';
 import toast from 'react-hot-toast';
@@ -35,6 +39,7 @@ interface HomeTrendingRailProps {
 export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: HomeTrendingRailProps) {
     const { user } = useAuth();
     const { t } = useLanguage();
+    const navigate = useNavigate();
 
     const [mediaType, setMediaType] = useState<'movie' | 'series'>('movie');
     const [timeWindow, setTimeWindow] = useState<'day' | 'week'>('week');
@@ -43,6 +48,7 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
     const [loading, setLoading] = useState(true);
     const [addingIds, setAddingIds] = useState<Record<string, boolean>>({});
     const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
+    const [libraryMap, setLibraryMap] = useState<Record<string, MediaItem>>({});
     const [currentPage, setCurrentPage] = useState(0);
 
     const ITEMS_PER_PAGE = 6;
@@ -60,26 +66,40 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
                         where('userId', '==', user.uid)
                     );
                     const snapshot = await getDocs(q);
-                    userItems = snapshot.docs.map((d) => d.data() as MediaItem);
+                    userItems = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as MediaItem));
                 }
 
+                const newLibraryMap: Record<string, MediaItem> = {};
                 const existingMap: Record<string, boolean> = {};
+
                 for (const item of items) {
                     const title = (mediaType === 'movie' ? (item.title || item.original_title) : (item.name || item.original_name)) || '';
                     const origTitle = (mediaType === 'movie' ? item.original_title : item.original_name) || '';
                     const normalized = normalizeMediaTitle(title);
                     const normalizedOrig = normalizeMediaTitle(origTitle);
 
-                    const found = userItems.some((ui) => {
+                    // Match prioritizing same mediaType, then title
+                    let found = userItems.find((ui) => {
+                        if (ui.type && ui.type !== mediaType) return false;
                         const uiTitleNorm = normalizeMediaTitle(ui.title);
-                        return (uiTitleNorm && (uiTitleNorm === normalized || uiTitleNorm === normalizedOrig));
+                        return uiTitleNorm && (uiTitleNorm === normalized || (normalizedOrig && uiTitleNorm === normalizedOrig));
                     });
 
+                    if (!found) {
+                        found = userItems.find((ui) => {
+                            const uiTitleNorm = normalizeMediaTitle(ui.title);
+                            return uiTitleNorm && (uiTitleNorm === normalized || (normalizedOrig && uiTitleNorm === normalizedOrig));
+                        });
+                    }
+
                     if (found) {
-                        existingMap[String(item.id)] = true;
+                        const itemIdStr = String(item.id);
+                        existingMap[itemIdStr] = true;
+                        newLibraryMap[itemIdStr] = found;
                     }
                 }
                 setAddedIds((prev) => ({ ...prev, ...existingMap }));
+                setLibraryMap((prev) => ({ ...prev, ...newLibraryMap }));
             } catch (err) {
                 console.warn('Existing library check failed:', err);
             }
@@ -108,7 +128,42 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
     const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
     const visibleItems = items.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
 
+    const isMediaItemWatched = (item: MediaItem): boolean => {
+        if (!item) return false;
+        if (item.watched) return true;
+        if (item.type === 'series') {
+            const progress = getSeriesProgress(item);
+            if (progress.percentage === 100) return true;
+            if (item.totalSeasons && item.watchedSeasons && item.watchedSeasons.length >= item.totalSeasons && item.totalSeasons > 0) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const isMediaItemInProgress = (item: MediaItem): boolean => {
+        if (!item || item.type !== 'series') return false;
+        if (isMediaItemWatched(item)) return false;
+        const progress = getSeriesProgress(item);
+        return progress.totalWatched > 0 || !!(item.watchedSeasons && item.watchedSeasons.length > 0);
+    };
+
+    const handleViewInLibrary = (libraryItem: MediaItem) => {
+        if (!libraryItem || !libraryItem.id) return;
+        const targetType = libraryItem.type || mediaType || 'movie';
+        navigate(`/${targetType}?openMediaId=${libraryItem.id}`);
+    };
+
     const handleCardClick = async (item: TMDBMovieResult) => {
+        const itemIdStr = String(item.id);
+        const existingLibItem = libraryMap[itemIdStr];
+
+        // Eğer zaten kütüphanedeyse doğrudan ilgili sayfaya gidip modalı aç
+        if (existingLibItem) {
+            handleViewInLibrary(existingLibItem);
+            return;
+        }
+
         const title = mediaType === 'movie' ? (item.title || item.original_title || '') : (item.name || item.original_name || '');
         const poster = getTMDBPosterUrl(item.poster_path);
         const rating = normalizeTMDBRating(item.vote_average);
@@ -185,6 +240,9 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
             if (duplicateCheck.isDuplicate) {
                 toast.error(duplicateCheck.message || 'Bu içerik zaten kütüphanenizde ekli!', { id: toastId, duration: 4000 });
                 setAddedIds((prev) => ({ ...prev, [itemIdStr]: true }));
+                if (duplicateCheck.existingItem) {
+                    setLibraryMap((prev) => ({ ...prev, [itemIdStr]: duplicateCheck.existingItem! }));
+                }
                 return;
             }
 
@@ -215,6 +273,7 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
             }
 
             const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
+            const savedItem: MediaItem = { ...newItem, id: docRef.id };
 
             if (mediaType === 'series' && newItem.imdbId && newItem.totalSeasons) {
                 getAllSeriesEpisodeCounts(newItem.imdbId, newItem.totalSeasons)
@@ -231,11 +290,12 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
                 user.displayName || 'User',
                 user.photoURL || '',
                 'media_added',
-                { ...newItem, id: docRef.id }
+                savedItem
             );
 
             toast.success(trendLanguage === 'tr-TR' ? 'Koleksiyona eklendi!' : 'Added to collection!', { id: toastId });
             setAddedIds((prev) => ({ ...prev, [itemIdStr]: true }));
+            setLibraryMap((prev) => ({ ...prev, [itemIdStr]: savedItem }));
             onAdded();
         } catch (error) {
             console.error('Error in quick add:', error);
@@ -437,7 +497,10 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
                             const releaseDate = mediaType === 'movie' ? item.release_date : item.first_air_date;
                             const year = releaseDate ? releaseDate.split('-')[0] : '';
                             const itemIdStr = String(item.id);
-                            const isAlreadyAdded = addedIds[itemIdStr];
+                            const matchedItem = libraryMap[itemIdStr];
+                            const isAlreadyAdded = !!matchedItem || !!addedIds[itemIdStr];
+                            const isWatched = matchedItem ? isMediaItemWatched(matchedItem) : false;
+                            const isWatching = matchedItem && !isWatched ? isMediaItemInProgress(matchedItem) : false;
                             const isAdding = addingIds[itemIdStr];
                             const rankStyle = getRankStyle(globalIndex);
 
@@ -480,38 +543,82 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
                                             </div>
                                         )}
 
-                                        {/* Quick Add overlay button */}
-                                        <div className="absolute inset-x-2 bottom-2 z-10">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (!isAlreadyAdded) handleQuickAdd(item);
-                                                }}
-                                                disabled={isAdding || isAlreadyAdded}
-                                                className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[11px] font-bold shadow-md transition-all active:scale-95 cursor-pointer backdrop-blur-md ${
-                                                    isAlreadyAdded
-                                                        ? 'bg-emerald-500/90 text-white cursor-default border border-emerald-400/40'
-                                                        : 'bg-stone-950/85 text-white hover:bg-amber-400 hover:text-stone-950 dark:bg-white/90 dark:text-stone-950 dark:hover:bg-amber-400 border border-white/20'
+                                        {/* Status badge - Right side below rating */}
+                                        {isAlreadyAdded && (
+                                            <div
+                                                className={`absolute right-2 top-8 z-10 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-black shadow-md backdrop-blur-md border ${
+                                                    isWatched
+                                                        ? 'bg-emerald-500/95 text-stone-950 border-emerald-300/40 shadow-emerald-500/20'
+                                                        : isWatching
+                                                            ? 'bg-amber-400/95 text-stone-950 border-amber-200/40 shadow-amber-500/20'
+                                                            : 'bg-sky-500/95 text-white border-sky-300/40 shadow-sky-500/20'
                                                 }`}
                                             >
-                                                {isAdding ? (
+                                                {isWatched ? (
                                                     <>
-                                                        <FaSpinner className="animate-spin text-[10px]" />
-                                                        <span className="truncate">{t('home.addingToLibrary')}</span>
+                                                        <FaCheck className="text-[8px]" />
+                                                        <span>{t('home.watched')}</span>
                                                     </>
-                                                ) : isAlreadyAdded ? (
+                                                ) : isWatching ? (
                                                     <>
-                                                        <FaCheck className="text-[10px]" />
-                                                        <span className="truncate">{t('home.inLibrary')}</span>
+                                                        <FaPlay className="text-[7px]" />
+                                                        <span>{t('home.watching')}</span>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <FaPlus className="text-[9px]" />
-                                                        <span className="truncate">{t('home.addToLibrary')}</span>
+                                                        <FaBookmark className="text-[7px]" />
+                                                        <span>{t('home.inLibrary')}</span>
                                                     </>
                                                 )}
-                                            </button>
+                                            </div>
+                                        )}
+
+                                        {/* Quick Add / View in Library overlay button */}
+                                        <div className="absolute inset-x-2 bottom-2 z-10">
+                                            {isAlreadyAdded ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (matchedItem) {
+                                                            handleViewInLibrary(matchedItem);
+                                                        }
+                                                    }}
+                                                    className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[11px] font-black shadow-md transition-all active:scale-95 cursor-pointer backdrop-blur-md ${
+                                                        isWatched
+                                                            ? 'bg-emerald-600/95 hover:bg-emerald-500 text-white border border-emerald-400/40 hover:shadow-emerald-500/30 hover:shadow-lg'
+                                                            : isWatching
+                                                                ? 'bg-amber-500/95 hover:bg-amber-400 text-stone-950 border border-amber-300/40 hover:shadow-amber-500/30 hover:shadow-lg'
+                                                                : 'bg-indigo-600/95 hover:bg-indigo-500 text-white border border-indigo-400/40 hover:shadow-indigo-500/30 hover:shadow-lg'
+                                                    }`}
+                                                    title={t('home.viewInLibrary')}
+                                                >
+                                                    <FaExternalLinkAlt className="text-[9px]" />
+                                                    <span className="truncate">{t('home.viewInLibrary')}</span>
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleQuickAdd(item);
+                                                    }}
+                                                    disabled={isAdding}
+                                                    className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[11px] font-bold shadow-md transition-all active:scale-95 cursor-pointer backdrop-blur-md bg-stone-950/85 text-white hover:bg-amber-400 hover:text-stone-950 dark:bg-white/90 dark:text-stone-950 dark:hover:bg-amber-400 border border-white/20"
+                                                >
+                                                    {isAdding ? (
+                                                        <>
+                                                            <FaSpinner className="animate-spin text-[10px]" />
+                                                            <span className="truncate">{t('home.addingToLibrary')}</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <FaPlus className="text-[9px]" />
+                                                            <span className="truncate">{t('home.addToLibrary')}</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -524,16 +631,50 @@ export default function HomeTrendingRail({ onAdded, onSelect, existingItems }: H
                                             {title}
                                         </h3>
 
-                                        <div className="mt-auto pt-2 flex items-center justify-between text-[10px] text-slate-400 dark:text-zinc-500 font-semibold">
+                                        <div className="mt-auto pt-2 flex items-center justify-between text-[10px] text-slate-400 dark:text-zinc-500 font-semibold gap-1">
                                             {year ? (
-                                                <span className="flex items-center gap-1">
+                                                <span className="flex items-center gap-1 shrink-0">
                                                     <FaCalendarAlt className="text-[8px]" />
                                                     <span>{year}</span>
                                                 </span>
-                                            ) : <span />}
-                                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
-                                                {mediaType === 'movie' ? (t('media.movie') || 'Film') : (t('media.series') || 'Dizi')}
-                                            </span>
+                                            ) : (
+                                                <span />
+                                            )}
+
+                                            <div className="flex items-center gap-1.5 truncate">
+                                                {isAlreadyAdded && (
+                                                    <span
+                                                        className={`text-[9px] font-bold flex items-center gap-0.5 truncate ${
+                                                            isWatched
+                                                                ? 'text-emerald-600 dark:text-emerald-400'
+                                                                : isWatching
+                                                                    ? 'text-amber-600 dark:text-amber-400'
+                                                                    : 'text-sky-600 dark:text-sky-400'
+                                                        }`}
+                                                    >
+                                                        {isWatched ? (
+                                                            <>
+                                                                <FaCheck className="text-[7px]" />
+                                                                <span className="truncate">{t('home.watched')}</span>
+                                                            </>
+                                                        ) : isWatching ? (
+                                                            <>
+                                                                <FaPlay className="text-[7px]" />
+                                                                <span className="truncate">{t('home.watching')}</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <FaBookmark className="text-[7px]" />
+                                                                <span className="truncate">{t('home.inLibrary')}</span>
+                                                            </>
+                                                        )}
+                                                    </span>
+                                                )}
+
+                                                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:bg-zinc-800 dark:text-zinc-300 shrink-0">
+                                                    {mediaType === 'movie' ? (t('media.movie') || 'Film') : (t('media.series') || 'Dizi')}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { FaFilm, FaTv, FaGamepad, FaBook, FaClone, FaEye, FaEyeSlash, FaGlobeAmericas, FaSearch, FaInbox, FaSortAlphaDown, FaStar, FaArrowDown, FaArrowUp, FaExchangeAlt, FaSpinner, FaCalendarAlt, FaTh, FaList, FaCheckSquare, FaRegSquare, FaTrash, FaFilePdf, FaTimes, FaCheck, FaClock, FaFilter, FaTheaterMasks, FaSort, FaSave } from 'react-icons/fa';
 import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/media';
@@ -11,7 +11,7 @@ import SkeletonCard from '../components/ui/SkeletonCard';
 import LoadMoreButton from '../components/ui/LoadMoreButton';
 import { preloadImages } from '../components/ui/ImageWithFallback';
 import { exportToPDF } from '../utils/pdfExport';
-import { doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../../backend/config/firebaseConfig';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -473,25 +473,57 @@ export default function MediaListPage() {
     }
   };
 
-  // Modal senkronizasyonu
+  // Modal senkronizasyonu: items güncellendiğinde açık modalın verisini senkronize et
   useEffect(() => {
-    if (selectedItem) {
+    if (selectedItem && items.length > 0) {
       const updated = items.find(i => i.id === selectedItem.id);
-      if (updated) setSelectedItem(updated);
-      else setSelectedItem(null); // Öğe silindiyse modalı kapat
+      if (updated && updated !== selectedItem) {
+        setSelectedItem(updated);
+      }
     }
   }, [items, selectedItem]);
 
-  // Deep link support: auto-open detail modal if openMediaId is in URL
+  // Deep link desteği: URL'de openMediaId varsa modalı tek seferlik aç (single-shot per mediaId)
+  const handledMediaIdsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     const openMediaId = searchParams.get('openMediaId');
-    if (openMediaId && items.length > 0 && !selectedItem) {
-      const itemToOpen = items.find(i => i.id === openMediaId);
-      if (itemToOpen) {
-        setSelectedItem(itemToOpen);
-      }
+    if (!openMediaId) return;
+
+    // Bu ID bu oturumda zaten açıldıysa bir daha asla açma
+    if (handledMediaIdsRef.current.has(openMediaId)) return;
+    handledMediaIdsRef.current.add(openMediaId);
+
+    // URL'den openMediaId parametresini derhal temizle (tarayıcı geçmişinde kalmasın)
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete('openMediaId');
+      return next;
+    }, { replace: true });
+
+    // Önce mevcut liste içinde ara
+    const itemToOpen = items.find(i => i.id === openMediaId);
+    if (itemToOpen) {
+      setSelectedItem(itemToOpen);
+      return;
     }
-  }, [searchParams, items, selectedItem]);
+
+    // Listede yoksa (filtreli veya henüz yüklenmediyse) Firestore'dan doğrudan getir
+    let isCancelled = false;
+    getDoc(doc(db, 'mediaItems', openMediaId))
+      .then((docSnap) => {
+        if (docSnap.exists() && !isCancelled) {
+          setSelectedItem({ id: docSnap.id, ...docSnap.data() } as MediaItem);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch openMediaId doc:', err);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [searchParams, items, setSearchParams]);
 
   const handleFilterChange = (newFilter: FilterStatus) => {
     refetch(); setSearchParams(prev => { prev.set('filter', newFilter); return prev; }, { replace: true });
@@ -1219,9 +1251,11 @@ export default function MediaListPage() {
           setSelectedItem(null);
           // URL'den openMediaId parametresini temizle
           if (searchParams.has('openMediaId')) {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.delete('openMediaId');
-            setSearchParams(newParams);
+            setSearchParams(prev => {
+              const next = new URLSearchParams(prev);
+              next.delete('openMediaId');
+              return next;
+            }, { replace: true });
           }
         }}
         item={selectedItem}

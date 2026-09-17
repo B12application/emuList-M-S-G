@@ -8,6 +8,7 @@ import {
   saveSelectedTeamIds
 } from '../../services/footballFixtureService';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 interface TeamFixtureModalProps {
@@ -17,6 +18,7 @@ interface TeamFixtureModalProps {
 }
 
 export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtureModalProps) {
+  const { user } = useAuth();
   const { t, language } = useLanguage();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'superlig' | 'championsleague'>('all');
@@ -55,7 +57,7 @@ export default function TeamFixtureModal({ isOpen, onClose, onSaved }: TeamFixtu
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      saveSelectedTeamIds(selectedIds);
+      await saveSelectedTeamIds(selectedIds, user?.uid);
       const msg = t('planner.fixturesSaved') 
         ? t('planner.fixturesSaved').replace('{count}', String(selectedIds.length))
         : (language === 'tr' ? `${selectedIds.length} takımın maç takvimi güncellendi! ⚽` : `Match calendar updated for ${selectedIds.length} teams! ⚽`);

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaRoute, FaCheckCircle, FaCity } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface TravelStatsProps {
   visitedCities: number;
@@ -14,9 +15,11 @@ export default function TravelStats({
   activePlans,
   totalAttractions,
 }: TravelStatsProps) {
+  const { t } = useLanguage();
+
   const stats = [
     {
-      label: 'Gezilen İl',
+      label: t('travel.visitedCitiesStat') || 'Gezilen İl',
       value: visitedCities,
       total: 81,
       icon: FaCity,
@@ -25,7 +28,7 @@ export default function TravelStats({
       iconColor: 'text-sky-400',
     },
     {
-      label: 'Gezilen Yer',
+      label: t('travel.visitedPlacesStat') || 'Gezilen Yer',
       value: totalVisitedPlaces,
       total: null,
       icon: FaCheckCircle,
@@ -34,7 +37,7 @@ export default function TravelStats({
       iconColor: 'text-emerald-400',
     },
     {
-      label: 'Aktif Plan',
+      label: t('travel.activePlansStat') || 'Aktif Plan',
       value: activePlans,
       total: null,
       icon: FaRoute,
@@ -43,7 +46,7 @@ export default function TravelStats({
       iconColor: 'text-violet-400',
     },
     {
-      label: 'Keşfedilen',
+      label: t('travel.exploredStat') || 'Keşfedilen',
       value: totalAttractions,
       total: null,
       icon: FaMapMarkerAlt,

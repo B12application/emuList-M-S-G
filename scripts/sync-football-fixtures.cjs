@@ -320,6 +320,10 @@ function parseIcsToMeetings(team, icsContent) {
       }
     }
 
+    // Skor tespiti (Örn: (2-1) -> '2 - 1')
+    const scoreMatch = rawSummary.match(/\((\d+-\d+)\)/);
+    const score = scoreMatch ? scoreMatch[1].replace('-', ' - ') : undefined;
+
     // Başlık temizliği (skor ve etiketleri temizle)
     let cleanTitle = rawSummary
       .replace(/\\,/g, ',')
@@ -339,7 +343,9 @@ function parseIcsToMeetings(team, icsContent) {
       category: category,
       description: `${team.name} • ${compName}`,
       teamBadge: team.logo,
-      teamColor: team.color
+      teamColor: team.color,
+      score: score,
+      isFinished: !!score
     });
   }
 

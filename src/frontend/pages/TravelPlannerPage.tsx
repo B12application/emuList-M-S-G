@@ -228,18 +228,18 @@ export default function TravelPlannerPage() {
               <FaPlane className="text-amber-500 text-lg" />
             </motion.div>
           </div>
-          <p className="text-stone-500 dark:text-zinc-400 text-sm font-medium">Gezi haritanız yükleniyor...</p>
+          <p className="text-stone-500 dark:text-zinc-400 text-sm font-medium">{t('travel.loading') || 'Gezi haritanız yükleniyor...'}</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-4">
+    <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28">
       {/* Header Banner */}
       <PageHeaderBanner
-        title="Gezi & Seyahat Planlayıcı"
-        subtitle="Türkiye'nin güzelliklerini keşfet, rotanı planla ve gezdiğin yerleri interaktif haritada kaydet"
+        title={t('travel.title') || 'Gezi & Rota Planlayıcı'}
+        subtitle={t('travel.subtitle') || "Türkiye'nin güzelliklerini keşfet, rotanı planla ve gezdiğin yerleri interaktif haritada kaydet"}
         icon={<FaCompass className="text-sky-500 text-xl" />}
         action={
           <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function TravelPlannerPage() {
                 className="flex items-center gap-2 px-3.5 py-2 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-all text-xs font-bold cursor-pointer"
               >
                 <FaArrowLeft className="text-xs" />
-                <span>Haritaya Dön</span>
+                <span>{t('travel.backToMap') || 'Haritaya Dön'}</span>
               </motion.button>
             )}
             <Link
@@ -259,7 +259,7 @@ export default function TravelPlannerPage() {
               className="flex items-center gap-2 px-3.5 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-xs font-bold shadow-xs cursor-pointer"
             >
               <FaMapMarkedAlt className="text-xs text-sky-500" />
-              <span>Ziyaret Haritası</span>
+              <span>{t('mapPage.title') || 'Ziyaret Haritası'}</span>
             </Link>
           </div>
         }
@@ -287,18 +287,18 @@ export default function TravelPlannerPage() {
               <div className="flex items-center gap-4 mb-3 text-xs text-stone-500 dark:text-zinc-400">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span>Gezildi</span>
+                  <span>{t('travel.visitedBtn') || 'Gezildi'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-sky-500" />
-                  <span>Plan Var</span>
+                  <span>{t('travel.plansTab') || 'Plan Var'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-stone-300 dark:bg-zinc-600" />
-                  <span>Keşfedilmedi</span>
+                  <span>{t('travel.exploredStat') || 'Keşfedilmedi'}</span>
                 </div>
                 <span className="ml-auto text-[10px] text-stone-400 dark:text-zinc-500 hidden sm:block">
-                  Bir şehre tıklayarak turistik yerleri keşfedin
+                  {t('travel.clickCityHint') || 'Bir şehre tıklayarak turistik yerleri keşfedin'}
                 </span>
               </div>
 

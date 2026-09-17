@@ -91,9 +91,16 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
         )}
 
         {meeting.itemType === 'match' ? (
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
             {meeting.teamBadge && (
               <img src={meeting.teamBadge} alt="" className="w-4 h-4 object-contain shrink-0" />
+            )}
+            {meeting.score && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-black text-emerald-800 dark:text-emerald-300 shadow-2xs">
+                <span>MS</span>
+                <span className="w-1 h-1 bg-emerald-400 rounded-full" />
+                <span className="tracking-wide">{meeting.score}</span>
+              </div>
             )}
             {meeting.description && (
               <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-400/30 text-[11px] font-bold text-amber-700 dark:text-amber-300">

@@ -82,15 +82,19 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate, calend
                     {dayMatches.map((dm, dmIdx) => (
                       <div 
                         key={dm.id || dmIdx} 
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/15 border border-amber-400/30 text-[9px] font-bold"
-                        title={`${dm.title} (${dm.description || ''}) — ${dm.startTime}`}
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-bold ${
+                          dm.score
+                            ? 'bg-emerald-500/15 border-emerald-500/35 text-emerald-800 dark:text-emerald-300 font-black'
+                            : 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-400/30 text-stone-800 dark:text-zinc-200'
+                        }`}
+                        title={`${dm.title} (${dm.description || ''}) — ${dm.score ? `MS: ${dm.score}` : dm.startTime}`}
                       >
                         {dm.teamBadge ? (
                           <img src={dm.teamBadge} alt="" className="w-3 h-3 object-contain shrink-0" />
                         ) : (
                           <span>⚽</span>
                         )}
-                        <span className="text-stone-800 dark:text-zinc-200">{dm.startTime !== 'TBD' ? dm.startTime : 'TBD'}</span>
+                        <span>{dm.score ? dm.score : (dm.startTime !== 'TBD' ? dm.startTime : 'TBD')}</span>
                       </div>
                     ))}
                   </div>
@@ -207,7 +211,11 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate, calend
                         {dayMatches.map((dm, idx) => (
                           <span
                             key={dm.id || idx}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 rounded-lg"
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
+                              dm.score
+                                ? 'text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/35'
+                                : 'text-amber-700 dark:text-amber-300 bg-amber-400/15 border-amber-400/30'
+                            }`}
                           >
                             {dm.teamBadge ? (
                               <img src={dm.teamBadge} alt="" className="w-3.5 h-3.5 object-contain" />
@@ -215,8 +223,8 @@ export default function WeeklyView({ currentDate, meetings, onSelectDate, calend
                               <span>⚽</span>
                             )}
                             <span>{dm.title.split('-')[0].trim()}</span>
-                            <span className="font-extrabold opacity-80">
-                              {dm.startTime !== 'TBD' ? dm.startTime : 'TBD'}
+                            <span className="font-black opacity-90">
+                              {dm.score ? `MS: ${dm.score}` : (dm.startTime !== 'TBD' ? dm.startTime : 'TBD')}
                             </span>
                           </span>
                         ))}

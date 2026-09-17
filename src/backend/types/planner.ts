@@ -24,6 +24,8 @@ export interface PlannerMeeting {
   categoryColor?: string; // Kategori rengi: '#f97316', '#10b981', etc.
   teamBadge?: string;     // Futbol takımı logo URL
   teamColor?: string;     // Futbol takımı ana rengi
+  score?: string;         // Maç skoru (örn: '2 - 1')
+  isFinished?: boolean;   // Maç bitti mi?
 }
 
 export interface GoogleSheetMeeting {

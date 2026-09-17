@@ -12,6 +12,7 @@ import {
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
@@ -51,7 +52,7 @@ interface GroupedMealDay {
 
 export default function CalorieDetailsPage() {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { hasAccess, loading: accessLoading } = useFeatureAccess();
   const { usage: quotaUsage } = useCalorieAiUsage(user?.uid);
 
@@ -59,6 +60,19 @@ export default function CalorieDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRange, setSelectedRange] = useState<'all' | 'today' | 'week'>('all');
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -86,7 +100,7 @@ export default function CalorieDetailsPage() {
               : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
 
           const dateKey = getDateKey(dateObj);
-          const displayDate = new Intl.DateTimeFormat('tr-TR', {
+          const displayDate = new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'tr-TR', {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
@@ -127,124 +141,132 @@ export default function CalorieDetailsPage() {
 
     const sorted = Object.values(map).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
     return sorted;
-  }, [sessions]);
+  }, [sessions, language]);
 
   // Tek bir besin öğesini rapordan sil
-  const handleDeleteItem = async (item: {
+  const handleDeleteItem = (item: {
     name: string;
     sessionId: string;
     messageIndex: number;
     itemIndex: number;
   }) => {
-    if (!window.confirm(`"${item.name}" besinini kalori raporundan silmek istediğinize emin misiniz?`)) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: t('calorieDetails.deleteItemConfirmTitle'),
+      message: t('calorieDetails.deleteItemConfirmMessage').replace('{name}', item.name),
+      confirmLabel: t('common.delete') || 'Sil',
+      onConfirm: async () => {
+        try {
+          await deleteMealItemFromSession(item.sessionId, item.messageIndex, item.itemIndex, item.name);
 
-    try {
-      await deleteMealItemFromSession(item.sessionId, item.messageIndex, item.itemIndex, item.name);
+          // Optimistik yerel state güncellemesi
+          setSessions(prevSessions => {
+            return prevSessions.map(session => {
+              if (session.id !== item.sessionId) return session;
 
-      // Optimistik yerel state güncellemesi
-      setSessions(prevSessions => {
-        return prevSessions.map(session => {
-          if (session.id !== item.sessionId) return session;
+              const updatedMessages = [...(session.messages || [])];
+              const targetMsg = updatedMessages[item.messageIndex];
+              if (!targetMsg || !targetMsg.mealData) return session;
 
-          const updatedMessages = [...(session.messages || [])];
-          const targetMsg = updatedMessages[item.messageIndex];
-          if (!targetMsg || !targetMsg.mealData) return session;
+              const updatedItems = [...targetMsg.mealData.items];
+              let targetIndex = item.itemIndex;
+              if (updatedItems[targetIndex]?.name !== item.name) {
+                const foundIdx = updatedItems.findIndex(i => i.name === item.name);
+                if (foundIdx !== -1) targetIndex = foundIdx;
+              }
+              updatedItems.splice(targetIndex, 1);
 
-          const updatedItems = [...targetMsg.mealData.items];
-          let targetIndex = item.itemIndex;
-          if (updatedItems[targetIndex]?.name !== item.name) {
-            const foundIdx = updatedItems.findIndex(i => i.name === item.name);
-            if (foundIdx !== -1) targetIndex = foundIdx;
-          }
-          updatedItems.splice(targetIndex, 1);
+              if (updatedItems.length === 0) {
+                updatedMessages[item.messageIndex] = {
+                  ...targetMsg,
+                  mealData: null,
+                };
+              } else {
+                const totalCalories = updatedItems.reduce((s, i) => s + (Number(i.calories) || 0), 0);
+                const totalProtein = updatedItems.reduce((s, i) => s + (Number(i.protein) || 0), 0);
+                const totalCarbs = updatedItems.reduce((s, i) => s + (Number(i.carbs) || 0), 0);
+                const totalFat = updatedItems.reduce((s, i) => s + (Number(i.fat) || 0), 0);
 
-          if (updatedItems.length === 0) {
-            updatedMessages[item.messageIndex] = {
-              ...targetMsg,
-              mealData: null,
-            };
-          } else {
-            const totalCalories = updatedItems.reduce((s, i) => s + (Number(i.calories) || 0), 0);
-            const totalProtein = updatedItems.reduce((s, i) => s + (Number(i.protein) || 0), 0);
-            const totalCarbs = updatedItems.reduce((s, i) => s + (Number(i.carbs) || 0), 0);
-            const totalFat = updatedItems.reduce((s, i) => s + (Number(i.fat) || 0), 0);
+                updatedMessages[item.messageIndex] = {
+                  ...targetMsg,
+                  mealData: {
+                    items: updatedItems,
+                    totalCalories,
+                    totalProtein,
+                    totalCarbs,
+                    totalFat,
+                  },
+                };
+              }
 
-            updatedMessages[item.messageIndex] = {
-              ...targetMsg,
-              mealData: {
-                items: updatedItems,
-                totalCalories,
-                totalProtein,
-                totalCarbs,
-                totalFat,
-              },
-            };
-          }
+              const sessionTotalCalories = updatedMessages.reduce(
+                (sum, msg) => sum + (msg.mealData?.totalCalories || 0),
+                0
+              );
 
-          const sessionTotalCalories = updatedMessages.reduce(
-            (sum, msg) => sum + (msg.mealData?.totalCalories || 0),
-            0
-          );
+              return {
+                ...session,
+                messages: updatedMessages,
+                totalCalories: sessionTotalCalories,
+              };
+            });
+          });
 
-          return {
-            ...session,
-            messages: updatedMessages,
-            totalCalories: sessionTotalCalories,
-          };
-        });
-      });
-
-      toast.success(`"${item.name}" rapordan silindi.`);
-    } catch (err: any) {
-      console.error('Besin silinemedi:', err);
-      toast.error(err?.message || 'Silme işlemi başarısız oldu.');
-    }
+          toast.success(`"${item.name}" silindi.`);
+        } catch (err: any) {
+          console.error('Besin silinemedi:', err);
+          toast.error(err?.message || 'Silme işlemi başarısız oldu.');
+        }
+      },
+    });
   };
 
   // Bir günün tüm besin kayıtlarını rapordan temizle
-  const handleDeleteDay = async (dateKey: string, displayDate: string) => {
+  const handleDeleteDay = (dateKey: string, displayDate: string) => {
     if (!user) return;
-    if (!window.confirm(`${displayDate} tarihindeki tüm öğünleri kalori raporundan silmek istediğinize emin misiniz?`)) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: t('calorieDetails.deleteDayConfirmTitle'),
+      message: t('calorieDetails.deleteDayConfirmMessage').replace('{date}', displayDate),
+      confirmLabel: t('common.delete') || 'Sil',
+      onConfirm: async () => {
+        try {
+          await deleteDayFromCalorieReport(user.uid, dateKey);
 
-    try {
-      await deleteDayFromCalorieReport(user.uid, dateKey);
-
-      setSessions(prevSessions => {
-        return prevSessions.map(session => {
-          if (!session.messages) return session;
-          let modified = false;
-          const updatedMessages = session.messages.map(msg => {
-            if (msg.role === 'assistant' && msg.mealData) {
-              const dateObj = msg.timestamp?.toDate
-                ? msg.timestamp.toDate()
-                : msg.timestamp instanceof Date
-                  ? msg.timestamp
-                  : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
-              const msgDateKey = getDateKey(dateObj);
-              if (msgDateKey === dateKey) {
-                modified = true;
-                return { ...msg, mealData: null };
+          setSessions(prevSessions => {
+            return prevSessions.map(session => {
+              if (!session.messages) return session;
+              let modified = false;
+              const updatedMessages = session.messages.map(msg => {
+                if (msg.role === 'assistant' && msg.mealData) {
+                  const dateObj = msg.timestamp?.toDate
+                    ? msg.timestamp.toDate()
+                    : msg.timestamp instanceof Date
+                      ? msg.timestamp
+                      : new Date(session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt || Date.now());
+                  const msgDateKey = getDateKey(dateObj);
+                  if (msgDateKey === dateKey) {
+                    modified = true;
+                    return { ...msg, mealData: null };
+                  }
+                }
+                return msg;
+              });
+              if (modified) {
+                const total = updatedMessages.reduce((sum, m) => sum + (m.mealData?.totalCalories || 0), 0);
+                return { ...session, messages: updatedMessages, totalCalories: total };
               }
-            }
-            return msg;
+              return session;
+            });
           });
-          if (modified) {
-            const total = updatedMessages.reduce((sum, m) => sum + (m.mealData?.totalCalories || 0), 0);
-            return { ...session, messages: updatedMessages, totalCalories: total };
-          }
-          return session;
-        });
-      });
 
-      toast.success(`${displayDate} kayıtları temizlendi.`);
-    } catch (err: any) {
-      console.error('Gün silinemedi:', err);
-      toast.error('Kayıtlar silinirken hata oluştu.');
-    }
+          toast.success(`${displayDate} kayıtları temizlendi.`);
+        } catch (err: any) {
+          console.error('Gün silinemedi:', err);
+          toast.error('Kayıtlar silinirken hata oluştu.');
+        }
+      },
+    });
   };
 
   // ── Sürükle-Bırak & Tarih Taşıma Durumları ──────────────────
@@ -280,7 +302,7 @@ export default function CalorieDetailsPage() {
 
   const formatDisplayDate = (dateKey: string): string => {
     const [y, m, d] = dateKey.split('-').map(Number);
-    return new Intl.DateTimeFormat('tr-TR', {
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'tr-TR', {
       day: 'numeric',
       month: 'long',
       weekday: 'long',
@@ -289,7 +311,7 @@ export default function CalorieDetailsPage() {
 
   const formatShortDate = (dateKey: string): string => {
     const [y, m, d] = dateKey.split('-').map(Number);
-    return new Intl.DateTimeFormat('tr-TR', {
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'tr-TR', {
       day: 'numeric',
       month: 'long',
     }).format(new Date(y, m - 1, d));
@@ -432,11 +454,11 @@ export default function CalorieDetailsPage() {
     <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
       {/* Header Banner */}
       <PageHeaderBanner
-        title="Detaylı Kalori Raporu"
-        subtitle="B12 AI tarafından analiz edilip kaydedilen tüm öğünleriniz, günlük kalori ve makro dağılımı"
+        title={t('calorieDetails.title')}
+        subtitle={t('calorieDetails.subtitle')}
         icon={<FaUtensils className="text-amber-500 text-xl" />}
         backTo="/calorie-chat"
-        backLabel="Sohbete Dön"
+        backLabel={t('calorieDetails.backToChat')}
         action={
           <div className="flex items-center gap-2">
             {/* Daily AI Quota Badge */}
@@ -451,7 +473,7 @@ export default function CalorieDetailsPage() {
               title="Günlük AI analiz kotanız (Gece 00:00'da sıfırlanır)"
             >
               <FaFire className={`text-xs ${quotaUsage.isLimitReached ? 'text-rose-500' : 'text-amber-500 animate-pulse'}`} />
-              <span>Kalan AI Limiti:</span>
+              <span>{t('calorieDetails.remainingAiLimit')}</span>
               <span className="font-black">{quotaUsage.remainingToday} / {quotaUsage.dailyLimit}</span>
             </div>
 
@@ -460,7 +482,7 @@ export default function CalorieDetailsPage() {
               className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-500/30 transition-colors shadow-sm"
             >
               <FaHeartbeat className="text-sm" />
-              <span className="hidden sm:inline">Beden Profilim</span>
+              <span className="hidden sm:inline">{t('calorieDetails.myBodyProfile')}</span>
             </Link>
 
             <Link
@@ -468,7 +490,7 @@ export default function CalorieDetailsPage() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-bold text-xs hover:bg-amber-300 transition-colors shadow-md shadow-amber-500/20"
             >
               <FaRobot className="text-sm" />
-              <span>Sohbete Git</span>
+              <span>{t('calorieDetails.goToChat')}</span>
             </Link>
           </div>
         }
@@ -478,10 +500,10 @@ export default function CalorieDetailsPage() {
       <div className="sm:hidden mb-4 p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <FaFire className="text-amber-500" />
-          <span className="font-semibold text-stone-700 dark:text-zinc-200">Günlük AI Limiti:</span>
+          <span className="font-semibold text-stone-700 dark:text-zinc-200">{t('calorieDetails.remainingAiLimit')}</span>
         </div>
         <span className="font-black text-amber-600 dark:text-amber-400">
-          {quotaUsage.remainingToday} / {quotaUsage.dailyLimit} Kalan
+          {quotaUsage.remainingToday} / {quotaUsage.dailyLimit}
         </span>
       </div>
 
@@ -493,7 +515,7 @@ export default function CalorieDetailsPage() {
           className="bg-gradient-to-br from-amber-500/15 to-orange-500/10 border border-amber-500/30 rounded-3xl p-4 shadow-sm"
         >
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase mb-1">
-            <FaFire className="text-sm" /> Bugün
+            <FaFire className="text-sm" /> {t('calorieDetails.todayStat')}
           </div>
           <div className="text-2xl font-black text-stone-900 dark:text-white">
             {overallTotals.todayCalories} <span className="text-xs font-semibold text-stone-400">kcal</span>
@@ -510,13 +532,13 @@ export default function CalorieDetailsPage() {
           className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl p-4 shadow-sm"
         >
           <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 text-xs font-bold uppercase mb-1">
-            <FaChartPie className="text-sm text-amber-500" /> Toplam Kalori
+            <FaChartPie className="text-sm text-amber-500" /> {t('calorieDetails.totalCaloriesStat')}
           </div>
           <div className="text-2xl font-black text-stone-900 dark:text-white">
             {overallTotals.totalCalories} <span className="text-xs font-semibold text-stone-400">kcal</span>
           </div>
           <div className="text-[10px] text-stone-500 dark:text-zinc-400 mt-1 font-medium">
-            Tüm kaydedilen öğünler
+            {t('calorieDetails.allTimeMeals')}
           </div>
         </motion.div>
 
@@ -527,13 +549,13 @@ export default function CalorieDetailsPage() {
           className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl p-4 shadow-sm"
         >
           <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 text-xs font-bold uppercase mb-1">
-            <FaUtensils className="text-sm text-blue-500" /> Kayıtlı Besin
+            <FaUtensils className="text-sm text-blue-500" /> {t('calorieDetails.loggedFoodsStat')}
           </div>
           <div className="text-2xl font-black text-stone-900 dark:text-white">
-            {overallTotals.totalItems} <span className="text-xs font-semibold text-stone-400">öğe</span>
+            {overallTotals.totalItems} <span className="text-xs font-semibold text-stone-400">{language === 'en' ? 'items' : 'öğe'}</span>
           </div>
           <div className="text-[10px] text-stone-500 dark:text-zinc-400 mt-1 font-medium">
-            {groupedDays.length} farklı günde
+            {groupedDays.length} {language === 'en' ? 'days' : 'farklı günde'}
           </div>
         </motion.div>
 
@@ -544,13 +566,13 @@ export default function CalorieDetailsPage() {
           className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl p-4 shadow-sm"
         >
           <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 text-xs font-bold uppercase mb-1">
-            <FaCalendarAlt className="text-sm text-emerald-500" /> Günlük Ort.
+            <FaCalendarAlt className="text-sm text-emerald-500" /> {t('calorieDetails.dailyAverageStat')}
           </div>
           <div className="text-2xl font-black text-stone-900 dark:text-white">
             {groupedDays.length > 0 ? Math.round(overallTotals.totalCalories / groupedDays.length) : 0} <span className="text-xs font-semibold text-stone-400">kcal</span>
           </div>
           <div className="text-[10px] text-stone-500 dark:text-zinc-400 mt-1 font-medium">
-            Gün başına düşen
+            {t('calorieDetails.perDay')}
           </div>
         </motion.div>
       </div>
@@ -561,7 +583,7 @@ export default function CalorieDetailsPage() {
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
           <input
             type="text"
-            placeholder="Yemek veya tarih ara (örn: Tavuk, Salata)..."
+            placeholder={t('calorieDetails.searchPlaceholder')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-stone-900 dark:text-white placeholder:text-stone-400 focus:ring-2 focus:ring-amber-400 text-sm font-medium shadow-sm"
@@ -579,7 +601,7 @@ export default function CalorieDetailsPage() {
                   : 'text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
-              {range === 'all' ? 'Tümü' : range === 'today' ? 'Bugün' : 'Son 7 Gün'}
+              {range === 'all' ? t('calorieDetails.filterAll') : range === 'today' ? t('calorieDetails.filterToday') : t('calorieDetails.filterWeek')}
             </button>
           ))}
         </div>
@@ -596,16 +618,16 @@ export default function CalorieDetailsPage() {
           >
             <span className="flex items-center gap-2">
               <span className="animate-bounce">👉</span>
-              <span>Sürükleniyor:</span>
+              <span>{t('calorieDetails.draggingItem')}</span>
               <strong className="text-amber-700 dark:text-amber-300">"{draggedItem.name}"</strong>
-              <span className="text-stone-600 dark:text-zinc-400">— Taşımak istediğiniz günün üzerine bırakın</span>
+              <span className="text-stone-600 dark:text-zinc-400">— {t('calorieDetails.dragDropHint')}</span>
             </span>
             <button
               type="button"
               onClick={() => { setDraggedItem(null); setDragOverDateKey(null); }}
               className="px-2.5 py-1 rounded-lg bg-amber-400 text-stone-950 font-black text-[10px] hover:bg-amber-300 transition-all cursor-pointer"
             >
-              Vazgeç
+              {t('calorieDetails.cancelDrag')}
             </button>
           </motion.div>
         )}
@@ -635,7 +657,7 @@ export default function CalorieDetailsPage() {
           >
             <FaMoon className="text-amber-500 text-sm" />
             <span>
-              Buraya bırakarak doğrudan <strong>{formatDisplayDate(getPreviousDayKey(draggedItem.fromDateKey))} (Dün)</strong> gününe aktarın
+              Buraya bırakarak doğrudan <strong>{formatDisplayDate(getPreviousDayKey(draggedItem.fromDateKey))} {t('calorieDetails.yesterdaySuffix')}</strong> gününe aktarın
             </span>
           </motion.div>
         )}
@@ -649,17 +671,17 @@ export default function CalorieDetailsPage() {
               <FaUtensils className="text-2xl" />
             </div>
             <h3 className="text-base font-bold text-stone-900 dark:text-white mb-1">
-              Kayıtlı Öğün Bulunamadı
+              {t('calorieDetails.noMealsFound')}
             </h3>
             <p className="text-xs text-stone-500 dark:text-zinc-400 max-w-sm mx-auto mb-6">
-              emuAI ile henüz yemek analiz etmemiş olabilirsiniz veya aramanıza uygun öğün bulunamadı.
+              {t('calorieDetails.noMealsFoundDesc')}
             </p>
             <Link
               to="/calorie-chat"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-bold text-xs hover:bg-amber-300 transition-colors shadow-md"
             >
               <FaRobot />
-              emuAI ile Yemek Fotoğrafı Analiz Et
+              {t('calorieDetails.analyzeWithAi')}
             </Link>
           </div>
         ) : (
@@ -702,12 +724,12 @@ export default function CalorieDetailsPage() {
                       <span>{day.displayDate}</span>
                       {isDragTarget && (
                         <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-400 text-stone-950 font-black animate-pulse">
-                          Buraya Bırakın
+                          {t('calorieDetails.dropHere')}
                         </span>
                       )}
                     </h3>
                     <div className="text-[11px] text-stone-400 dark:text-zinc-500 font-medium">
-                      {day.items.length} kayıtlı besin • Öğünleri sürükleyerek başka güne taşıyabilirsiniz
+                      {day.items.length} {t('calorieDetails.loggedFoodsStat').toLowerCase()} • {t('calorieDetails.dragHint')}
                     </div>
                   </div>
 
@@ -734,7 +756,7 @@ export default function CalorieDetailsPage() {
                       className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 border border-indigo-200/60 dark:border-indigo-800/40 rounded-xl transition-all cursor-pointer shadow-2xs"
                     >
                       <FaMoon className="text-[10px] text-indigo-500" />
-                      <span>Düne Aktar ({formatShortDate(prevDayKey)})</span>
+                      <span>{t('calorieDetails.moveToYesterday')} ({formatShortDate(prevDayKey)})</span>
                     </button>
 
                     {/* Başka Güne Taşı Butonu (Manuel Seçim) */}
@@ -746,7 +768,7 @@ export default function CalorieDetailsPage() {
                         targetDateKey: prevDayKey,
                         isEntireDay: true,
                       })}
-                      title="Bu günün tüm kayıtlarını başka bir tarihe aktar"
+                      title={t('calorieDetails.moveToAnotherDay')}
                       className="p-2 text-stone-400 hover:text-amber-600 dark:text-zinc-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-xl transition-all cursor-pointer"
                     >
                       <FaExchangeAlt className="text-xs" />
@@ -769,7 +791,7 @@ export default function CalorieDetailsPage() {
                   {day.items.map((item, idx) => {
                     const isNightOwl = isNightOwlEntry(item.timestamp);
                     const itemTimeStr = item.timestamp instanceof Date
-                      ? item.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                      ? item.timestamp.toLocaleTimeString(language === 'en' ? 'en-US' : 'tr-TR', { hour: '2-digit', minute: '2-digit' })
                       : '';
 
                     return (
@@ -834,16 +856,16 @@ export default function CalorieDetailsPage() {
                                   title={`Gece ${itemTimeStr}'de girildi. Dünün (${formatShortDate(prevDayKey)}) son öğününe aktarmak için tıklayın.`}
                                 >
                                   <FaMoon className="text-[9.5px] text-indigo-500" />
-                                  <span>Düne Aktar ({formatShortDate(prevDayKey)})</span>
+                                  <span>{t('calorieDetails.moveToYesterday')} ({formatShortDate(prevDayKey)})</span>
                                 </button>
                               )}
                             </div>
 
                             <div className="text-[11px] text-stone-400 dark:text-zinc-500 font-medium flex items-center gap-2 flex-wrap mt-0.5">
-                              <span>Porsiyon: {item.amount}</span>
+                              <span>{t('calorieDetails.portion')} {item.amount}</span>
                               {itemTimeStr && (
                                 <span className="text-stone-400 dark:text-zinc-500">
-                                  • Saat {itemTimeStr}
+                                  • {t('calorieDetails.atTime')} {itemTimeStr}
                                 </span>
                               )}
                               {item.sessionTitle && (
@@ -909,27 +931,28 @@ export default function CalorieDetailsPage() {
         )}
       </div>
 
-      {/* ── Tarih Değiştirme / Güne Taşıma Modalı ── */}
+      {/* ── Tarih Değiştirme / Güne Taşıma Modalı (Rule #5 Standard) ── */}
       <AnimatePresence>
         {moveModal && moveModal.isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+              className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
+              {/* Modal Header */}
+              <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-stone-100 dark:border-zinc-800">
+                <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-2xl bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-bold">
                     📅
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-stone-900 dark:text-white">
-                      {moveModal.isEntireDay ? 'Günü Başka Tarihe Taşı' : 'Öğünü Başka Güne Taşı'}
+                      {moveModal.isEntireDay ? t('calorieDetails.moveDayModalTitle') : t('calorieDetails.moveItemModalTitle')}
                     </h3>
                     <p className="text-[10px] text-stone-400 dark:text-zinc-500">
-                      Öğünün ait olduğu tarihi kolayca değiştirin
+                      {t('calorieDetails.moveModalSubtitle')}
                     </p>
                   </div>
                 </div>
@@ -941,64 +964,68 @@ export default function CalorieDetailsPage() {
                 </button>
               </div>
 
-              <div className="p-3 mb-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60 text-xs">
-                <span className="text-stone-400">Seçili Öğün:</span>{' '}
-                <strong className="text-stone-900 dark:text-white">
-                  {moveModal.isEntireDay ? `${formatDisplayDate(moveModal.sourceDateKey)} (Tüm Gün)` : moveModal.itemName}
-                </strong>
-              </div>
+              {/* Scrollable Body */}
+              <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="p-3 rounded-2xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60 text-xs">
+                  <span className="text-stone-400">{t('calorieDetails.selectedItem')}</span>{' '}
+                  <strong className="text-stone-900 dark:text-white">
+                    {moveModal.isEntireDay ? `${formatDisplayDate(moveModal.sourceDateKey)} (${t('calorieDetails.allDay')})` : moveModal.itemName}
+                  </strong>
+                </div>
 
-              {/* Hızlı Seçim Butonları */}
-              <div className="mb-4">
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1.5">
-                  Hızlı Seçenekler
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setMoveModal(m => m ? { ...m, targetDateKey: getPreviousDayKey(m.sourceDateKey) } : null)}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-left ${
-                      moveModal.targetDateKey === getPreviousDayKey(moveModal.sourceDateKey)
-                        ? 'border-amber-400 bg-amber-400/15 text-amber-950 dark:text-amber-300'
-                        : 'border-stone-200 dark:border-zinc-700 text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800'
-                    }`}
-                  >
-                    🌙 Dün ({formatShortDate(getPreviousDayKey(moveModal.sourceDateKey))})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMoveModal(m => m ? { ...m, targetDateKey: getDateKey(new Date()) } : null)}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-left ${
-                      moveModal.targetDateKey === getDateKey(new Date())
-                        ? 'border-amber-400 bg-amber-400/15 text-amber-950 dark:text-amber-300'
-                        : 'border-stone-200 dark:border-zinc-700 text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800'
-                    }`}
-                  >
-                    ☀️ Bugün ({formatShortDate(getDateKey(new Date()))})
-                  </button>
+                {/* Hızlı Seçim Butonları */}
+                <div>
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1.5">
+                    {t('calorieDetails.quickOptions')}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMoveModal(m => m ? { ...m, targetDateKey: getPreviousDayKey(m.sourceDateKey) } : null)}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-left ${
+                        moveModal.targetDateKey === getPreviousDayKey(moveModal.sourceDateKey)
+                          ? 'border-amber-400 bg-amber-400/15 text-amber-950 dark:text-amber-300'
+                          : 'border-stone-200 dark:border-zinc-700 text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      🌙 {t('calorieDetails.yesterday')} ({formatShortDate(getPreviousDayKey(moveModal.sourceDateKey))})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMoveModal(m => m ? { ...m, targetDateKey: getDateKey(new Date()) } : null)}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-left ${
+                        moveModal.targetDateKey === getDateKey(new Date())
+                          ? 'border-amber-400 bg-amber-400/15 text-amber-950 dark:text-amber-300'
+                          : 'border-stone-200 dark:border-zinc-700 text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      ☀️ {t('calorieDetails.today')} ({formatShortDate(getDateKey(new Date()))})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Manuel Tarih Seçici */}
+                <div>
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1.5">
+                    {t('calorieDetails.orSelectCalendar')}
+                  </label>
+                  <input
+                    type="date"
+                    value={moveModal.targetDateKey}
+                    onChange={e => setMoveModal(m => m ? { ...m, targetDateKey: e.target.value } : null)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white text-xs font-bold focus:ring-2 focus:ring-amber-400"
+                  />
                 </div>
               </div>
 
-              {/* Manuel Tarih Seçici */}
-              <div className="mb-5">
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1.5">
-                  Veya Takvimden Seçin
-                </label>
-                <input
-                  type="date"
-                  value={moveModal.targetDateKey}
-                  onChange={e => setMoveModal(m => m ? { ...m, targetDateKey: e.target.value } : null)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white text-xs font-bold focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
-
-              <div className="flex items-center gap-2.5">
+              {/* Sticky / Fixed Action Footer */}
+              <div className="px-6 py-3.5 bg-stone-50 dark:bg-zinc-900/80 border-t border-stone-200 dark:border-zinc-800 flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => setMoveModal(null)}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 font-bold text-xs hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-stone-200/80 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold text-xs hover:bg-stone-300 dark:hover:bg-zinc-700 transition-colors"
                 >
-                  İptal
+                  {t('calorieDetails.cancel')}
                 </button>
                 <button
                   type="button"
@@ -1022,13 +1049,26 @@ export default function CalorieDetailsPage() {
                   }}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-amber-400 text-stone-950 font-black text-xs hover:bg-amber-300 transition-all shadow-sm cursor-pointer disabled:opacity-50"
                 >
-                  {isMoving ? 'Aktarılıyor...' : 'Güne Aktar'}
+                  {isMoving ? t('calorieDetails.transferring') : t('calorieDetails.transferToDate')}
                 </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmLabel}
+        onConfirm={() => {
+          confirmDialog.onConfirm();
+          setConfirmDialog(c => ({ ...c, isOpen: false }));
+        }}
+        onClose={() => setConfirmDialog(c => ({ ...c, isOpen: false }))}
+      />
     </div>
   );
 }

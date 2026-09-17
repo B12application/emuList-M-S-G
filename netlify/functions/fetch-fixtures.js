@@ -63,6 +63,9 @@ function parseIcs(teamId, icsText) {
             category = 'Süper Kupa';
             comp = 'Turkcell Süper Kupa 🏆';
         }
+        // Skor tespiti (Örn: (2-1) -> '2 - 1')
+        const scoreMatch = rawSummary.match(/\((\d+-\d+)\)/);
+        const score = scoreMatch ? scoreMatch[1].replace('-', ' - ') : undefined;
         const cleanTitle = rawSummary
             .replace(/\\,/g, ',')
             .replace(/\\;/g, ';')
@@ -76,7 +79,9 @@ function parseIcs(teamId, icsText) {
             date: dateStr,
             time: timeStr,
             comp,
-            category
+            category,
+            score,
+            isFinished: !!score
         });
     }
     return matches;

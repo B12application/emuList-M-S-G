@@ -8,6 +8,7 @@ import { fetchAttractionsByCity, fetchAttractionsByDistrict, ATTRACTION_CATEGORI
 import { getDistrictsByCityId, type CityDistrict } from '../../data/turkeyDistricts';
 import type { TouristAttraction, VisitedPlace, TravelPlan } from '../../../backend/types/travelPlanner';
 import type { CityCoordinates } from '../../../backend/types/travelPlanner';
+import { useLanguage } from '../../context/LanguageContext';
 import TravelRouteMap from './TravelRouteMap';
 import VisitedPlaceCard from './VisitedPlaceCard';
 import CreatePlanModal from './CreatePlanModal';
@@ -38,6 +39,7 @@ export default function CityDetailView({
   onDeletePlan,
   onDeleteVisitedPlace,
 }: CityDetailViewProps) {
+  const { t } = useLanguage();
   const [attractions, setAttractions] = useState<TouristAttraction[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,10 +136,22 @@ export default function CityDetailView({
 
   const cityPlans = plans.filter(p => p.cityId === city.id);
 
+  const getLocalizedCategoryLabel = (catKey: string, defaultLabel: string) => {
+    switch (catKey) {
+      case 'historic': return t('travel.categoryHistoric');
+      case 'cultural': return t('travel.categoryCultural');
+      case 'architecture': return t('travel.categoryArchitecture');
+      case 'nature_reserves': return t('travel.categoryNature');
+      case 'amusements': return t('travel.categoryAmusement');
+      case 'foods': return t('travel.categoryFood');
+      default: return defaultLabel || t('travel.categoryOther');
+    }
+  };
+
   const tabs: { key: TabType; label: string; icon: any; count: number }[] = [
-    { key: 'attractions', label: 'Keşfet', icon: FaMapMarkerAlt, count: attractions.length },
-    { key: 'visited', label: 'Gezildi', icon: FaCheckCircle, count: visitedPlaces.filter(v => v.cityId === city.id).length },
-    { key: 'plans', label: 'Planlar', icon: FaRoute, count: cityPlans.length },
+    { key: 'attractions', label: t('travel.exploreTab'), icon: FaMapMarkerAlt, count: attractions.length },
+    { key: 'visited', label: t('travel.visitedTab'), icon: FaCheckCircle, count: visitedPlaces.filter(v => v.cityId === city.id).length },
+    { key: 'plans', label: t('travel.plansTab'), icon: FaRoute, count: cityPlans.length },
   ];
 
   return (
@@ -170,7 +184,7 @@ export default function CityDetailView({
               </span>
             </div>
             <p className="text-white/70 text-xs mt-0.5">
-              {attractions.length} turistik yer · {visitedPlaces.filter(v => v.cityId === city.id).length} gezildi · {cityPlans.length} plan
+              {attractions.length} {t('travel.touristPlacesCount')} · {visitedPlaces.filter(v => v.cityId === city.id).length} {t('travel.visitedPlacesCount')} · {cityPlans.length} {t('travel.plansCount')}
             </p>
           </div>
 
@@ -178,7 +192,7 @@ export default function CityDetailView({
             onClick={() => setIsCreatePlanOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-sm font-bold text-white transition-all backdrop-blur-sm"
           >
-            <FaPlus /> Plan Oluştur
+            <FaPlus /> {t('travel.createPlan')}
           </button>
         </div>
 
@@ -226,7 +240,7 @@ export default function CityDetailView({
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Mekan veya yer ara..."
+                    placeholder={t('travel.searchPlaceholder')}
                     className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl text-sm text-stone-900 dark:text-white outline-none focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
@@ -237,7 +251,7 @@ export default function CityDetailView({
                 <div className="mb-3">
                   <div className="flex items-center gap-1.5 mb-1.5 px-0.5">
                     <FaBuilding className="text-sky-500 text-xs" />
-                    <span className="text-xs font-black text-stone-800 dark:text-zinc-200">İlçe Seçin:</span>
+                    <span className="text-xs font-black text-stone-800 dark:text-zinc-200">{t('travel.selectDistrict')}</span>
                   </div>
                   <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
                     {districts.map(d => {
@@ -271,7 +285,7 @@ export default function CityDetailView({
                       : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200 dark:border-zinc-800 hover:border-sky-300'
                   }`}
                 >
-                  Tümü
+                  {t('travel.all')}
                 </button>
                 {ATTRACTION_CATEGORIES.map(cat => (
                   <button
@@ -285,7 +299,7 @@ export default function CityDetailView({
                     style={selectedCategory === cat.key ? { backgroundColor: cat.color, boxShadow: `0 4px 12px ${cat.color}33` } : {}}
                   >
                     <span>{cat.icon}</span>
-                    {cat.label}
+                    {getLocalizedCategoryLabel(cat.key, cat.label)}
                   </button>
                 ))}
               </div>
@@ -308,10 +322,10 @@ export default function CityDetailView({
               {/* Section Header */}
               <div className="flex items-center justify-between mb-3 px-1">
                 <h3 className="text-sm font-black text-stone-900 dark:text-white flex items-center gap-2">
-                  <span>📍</span> {currentDistrict?.name || city.name} Gezilecek Yerler ({filteredAttractions.length})
+                  <span>📍</span> {currentDistrict?.name || city.name} {t('travel.placesToVisit')} ({filteredAttractions.length})
                 </h3>
                 <span className="text-[10px] text-stone-400 dark:text-zinc-500">
-                  OpenTripMap Canlı API ⚡
+                  {t('travel.liveApiBadge')}
                 </span>
               </div>
 
@@ -319,8 +333,8 @@ export default function CityDetailView({
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   <FaSpinner className="animate-spin text-sky-500 text-2xl mb-3" />
-                  <p className="text-sm text-stone-500 dark:text-zinc-400">Turistik yerler yükleniyor...</p>
-                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">OpenTripMap API / Firestore Cache</p>
+                  <p className="text-sm text-stone-500 dark:text-zinc-400">{t('travel.loadingAttractions')}</p>
+                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">{t('travel.apiCacheNote')}</p>
                 </div>
               ) : (
                 /* Attraction list grid (1 column on mobile, 2 columns on desktop) */
@@ -328,7 +342,7 @@ export default function CityDetailView({
                   {filteredAttractions.length === 0 ? (
                     <div className="col-span-full text-center py-12">
                       <span className="text-4xl block mb-3">🔍</span>
-                      <p className="text-sm text-stone-500 dark:text-zinc-400">Sonuç bulunamadı</p>
+                      <p className="text-sm text-stone-500 dark:text-zinc-400">{t('travel.noAttractionsFound')}</p>
                     </div>
                   ) : (
                     filteredAttractions.map((attraction, index) => {
@@ -365,7 +379,7 @@ export default function CityDetailView({
                                 className="text-[10px] px-2 py-0.5 rounded-full font-bold"
                                 style={{ backgroundColor: `${category.color}15`, color: category.color }}
                               >
-                                {category.label}
+                                {getLocalizedCategoryLabel(category.key, category.label)}
                               </span>
                               {attraction.rate && attraction.rate > 0 && (
                                 <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
@@ -390,14 +404,14 @@ export default function CityDetailView({
                                 }}
                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/60 rounded-xl hover:bg-indigo-200 dark:hover:bg-indigo-900 transition-colors shadow-sm"
                               >
-                                <span>✓</span> Gezildi
+                                <span>✓</span> {t('travel.visitedBtn')}
                               </button>
                             ) : (
                               <button
                                 onClick={() => onMarkVisited(attraction)}
                                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-sky-500 to-cyan-500 rounded-xl shadow-md hover:shadow-sky-500/20 active:scale-95 transition-all"
                               >
-                                <FaEye /> Gezdim
+                                <FaEye /> {t('travel.markVisitedBtn')}
                               </button>
                             )}
                           </div>
@@ -422,8 +436,8 @@ export default function CityDetailView({
               {visitedPlaces.filter(v => v.cityId === city.id).length === 0 ? (
                 <div className="text-center py-16">
                   <span className="text-5xl block mb-3">🌍</span>
-                  <p className="text-sm font-medium text-stone-500 dark:text-zinc-400">Henüz gezilen yer yok</p>
-                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">Keşfet sekmesinden yer işaretleyin</p>
+                  <p className="text-sm font-medium text-stone-500 dark:text-zinc-400">{t('travel.noVisitedPlaces')}</p>
+                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">{t('travel.markFromExplore')}</p>
                 </div>
               ) : (
                 <AnimatePresence>
@@ -453,12 +467,12 @@ export default function CityDetailView({
               {cityPlans.length === 0 ? (
                 <div className="text-center py-16">
                   <span className="text-5xl block mb-3">📋</span>
-                  <p className="text-sm font-medium text-stone-500 dark:text-zinc-400">Henüz plan yok</p>
+                  <p className="text-sm font-medium text-stone-500 dark:text-zinc-400">{t('travel.noPlans')}</p>
                   <button
                     onClick={() => setIsCreatePlanOpen(true)}
                     className="mt-3 px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-cyan-500 rounded-xl hover:shadow-lg transition-all"
                   >
-                    İlk Planı Oluştur
+                    {t('travel.createFirstPlan')}
                   </button>
                 </div>
               ) : (
@@ -494,10 +508,10 @@ export default function CityDetailView({
                                   ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
                                   : 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'
                               }`}>
-                                {plan.status === 'completed' ? 'Tamamlandı' : plan.status === 'in-progress' ? 'Devam Ediyor' : 'Planlandı'}
+                                {plan.status === 'completed' ? t('travel.completed') : plan.status === 'in-progress' ? t('travel.inProgress') : t('travel.planned')}
                               </span>
                               <span className="text-[10px] text-stone-400 dark:text-zinc-500">
-                                {plan.stops.length} durak
+                                {plan.stops.length} {t('travel.stopsCount')}
                               </span>
                             </div>
                           </div>

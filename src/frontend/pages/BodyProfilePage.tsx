@@ -10,11 +10,20 @@ import {
   FaBullseye, FaRunning, FaSave, FaHeartbeat, FaChartLine,
   FaPercent, FaBalanceScale, FaTape, FaUtensils, FaInfoCircle,
   FaCopy, FaCheck, FaPlus, FaMinus, FaBookOpen, FaTimes,
-  FaDumbbell, FaExclamationTriangle, FaArrowUp, FaArrowDown, FaMedal
+  FaDumbbell, FaExclamationTriangle, FaArrowUp, FaArrowDown, FaMedal,
+  FaPlay, FaEye
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import ExercisePreviewModal from '../components/body/ExercisePreviewModal';
+import ExerciseCatalogModal from '../components/body/ExerciseCatalogModal';
+import {
+  getExerciseMedia,
+  extractExercisesFromText,
+  type ExerciseMedia,
+} from '../data/exerciseMediaData';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
 import { getChatSessions, getDateKey } from '../services/calorieChatService';
 import type {
@@ -135,6 +144,7 @@ function StatCard({
 // ── Main Page Component ────────────────────────────────
 export default function BodyProfilePage() {
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   const { hasAccess, loading: accessLoading } = useFeatureAccess();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
@@ -208,6 +218,39 @@ export default function BodyProfilePage() {
   // State for Sports Science modals
   const [guideModalKey, setGuideModalKey] = useState<ValidMeasurementKey | null>(null);
   const [showWeightInfoModal, setShowWeightInfoModal] = useState<boolean>(false);
+  const [selectedExerciseForPreview, setSelectedExerciseForPreview] = useState<ExerciseMedia | null>(null);
+  const [showExerciseCatalogModal, setShowExerciseCatalogModal] = useState<boolean>(false);
+
+  // Helper to open preview from exercise name or media object
+  const handleOpenExercisePreview = (exerciseNameOrObject: string | ExerciseMedia) => {
+    if (typeof exerciseNameOrObject === 'string') {
+      const media = getExerciseMedia(exerciseNameOrObject);
+      if (media) {
+        setSelectedExerciseForPreview(media);
+      } else {
+        setSelectedExerciseForPreview({
+          id: exerciseNameOrObject.toLowerCase().replace(/\s+/g, '-'),
+          name: exerciseNameOrObject,
+          englishName: exerciseNameOrObject,
+          category: 'delts',
+          categoryLabel: 'Spor Hareketi',
+          gifUrl: '',
+          youtubeQuery: `${exerciseNameOrObject} egzersiz doğru form`,
+          targetMuscles: ['İlgili Kas Grubu'],
+          instructions: [
+            'Hareketi kontrollü bir tempo ile (2 saniye indirme, 1 saniye kaldırma) gerçekleştirin.',
+            'Omurganızı nötr tutun ve nefesinizi hareketin zorlandığınız aşamasında verin.'
+          ],
+          commonMistakes: ['Aşırı ağır kilo kullanarak formu bozmak', 'Momentum ile savurmak'],
+          proTip: 'Direnci daima hedef kas grubunda hissedin.',
+          defaultSetsReps: '3-4 set x 10-12 tekrar',
+          keywords: [exerciseNameOrObject.toLowerCase()]
+        });
+      }
+    } else {
+      setSelectedExerciseForPreview(exerciseNameOrObject);
+    }
+  };
 
   // Calculated values
   const calculations = useMemo(() => {
@@ -247,14 +290,14 @@ export default function BodyProfilePage() {
         activityLevel,
         measurements,
       });
-      toast.success('Beden profiliniz kaydedildi!');
+      toast.success(t('bodyProfile.profileSaved') || 'Beden profiliniz kaydedildi!');
     } catch (err: any) {
       console.error('Profile save error:', err);
-      toast.error('Kaydetme sırasında hata oluştu.');
+      toast.error(t('common.genericError') || 'Kaydetme sırasında hata oluştu.');
     } finally {
       setSaving(false);
     }
-  }, [user, gender, age, heightCm, weightKg, targetWeightKg, activityLevel, measurements]);
+  }, [user, gender, age, heightCm, weightKg, targetWeightKg, activityLevel, measurements, t]);
 
   // Handle measurement value change
   const updateMeasurement = useCallback((key: ValidMeasurementKey, value: number) => {
@@ -297,15 +340,32 @@ export default function BodyProfilePage() {
 
   const activeMeta = selectedKey ? MEASUREMENT_LABELS[selectedKey] : null;
 
+  const getActivityLabel = (level: ActivityLevel) => {
+    switch (level) {
+      case 'sedentary':
+        return t('bodyProfile.activitySedentary');
+      case 'light':
+        return t('bodyProfile.activityLight');
+      case 'moderate':
+        return t('bodyProfile.activityModerate');
+      case 'active':
+        return t('bodyProfile.activityVeryActive');
+      case 'very_active':
+        return t('bodyProfile.activityExtraActive');
+      default:
+        return ACTIVITY_LABELS[level] || level;
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28">
       {/* Header Banner */}
       <PageHeaderBanner
-        title="Beden Profili"
-        subtitle="15 bölge mezura ölçümü, metabolizma analizi ve kalori açığı motoru"
+        title={t('bodyProfile.title')}
+        subtitle={t('bodyProfile.subtitle')}
         icon={<FaHeartbeat className="text-rose-500 text-xl" />}
         backTo="/calorie-details"
-        backLabel="Kalori Raporu"
+        backLabel={t('calorieDetails.title') || 'Kalori Raporu'}
         action={
           <button
             onClick={handleSave}
@@ -313,7 +373,7 @@ export default function BodyProfilePage() {
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-amber-400 text-stone-950 font-black text-xs hover:bg-amber-300 transition-all shadow-md shadow-amber-500/20 disabled:opacity-50 cursor-pointer shrink-0"
           >
             <FaSave className={`text-sm ${saving ? 'animate-spin' : ''}`} />
-            {saving ? 'Kaydediliyor...' : 'Tümünü Kaydet'}
+            {saving ? t('bodyProfile.saving') : t('bodyProfile.saveProfile')}
           </button>
         }
       />
@@ -322,8 +382,8 @@ export default function BodyProfilePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-1.5 bg-stone-100 dark:bg-zinc-800/80 p-1.5 rounded-2xl border border-stone-200/50 dark:border-zinc-700/50 w-fit">
           {[
-            { key: 'profile' as ActiveTab, label: 'Beden Profili', icon: <FaMale className="text-xs" /> },
-            { key: 'deficit' as ActiveTab, label: 'Kalori Açığı & Hedef', icon: <FaBullseye className="text-xs" /> },
+            { key: 'profile' as ActiveTab, label: t('bodyProfile.tabProfile'), icon: <FaMale className="text-xs" /> },
+            { key: 'deficit' as ActiveTab, label: t('bodyProfile.tabDeficit'), icon: <FaBullseye className="text-xs" /> },
           ].map(tab => (
             <button
               key={tab.key}
@@ -420,7 +480,7 @@ export default function BodyProfilePage() {
                 }`}
               >
                 <FaMale className="text-lg" />
-                Erkek Modeli
+                {t('bodyProfile.genderMale')}
               </button>
               <button
                 onClick={() => setGender('female')}
@@ -431,7 +491,7 @@ export default function BodyProfilePage() {
                 }`}
               >
                 <FaFemale className="text-lg" />
-                Kadın Modeli
+                {t('bodyProfile.genderFemale')}
               </button>
             </div>
 
@@ -575,20 +635,20 @@ export default function BodyProfilePage() {
                 <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase text-stone-500 dark:text-zinc-400 tracking-wider">
                     <FaInfoCircle className="text-sm text-blue-500" />
-                    Kişisel Beden Bilgileri
+                    {t('bodyProfile.personalInfo')}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <NumberInput label="Yaş" value={age} onChange={setAge} unit="yıl" min={10} max={100} icon={<span>🎂</span>} />
-                    <NumberInput label="Boy" value={heightCm} onChange={setHeightCm} unit="cm" min={100} max={250} icon={<FaRuler className="text-[10px]" />} />
-                    <NumberInput label="Kilo" value={weightKg} onChange={setWeightKg} unit="kg" min={30} max={300} step={0.1} icon={<FaWeight className="text-[10px]" />} />
-                    <NumberInput label="Hedef" value={targetWeightKg} onChange={setTargetWeightKg} unit="kg" min={30} max={250} step={0.1} icon={<FaBullseye className="text-[10px]" />} />
+                    <NumberInput label={t('bodyProfile.age')} value={age} onChange={setAge} unit="yıl" min={10} max={100} icon={<span>🎂</span>} />
+                    <NumberInput label={t('bodyProfile.height')} value={heightCm} onChange={setHeightCm} unit="cm" min={100} max={250} icon={<FaRuler className="text-[10px]" />} />
+                    <NumberInput label={t('bodyProfile.weight')} value={weightKg} onChange={setWeightKg} unit="kg" min={30} max={300} step={0.1} icon={<FaWeight className="text-[10px]" />} />
+                    <NumberInput label={t('bodyProfile.targetWeight')} value={targetWeightKg} onChange={setTargetWeightKg} unit="kg" min={30} max={250} step={0.1} icon={<FaBullseye className="text-[10px]" />} />
                   </div>
 
                   <div className="mt-3">
                     <label className="text-[11px] font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
                       <FaRunning className="text-[10px]" />
-                      Günlük Aktivite Seviyesi
+                      {t('bodyProfile.activityLevel')}
                     </label>
                     <select
                       value={activityLevel}
@@ -597,7 +657,7 @@ export default function BodyProfilePage() {
                     >
                       {(Object.keys(ACTIVITY_LABELS) as ActivityLevel[]).map(level => (
                         <option key={level} value={level}>
-                          {ACTIVITY_LABELS[level]}
+                          {getActivityLabel(level)}
                         </option>
                       ))}
                     </select>
@@ -609,7 +669,7 @@ export default function BodyProfilePage() {
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase text-stone-500 dark:text-zinc-400 tracking-wider">
                       <FaTape className="text-sm text-emerald-500" />
-                      Mezura Ölçümleri (15 Bölge)
+                      {t('bodyProfile.regionalMeasurements')}
                     </div>
                     <button
                       onClick={handleCopyTableTemplate}
@@ -688,9 +748,18 @@ export default function BodyProfilePage() {
                   </p>
                 </div>
 
-                {/* Hızlı Rehber Hapları */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-stone-400 mr-1">Rehberler:</span>
+                {/* Hızlı Rehber Hapları & Katalog Butonu */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setShowExerciseCatalogModal(true)}
+                    className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-black flex items-center gap-1.5 shadow-xs transition-all cursor-pointer hover:scale-[1.02]"
+                  >
+                    <FaPlay className="text-[9px]" />
+                    <span>🎬 Egzersiz Kataloğu &amp; GIF'ler</span>
+                  </button>
+
+                  <span className="text-[11px] font-bold text-stone-400 ml-1 mr-0.5">Rehberler:</span>
                   {(['shoulderCm', 'chestCm', 'waistCm', 'upperArmRightCm', 'lowerAbdomenCm', 'thighRightCm', 'calfRightCm'] as ValidMeasurementKey[]).map(key => (
                     <button
                       key={key}
@@ -823,6 +892,33 @@ export default function BodyProfilePage() {
                           <div className="mt-1.5 p-1.5 bg-rose-50 dark:bg-rose-900/20 rounded-lg text-rose-800 dark:text-rose-300 font-bold text-[11px]">
                             💡 Reçete: {area.priorityAction}
                           </div>
+
+                          {/* Dinamik Egzersiz Çipleri */}
+                          {(() => {
+                            const exercises = extractExercisesFromText(area.priorityAction);
+                            if (exercises.length === 0) return null;
+                            return (
+                              <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] font-black uppercase text-rose-700/80 dark:text-rose-400">
+                                  🎬 Hareketi Gör:
+                                </span>
+                                {exercises.map(ex => (
+                                  <button
+                                    key={ex.id}
+                                    type="button"
+                                    onClick={() => setSelectedExerciseForPreview(ex)}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 hover:bg-amber-400 hover:text-stone-950 dark:hover:bg-amber-400 dark:hover:text-stone-950 text-[11px] font-bold text-stone-700 dark:text-zinc-200 border border-stone-200/80 dark:border-zinc-700 shadow-2xs transition-all cursor-pointer hover:scale-[1.02]"
+                                  >
+                                    <span className="text-amber-500">👁️</span>
+                                    <span>{ex.name.split('(')[0].trim()}</span>
+                                    <span className="text-[9px] px-1 py-0.2 rounded-xs bg-amber-100 dark:bg-zinc-700 text-amber-800 dark:text-amber-300 font-black">
+                                      GIF
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
@@ -851,6 +947,33 @@ export default function BodyProfilePage() {
                           <div className="mt-1.5 p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
                             ⚡ Reçete: {area.priorityAction}
                           </div>
+
+                          {/* Dinamik Egzersiz Çipleri */}
+                          {(() => {
+                            const exercises = extractExercisesFromText(area.priorityAction);
+                            if (exercises.length === 0) return null;
+                            return (
+                              <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] font-black uppercase text-emerald-700/80 dark:text-emerald-400">
+                                  🎬 Hareketi Gör:
+                                </span>
+                                {exercises.map(ex => (
+                                  <button
+                                    key={ex.id}
+                                    type="button"
+                                    onClick={() => setSelectedExerciseForPreview(ex)}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 hover:bg-amber-400 hover:text-stone-950 dark:hover:bg-amber-400 dark:hover:text-stone-950 text-[11px] font-bold text-stone-700 dark:text-zinc-200 border border-stone-200/80 dark:border-zinc-700 shadow-2xs transition-all cursor-pointer hover:scale-[1.02]"
+                                  >
+                                    <span className="text-amber-500">👁️</span>
+                                    <span>{ex.name.split('(')[0].trim()}</span>
+                                    <span className="text-[9px] px-1 py-0.2 rounded-xs bg-amber-100 dark:bg-zinc-700 text-amber-800 dark:text-amber-300 font-black">
+                                      GIF
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
@@ -1132,7 +1255,7 @@ export default function BodyProfilePage() {
                 className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-400 text-stone-950 font-bold text-sm hover:bg-amber-300 transition-all shadow-md shadow-amber-500/20"
               >
                 <FaUtensils className="text-sm" />
-                emuAI ile Yemek Analiz Et
+                {t('calorieDetails.analyzeWithAi') || 'B12 AI ile Yemek Analiz Et'}
               </Link>
               <Link
                 to="/calorie-details"
@@ -1151,7 +1274,7 @@ export default function BodyProfilePage() {
         {guideModalKey && REGIONAL_GUIDES[guideModalKey] && (() => {
           const guide = REGIONAL_GUIDES[guideModalKey];
           return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1204,11 +1327,22 @@ export default function BodyProfilePage() {
                       <div className="space-y-1.5">
                         {guide.howToGrow.primaryExercises.map((ex, i) => (
                           <div key={i} className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200/50 dark:border-zinc-800">
-                            <div className="flex items-center justify-between font-bold text-stone-900 dark:text-white">
-                              <span>{ex.name}</span>
-                              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 rounded-md">
-                                {ex.setsReps}
-                              </span>
+                            <div className="flex items-center justify-between gap-2 font-bold text-stone-900 dark:text-white flex-wrap">
+                              <span className="text-xs">{ex.name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 rounded-md">
+                                  {ex.setsReps}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenExercisePreview(ex.name)}
+                                  className="px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-400 text-amber-900 hover:text-stone-950 dark:bg-amber-950/50 dark:hover:bg-amber-400 dark:text-amber-300 dark:hover:text-stone-950 text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+                                  title="Egzersiz GIF ve Form Rehberini Aç"
+                                >
+                                  <span>🎬</span>
+                                  <span>Hareketi Gör (GIF)</span>
+                                </button>
+                              </div>
                             </div>
                             <p className="text-[11px] text-stone-500 dark:text-zinc-400 mt-1">💡 {ex.tip}</p>
                           </div>
@@ -1250,8 +1384,19 @@ export default function BodyProfilePage() {
                       <div className="space-y-1.5">
                         {guide.howToReduce.tighteningExercises.map((ex, i) => (
                           <div key={i} className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-rose-200/50 dark:border-zinc-800">
-                            <span className="font-bold text-stone-900 dark:text-white block">{ex.name}</span>
-                            <span className="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5 block">{ex.focus}</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-bold text-stone-900 dark:text-white text-xs">{ex.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenExercisePreview(ex.name)}
+                                className="px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-500 hover:text-white dark:bg-rose-950/50 dark:hover:bg-rose-500 text-rose-900 dark:text-rose-300 text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+                                title="Egzersiz GIF ve Form Rehberini Aç"
+                              >
+                                <span>🎬</span>
+                                <span>Hareketi Gör (GIF)</span>
+                              </button>
+                            </div>
+                            <span className="text-[11px] text-stone-500 dark:text-zinc-400 mt-1 block">{ex.focus}</span>
                           </div>
                         ))}
                       </div>
@@ -1298,7 +1443,7 @@ export default function BodyProfilePage() {
       {/* ── MODAL 2: SPOR BİLİMİ & ATLETİK İDEAL KİLO ANALİZİ ── */}
       <AnimatePresence>
         {showWeightInfoModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1393,6 +1538,23 @@ export default function BodyProfilePage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ── MODAL 3: SPOR HAREKETLERİ GIF & VİDEO ÖNİZLEME MODALI ── */}
+      <ExercisePreviewModal
+        isOpen={Boolean(selectedExerciseForPreview)}
+        exercise={selectedExerciseForPreview}
+        onClose={() => setSelectedExerciseForPreview(null)}
+      />
+
+      {/* ── MODAL 4: TÜM EGZERSİZLER KATALOĞU & HAREKET ARAMA ── */}
+      <ExerciseCatalogModal
+        isOpen={showExerciseCatalogModal}
+        onClose={() => setShowExerciseCatalogModal(false)}
+        onSelectExercise={ex => {
+          setShowExerciseCatalogModal(false);
+          setSelectedExerciseForPreview(ex);
+        }}
+      />
     </div>
   );
 }

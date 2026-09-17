@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -23,7 +23,7 @@ import SportTrackingModal from '../components/planner/SportTrackingModal';
 import TeamFixtureModal from '../components/planner/TeamFixtureModal';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
-import { getUpcomingFootballMatches } from '../services/footballFixtureService';
+import { getUpcomingFootballMatches, syncUserSelectedTeamsFromFirestore } from '../services/footballFixtureService';
 import type { PlannerMeeting } from '../../backend/types/planner';
 import type { CalendarAlert } from '../../backend/types/planner';
 import { showMarqueeToast } from '../components/MarqueeToast';
@@ -32,17 +32,36 @@ export default function PlannerPage() {
   const { user } = useAuth();
   const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [meetings, setMeetings] = useState<PlannerMeeting[]>(() => {
+
+  // Firestore'daki kullanıcı etkinlikleri (toplantılar, görevler, jira, alışkanlıklar)
+  const [dbMeetings, setDbMeetings] = useState<PlannerMeeting[]>(() => {
     try {
       const cached = localStorage.getItem(`planner_meetings_${user?.uid}`);
       if (cached) {
         const parsed: PlannerMeeting[] = JSON.parse(cached);
-        // Eski sezon veya eski match tiplerini cache'ten temizle
         return parsed.filter(m => m.itemType !== 'match');
       }
       return [];
     } catch { return []; }
   });
+
+  // Seçili takımların fikstür maçları (bağımsız state - Firestore işlemlerinden asla etkilenmez)
+  const [footballMatches, setFootballMatches] = useState<PlannerMeeting[]>(() => {
+    try {
+      const cached = localStorage.getItem('b12_football_fixtures_cache_v21');
+      if (cached) {
+        const parsed: PlannerMeeting[] = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      return [];
+    } catch { return []; }
+  });
+
+  // Takvim ve ajanda bileşenlerine iletilen birleşik liste
+  const meetings = useMemo(() => {
+    return [...dbMeetings, ...footballMatches];
+  }, [dbMeetings, footballMatches]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
@@ -81,31 +100,30 @@ export default function PlannerPage() {
     if (!user) return;
 
     // Yükleme animasyonunu sadece veri yoksa veya manuel yenilemede göster
-    if (meetings.length === 0 || isManualRefresh) {
+    if ((dbMeetings.length === 0 && footballMatches.length === 0) || isManualRefresh) {
       setIsLoading(true);
     }
 
     try {
       // 1. Verileri PARALEL çek (Hız kazandırır)
-      const [dbMeetings, footballMatches, alerts] = await Promise.all([
+      const [fetchedDbMeetings, fetchedMatches, alerts] = await Promise.all([
         getUserMeetings(user.uid),
         getUpcomingFootballMatches(isManualRefresh),
         getUserCalendarAlerts(user.uid)
       ]);
 
       // DB'de eski kalan match kayıtları varsa temizle, tek kaynak footballMatches olsun
-      const cleanedDbMeetings = dbMeetings.filter(m => m.itemType !== 'match');
-      const allMeetings = [...cleanedDbMeetings, ...footballMatches];
-      setMeetings(allMeetings);
+      const cleanedDbMeetings = fetchedDbMeetings.filter(m => m.itemType !== 'match');
+      setDbMeetings(cleanedDbMeetings);
+      setFootballMatches(fetchedMatches);
       setCalendarAlerts(alerts);
 
       // Cache'e yaz (Anında yükleme için)
-      localStorage.setItem(`planner_meetings_${user.uid}`, JSON.stringify(allMeetings));
+      localStorage.setItem(`planner_meetings_${user.uid}`, JSON.stringify(cleanedDbMeetings));
       setIsLoading(false);
 
-      // 2. Senkronizasyon ve dünden kalanları taşıma (ARKA PLANDA çalıştır)
-      // Bu işlemler UI'ı dondurmadan arka planda sessizce gerçekleşir.
-      backgroundSync(user.uid, dbMeetings);
+      // 2. Senkronizasyon ve dünden kalanları taşıma (ARKA PLANDA çalıştır - yalnızca DB etkinlikleri)
+      backgroundSync(user.uid, cleanedDbMeetings);
 
     } catch (err) {
       console.error("Planner load error:", err);
@@ -122,12 +140,11 @@ export default function PlannerPage() {
       const hasUpdates = await autoPostponeOldTasks(currentDbMeetings);
 
       if (hasUpdates) {
-        // Eğer veritabanında bir değişiklik olduysa (ertelemeler vs) sadece DB kısmını güncelle
+        // Eğer veritabanında bir değişiklik olduysa sadece DB kısmını güncelle
         const updatedDbMeetings = await getUserMeetings(uid);
-        const gsMatches = meetings.filter(m => m.itemType === 'match');
-        const finalMeetings = [...updatedDbMeetings, ...gsMatches];
-        setMeetings(finalMeetings);
-        localStorage.setItem(`planner_meetings_${uid}`, JSON.stringify(finalMeetings));
+        const cleaned = updatedDbMeetings.filter(m => m.itemType !== 'match');
+        setDbMeetings(cleaned);
+        localStorage.setItem(`planner_meetings_${uid}`, JSON.stringify(cleaned));
       }
     } catch (err) {
       console.warn("Background sync error:", err);
@@ -136,9 +153,10 @@ export default function PlannerPage() {
 
   useEffect(() => {
     if (user) {
-      // Bileşen ilk yüklendiğinde cache'tekileri gösteriyoruz zaten useState'te.
-      // Şimdi gerçek veriyi çekelim.
-      loadData();
+      // Buluttaki seçili takımları eşitle ve takvim verilerini yükle
+      syncUserSelectedTeamsFromFirestore(user.uid).finally(() => {
+        loadData();
+      });
     }
   }, [user]);
 
@@ -158,6 +176,7 @@ export default function PlannerPage() {
         const prevDate = task.date;
         return updateMeeting(task.id!, {
           date: todayStr,
+          dueDate: task.itemType === 'jira' ? todayStr : task.dueDate,
           notes: task.notes
             ? `${task.notes}\n[Sistem: ${prevDate} tarihinden ertelendi]`
             : `[Sistem: ${prevDate} tarihinden ertelendi]`
@@ -187,7 +206,7 @@ export default function PlannerPage() {
   const executeSingleDelete = async (item: PlannerMeeting) => {
     try {
       await deleteMeeting(item.id!);
-      setMeetings(prev => prev.filter(m => m.id !== item.id));
+      setDbMeetings(prev => prev.filter(m => m.id !== item.id));
       showMarqueeToast({ message: 'Öğe silindi', type: 'deleted' });
     } catch (err) {
       console.error(err);
@@ -197,7 +216,7 @@ export default function PlannerPage() {
   const executeSeriesDelete = async (item: PlannerMeeting) => {
     try {
       await deleteRecurringSeries(user!.uid, item.recurringGroupId!);
-      setMeetings(prev => prev.filter(m => m.recurringGroupId !== item.recurringGroupId));
+      setDbMeetings(prev => prev.filter(m => m.recurringGroupId !== item.recurringGroupId));
       showMarqueeToast({ message: 'Tüm seri silindi', type: 'deleted' });
     } catch (err) {
       console.error(err);
@@ -212,7 +231,7 @@ export default function PlannerPage() {
   const handleToggleTodo = async (id: string, currentStatus: boolean) => {
     try {
       await toggleTodoStatus(id, !currentStatus);
-      setMeetings(prev => prev.map(m => m.id === id ? { ...m, isCompleted: !currentStatus } : m));
+      setDbMeetings(prev => prev.map(m => m.id === id ? { ...m, isCompleted: !currentStatus } : m));
     } catch (err) {
       console.error(err);
     }
@@ -225,7 +244,7 @@ export default function PlannerPage() {
         // Eğer durum "done" ise isCompleted'ı da true yapalım, aksi halde false
         isCompleted: newStatus === 'done'
       });
-      setMeetings(prev => prev.map(m => m.id === id ? {
+      setDbMeetings(prev => prev.map(m => m.id === id ? {
         ...m,
         status: newStatus,
         isCompleted: newStatus === 'done'

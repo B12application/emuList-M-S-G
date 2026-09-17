@@ -429,7 +429,7 @@ export default function ProfilePage() {
                 )}
 
                 {/* STATS ROW: Full Width Horizontal */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 w-full mx-auto">
                     {[
                         { title: t('home.movieCount'), count: stats.movieCount, icon: <FaFilm />, color: 'text-blue-500', from: 'from-blue-500/10', to: 'to-blue-500/5', border: 'hover:border-blue-500/50' },
                         { title: t('home.seriesCount'), count: stats.seriesCount, icon: <FaTv />, color: 'text-emerald-500', from: 'from-emerald-500/10', to: 'to-emerald-500/5', border: 'hover:border-emerald-500/50' },
@@ -678,7 +678,7 @@ export default function ProfilePage() {
                         exit={{ y: -100, opacity: 0 }}
                         className="fixed top-20 left-0 right-0 z-50"
                     >
-                        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] px-4 sm:px-6 lg:px-10 2xl:px-16 mx-auto">
                             <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200 dark:border-zinc-700 rounded-2xl shadow-2xl">
                                 <div className="px-6 py-4">
                                     <div className="flex items-center justify-between gap-4">

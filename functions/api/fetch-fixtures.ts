@@ -1,4 +1,5 @@
-import { Handler } from '@netlify/functions';
+// functions/api/fetch-fixtures.ts
+// Cloudflare Pages Function: Canlı Futbol Fikstür & Skor Senkronizasyon API
 
 const TEAM_SLUGS: Record<string, string> = {
   galatasaray: 'galatasaray',
@@ -107,9 +108,10 @@ function parseIcs(teamId: string, icsText: string): ScrapedMatch[] {
   return matches;
 }
 
-export const handler: Handler = async (event, _context) => {
+export async function onRequest(context: any): Promise<Response> {
   try {
-    const requestedTeamsParam = event.queryStringParameters?.teams || event.queryStringParameters?.team;
+    const url = new URL(context.request.url);
+    const requestedTeamsParam = url.searchParams.get('teams') || url.searchParams.get('team');
     let targetTeamIds: string[] = ['galatasaray'];
 
     if (requestedTeamsParam) {
@@ -122,8 +124,8 @@ export const handler: Handler = async (event, _context) => {
     const fetchPromises = targetTeamIds.slice(0, 6).map(async (teamId) => {
       const slug = TEAM_SLUGS[teamId] || teamId;
       try {
-        const url = `https://ics.fixtur.es/v2/${slug}.ics`;
-        const res = await fetch(url, {
+        const icsUrl = `https://ics.fixtur.es/v2/${slug}.ics`;
+        const res = await fetch(icsUrl, {
           headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
         });
         if (res.ok) {
@@ -138,29 +140,29 @@ export const handler: Handler = async (event, _context) => {
 
     await Promise.all(fetchPromises);
 
-    return {
-      statusCode: 200,
+    return new Response(JSON.stringify({
+      success: true,
+      count: scrapedMatches.length,
+      scrapedMatches
+    }), {
+      status: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=300'
-      },
-      body: JSON.stringify({
-        success: true,
-        count: scrapedMatches.length,
-        scrapedMatches,
-        lastUpdated: new Date().toISOString()
-      }),
-    };
-  } catch (error: any) {
-    return {
-      statusCode: 500,
+      }
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: err.message,
+      scrapedMatches: []
+    }), {
+      status: 500,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'no-cache'
-      },
-      body: JSON.stringify({ success: false, error: error.message }),
-    };
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
   }
-};
+}

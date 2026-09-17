@@ -1,38 +1,53 @@
 // src/frontend/pages/AdminPage.tsx
 // Admin paneli sayfası - Yorum, Kullanıcı ve Giriş Hareketleri Yönetimi
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-    FaShieldAlt, FaTrash, FaComments, FaSpinner, FaUser, FaClock,
+    FaShieldAlt, FaTrash, FaComments, FaSpinner, FaUser,
     FaExclamationTriangle, FaUsers, FaEdit, FaTimes, FaCheck, FaSearch,
     FaEnvelope, FaMapMarkerAlt, FaCrown, FaArrowRight, FaUserShield,
-    FaCalendar, FaVenusMars, FaQuoteRight, FaIdBadge, FaSignInAlt,
-    FaMobileAlt, FaDesktop, FaTabletAlt, FaGlobe, FaLaptop, FaToggleOn, FaToggleOff
+    FaCalendar, FaVenusMars, FaSignInAlt,
+    FaMobileAlt, FaDesktop, FaTabletAlt, FaLaptop, FaToggleOn, FaToggleOff,
+    FaChevronDown, FaChevronUp
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import LoadMoreButton from '../components/ui/LoadMoreButton';
 import { isAdmin } from '../../backend/config/adminConfig';
 import { getAllComments, deleteCommentAsAdmin, getAllUsers, updateUserAsAdmin, deleteUserAsAdmin } from '../../backend/services/adminService';
 import type { CommentWithActivity, AdminUser } from '../../backend/services/adminService';
 import { getLoginLogs } from '../../backend/services/loginLogService';
 import type { LoginLog } from '../../backend/services/loginLogService';
 import { setFeatureAccess, getAllFeatureAccess, ALL_FEATURES, FEATURE_LABELS } from '../services/featureAccessService';
-import type { FeatureKey, FeatureAccessMap } from '../services/featureAccessService';
+import type { FeatureKey } from '../services/featureAccessService';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type TabType = 'users' | 'comments' | 'logins' | 'features';
+type UserFilterType = 'all' | 'admins' | 'male' | 'female' | 'active';
+
+const PAGE_SIZE_USERS = 10;
+const PAGE_SIZE_LOGS = 15;
+const PAGE_SIZE_COMMENTS = 15;
+const PAGE_SIZE_FEATURES = 10;
 
 export default function AdminPage() {
     const { user } = useAuth();
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState<TabType>('users');
+    const [userFilter, setUserFilter] = useState<UserFilterType>('all');
 
     // Comments state
     const [comments, setComments] = useState<CommentWithActivity[]>([]);
     const [commentsLoading, setCommentsLoading] = useState(false);
     const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+    const [commentsSearchQuery, setCommentsSearchQuery] = useState('');
+    const [visibleCommentsCount, setVisibleCommentsCount] = useState(PAGE_SIZE_COMMENTS);
 
     // Users state
     const [users, setUsers] = useState<AdminUser[]>([]);
@@ -42,24 +57,36 @@ export default function AdminPage() {
     const [editForm, setEditForm] = useState({ displayName: '', gender: '' as 'male' | 'female' | '', bio: '', location: '' });
     const [savingUser, setSavingUser] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [visibleUsersCount, setVisibleUsersCount] = useState(PAGE_SIZE_USERS);
+
+    // Confirm Dialog state
+    const [confirmDelete, setConfirmDelete] = useState<{
+        type: 'user' | 'comment';
+        id: string;
+        name?: string;
+    } | null>(null);
 
     // Login logs state
     const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
     const [loginLogsLoading, setLoginLogsLoading] = useState(false);
+    const [logsSearchQuery, setLogsSearchQuery] = useState('');
+    const [visibleLogsCount, setVisibleLogsCount] = useState(PAGE_SIZE_LOGS);
 
     // Feature access state
     const [featureAccessMap, setFeatureAccessMap] = useState<Record<string, Record<FeatureKey, boolean>>>({});
     const [featureAccessLoading, setFeatureAccessLoading] = useState(false);
     const [togglingFeature, setTogglingFeature] = useState<string | null>(null);
     const [featureSearchQuery, setFeatureSearchQuery] = useState('');
+    const [expandedFeatureUserId, setExpandedFeatureUserId] = useState<string | null>(null);
+    const [visibleFeaturesCount, setVisibleFeaturesCount] = useState(PAGE_SIZE_FEATURES);
 
     // Admin kontrolü
     useEffect(() => {
         if (user && !isAdmin(user.uid)) {
-            toast.error('Bu sayfaya erişim yetkiniz yok!');
+            toast.error(t('admin.accessDenied') || 'Bu sayfaya erişim yetkiniz yok!');
             navigate('/');
         }
-    }, [user, navigate]);
+    }, [user, navigate, t]);
 
     // Kullanıcıları yükle
     useEffect(() => {
@@ -80,6 +107,23 @@ export default function AdminPage() {
 
         fetchUsers();
     }, [user]);
+
+    // Feature access data loader
+    const loadFeatureAccessData = async () => {
+        if (!user) return;
+        setFeatureAccessLoading(true);
+        try {
+            const map: Record<string, Record<FeatureKey, boolean>> = {};
+            for (const u of users) {
+                map[u.id] = await getAllFeatureAccess(u.id);
+            }
+            setFeatureAccessMap(map);
+        } catch (error) {
+            console.error('Feature access yüklenemedi:', error);
+        } finally {
+            setFeatureAccessLoading(false);
+        }
+    };
 
     // Yorumları veya Giriş loglarını sekme değiştikçe yükle
     useEffect(() => {
@@ -107,34 +151,32 @@ export default function AdminPage() {
                 .finally(() => setLoginLogsLoading(false));
         }
 
-        if (activeTab === 'features' && Object.keys(featureAccessMap).length === 0) {
+        if (activeTab === 'features' && Object.keys(featureAccessMap).length === 0 && users.length > 0) {
             loadFeatureAccessData();
         }
-    }, [user, activeTab, comments.length, loginLogs.length]);
+    }, [user, activeTab, comments.length, loginLogs.length, users.length]);
 
-    const handleDeleteComment = async (commentId: string) => {
-        if (!user || !window.confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
-
+    const executeDeleteComment = async (commentId: string) => {
+        if (!user) return;
         setDeletingCommentId(commentId);
         try {
             const success = await deleteCommentAsAdmin(user.uid, commentId);
             if (success) {
                 setComments(prev => prev.filter(c => c.id !== commentId));
-                toast.success('Yorum silindi');
+                toast.success(t('admin.commentDeleted') || 'Yorum silindi');
             } else {
-                toast.error('Yorum silinemedi');
+                toast.error(t('admin.commentDeleteError') || 'Yorum silinemedi');
             }
         } catch (error) {
             toast.error('Bir hata oluştu');
         } finally {
             setDeletingCommentId(null);
+            setConfirmDelete(null);
         }
     };
 
-    const handleDeleteUser = async (userId: string, userName: string) => {
+    const executeDeleteUser = async (userId: string) => {
         if (!user) return;
-        if (!window.confirm(`"${userName}" kullanıcısını silmek istediğinize emin misiniz? Bu işlem geri alınamaz!`)) return;
-
         setDeletingUserId(userId);
         try {
             const success = await deleteUserAsAdmin(user.uid, userId);
@@ -148,6 +190,7 @@ export default function AdminPage() {
             toast.error(error.message || 'Bir hata oluştu');
         } finally {
             setDeletingUserId(null);
+            setConfirmDelete(null);
         }
     };
 
@@ -178,10 +221,10 @@ export default function AdminPage() {
                         ? { ...u, ...editForm }
                         : u
                 ));
-                toast.success('Kullanıcı güncellendi');
+                toast.success(t('admin.userUpdated') || 'Kullanıcı güncellendi');
                 setEditingUser(null);
             } else {
-                toast.error('Güncellenemedi');
+                toast.error(t('admin.userUpdateError') || 'Güncellenemedi');
             }
         } catch (error) {
             toast.error('Bir hata oluştu');
@@ -191,9 +234,9 @@ export default function AdminPage() {
     };
 
     const formatDate = (timestamp: any) => {
-        if (!timestamp) return 'Bilinmiyor';
+        if (!timestamp) return '—';
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        return new Intl.DateTimeFormat('tr-TR', {
+        return new Intl.DateTimeFormat(language === 'tr' ? 'tr-TR' : 'en-US', {
             day: 'numeric',
             month: 'short',
             year: 'numeric',
@@ -208,31 +251,64 @@ export default function AdminPage() {
         return <FaDesktop className="text-blue-500" />;
     };
 
-    const filteredUsers = users.filter(u =>
-        u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filtered Users with Pills + Search
+    const filteredUsers = useMemo(() => {
+        return users.filter(u => {
+            // Text search
+            const q = searchQuery.toLowerCase().trim();
+            const matchesText = !q || (
+                (u.displayName || '').toLowerCase().includes(q) ||
+                (u.email || '').toLowerCase().includes(q)
+            );
+            if (!matchesText) return false;
 
-    // Feature access helpers
-    const loadFeatureAccessData = async () => {
-        if (!user) return;
-        setFeatureAccessLoading(true);
-        try {
-            const map: Record<string, Record<FeatureKey, boolean>> = {};
-            for (const u of users) {
-                map[u.id] = await getAllFeatureAccess(u.id);
-            }
-            setFeatureAccessMap(map);
-        } catch (error) {
-            console.error('Feature access yüklenemedi:', error);
-        } finally {
-            setFeatureAccessLoading(false);
-        }
-    };
+            // Pill filter
+            if (userFilter === 'admins') return isAdmin(u.id);
+            if (userFilter === 'male') return u.gender === 'male';
+            if (userFilter === 'female') return u.gender === 'female';
+            if (userFilter === 'active') return !!u.lastLoginAt;
+            return true;
+        });
+    }, [users, searchQuery, userFilter]);
 
+    const visibleUsers = useMemo(() => {
+        return filteredUsers.slice(0, visibleUsersCount);
+    }, [filteredUsers, visibleUsersCount]);
+
+    // Filtered Login Logs
+    const filteredLoginLogs = useMemo(() => {
+        const q = logsSearchQuery.toLowerCase().trim();
+        if (!q) return loginLogs;
+        return loginLogs.filter(l =>
+            (l.displayName || '').toLowerCase().includes(q) ||
+            (l.email || '').toLowerCase().includes(q) ||
+            (l.browser || '').toLowerCase().includes(q) ||
+            (l.os || '').toLowerCase().includes(q)
+        );
+    }, [loginLogs, logsSearchQuery]);
+
+    const visibleLoginLogs = useMemo(() => {
+        return filteredLoginLogs.slice(0, visibleLogsCount);
+    }, [filteredLoginLogs, visibleLogsCount]);
+
+    // Filtered Comments
+    const filteredComments = useMemo(() => {
+        const q = commentsSearchQuery.toLowerCase().trim();
+        if (!q) return comments;
+        return comments.filter(c =>
+            (c.text || '').toLowerCase().includes(q) ||
+            (c.userName || '').toLowerCase().includes(q)
+        );
+    }, [comments, commentsSearchQuery]);
+
+    const visibleComments = useMemo(() => {
+        return filteredComments.slice(0, visibleCommentsCount);
+    }, [filteredComments, visibleCommentsCount]);
+
+    // Feature Access Helpers
     const handleToggleFeature = async (userId: string, feature: FeatureKey) => {
         if (!user) return;
-        const current = featureAccessMap[userId]?.[feature] ?? false;
+        const current = featureAccessMap[userId]?.[feature] ?? (feature !== 'calorieAi');
         const newVal = !current;
         setTogglingFeature(`${userId}-${feature}`);
         try {
@@ -242,8 +318,8 @@ export default function AdminPage() {
                     ...prev,
                     [userId]: { ...prev[userId], [feature]: newVal }
                 }));
-                const label = FEATURE_LABELS[feature]?.tr || feature;
-                toast.success(`${label}: ${newVal ? 'Açıldı ✅' : 'Kapatıldı ❌'}`);
+                const label = language === 'tr' ? FEATURE_LABELS[feature]?.tr : FEATURE_LABELS[feature]?.en;
+                toast.success(`${label || feature}: ${newVal ? '✓' : '✕'}`);
             }
         } catch (error) {
             toast.error('Güncelleme başarısız');
@@ -252,10 +328,18 @@ export default function AdminPage() {
         }
     };
 
-    const featureFilteredUsers = users.filter(u =>
-        u.displayName?.toLowerCase().includes(featureSearchQuery.toLowerCase()) ||
-        u.email?.toLowerCase().includes(featureSearchQuery.toLowerCase())
-    );
+    const featureFilteredUsers = useMemo(() => {
+        const q = featureSearchQuery.toLowerCase().trim();
+        if (!q) return users;
+        return users.filter(u =>
+            (u.displayName || '').toLowerCase().includes(q) ||
+            (u.email || '').toLowerCase().includes(q)
+        );
+    }, [users, featureSearchQuery]);
+
+    const visibleFeatureUsers = useMemo(() => {
+        return featureFilteredUsers.slice(0, visibleFeaturesCount);
+    }, [featureFilteredUsers, visibleFeaturesCount]);
 
     if (!user || !isAdmin(user.uid)) {
         return (
@@ -264,14 +348,18 @@ export default function AdminPage() {
                     <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-5">
                         <FaExclamationTriangle className="text-4xl text-rose-500" />
                     </div>
-                    <h1 className="text-2xl font-black text-stone-900 dark:text-white mb-2">Erişim Reddedildi</h1>
-                    <p className="text-stone-500 dark:text-zinc-400 text-sm mb-6">Bu sayfaya yalnızca sistem yöneticisi erişebilir.</p>
+                    <h1 className="text-2xl font-black text-stone-900 dark:text-white mb-2">
+                        {t('calorieChat.accessDenied') || 'Erişim Reddedildi'}
+                    </h1>
+                    <p className="text-stone-500 dark:text-zinc-400 text-sm mb-6">
+                        {t('calorieChat.accessDeniedDesc') || 'Bu sayfaya yalnızca sistem yöneticisi erişebilir.'}
+                    </p>
                     <Link
                         to="/"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-amber-400 text-stone-950 font-bold rounded-2xl shadow-md hover:bg-amber-300 transition-all text-sm"
                     >
-                        <FaArrowRight className="rotate-180" />
-                        Ana Sayfaya Dön
+                        <FaArrowRight className="rotate-180 text-xs" />
+                        <span>{t('admin.backToSite') || 'Siteye Dön'}</span>
                     </Link>
                 </div>
             </div>
@@ -279,431 +367,515 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen pb-16">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-stone-900 via-zinc-900 to-black text-white border-b border-stone-800/80 mb-8 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full blur-3xl opacity-20 bg-amber-400 pointer-events-none" />
-                <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-400/20 border border-amber-400/30 text-amber-300 mb-2">
-                            <FaCrown className="text-xs" />
-                            <span>Yönetici Paneli</span>
-                        </div>
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                            Sistem Yönetimi & Güvenlik
-                        </h1>
-                        <p className="text-stone-400 text-xs sm:text-sm mt-1 flex items-center gap-2">
-                            <FaUserShield className="text-amber-400" />
-                            Kullanıcılar, yorumlar ve son giriş aktiviteleri
-                        </p>
-                    </div>
-                    <Link
-                        to="/"
-                        className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-xl transition-all text-xs font-bold border border-white/15 shrink-0"
-                    >
-                        <FaArrowRight className="rotate-180 text-xs" />
-                        <span>Siteye Dön</span>
-                    </Link>
-                </div>
-            </div>
+        <div className="min-h-screen pb-20">
+            {/* Header Banner (Rule #15 Standard) */}
+            <PageHeaderBanner
+                title={t('admin.title') || 'Sistem Yönetim Paneli'}
+                subtitle={t('admin.subtitle') || 'Kullanıcı yetkileri, güvenlik logları ve yorum denetim merkezi'}
+                icon={<FaShieldAlt className="text-amber-500 text-xl" />}
+                backTo="/"
+                backLabel={t('admin.backToSite') || 'Siteye Dön'}
+            />
 
-            <div className="w-full mx-auto px-1 sm:px-2">
-                {/* Stats */}
+            {/* Fluid Container (Rule #16 Standard) */}
+            <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Executive Stats Bar */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4"
+                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4"
                     >
-                        <div className="p-3 bg-blue-500/15 text-blue-600 dark:text-blue-400 rounded-2xl">
-                            <FaUsers className="text-2xl" />
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl shrink-0">
+                            <FaUsers />
                         </div>
                         <div>
                             <div className="text-2xl font-black text-stone-900 dark:text-white">{users.length}</div>
-                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">Kayıtlı Kullanıcı</div>
+                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">
+                                {t('admin.statsUsers') || 'Kayıtlı Kullanıcı'}
+                            </div>
                         </div>
                     </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.08 }}
-                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4"
+                        transition={{ delay: 0.06 }}
+                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4"
                     >
-                        <div className="p-3 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-2xl">
-                            <FaSignInAlt className="text-2xl" />
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+                            <FaSignInAlt />
                         </div>
                         <div>
                             <div className="text-2xl font-black text-stone-900 dark:text-white">
                                 {users.filter(u => u.lastLoginAt).length || users.length}
                             </div>
-                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">Aktif / Giriş Yapan</div>
+                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">
+                                {t('admin.statsActive') || 'Aktif / Giriş Yapan'}
+                            </div>
                         </div>
                     </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.16 }}
-                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4"
+                        transition={{ delay: 0.12 }}
+                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4"
                     >
-                        <div className="p-3 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 rounded-2xl">
-                            <FaComments className="text-2xl" />
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shrink-0">
+                            <FaComments />
                         </div>
                         <div>
                             <div className="text-2xl font-black text-stone-900 dark:text-white">{comments.length}</div>
-                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">Toplam Yorum</div>
+                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">
+                                {t('admin.statsComments') || 'Toplam Yorum'}
+                            </div>
                         </div>
                     </motion.div>
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-2.5 mb-6">
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'users'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25 scale-[1.02]'
                             : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 hover:border-blue-400'
                             }`}
                     >
                         <FaUsers />
-                        Kullanıcılar
+                        <span>{t('admin.tabUsers') || 'Kullanıcılar'}</span>
                         <span className="text-xs opacity-75 ml-1">({filteredUsers.length})</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab('logins')}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'logins'
-                            ? 'bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/25'
+                            ? 'bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/25 scale-[1.02]'
                             : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 hover:border-amber-400'
                             }`}
                     >
                         <FaSignInAlt />
-                        Son Girişler (Güvenlik)
+                        <span>{t('admin.tabLogins') || 'Son Girişler (Güvenlik)'}</span>
                         {loginLogs.length > 0 && <span className="text-xs opacity-75 ml-1">({loginLogs.length})</span>}
                     </button>
 
                     <button
                         onClick={() => setActiveTab('comments')}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'comments'
-                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25 scale-[1.02]'
                             : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 hover:border-indigo-400'
                             }`}
                     >
                         <FaComments />
-                        Yorumlar
+                        <span>{t('admin.tabComments') || 'Yorumlar'}</span>
                         <span className="text-xs opacity-75 ml-1">({comments.length})</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab('features')}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'features'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 scale-[1.02]'
                             : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 hover:border-emerald-400'
                             }`}
                     >
                         <FaToggleOn />
-                        Özellik Yönetimi
+                        <span>{t('admin.tabFeatures') || 'Özellik Yönetimi'}</span>
                     </button>
                 </div>
 
                 {/* Tab Content */}
                 <AnimatePresence mode="wait">
-                    {/* USERS TAB */}
+                    {/* ===================== USERS TAB ===================== */}
                     {activeTab === 'users' && (
                         <motion.div
                             key="users"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -15 }}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
+                            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
                         >
-                            {/* Search */}
-                            <div className="px-5 sm:px-6 py-4 border-b border-stone-200 dark:border-zinc-800">
-                                <div className="relative">
-                                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
+                            {/* Search & Filter Pills Row */}
+                            <div className="p-5 sm:p-6 border-b border-stone-200/80 dark:border-zinc-800 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                                <div className="relative flex-1 max-w-md">
+                                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
                                     <input
                                         type="text"
-                                        placeholder="İsim veya email ile ara..."
+                                        placeholder={t('admin.searchUsersPlaceholder') || 'İsim veya e-posta ile kullanıcı ara...'}
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            setVisibleUsersCount(PAGE_SIZE_USERS);
+                                        }}
+                                        className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 focus:ring-2 focus:ring-blue-500 text-sm font-medium outline-none"
                                     />
+                                </div>
+
+                                {/* Filter Pills */}
+                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 custom-scrollbar">
+                                    {[
+                                        { key: 'all', label: t('admin.filterAll') || 'Tümü' },
+                                        { key: 'admins', label: t('admin.filterAdmins') || 'Yöneticiler' },
+                                        { key: 'male', label: t('admin.filterMale') || 'Erkek' },
+                                        { key: 'female', label: t('admin.filterFemale') || 'Kadın' },
+                                        { key: 'active', label: t('admin.filterActive') || 'Giriş Yapanlar' },
+                                    ].map(pill => (
+                                        <button
+                                            key={pill.key}
+                                            onClick={() => {
+                                                setUserFilter(pill.key as UserFilterType);
+                                                setVisibleUsersCount(PAGE_SIZE_USERS);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                                                userFilter === pill.key
+                                                    ? 'bg-blue-600 text-white shadow-sm'
+                                                    : 'bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                            }`}
+                                        >
+                                            {pill.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
                             {usersLoading ? (
-                                <div className="flex items-center justify-center py-16">
+                                <div className="flex items-center justify-center py-20">
                                     <FaSpinner className="animate-spin text-3xl text-blue-500" />
                                 </div>
                             ) : filteredUsers.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <FaUsers className="text-5xl text-stone-300 dark:text-zinc-700 mx-auto mb-4" />
-                                    <p className="text-stone-500 dark:text-zinc-400 font-medium">Kullanıcı bulunamadı.</p>
+                                <div className="text-center py-20">
+                                    <FaUsers className="text-5xl text-stone-300 dark:text-zinc-700 mx-auto mb-3" />
+                                    <p className="text-stone-500 dark:text-zinc-400 font-medium">
+                                        {t('admin.noUsersFound') || 'Arama kriterlerine uygun kullanıcı bulunamadı.'}
+                                    </p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-stone-100 dark:divide-zinc-800">
-                                    {filteredUsers.map((u, idx) => (
-                                        <motion.div
-                                            key={u.id}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: idx * 0.02 }}
-                                            className="px-5 sm:px-6 py-4 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40 transition group"
-                                        >
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                                <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
-                                                    {/* Avatar */}
-                                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-bold shrink-0 overflow-hidden shadow-md">
-                                                        {u.photoURL ? (
-                                                            <img src={u.photoURL} alt="" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            u.displayName?.charAt(0)?.toUpperCase() || <FaUser size={16} />
-                                                        )}
-                                                    </div>
-
-                                                    {/* Info */}
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                                                            <span className="font-extrabold text-stone-900 dark:text-white truncate">
-                                                                {u.displayName || 'İsimsiz Kullanıcı'}
-                                                            </span>
-                                                            {u.id === user?.uid && (
-                                                                <span className="text-[9px] px-2 py-0.5 bg-amber-400 text-stone-950 rounded-full font-black uppercase tracking-wider">
-                                                                    SEN (YÖNETİCİ)
-                                                                </span>
-                                                            )}
-                                                            {u.gender && (
-                                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 ${u.gender === 'male'
-                                                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                                                                    : 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300'
-                                                                    }`}>
-                                                                    <FaVenusMars size={9} />
-                                                                    {u.gender === 'male' ? 'Erkek' : 'Kadın'}
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 dark:text-zinc-400">
-                                                            <span className="flex items-center gap-1">
-                                                                <FaEnvelope size={10} className="opacity-60" />
-                                                                {u.email}
-                                                            </span>
-                                                            {u.location && (
-                                                                <span className="flex items-center gap-1">
-                                                                    <FaMapMarkerAlt size={10} className="opacity-60" />
-                                                                    {u.location}
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Last login & device metadata */}
-                                                        <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px] text-stone-400 dark:text-zinc-500">
-                                                            {u.lastLoginAt ? (
-                                                                <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                                                                    <FaSignInAlt size={9} />
-                                                                    Son Giriş: {formatDate(u.lastLoginAt)}
-                                                                </span>
+                                <div>
+                                    <div className="divide-y divide-stone-100 dark:divide-zinc-800/80">
+                                        {visibleUsers.map((u, idx) => {
+                                            const userIsAdmin = isAdmin(u.id);
+                                            return (
+                                                <motion.div
+                                                    key={u.id}
+                                                    initial={{ opacity: 0, y: 5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: idx * 0.02 }}
+                                                    className="px-5 sm:px-6 py-4 hover:bg-stone-50/70 dark:hover:bg-zinc-800/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                                                >
+                                                    <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                                                        {/* Avatar */}
+                                                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-base font-bold shrink-0 overflow-hidden shadow-md">
+                                                            {u.photoURL ? (
+                                                                <img src={u.photoURL} alt="" className="w-full h-full object-cover" />
                                                             ) : (
-                                                                u.createdAt && (
+                                                                u.displayName?.charAt(0)?.toUpperCase() || <FaUser size={14} />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Info */}
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                                                                <span className="font-extrabold text-stone-900 dark:text-white text-sm sm:text-base truncate">
+                                                                    {u.displayName || t('admin.anonymousUser') || 'İsimsiz Kullanıcı'}
+                                                                </span>
+                                                                {u.id === user?.uid && (
+                                                                    <span className="text-[9px] px-2 py-0.5 bg-amber-400 text-stone-950 rounded-full font-black uppercase tracking-wider">
+                                                                        {t('admin.youAdminBadge') || 'SEN (YÖNETİCİ)'}
+                                                                    </span>
+                                                                )}
+                                                                {userIsAdmin && u.id !== user?.uid && (
+                                                                    <span className="text-[9px] px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 rounded-full font-black uppercase tracking-wider">
+                                                                        ADMIN
+                                                                    </span>
+                                                                )}
+                                                                {u.gender && (
+                                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 ${
+                                                                        u.gender === 'male'
+                                                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                                                                            : 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300'
+                                                                    }`}>
+                                                                        <FaVenusMars size={9} />
+                                                                        {u.gender === 'male' ? (t('admin.filterMale') || 'Erkek') : (t('admin.filterFemale') || 'Kadın')}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 dark:text-zinc-400">
+                                                                <span className="flex items-center gap-1">
+                                                                    <FaEnvelope size={10} className="opacity-60" />
+                                                                    {u.email}
+                                                                </span>
+                                                                {u.location && (
+                                                                    <span className="flex items-center gap-1">
+                                                                        <FaMapMarkerAlt size={10} className="opacity-60" />
+                                                                        {u.location}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Metadata row */}
+                                                            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px] text-stone-400 dark:text-zinc-500">
+                                                                {u.lastLoginAt ? (
+                                                                    <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                                                                        <FaSignInAlt size={9} />
+                                                                        {t('admin.lastLogin') || 'Son Giriş'}: {formatDate(u.lastLoginAt)}
+                                                                    </span>
+                                                                ) : u.createdAt ? (
                                                                     <span className="inline-flex items-center gap-1">
                                                                         <FaCalendar size={9} />
-                                                                        Kayıt: {formatDate(u.createdAt)}
+                                                                        {t('admin.registration') || 'Kayıt'}: {formatDate(u.createdAt)}
                                                                     </span>
-                                                                )
-                                                            )}
-                                                            {u.lastDevice && (
-                                                                <span className="inline-flex items-center gap-1 bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
-                                                                    <FaLaptop size={9} />
-                                                                    {u.lastDevice}
-                                                                </span>
-                                                            )}
+                                                                ) : null}
+
+                                                                {u.lastDevice && (
+                                                                    <span className="inline-flex items-center gap-1 bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
+                                                                        <FaLaptop size={9} />
+                                                                        {u.lastDevice}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                {/* Actions */}
-                                                <div className="flex items-center gap-2 self-end sm:self-center">
-                                                    <button
-                                                        onClick={() => handleEditUser(u)}
-                                                        className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition cursor-pointer"
-                                                        title="Düzenle"
-                                                    >
-                                                        <FaEdit size={14} />
-                                                    </button>
-                                                    {u.id !== user?.uid && (
+                                                    {/* Actions */}
+                                                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                                                         <button
-                                                            onClick={() => handleDeleteUser(u.id, u.displayName || 'İsimsiz')}
-                                                            disabled={deletingUserId === u.id}
-                                                            className="p-2.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition disabled:opacity-50 cursor-pointer"
-                                                            title="Sil"
+                                                            onClick={() => handleEditUser(u)}
+                                                            className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition cursor-pointer"
+                                                            title={t('admin.editUserTitle') || 'Düzenle'}
                                                         >
-                                                            {deletingUserId === u.id ? (
-                                                                <FaSpinner className="animate-spin" size={14} />
-                                                            ) : (
-                                                                <FaTrash size={14} />
-                                                            )}
+                                                            <FaEdit size={14} />
                                                         </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                                        {u.id !== user?.uid && (
+                                                            <button
+                                                                onClick={() => setConfirmDelete({
+                                                                    type: 'user',
+                                                                    id: u.id,
+                                                                    name: u.displayName || u.email
+                                                                })}
+                                                                disabled={deletingUserId === u.id}
+                                                                className="p-2.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition disabled:opacity-50 cursor-pointer"
+                                                                title={t('actions.delete') || 'Sil'}
+                                                            >
+                                                                {deletingUserId === u.id ? (
+                                                                    <FaSpinner className="animate-spin" size={14} />
+                                                                ) : (
+                                                                    <FaTrash size={14} />
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Pagination (Rule #6 Standard) */}
+                                    {filteredUsers.length > visibleUsersCount && (
+                                        <div className="p-4 text-center border-t border-stone-100 dark:border-zinc-800/80 bg-stone-50/50 dark:bg-zinc-900/50">
+                                            <LoadMoreButton
+                                                onClick={() => setVisibleUsersCount(prev => prev + PAGE_SIZE_USERS)}
+                                                remainingCount={filteredUsers.length - visibleUsersCount}
+                                                label={t('admin.loadMore') || 'Daha Fazla Göster'}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </motion.div>
                     )}
 
-                    {/* LOGIN LOGS TAB (Giriş Hareketleri) */}
+                    {/* ===================== LOGINS TAB ===================== */}
                     {activeTab === 'logins' && (
                         <motion.div
                             key="logins"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -15 }}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
+                            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
                         >
-                            <div className="px-5 sm:px-6 py-4 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
-                                <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-                                    <FaSignInAlt className="text-amber-500" />
-                                    Son Giriş Yapanlar & Cihaz Aktiviteleri
-                                </h2>
-                                <span className="text-xs font-bold text-stone-400">
-                                    En son {loginLogs.length} hareket
-                                </span>
+                            <div className="p-5 sm:px-6 py-4 border-b border-stone-200/80 dark:border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-base sm:text-lg font-black text-stone-900 dark:text-white flex items-center gap-2">
+                                        <FaSignInAlt className="text-amber-500" />
+                                        <span>{t('admin.loginsHeading') || 'Son Giriş Yapanlar & Cihaz Aktiviteleri'}</span>
+                                    </h2>
+                                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                        {t('admin.loginsSub') || 'Kullanıcıların en son sisteme giriş yaptığı cihaz ve zaman kayıtları'}
+                                    </p>
+                                </div>
+
+                                <div className="relative min-w-[240px]">
+                                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                                    <input
+                                        type="text"
+                                        placeholder={t('admin.searchLogsPlaceholder') || 'Cihaz, IP veya isim ile ara...'}
+                                        value={logsSearchQuery}
+                                        onChange={(e) => {
+                                            setLogsSearchQuery(e.target.value);
+                                            setVisibleLogsCount(PAGE_SIZE_LOGS);
+                                        }}
+                                        className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 text-xs outline-none"
+                                    />
+                                </div>
                             </div>
 
                             {loginLogsLoading ? (
-                                <div className="flex items-center justify-center py-16">
+                                <div className="flex items-center justify-center py-20">
                                     <FaSpinner className="animate-spin text-3xl text-amber-500" />
                                 </div>
-                            ) : loginLogs.length === 0 ? (
-                                <div className="text-center py-16 space-y-2">
-                                    <FaSignInAlt className="text-5xl text-stone-300 dark:text-zinc-700 mx-auto mb-2" />
-                                    <p className="text-stone-600 dark:text-zinc-400 font-bold">Henüz kaydedilmiş giriş hareketi yok.</p>
-                                    <p className="text-xs text-stone-400">Kullanıcılar uygulamaya giriş yaptıkça burada listelenecektir.</p>
+                            ) : filteredLoginLogs.length === 0 ? (
+                                <div className="text-center py-20">
+                                    <FaSignInAlt className="text-5xl text-stone-300 dark:text-zinc-700 mx-auto mb-3" />
+                                    <p className="text-stone-500 dark:text-zinc-400 font-medium">
+                                        {t('admin.noLogsFound') || 'Henüz kaydedilmiş giriş hareketi bulunmuyor.'}
+                                    </p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-stone-100 dark:divide-zinc-800">
-                                    {loginLogs.map((log, idx) => (
-                                        <motion.div
-                                            key={log.id || idx}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: idx * 0.02 }}
-                                            className="px-5 sm:px-6 py-4 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40 transition"
-                                        >
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <div className="divide-y divide-stone-100 dark:divide-zinc-800/80">
+                                        {visibleLoginLogs.map((log, idx) => (
+                                            <motion.div
+                                                key={log.id || idx}
+                                                initial={{ opacity: 0, y: 5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.02 }}
+                                                className="px-5 sm:px-6 py-3.5 hover:bg-stone-50/70 dark:hover:bg-zinc-800/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                            >
                                                 <div className="flex items-center gap-3.5 min-w-0">
-                                                    <div className="w-10 h-10 rounded-xl bg-amber-400 text-stone-950 flex items-center justify-center text-base font-black shrink-0 shadow-md">
+                                                    <div className="w-10 h-10 rounded-xl bg-amber-400 text-stone-950 flex items-center justify-center text-sm font-black shrink-0 shadow-md">
                                                         {log.photoURL ? (
                                                             <img src={log.photoURL} alt="" className="w-full h-full object-cover rounded-xl" />
                                                         ) : (
-                                                            log.displayName?.charAt(0)?.toUpperCase() || <FaUser size={14} />
+                                                            (log.displayName || log.email || '?')[0].toUpperCase()
                                                         )}
                                                     </div>
-
-                                                    <div className="min-w-0">
+                                                    <div className="min-w-0 flex-1">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-extrabold text-sm text-stone-900 dark:text-white truncate">
-                                                                {log.displayName || 'Kullanıcı'}
+                                                            <span className="font-bold text-stone-900 dark:text-white text-sm truncate">
+                                                                {log.displayName || log.email}
                                                             </span>
-                                                            {log.userId === user?.uid && (
-                                                                <span className="text-[9px] px-1.5 py-0.5 bg-amber-400/20 text-amber-700 dark:text-amber-300 rounded font-black">
-                                                                    SEN
-                                                                </span>
-                                                            )}
                                                         </div>
-                                                        <p className="text-xs text-stone-500 dark:text-zinc-400 truncate">
+                                                        <div className="text-xs text-stone-500 dark:text-zinc-400 truncate">
                                                             {log.email}
-                                                        </p>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Device, OS & Time Badges */}
-                                                <div className="flex flex-wrap items-center gap-2 sm:self-center">
-                                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 text-xs font-bold border border-stone-200/60 dark:border-zinc-700/60">
+                                                {/* Device, Browser, OS and Timestamp */}
+                                                <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-zinc-400 self-end sm:self-center shrink-0">
+                                                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-stone-100 dark:bg-zinc-800 text-[11px] font-semibold">
                                                         {getDeviceIcon(log.deviceType)}
-                                                        <span>{log.os}</span>
-                                                        <span className="opacity-40">•</span>
-                                                        <span>{log.browser}</span>
-                                                    </div>
-
-                                                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-semibold">
-                                                        <FaClock size={10} />
-                                                        <span>{formatDate(log.timestamp)}</span>
-                                                    </div>
+                                                        <span>{log.browser} · {log.os}</span>
+                                                    </span>
+                                                    <span className="text-[11px] font-bold text-stone-600 dark:text-zinc-300">
+                                                        {formatDate(log.timestamp)}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                            </motion.div>
+                                        ))}
+                                    </div>
+
+                                    {/* Pagination (Rule #6 Standard) */}
+                                    {filteredLoginLogs.length > visibleLogsCount && (
+                                        <div className="p-4 text-center border-t border-stone-100 dark:border-zinc-800/80 bg-stone-50/50 dark:bg-zinc-900/50">
+                                            <LoadMoreButton
+                                                onClick={() => setVisibleLogsCount(prev => prev + PAGE_SIZE_LOGS)}
+                                                remainingCount={filteredLoginLogs.length - visibleLogsCount}
+                                                label={t('admin.loadMore') || 'Daha Fazla Göster'}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </motion.div>
                     )}
 
-                    {/* COMMENTS TAB */}
+                    {/* ===================== COMMENTS TAB ===================== */}
                     {activeTab === 'comments' && (
                         <motion.div
                             key="comments"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -15 }}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
+                            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
                         >
-                            <div className="px-5 sm:px-6 py-4 border-b border-stone-200 dark:border-zinc-800">
-                                <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-                                    <FaComments className="text-indigo-500" />
-                                    Son Yorumlar
-                                </h2>
+                            <div className="p-5 sm:px-6 py-4 border-b border-stone-200/80 dark:border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-base sm:text-lg font-black text-stone-900 dark:text-white flex items-center gap-2">
+                                        <FaComments className="text-indigo-500" />
+                                        <span>{t('admin.tabComments') || 'Yorumlar'}</span>
+                                    </h2>
+                                </div>
+
+                                <div className="relative min-w-[240px]">
+                                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                                    <input
+                                        type="text"
+                                        placeholder={t('admin.searchCommentsPlaceholder') || 'Yorum metni veya kullanıcı ara...'}
+                                        value={commentsSearchQuery}
+                                        onChange={(e) => {
+                                            setCommentsSearchQuery(e.target.value);
+                                            setVisibleCommentsCount(PAGE_SIZE_COMMENTS);
+                                        }}
+                                        className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 text-xs outline-none"
+                                    />
+                                </div>
                             </div>
 
                             {commentsLoading ? (
-                                <div className="flex items-center justify-center py-16">
+                                <div className="flex items-center justify-center py-20">
                                     <FaSpinner className="animate-spin text-3xl text-indigo-500" />
                                 </div>
-                            ) : comments.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <FaComments className="text-5xl text-stone-300 dark:text-zinc-700 mx-auto mb-4" />
-                                    <p className="text-stone-500 dark:text-zinc-400 font-medium">Henüz yorum bulunmuyor.</p>
+                            ) : filteredComments.length === 0 ? (
+                                <div className="text-center py-20">
+                                    <FaComments className="text-5xl text-stone-300 dark:text-zinc-700 mx-auto mb-3" />
+                                    <p className="text-stone-500 dark:text-zinc-400 font-medium">
+                                        {t('admin.noCommentsFound') || 'Henüz sistemde yorum bulunmuyor.'}
+                                    </p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-stone-100 dark:divide-zinc-800">
-                                    {comments.map((comment, idx) => (
-                                        <motion.div
-                                            key={comment.id}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: idx * 0.02 }}
-                                            className="px-5 sm:px-6 py-4 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40 transition group"
-                                        >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
-                                                            {comment.userName?.charAt(0)?.toUpperCase() || <FaUser size={12} />}
-                                                        </div>
-                                                        <div>
-                                                            <span className="font-bold text-stone-900 dark:text-white text-sm">
-                                                                {comment.userName || 'Anonim'}
-                                                            </span>
-                                                            <div className="text-[11px] text-stone-400 flex items-center gap-1">
-                                                                <FaClock size={9} />
-                                                                {formatDate(comment.timestamp)}
-                                                            </div>
-                                                        </div>
+                                <div>
+                                    <div className="divide-y divide-stone-100 dark:divide-zinc-800/80">
+                                        {visibleComments.map((comment, idx) => (
+                                            <motion.div
+                                                key={comment.id}
+                                                initial={{ opacity: 0, y: 5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.02 }}
+                                                className="px-5 sm:px-6 py-4 hover:bg-stone-50/70 dark:hover:bg-zinc-800/40 transition-colors flex items-start justify-between gap-4"
+                                            >
+                                                <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                                                    <div className="w-10 h-10 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">
+                                                        {comment.userAvatar ? (
+                                                            <img src={comment.userAvatar} alt="" className="w-full h-full object-cover rounded-2xl" />
+                                                        ) : (
+                                                            (comment.userName || '?')[0].toUpperCase()
+                                                        )}
                                                     </div>
-                                                    <div className="pl-11">
-                                                        <p className="text-stone-700 dark:text-zinc-300 text-sm bg-stone-50 dark:bg-zinc-800 rounded-xl p-3">
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="font-bold text-stone-900 dark:text-white text-sm">
+                                                                {comment.userName}
+                                                            </span>
+                                                            <span className="text-[10px] text-stone-400">
+                                                                {formatDate(comment.timestamp)}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs sm:text-sm text-stone-700 dark:text-zinc-300 leading-relaxed break-words">
                                                             {comment.text}
                                                         </p>
                                                     </div>
                                                 </div>
+
                                                 <button
-                                                    onClick={() => handleDeleteComment(comment.id)}
+                                                    onClick={() => setConfirmDelete({
+                                                        type: 'comment',
+                                                        id: comment.id
+                                                    })}
                                                     disabled={deletingCommentId === comment.id}
-                                                    className="shrink-0 p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition disabled:opacity-50 cursor-pointer"
-                                                    title="Yorumu Sil"
+                                                    className="shrink-0 p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition cursor-pointer"
+                                                    title={t('actions.delete') || 'Sil'}
                                                 >
                                                     {deletingCommentId === comment.id ? (
                                                         <FaSpinner className="animate-spin" size={14} />
@@ -711,104 +883,165 @@ export default function AdminPage() {
                                                         <FaTrash size={14} />
                                                     )}
                                                 </button>
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                            </motion.div>
+                                        ))}
+                                    </div>
+
+                                    {/* Pagination (Rule #6 Standard) */}
+                                    {filteredComments.length > visibleCommentsCount && (
+                                        <div className="p-4 text-center border-t border-stone-100 dark:border-zinc-800/80 bg-stone-50/50 dark:bg-zinc-900/50">
+                                            <LoadMoreButton
+                                                onClick={() => setVisibleCommentsCount(prev => prev + PAGE_SIZE_COMMENTS)}
+                                                remainingCount={filteredComments.length - visibleCommentsCount}
+                                                label={t('admin.loadMore') || 'Daha Fazla Göster'}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </motion.div>
                     )}
 
-                    {/* FEATURES TAB */}
+                    {/* ===================== FEATURES TAB (Clean Compact Collapsible Architecture) ===================== */}
                     {activeTab === 'features' && (
                         <motion.div
                             key="features"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -15 }}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
+                            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="px-5 sm:px-6 py-4 border-b border-stone-200 dark:border-zinc-800">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h3 className="text-base font-black text-stone-900 dark:text-white flex items-center gap-2">
-                                            <FaToggleOn className="text-emerald-500" />
-                                            Özellik Erişim Yönetimi
-                                        </h3>
-                                        <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
-                                            Her kullanıcı için site özelliklerini açıp kapatabilirsiniz
-                                        </p>
-                                    </div>
+                            <div className="p-5 sm:px-6 py-4 border-b border-stone-200/80 dark:border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                                <div>
+                                    <h3 className="text-base font-black text-stone-900 dark:text-white flex items-center gap-2">
+                                        <FaToggleOn className="text-emerald-500" />
+                                        <span>{t('admin.featuresHeading') || 'Modül & Özellik Erişim Yönetimi'}</span>
+                                    </h3>
+                                    <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+                                        {t('admin.featuresSub') || 'Kullanıcı bazında modül erişimlerini (Kalori AI, Beden Profili vb.) anında açıp kapatın'}
+                                    </p>
                                 </div>
-                                <div className="relative">
-                                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
+
+                                <div className="relative min-w-[240px]">
+                                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
                                     <input
                                         type="text"
-                                        placeholder="Kullanıcı ara..."
+                                        placeholder={t('admin.searchFeaturesPlaceholder') || 'Yetki düzenlemek için kullanıcı ara...'}
                                         value={featureSearchQuery}
-                                        onChange={(e) => setFeatureSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
+                                        onChange={(e) => {
+                                            setFeatureSearchQuery(e.target.value);
+                                            setVisibleFeaturesCount(PAGE_SIZE_FEATURES);
+                                        }}
+                                        className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 text-xs outline-none"
                                     />
                                 </div>
                             </div>
 
                             {featureAccessLoading ? (
-                                <div className="flex items-center justify-center py-16">
+                                <div className="flex items-center justify-center py-20">
                                     <FaSpinner className="animate-spin text-3xl text-emerald-500" />
                                 </div>
                             ) : (
-                                <div className="divide-y divide-stone-100 dark:divide-zinc-800/80 max-h-[70vh] overflow-y-auto">
-                                    {featureFilteredUsers.map(u => (
-                                        <div key={u.id} className="px-5 sm:px-6 py-4 hover:bg-stone-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                            {/* User Info */}
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-black shrink-0">
-                                                    {(u.displayName || u.email || '?')[0].toUpperCase()}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-bold text-stone-900 dark:text-white truncate">
-                                                        {u.displayName || 'İsimsiz'}
-                                                    </div>
-                                                    <div className="text-[11px] text-stone-400 dark:text-zinc-500 truncate">
-                                                        {u.email}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                <div>
+                                    <div className="divide-y divide-stone-100 dark:divide-zinc-800/80">
+                                        {visibleFeatureUsers.map(u => {
+                                            const isExpanded = expandedFeatureUserId === u.id;
+                                            const userAccess = featureAccessMap[u.id] || {};
+                                            const activeCount = ALL_FEATURES.filter(f => userAccess[f] ?? (f !== 'calorieAi')).length;
 
-                                            {/* Feature Toggles Grid */}
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                                                {ALL_FEATURES.map(feature => {
-                                                    const isEnabled = featureAccessMap[u.id]?.[feature] ?? (feature !== 'calorieAi');
-                                                    const isToggling = togglingFeature === `${u.id}-${feature}`;
-                                                    const label = FEATURE_LABELS[feature];
+                                            return (
+                                                <div key={u.id} className="p-4 sm:p-5 hover:bg-stone-50/50 dark:hover:bg-zinc-800/25 transition-colors">
+                                                    {/* User Bar with Summary & Accordion Toggle */}
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm">
+                                                                {(u.displayName || u.email || '?')[0].toUpperCase()}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="text-sm font-bold text-stone-900 dark:text-white truncate">
+                                                                    {u.displayName || t('admin.anonymousUser') || 'İsimsiz Kullanıcı'}
+                                                                </div>
+                                                                <div className="text-[11px] text-stone-400 dark:text-zinc-500 truncate">
+                                                                    {u.email}
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
-                                                    return (
-                                                        <button
-                                                            key={feature}
-                                                            onClick={() => handleToggleFeature(u.id, feature)}
-                                                            disabled={isToggling}
-                                                            className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer border ${
-                                                                isEnabled
-                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400'
-                                                                    : 'bg-stone-50 dark:bg-zinc-800/50 border-stone-200 dark:border-zinc-700/50 text-stone-400 dark:text-zinc-600'
-                                                            } ${isToggling ? 'opacity-50' : 'hover:shadow-md'}`}
-                                                        >
-                                                            <span className="text-sm">{label?.icon || '⚙️'}</span>
-                                                            <span className="truncate flex-1 text-left">{label?.tr || feature}</span>
-                                                            {isToggling ? (
-                                                                <FaSpinner className="animate-spin text-[10px] shrink-0" />
-                                                            ) : isEnabled ? (
-                                                                <FaToggleOn className="text-emerald-500 text-base shrink-0" />
-                                                            ) : (
-                                                                <FaToggleOff className="text-stone-300 dark:text-zinc-600 text-base shrink-0" />
-                                                            )}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+                                                        {/* Right Badge + Toggle Button */}
+                                                        <div className="flex items-center gap-2.5 shrink-0">
+                                                            <span className="text-xs font-bold px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                                                {activeCount} / {ALL_FEATURES.length} {t('nav.tools') || 'Aktif'}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setExpandedFeatureUserId(isExpanded ? null : u.id)}
+                                                                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                                                            >
+                                                                <span>{isExpanded ? (t('admin.hidePermissions') || 'Gizle') : (t('admin.managePermissions') || 'Yetkileri Yönet')}</span>
+                                                                {isExpanded ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Collapsible Feature Switches Grid */}
+                                                    <AnimatePresence>
+                                                        {isExpanded && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                                className="overflow-hidden pt-4"
+                                                            >
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 p-3 rounded-2xl bg-stone-100/60 dark:bg-zinc-800/40 border border-stone-200/60 dark:border-zinc-700/50">
+                                                                    {ALL_FEATURES.map(feature => {
+                                                                        const isEnabled = userAccess[feature] ?? (feature !== 'calorieAi');
+                                                                        const isToggling = togglingFeature === `${u.id}-${feature}`;
+                                                                        const labelObj = FEATURE_LABELS[feature];
+                                                                        const labelText = language === 'tr' ? labelObj?.tr : labelObj?.en;
+
+                                                                        return (
+                                                                            <button
+                                                                                key={feature}
+                                                                                onClick={() => handleToggleFeature(u.id, feature)}
+                                                                                disabled={isToggling}
+                                                                                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                                                                                    isEnabled
+                                                                                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                                                                                        : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800 text-stone-400 dark:text-zinc-600'
+                                                                                } ${isToggling ? 'opacity-50' : 'hover:scale-[1.02]'}`}
+                                                                            >
+                                                                                <span className="text-base">{labelObj?.icon || '⚙️'}</span>
+                                                                                <span className="truncate flex-1 text-left">{labelText || feature}</span>
+                                                                                {isToggling ? (
+                                                                                    <FaSpinner className="animate-spin text-[10px] shrink-0" />
+                                                                                ) : isEnabled ? (
+                                                                                    <FaToggleOn className="text-emerald-500 text-lg shrink-0" />
+                                                                                ) : (
+                                                                                    <FaToggleOff className="text-stone-300 dark:text-zinc-600 text-lg shrink-0" />
+                                                                                )}
+                                                                            </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Pagination (Rule #6 Standard) */}
+                                    {featureFilteredUsers.length > visibleFeaturesCount && (
+                                        <div className="p-4 text-center border-t border-stone-100 dark:border-zinc-800/80 bg-stone-50/50 dark:bg-zinc-900/50">
+                                            <LoadMoreButton
+                                                onClick={() => setVisibleFeaturesCount(prev => prev + PAGE_SIZE_FEATURES)}
+                                                remainingCount={featureFilteredUsers.length - visibleFeaturesCount}
+                                                label={t('admin.loadMore') || 'Daha Fazla Göster'}
+                                            />
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             )}
                         </motion.div>
@@ -816,14 +1049,38 @@ export default function AdminPage() {
                 </AnimatePresence>
             </div>
 
-            {/* Edit User Modal */}
+            {/* Delete Confirmation Dialog (Rule #5 Standard) */}
+            <ConfirmDialog
+                isOpen={!!confirmDelete}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={() => {
+                    if (confirmDelete?.type === 'user') {
+                        executeDeleteUser(confirmDelete.id);
+                    } else if (confirmDelete?.type === 'comment') {
+                        executeDeleteComment(confirmDelete.id);
+                    }
+                }}
+                title={confirmDelete?.type === 'user'
+                    ? (t('admin.deleteUserConfirmTitle') || 'Kullanıcıyı Sil')
+                    : (t('admin.deleteCommentConfirmTitle') || 'Yorumu Sil')
+                }
+                message={confirmDelete?.type === 'user'
+                    ? `${confirmDelete.name ? `"${confirmDelete.name}" ` : ''}${t('admin.deleteUserConfirmMessage') || 'kullanıcısını sistemden silmek istediğinize emin misiniz? Bu işlem geri alınamaz!'}`
+                    : (t('admin.deleteCommentConfirmMessage') || 'Bu yorumu kalıcı olarak silmek istediğinize emin misiniz?')
+                }
+                confirmText={t('actions.delete') || 'Sil'}
+                cancelText={t('lists.cancel') || 'Vazgeç'}
+                variant="danger"
+            />
+
+            {/* Edit User Modal (Rule #5 Standard) */}
             <AnimatePresence>
                 {editingUser && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center z-[120] p-4"
                         onClick={() => setEditingUser(null)}
                     >
                         <motion.div
@@ -831,114 +1088,124 @@ export default function AdminPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-6 w-full max-w-md border border-stone-200 dark:border-zinc-800"
+                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-lg border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden flex flex-col"
                         >
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-                                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
-                                        <FaEdit className="text-blue-500" size={14} />
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 dark:border-zinc-800 shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-blue-500/15 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-lg">
+                                        <FaEdit />
                                     </div>
-                                    Kullanıcı Düzenle
-                                </h3>
+                                    <div>
+                                        <h3 className="text-lg font-black text-stone-900 dark:text-white">
+                                            {t('admin.editUserTitle') || 'Kullanıcı Profilini Düzenle'}
+                                        </h3>
+                                        <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                            {editingUser.email}
+                                        </p>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => setEditingUser(null)}
-                                    className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
+                                    className="w-9 h-9 flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
                                 >
                                     <FaTimes />
                                 </button>
                             </div>
 
-                            <div className="space-y-4">
+                            {/* Scrollable Body (Rule #5) */}
+                            <div className="max-h-[70vh] overflow-y-auto custom-scrollbar p-6 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-300 mb-1.5">
-                                        İsim
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-zinc-300 mb-1.5">
+                                        {t('admin.nameLabel') || 'İsim Soyisim'}
                                     </label>
                                     <input
                                         type="text"
                                         value={editForm.displayName}
                                         onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
-                                        className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"
-                                        placeholder="Kullanıcı adı"
+                                        className="w-full px-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-medium outline-none"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-300 mb-1.5">
-                                        Cinsiyet
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-zinc-300 mb-1.5">
+                                        {t('admin.genderLabel') || 'Cinsiyet'}
                                     </label>
-                                    <div className="flex gap-3">
-                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all font-bold text-xs ${editForm.gender === 'male'
-                                            ? 'bg-blue-500 border-blue-500 text-white shadow-md'
-                                            : 'bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 hover:border-blue-300'
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                checked={editForm.gender === 'male'}
-                                                onChange={() => setEditForm({ ...editForm, gender: 'male' })}
-                                                className="hidden"
-                                            />
-                                            👨 Erkek
-                                        </label>
-                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all font-bold text-xs ${editForm.gender === 'female'
-                                            ? 'bg-pink-500 border-pink-500 text-white shadow-md'
-                                            : 'bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 hover:border-pink-300'
-                                            }`}>
-                                            <input
-                                                type="radio"
-                                                checked={editForm.gender === 'female'}
-                                                onChange={() => setEditForm({ ...editForm, gender: 'female' })}
-                                                className="hidden"
-                                            />
-                                            👩 Kadın
-                                        </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditForm({ ...editForm, gender: 'male' })}
+                                            className={`py-2.5 rounded-2xl text-xs font-bold transition-all border cursor-pointer ${
+                                                editForm.gender === 'male'
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                                    : 'bg-stone-50 dark:bg-zinc-800/80 border-stone-200 dark:border-zinc-700 text-stone-700 dark:text-zinc-300'
+                                            }`}
+                                        >
+                                            {t('admin.filterMale') || 'Erkek'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditForm({ ...editForm, gender: 'female' })}
+                                            className={`py-2.5 rounded-2xl text-xs font-bold transition-all border cursor-pointer ${
+                                                editForm.gender === 'female'
+                                                    ? 'bg-pink-600 text-white border-pink-600 shadow-md'
+                                                    : 'bg-stone-50 dark:bg-zinc-800/80 border-stone-200 dark:border-zinc-700 text-stone-700 dark:text-zinc-300'
+                                            }`}
+                                        >
+                                            {t('admin.filterFemale') || 'Kadın'}
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-300 mb-1.5">
-                                        Konum
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-zinc-300 mb-1.5">
+                                        {t('admin.locationLabel') || 'Konum'}
                                     </label>
                                     <input
                                         type="text"
                                         value={editForm.location}
                                         onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                                        className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"
-                                        placeholder="Şehir, Ülke"
+                                        className="w-full px-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-medium outline-none"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-zinc-300 mb-1.5">
-                                        Biyografi
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-zinc-300 mb-1.5">
+                                        {t('admin.bioLabel') || 'Biyografi'}
                                     </label>
                                     <textarea
                                         value={editForm.bio}
                                         onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                                         rows={3}
-                                        className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-sm font-medium"
-                                        placeholder="Kullanıcı hakkında kısa bilgi..."
+                                        className="w-full px-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm font-medium outline-none resize-none"
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 mt-6">
+                            {/* Sticky Footer (Rule #5) */}
+                            <div className="sticky bottom-0 px-6 py-3.5 bg-stone-50 dark:bg-zinc-900/90 border-t border-stone-200 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0">
                                 <button
+                                    type="button"
                                     onClick={() => setEditingUser(null)}
-                                    className="flex-1 py-2.5 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-bold rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-xs cursor-pointer"
+                                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-600 dark:text-zinc-400 hover:bg-stone-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 >
-                                    İptal
+                                    {t('lists.cancel') || 'Vazgeç'}
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={handleSaveUser}
                                     disabled={savingUser}
-                                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/25 disabled:opacity-50 flex items-center justify-center gap-2 text-xs cursor-pointer"
+                                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/25 disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer text-xs sm:text-sm"
                                 >
                                     {savingUser ? (
-                                        <FaSpinner className="animate-spin" />
+                                        <>
+                                            <FaSpinner className="animate-spin text-xs" />
+                                            <span>{t('admin.saving') || 'Kaydediliyor...'}</span>
+                                        </>
                                     ) : (
                                         <>
-                                            <FaCheck />
-                                            Kaydet
+                                            <FaCheck className="text-xs" />
+                                            <span>{t('admin.saveUser') || 'Değişiklikleri Kaydet'}</span>
                                         </>
                                     )}
                                 </button>
@@ -949,4 +1216,4 @@ export default function AdminPage() {
             </AnimatePresence>
         </div>
     );
-}
+}

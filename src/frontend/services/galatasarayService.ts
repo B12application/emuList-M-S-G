@@ -4,5 +4,6 @@ export {
   getUpcomingFootballMatches as getUpcomingGSMatches,
   AVAILABLE_FOOTBALL_TEAMS,
   getSelectedTeamIds,
-  saveSelectedTeamIds
+  saveSelectedTeamIds,
+  syncUserSelectedTeamsFromFirestore
 } from './footballFixtureService';

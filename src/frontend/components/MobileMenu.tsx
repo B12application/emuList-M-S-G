@@ -102,7 +102,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       ]
     },
     {
-      title: 'Araçlar & Yaşam',
+      title: t('nav.toolsAndLife') || 'Araçlar & Yaşam',
       items: [
         { to: '/expenses', icon: FaWallet, label: t('nav.expenses') || 'Harcamalar' },
         { to: '/travel-planner', icon: FaCompass, label: t('nav.travelPlanner') || 'Gezi Planlayıcı' },
@@ -112,8 +112,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         { to: '/map', icon: FaMap, label: t('nav.map') || 'Harita' },
         { to: '/all', icon: FaClone, label: t('nav.all') || 'Tüm Liste' },
         ...(hasAccess('calorieAi') ? [
-          { to: '/calorie-details', icon: FaChartPie, label: 'Kalori Raporu' },
-          { to: '/body-profile', icon: FaHeartbeat, label: 'Beden Profili' },
+          { to: '/calorie-details', icon: FaChartPie, label: t('nav.calorieReport') || 'Kalori Raporu' },
+          { to: '/body-profile', icon: FaHeartbeat, label: t('nav.bodyProfile') || 'Beden Profili' },
         ] : []),
       ]
     }

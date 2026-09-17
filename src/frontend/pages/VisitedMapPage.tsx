@@ -8,7 +8,7 @@ import { FaPlus, FaMinus, FaExpand, FaArrowUp, FaArrowDown, FaArrowRight } from 
 import { useLanguage } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
 import TurkeyMap from '../components/TurkeyMap';
-import { Link } from 'react-router-dom';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import React from 'react';
 
 export default function VisitedMapPage() {
@@ -41,15 +41,15 @@ export default function VisitedMapPage() {
 
       if (isVisited) {
         await updateDoc(userDocRef, { visitedProvinces: arrayRemove(provinceId) });
-        toast.success(t('Haritadan kaldırıldı'), { duration: 2000 });
+        toast.success(t('mapPage.removedFromMap'), { duration: 2000 });
       } else {
         await updateDoc(userDocRef, { visitedProvinces: arrayUnion(provinceId) });
-        toast.success(t('Haritaya eklendi'), { duration: 2000 });
+        toast.success(t('mapPage.addedToMap'), { duration: 2000 });
       }
     } catch (e) {
       console.error("Kaydetme hatası: ", e);
       setVisitedProvinces(visitedProvinces);
-      toast.error(t('Hata oluştu'));
+      toast.error(t('mapPage.genericError'));
     }
   };
 
@@ -82,35 +82,19 @@ export default function VisitedMapPage() {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen pb-4">
+    <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28">
       {/* Header */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 mb-4 rounded-2xl sm:rounded-3xl">
-        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-stone-900 dark:text-white flex items-center gap-3">
-                <FaMapMarkedAlt className="text-sky-500" />
-                {t('mapPage.title')}
-              </h1>
-              <p className="text-stone-500 dark:text-zinc-400 mt-1 text-sm hidden sm:block">
-                {t('mapPage.instructions')}
-              </p>
-            </div>
-            <Link
-              to="/profile"
-              className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all text-sm font-medium"
-            >
-              <FaArrowLeft />
-              <span className="hidden sm:inline">Profile Dön</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PageHeaderBanner
+        title={t('mapPage.title')}
+        subtitle={t('mapPage.instructions')}
+        icon={<FaMapMarkedAlt className="text-sky-500 text-xl" />}
+        backTo="/profile"
+        backLabel={t('mapPage.backToProfile')}
+      />
 
       {/* Main Content */}
-      <div className="w-full mx-auto">
+      <div className="w-full">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {/* Visited Count */}
@@ -132,7 +116,7 @@ export default function VisitedMapPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-bold text-stone-900 dark:text-white">%{progressPercent}</span>
-                <span className="text-xs text-stone-500 dark:text-zinc-400">Tamamlandı</span>
+                <span className="text-xs text-stone-500 dark:text-zinc-400">{t('mapPage.completed')}</span>
               </div>
               <div className="w-full h-2 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <div
@@ -150,18 +134,18 @@ export default function VisitedMapPage() {
             </div>
             <div>
               <div className="text-2xl font-black text-stone-900 dark:text-white">{81 - visitedProvinces.length}</div>
-              <div className="text-xs text-stone-500 dark:text-zinc-400 font-medium">Kalan Şehir</div>
+              <div className="text-xs text-stone-500 dark:text-zinc-400 font-medium">{t('mapPage.remainingCities')}</div>
             </div>
           </div>
         </div>
 
         {/* Mobile Instructions */}
         <p className="sm:hidden text-xs text-stone-500 dark:text-zinc-400 mb-3 px-1">
-          Yakınlaştırmak için parmaklarını kullan. Seçmek için şehre dokun.
+          {t('mapPage.mobileInstructions')}
         </p>
 
         {/* Map Container */}
-        <div className="w-full border border-stone-200 dark:border-zinc-700 rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-800 relative shadow-lg" style={{ height: 'calc(100vh - 320px)', minHeight: '400px' }}>
+        <div className="w-full border border-stone-200 dark:border-zinc-700 rounded-3xl overflow-hidden bg-stone-50 dark:bg-zinc-800 relative shadow-lg" style={{ height: 'calc(100vh - 320px)', minHeight: '400px' }}>
           <TransformWrapper
             ref={transformRef}
             initialScale={1}
@@ -183,16 +167,16 @@ export default function VisitedMapPage() {
                       <div></div>
                       <button
                         onClick={() => setTransform(transformState.positionX, transformState.positionY - 50, transformState.scale)}
-                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95"
-                        title="Yukarı"
+                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95 cursor-pointer"
+                        title={t('mapPage.controls.up')}
                       >
                         <FaArrowUp className="text-xs" />
                       </button>
                       <div></div>
                       <button
                         onClick={() => setTransform(transformState.positionX - 50, transformState.positionY, transformState.scale)}
-                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95"
-                        title="Sol"
+                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95 cursor-pointer"
+                        title={t('mapPage.controls.left')}
                       >
                         <FaArrowLeft className="text-xs" />
                       </button>
@@ -201,16 +185,16 @@ export default function VisitedMapPage() {
                       </div>
                       <button
                         onClick={() => setTransform(transformState.positionX + 50, transformState.positionY, transformState.scale)}
-                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95"
-                        title="Sağ"
+                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95 cursor-pointer"
+                        title={t('mapPage.controls.right')}
                       >
                         <FaArrowRight className="text-xs" />
                       </button>
                       <div></div>
                       <button
                         onClick={() => setTransform(transformState.positionX, transformState.positionY + 50, transformState.scale)}
-                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95"
-                        title="Aşağı"
+                        className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95 cursor-pointer"
+                        title={t('mapPage.controls.down')}
                       >
                         <FaArrowDown className="text-xs" />
                       </button>
@@ -222,22 +206,22 @@ export default function VisitedMapPage() {
                   <div className="flex flex-col gap-1.5 bg-white/90 dark:bg-zinc-900/90 p-1.5 rounded-xl shadow-lg backdrop-blur-md border border-stone-200/50 dark:border-zinc-700/50">
                     <button
                       onClick={() => zoomIn()}
-                      className="p-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-all active:scale-95"
-                      title="Yakınlaştır"
+                      className="p-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-all active:scale-95 cursor-pointer"
+                      title={t('mapPage.controls.zoomIn')}
                     >
                       <FaPlus className="text-sm" />
                     </button>
                     <button
                       onClick={() => zoomOut()}
-                      className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95"
-                      title="Uzaklaştır"
+                      className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95 cursor-pointer"
+                      title={t('mapPage.controls.zoomOut')}
                     >
                       <FaMinus className="text-sm" />
                     </button>
                     <button
                       onClick={() => resetTransform()}
-                      className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95"
-                      title="Sıfırla"
+                      className="p-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg transition-all active:scale-95 cursor-pointer"
+                      title={t('mapPage.controls.reset')}
                     >
                       <FaExpand className="text-sm" />
                     </button>

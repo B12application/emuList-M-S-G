@@ -431,7 +431,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                       : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
                       }`}
                   >
-                    <span className="flex items-center gap-1.5"><FaTools className="text-xs opacity-80" />Araçlar</span>
+                    <span className="flex items-center gap-1.5"><FaTools className="text-xs opacity-80" />{t('nav.tools') || 'Araçlar'}</span>
                     <motion.div
                       animate={{ rotate: showToolsDropdown ? 180 : 0 }}
                       className="flex items-center justify-center"
@@ -490,10 +490,10 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
-                                    Kalori Raporu
+                                    {t('nav.calorieReport') || 'Kalori Raporu'}
                                   </span>
                                   <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">
-                                    Yeni
+                                    {t('common.new') || 'Yeni'}
                                   </span>
                                 </div>
                                 <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
@@ -519,7 +519,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
-                                  Beden Profili
+                                  {t('nav.bodyProfile') || 'Beden Profili'}
                                 </div>
                                 <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
                                   {t('nav.bodySub') || 'Vücut ölçüleri ve analiz'}

@@ -9,6 +9,7 @@ import {
   FaChevronRight, FaExclamationTriangle, FaDatabase, FaFire, FaChartPie
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
@@ -33,9 +34,22 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function CalorieChatPage() {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { hasAccess, loading: accessLoading } = useFeatureAccess();
   const { usage: quotaUsage, refreshUsage } = useCalorieAiUsage(user?.uid);
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -235,26 +249,32 @@ export default function CalorieChatPage() {
   }, [user]);
 
   // Delete a session
-  const handleDeleteSession = useCallback(async (sessionId: string, e: React.MouseEvent) => {
+  const handleDeleteSession = useCallback((sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Bu sohbeti silmek istediğinize emin misiniz?')) return;
-
-    try {
-      await deleteChatSession(sessionId);
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
-      if (currentSessionId === sessionId) {
-        setMessages([]);
-        setCurrentSessionId(null);
-        if (user) {
-          localStorage.removeItem(`last_calorie_session_${user.uid}`);
+    setConfirmDialog({
+      isOpen: true,
+      title: t('calorieChat.deleteSessionTitle') || 'Sohbeti Sil',
+      message: t('calorieChat.deleteSessionConfirm') || 'Bu sohbeti silmek istediğinize emin misiniz?',
+      confirmLabel: t('common.delete') || 'Sil',
+      onConfirm: async () => {
+        try {
+          await deleteChatSession(sessionId);
+          setSessions(prev => prev.filter(s => s.id !== sessionId));
+          if (currentSessionId === sessionId) {
+            setMessages([]);
+            setCurrentSessionId(null);
+            if (user) {
+              localStorage.removeItem(`last_calorie_session_${user.uid}`);
+            }
+          }
+          toast.success(t('calorieChat.sessionDeleted') || 'Sohbet silindi');
+          loadStorageInfo();
+        } catch (error) {
+          toast.error(t('common.genericError') || 'Silinemedi');
         }
-      }
-      toast.success('Sohbet silindi');
-      loadStorageInfo();
-    } catch (error) {
-      toast.error('Silinemedi');
-    }
-  }, [currentSessionId, loadStorageInfo, user]);
+      },
+    });
+  }, [currentSessionId, loadStorageInfo, user, t]);
 
   // New chat
   const handleNewChat = useCallback(() => {
@@ -269,7 +289,7 @@ export default function CalorieChatPage() {
   const formatSessionDate = (timestamp: any) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return new Intl.DateTimeFormat('tr-TR', {
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'tr-TR', {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -327,7 +347,7 @@ export default function CalorieChatPage() {
             className="inline-flex items-center gap-2 px-6 py-3 bg-amber-400 text-stone-950 font-bold rounded-2xl shadow-md hover:bg-amber-300 transition-all text-sm"
           >
             <FaArrowLeft className="text-xs" />
-            Ana Sayfaya Dön
+            {t('calorieChat.backToHome') || 'Ana Sayfaya Dön'}
           </Link>
         </motion.div>
       </div>
@@ -348,10 +368,10 @@ export default function CalorieChatPage() {
           <div>
             <h1 className="text-base font-black text-stone-900 dark:text-white flex items-center gap-2">
               <span className="text-lg">🤖</span>
-              <span>B12 AI</span>
+              <span>{t('calorieChat.navTitle') || 'B12 AI'}</span>
             </h1>
             <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-              Fotoğraf ile Besin & Kalori Analizi
+              {t('calorieChat.subtitle') || 'Fotoğraf ile Besin & Kalori Analizi'}
             </p>
           </div>
         </div>
@@ -366,31 +386,31 @@ export default function CalorieChatPage() {
                   ? 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300'
                   : 'bg-amber-500/10 dark:bg-amber-400/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
             }`}
-            title="Günlük AI analiz kotası (Gece 00:00'da yenilenir)"
+            title={t('calorieChat.quotaTooltip') || "Günlük AI analiz kotası (Gece 00:00'da yenilenir)"}
           >
             <FaFire className={`text-xs ${quotaUsage.isLimitReached ? 'text-rose-500' : 'text-amber-500 animate-pulse'}`} />
-            <span className="hidden sm:inline">Kalan Limit:</span>
+            <span className="hidden sm:inline">{t('calorieChat.remainingLimit') || 'Kalan Limit:'}</span>
             <span className="font-black">{quotaUsage.remainingToday} / {quotaUsage.dailyLimit}</span>
           </div>
 
           <Link
             to="/calorie-details"
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-amber-400/20 text-amber-600 dark:text-amber-400 hover:bg-amber-400/30 transition-colors"
-            title="Detaylı Rapor"
+            title={t('calorieChat.detailedReport') || 'Detaylı Rapor'}
           >
             <FaChartPie className="text-sm" />
           </Link>
           <button
             onClick={handleNewChat}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
-            title="Yeni Sohbet"
+            title={t('calorieChat.newChat') || 'Yeni Sohbet'}
           >
             <FaPlus className="text-sm" />
           </button>
           <button
             onClick={() => setShowHistory(true)}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors"
-            title="Sohbet Geçmişi"
+            title={t('calorieChat.chatHistory') || 'Sohbet Geçmişi'}
           >
             <FaHistory className="text-sm" />
           </button>
@@ -406,7 +426,7 @@ export default function CalorieChatPage() {
         >
           <div className="flex items-center gap-1.5 text-xs font-black text-amber-800 dark:text-amber-300">
             <FaFire className="text-amber-500 text-xs" />
-            <span>Sohbet / Öğün Toplamı:</span>
+            <span>{t('calorieChat.sessionTotal') || 'Sohbet / Öğün Toplamı:'}</span>
           </div>
 
           <div className="flex items-center gap-2.5 text-xs font-bold">
@@ -547,10 +567,10 @@ export default function CalorieChatPage() {
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <span className="font-bold text-stone-700 dark:text-zinc-200 flex items-center gap-1.5">
                     <FaFire className="text-amber-500 text-xs" />
-                    Günlük AI Kotası
+                    {t('calorieChat.dailyQuota') || 'Günlük AI Kotası'}
                   </span>
                   <span className="font-black text-amber-600 dark:text-amber-400">
-                    {quotaUsage.remainingToday} / {quotaUsage.dailyLimit} Kalan
+                    {quotaUsage.remainingToday} / {quotaUsage.dailyLimit} {language === 'en' ? 'Remaining' : 'Kalan'}
                   </span>
                 </div>
 
@@ -571,8 +591,8 @@ export default function CalorieChatPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-[10px] text-stone-400 dark:text-zinc-500">
-                  <span>%{quotaUsage.percentageUsed} kullanıldı ({quotaUsage.usedToday} istek)</span>
-                  <span>Gece 00:00'da sıfırlanır</span>
+                  <span>%{quotaUsage.percentageUsed} {language === 'en' ? 'used' : 'kullanıldı'} ({quotaUsage.usedToday} {language === 'en' ? 'requests' : 'istek'})</span>
+                  <span>{t('calorieChat.resetsAtMidnight') || "Gece 00:00'da sıfırlanır"}</span>
                 </div>
               </div>
 
@@ -646,7 +666,7 @@ export default function CalorieChatPage() {
                         <button
                           type="button"
                           onClick={(e) => handleDeleteSession(session.id!, e)}
-                          title="Sohbeti sil"
+                          title={t('calorieChat.deleteSessionTitle') || 'Sohbeti sil'}
                           className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         >
                           <FaTrash className="text-[10px]" />
@@ -662,6 +682,19 @@ export default function CalorieChatPage() {
         )}
       </AnimatePresence>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmLabel}
+        onConfirm={() => {
+          confirmDialog.onConfirm();
+          setConfirmDialog(c => ({ ...c, isOpen: false }));
+        }}
+        onClose={() => setConfirmDialog(c => ({ ...c, isOpen: false }))}
+      />
     </div>
   );
 }

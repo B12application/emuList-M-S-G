@@ -10,7 +10,8 @@ import {
     FaSun, FaPalette, FaBell, FaLanguage, FaInfoCircle, FaTrash, FaKey,
     FaUserEdit, FaEnvelope, FaCalendar, FaFingerprint, FaHistory, FaDownload,
     FaEye, FaEyeSlash, FaSignOutAlt, FaCog, FaHome, FaSyncAlt, FaFileCode,
-    FaFileAlt, FaFileUpload, FaCheckCircle, FaSpinner, FaFilm, FaTv, FaBolt
+    FaFileAlt, FaFileUpload, FaCheckCircle, FaSpinner, FaFilm, FaTv, FaBolt,
+    FaMars, FaVenus
 } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updateProfile, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -28,6 +29,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 export default function SettingsPage() {
     const { user } = useAuth();
@@ -84,6 +86,7 @@ export default function SettingsPage() {
     const [isRecoveryUnlocked, setIsRecoveryUnlocked] = useState(false);
     const restoreFileInputRef = useRef<HTMLInputElement>(null);
     const restoreExpensesFileInputRef = useRef<HTMLInputElement>(null);
+    const [confirmRestoreType, setConfirmRestoreType] = useState<'media' | 'expenses' | null>(null);
 
 
 
@@ -423,11 +426,11 @@ export default function SettingsPage() {
 
     // Tab configuration
     const tabs = [
-        { id: 'general' as const, label: 'Genel', icon: <FaCog />, description: 'Site ayarları ve tercihler' },
-        { id: 'vault' as const, label: 'Veri & Yedekleme', icon: <FaDatabase />, description: 'IMDb eşitleme & JSON/TXT yedek' },
-        { id: 'profile' as const, label: 'Profil', icon: <FaUserEdit />, description: 'Kişisel bilgileriniz' },
-        { id: 'security' as const, label: 'Güvenlik', icon: <FaShieldAlt />, description: 'Şifre ve hesap güvenliği' },
-        { id: 'privacy' as const, label: 'Gizlilik', icon: <FaEye />, description: 'Veri ve gizlilik ayarları' },
+        { id: 'general' as const, label: t('settings.tabs.general'), icon: <FaCog /> },
+        { id: 'vault' as const, label: t('settings.tabs.vault'), icon: <FaDatabase /> },
+        { id: 'profile' as const, label: t('settings.tabs.profile'), icon: <FaUserEdit /> },
+        { id: 'security' as const, label: t('settings.tabs.security'), icon: <FaShieldAlt /> },
+        { id: 'privacy' as const, label: t('settings.tabs.privacy'), icon: <FaEye /> },
     ];
 
 
@@ -455,34 +458,35 @@ export default function SettingsPage() {
             {/* Page Header Banner */}
             <PageHeaderBanner
                 title={t('settings.title')}
-                subtitle="Hesap ayarlarınızı, IMDb senkronizasyonunu ve yedeklerinizi yönetin"
+                subtitle={t('settings.subtitle')}
                 icon={<FaCog />}
                 backTo="/"
-                backLabel="Ana Sayfa"
-                className="max-w-5xl 2xl:max-w-6xl mx-auto"
+                backLabel={t('nav.home')}
             />
 
-            <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-2 sm:px-4">
-                {/* Tab Navigation - Modern Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
-                    {tabs.map((tab) => (
-                        <motion.button
-                            key={tab.id}
-                            whileHover={{ y: -2 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${activeTab === tab.id
-                                ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/25'
-                                : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700'
-                                }`}
-                        >
-                            <div className="text-xl mb-2">{tab.icon}</div>
-                            <div className="font-bold text-sm">{tab.label}</div>
-                            <div className={`text-xs mt-1 ${activeTab === tab.id ? 'text-white/80' : 'text-stone-400 dark:text-zinc-500'}`}>
-                                {tab.description}
-                            </div>
-                        </motion.button>
-                    ))}
+            <div className="w-full mx-auto">
+                {/* Tab Navigation – Modern Segment Control */}
+                <div className="mb-8">
+                    <div className="bg-stone-100 dark:bg-zinc-800/80 rounded-2xl p-1.5 border border-stone-200/60 dark:border-zinc-700/60 shadow-sm overflow-x-auto">
+                        <div className="flex gap-1.5 min-w-max sm:min-w-0 sm:grid sm:grid-cols-5">
+                            {tabs.map((tab) => (
+                                <motion.button
+                                    key={tab.id}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`relative flex items-center gap-2 px-4 sm:px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer whitespace-nowrap flex-1 justify-center ${activeTab === tab.id
+                                        ? 'bg-white dark:bg-zinc-900 text-stone-900 dark:text-white shadow-md shadow-black/5 dark:shadow-black/20'
+                                        : 'text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-white/40 dark:hover:bg-zinc-700/40'
+                                        }`}
+                                >
+                                    <span className={`text-base transition-colors ${activeTab === tab.id ? 'text-amber-500' : ''}`}>
+                                        {tab.icon}
+                                    </span>
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </motion.button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
 
@@ -497,78 +501,83 @@ export default function SettingsPage() {
                         className="space-y-6"
                     >
                         {activeTab === 'general' && (
-                            <>
-                                {/* Quick Actions */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                                <div className="space-y-6">
+                                    {/* Quick Actions */}
                                 <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
-                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-5 flex items-center gap-2">
                                         <FaCog className="text-amber-500" />
-                                        Hızlı Ayarlar
+                                        {t('settings.quickSettings')}
                                     </h2>
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         {/* Theme Toggle */}
-                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg">
-                                                    {isDark ? <FaMoon className="text-amber-600" /> : <FaSun className="text-amber-600" />}
+                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800/70 rounded-xl border-l-4 border-amber-400 dark:border-amber-500">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                                                    {isDark ? <FaMoon className="text-amber-500 text-lg" /> : <FaSun className="text-amber-500 text-lg" />}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-stone-900 dark:text-white">
-                                                        {isDark ? 'Karanlık Tema' : 'Aydınlık Tema'}
+                                                    <p className="font-bold text-sm text-stone-900 dark:text-white">
+                                                        {isDark ? t('settings.darkTheme') : t('settings.lightTheme')}
                                                     </p>
                                                     <p className="text-xs text-stone-500 dark:text-zinc-400">
-                                                        {isDark ? 'Göz yorgunluğunu azaltır' : 'Daha parlak görünüm'}
+                                                        {isDark ? t('settings.darkThemeDesc') : t('settings.lightThemeDesc')}
                                                     </p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={toggleTheme}
-                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isDark ? 'bg-amber-500' : 'bg-stone-300'
+                                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-300 shadow-inner ${isDark ? 'bg-amber-500' : 'bg-stone-300 dark:bg-zinc-600'
                                                     }`}
                                             >
                                                 <span
-                                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${isDark ? 'translate-x-6' : 'translate-x-1'
+                                                    className={`inline-flex h-6 w-6 items-center justify-center transform rounded-full bg-white shadow-lg transition-all duration-300 ${isDark ? 'translate-x-7' : 'translate-x-1'
                                                         }`}
-                                                />
+                                                >
+                                                    {isDark ? <FaMoon className="text-amber-500 text-[10px]" /> : <FaSun className="text-amber-400 text-[10px]" />}
+                                                </span>
                                             </button>
                                         </div>
 
                                         {/* Sound Toggle */}
-                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`p-2 rounded-lg ${soundEnabled ? 'bg-emerald-100 dark:bg-emerald-900/20' : 'bg-stone-100 dark:bg-zinc-700'}`}>
-                                                    {soundEnabled ? <FaVolumeUp className="text-emerald-600" /> : <FaVolumeMute className="text-stone-400" />}
+                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800/70 rounded-xl border-l-4 border-emerald-400 dark:border-emerald-500">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${soundEnabled ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-stone-100 dark:bg-zinc-700'}`}>
+                                                    {soundEnabled ? <FaVolumeUp className="text-emerald-500 text-lg" /> : <FaVolumeMute className="text-stone-400 text-lg" />}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-stone-900 dark:text-white">Ses Efektleri</p>
+                                                    <p className="font-bold text-sm text-stone-900 dark:text-white">{t('settings.soundEffectsLabel')}</p>
                                                     <p className="text-xs text-stone-500 dark:text-zinc-400">
-                                                        {soundEnabled ? 'Arayüz sesleri açık' : 'Sessiz mod'}
+                                                        {soundEnabled ? t('settings.soundOn') : t('settings.soundOff')}
                                                     </p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={toggleSound}
-                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${soundEnabled ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-zinc-600'
+                                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-300 shadow-inner ${soundEnabled ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-zinc-600'
                                                     }`}
                                             >
                                                 <span
-                                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${soundEnabled ? 'translate-x-6' : 'translate-x-1'
+                                                    className={`inline-flex h-6 w-6 items-center justify-center transform rounded-full bg-white shadow-lg transition-all duration-300 ${soundEnabled ? 'translate-x-7' : 'translate-x-1'
                                                         }`}
-                                                />
+                                                >
+                                                    {soundEnabled ? <FaVolumeUp className="text-emerald-500 text-[10px]" /> : <FaVolumeMute className="text-stone-400 text-[10px]" />}
+                                                </span>
                                             </button>
                                         </div>
 
                                         {/* Shift System Toggle */}
-                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`p-2 rounded-lg ${shiftSettings.enableShiftSystem ? 'bg-indigo-100 dark:bg-indigo-900/20' : 'bg-stone-100 dark:bg-zinc-700'}`}>
-                                                    <FaCalendar className={shiftSettings.enableShiftSystem ? 'text-indigo-600' : 'text-stone-400'} />
+                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800/70 rounded-xl border-l-4 border-indigo-400 dark:border-indigo-500">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${shiftSettings.enableShiftSystem ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-stone-100 dark:bg-zinc-700'}`}>
+                                                    <FaCalendar className={`text-lg ${shiftSettings.enableShiftSystem ? 'text-indigo-500' : 'text-stone-400'}`} />
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-stone-900 dark:text-white">Vardiyalı Çalışma Sistemi</p>
+                                                    <p className="font-bold text-sm text-stone-900 dark:text-white">{t('settings.shiftSystem')}</p>
                                                     <p className="text-xs text-stone-500 dark:text-zinc-400">
                                                         {shiftSettings.enableShiftSystem 
-                                                            ? 'Takvimde vardiya takibi ve vardiya düzenleme araçları açık' 
-                                                            : 'Vardiyalı sistem kapalı (Varsayılan)'}
+                                                            ? t('settings.shiftOn') 
+                                                            : t('settings.shiftOff')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -576,15 +585,17 @@ export default function SettingsPage() {
                                                 onClick={() => {
                                                     const nextVal = !shiftSettings.enableShiftSystem;
                                                     updateShiftSettings({ enableShiftSystem: nextVal });
-                                                    toast.success(nextVal ? 'Vardiya sistemi aktifleştirildi' : 'Vardiya sistemi kapatıldı');
+                                                    toast.success(nextVal ? t('settings.shiftActivated') : t('settings.shiftDeactivated'));
                                                 }}
-                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shiftSettings.enableShiftSystem ? 'bg-indigo-600' : 'bg-stone-300 dark:bg-zinc-600'
+                                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-300 shadow-inner ${shiftSettings.enableShiftSystem ? 'bg-indigo-600' : 'bg-stone-300 dark:bg-zinc-600'
                                                     }`}
                                             >
                                                 <span
-                                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${shiftSettings.enableShiftSystem ? 'translate-x-6' : 'translate-x-1'
+                                                    className={`inline-flex h-6 w-6 items-center justify-center transform rounded-full bg-white shadow-lg transition-all duration-300 ${shiftSettings.enableShiftSystem ? 'translate-x-7' : 'translate-x-1'
                                                         }`}
-                                                />
+                                                >
+                                                    <FaCalendar className={`text-[10px] ${shiftSettings.enableShiftSystem ? 'text-indigo-500' : 'text-stone-400'}`} />
+                                                </span>
                                             </button>
                                         </div>
                                     </div>
@@ -594,19 +605,19 @@ export default function SettingsPage() {
                                 <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
                                     <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-2 flex items-center gap-2">
                                         <FaPalette className="text-purple-500" />
-                                        Aydınlık Tema Konforu
+                                        {t('settings.lightThemeComfort')}
                                     </h2>
                                     <p className="text-sm text-stone-500 dark:text-zinc-400 mb-6">
-                                        Beyaz temada göz yorgunluğunu azaltmak için ayarları kişiselleştirin.
+                                        {t('settings.lightThemeComfortDesc')}
                                     </p>
 
                                     <div className="space-y-5">
                                         <div>
                                             <div className="mb-2 flex items-center justify-between">
-                                                <label className="text-sm font-medium text-stone-700 dark:text-zinc-300">
-                                                    Parlaklık
+                                                <label className="text-sm font-bold text-stone-700 dark:text-zinc-300">
+                                                    {t('settings.brightness')}
                                                 </label>
-                                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-lg">
+                                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-lg">
                                                     %{lightBrightness}
                                                 </span>
                                             </div>
@@ -617,17 +628,17 @@ export default function SettingsPage() {
                                                 step={1}
                                                 value={lightBrightness}
                                                 onChange={(e) => setLightBrightness(Number(e.target.value))}
-                                                className="w-full h-2 bg-stone-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                                                className="w-full h-2.5 bg-gradient-to-r from-stone-200 to-amber-100 dark:from-zinc-700 dark:to-zinc-600 rounded-full appearance-none cursor-pointer accent-amber-500"
                                                 disabled={isDark}
                                             />
                                         </div>
 
                                         <div>
                                             <div className="mb-2 flex items-center justify-between">
-                                                <label className="text-sm font-medium text-stone-700 dark:text-zinc-300">
-                                                    Beyazlık Yumuşatma
+                                                <label className="text-sm font-bold text-stone-700 dark:text-zinc-300">
+                                                    {t('settings.whiteSoftening')}
                                                 </label>
-                                                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-lg">
+                                                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2.5 py-1 rounded-lg">
                                                     %{lightSoftness}
                                                 </span>
                                             </div>
@@ -638,7 +649,7 @@ export default function SettingsPage() {
                                                 step={1}
                                                 value={lightSoftness}
                                                 onChange={(e) => setLightSoftness(Number(e.target.value))}
-                                                className="w-full h-2 bg-stone-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                className="w-full h-2.5 bg-gradient-to-r from-stone-200 to-purple-100 dark:from-zinc-700 dark:to-zinc-600 rounded-full appearance-none cursor-pointer accent-purple-500"
                                                 disabled={isDark}
                                             />
                                         </div>
@@ -647,11 +658,13 @@ export default function SettingsPage() {
                                             onClick={resetLightThemeTuning}
                                             className="text-xs font-medium text-stone-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors underline"
                                         >
-                                            Varsayılana Dön
+                                            {t('settings.resetToDefault')}
                                         </button>
                                     </div>
                                 </div>
+                            </div>
 
+                            <div className="space-y-6">
                                 {/* Database Usage Card */}
                                 <div className="bg-gradient-to-br from-stone-900 to-stone-800 dark:from-zinc-900 dark:to-black rounded-2xl shadow-xl p-6 border border-stone-700/50 relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -665,8 +678,8 @@ export default function SettingsPage() {
                                                     <FaDatabase className="text-emerald-400 text-xl" />
                                                 </div>
                                                 <div>
-                                                    <h2 className="text-lg font-bold text-white">Veritabanı Kullanımı</h2>
-                                                    <p className="text-xs text-stone-400">Ücretsiz 1 GB Kota</p>
+                                                    <h2 className="text-lg font-bold text-white">{t('settings.dbUsage')}</h2>
+                                                    <p className="text-xs text-stone-400">{t('settings.dbFreeQuota')}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
@@ -685,8 +698,8 @@ export default function SettingsPage() {
                                         </div>
 
                                         <div className="flex items-center justify-between text-xs font-semibold">
-                                            <span className="text-emerald-400">%{usagePercent.toFixed(2)} Kullanıldı</span>
-                                            <span className="text-stone-400">{formatBytes(remainingBytes)} boş</span>
+                                            <span className="text-emerald-400">%{usagePercent.toFixed(2)} {t('settings.dbUsed')}</span>
+                                            <span className="text-stone-400">{formatBytes(remainingBytes)} {t('settings.dbFree')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -702,16 +715,17 @@ export default function SettingsPage() {
                                                 <FaDownload className="text-2xl text-white" />
                                             </div>
                                             <div>
-                                                <h2 className="text-lg font-bold text-white">Veri Migrasyon</h2>
+                                                <h2 className="text-lg font-bold text-white">{t('settings.dataMigration')}</h2>
                                                 <p className="text-sm text-white/70">
-                                                    Eksik bilgileri API'lerden çekerek tamamlayın
+                                                    {t('settings.dataMigrationDesc')}
                                                 </p>
                                             </div>
                                         </div>
                                         <FaArrowRight className="text-white/70 text-xl group-hover:translate-x-1 transition-transform" />
                                     </div>
                                 </Link>
-                            </>
+                                </div>
+                            </div>
                         )}
 
                         {activeTab === 'vault' && (
@@ -1018,11 +1032,7 @@ export default function SettingsPage() {
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                                     <button
                                                         type="button"
-                                                        onClick={() => {
-                                                            if (window.confirm('Kütüphane JSON yedeğini veritabanına aktarmak istediğinize emin misiniz?')) {
-                                                                restoreFileInputRef.current?.click();
-                                                            }
-                                                        }}
+                                                        onClick={() => setConfirmRestoreType('media')}
                                                         disabled={isRestoring}
                                                         className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-red-300 dark:border-red-800/80 text-left hover:border-red-500 transition-all group cursor-pointer disabled:opacity-50"
                                                     >
@@ -1037,11 +1047,7 @@ export default function SettingsPage() {
 
                                                     <button
                                                         type="button"
-                                                        onClick={() => {
-                                                            if (window.confirm('Harcama JSON yedeğini veritabanına aktarmak istediğinize emin misiniz?')) {
-                                                                restoreExpensesFileInputRef.current?.click();
-                                                            }
-                                                        }}
+                                                        onClick={() => setConfirmRestoreType('expenses')}
                                                         disabled={isRestoring}
                                                         className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-red-300 dark:border-red-800/80 text-left hover:border-red-500 transition-all group cursor-pointer disabled:opacity-50"
                                                     >
@@ -1065,160 +1071,207 @@ export default function SettingsPage() {
 
 
                         {activeTab === 'profile' && (
-                            <>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                                 {/* Profile Info Form */}
-
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
-                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
-                                        <FaUserEdit className="text-amber-500" />
-                                        Profil Bilgileri
-                                    </h2>
+                                <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6 sm:p-7">
+                                    <div className="flex items-center gap-3.5 mb-6 pb-5 border-b border-stone-100 dark:border-zinc-800/80">
+                                        <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                            <FaUserEdit className="text-lg" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white">
+                                                {t('settings.profileInfo')}
+                                            </h2>
+                                            <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                                Kişisel bilgilerinizi ve profil tercihlerinizi yönetin
+                                            </p>
+                                        </div>
+                                    </div>
 
                                     {profileLoading ? (
-                                        <div className="flex items-center justify-center py-8">
-                                            <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="flex items-center justify-center py-12">
+                                            <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
                                         </div>
                                     ) : (
                                         <form onSubmit={handleSaveProfileInfo} className="space-y-5">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
-                                                        İsim
+                                                    <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                        <FaUser className="inline mr-1.5 text-stone-400 text-xs" />
+                                                        {t('settings.firstName')}
                                                     </label>
                                                     <input
                                                         type="text"
                                                         required
                                                         value={firstName}
                                                         onChange={(e) => setFirstName(e.target.value)}
-                                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-amber-500 focus:outline-none transition-all"
-                                                        placeholder="Adınız"
+                                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none transition-all text-sm font-medium text-stone-900 dark:text-white"
+                                                        placeholder={t('settings.firstNamePlaceholder')}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
-                                                        Soyisim
+                                                    <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                        <FaUser className="inline mr-1.5 text-stone-400 text-xs" />
+                                                        {t('settings.lastName')}
                                                     </label>
                                                     <input
                                                         type="text"
                                                         value={lastName}
                                                         onChange={(e) => setLastName(e.target.value)}
-                                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-amber-500 focus:outline-none transition-all"
-                                                        placeholder="Soyadınız"
+                                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none transition-all text-sm font-medium text-stone-900 dark:text-white"
+                                                        placeholder={t('settings.lastNamePlaceholder')}
                                                     />
                                                 </div>
                                             </div>
 
-                                            {/* Gender Selection */}
+                                            {/* Gender Selection - Segmented Executive Control */}
                                             <div>
-                                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-3">
-                                                    Cinsiyet
+                                                <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                    {t('settings.gender')}
                                                 </label>
-                                                <div className="flex gap-3">
-                                                    <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${gender === 'male'
-                                                        ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/20 dark:border-blue-400 dark:text-blue-400'
-                                                        : 'bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-stone-500 hover:border-blue-300'
-                                                        }`}>
-                                                        <input
-                                                            type="radio"
-                                                            name="gender"
-                                                            value="male"
-                                                            checked={gender === 'male'}
-                                                            onChange={() => setGender('male')}
-                                                            className="hidden"
-                                                        />
-                                                        <span className="text-2xl">👨</span>
-                                                        <span className="font-medium text-sm">Erkek</span>
-                                                    </label>
-                                                    <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${gender === 'female'
-                                                        ? 'bg-pink-50 border-pink-500 text-pink-700 dark:bg-pink-900/20 dark:border-pink-400 dark:text-pink-400'
-                                                        : 'bg-stone-50 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-stone-500 hover:border-pink-300'
-                                                        }`}>
-                                                        <input
-                                                            type="radio"
-                                                            name="gender"
-                                                            value="female"
-                                                            checked={gender === 'female'}
-                                                            onChange={() => setGender('female')}
-                                                            className="hidden"
-                                                        />
-                                                        <span className="text-2xl">👩</span>
-                                                        <span className="font-medium text-sm">Kadın</span>
-                                                    </label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setGender('male')}
+                                                        className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl font-bold text-xs transition-all cursor-pointer ${gender === 'male'
+                                                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/40 shadow-xs'
+                                                            : 'bg-stone-50 dark:bg-zinc-800/70 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-700/80 hover:bg-stone-100 dark:hover:bg-zinc-800'
+                                                            }`}
+                                                    >
+                                                        <FaMars className={`text-sm ${gender === 'male' ? 'text-amber-500' : 'text-stone-400 dark:text-zinc-500'}`} />
+                                                        <span>{t('settings.genderMale')}</span>
+                                                        {gender === 'male' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 ml-1"></span>}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setGender('female')}
+                                                        className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl font-bold text-xs transition-all cursor-pointer ${gender === 'female'
+                                                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/40 shadow-xs'
+                                                            : 'bg-stone-50 dark:bg-zinc-800/70 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-700/80 hover:bg-stone-100 dark:hover:bg-zinc-800'
+                                                            }`}
+                                                    >
+                                                        <FaVenus className={`text-sm ${gender === 'female' ? 'text-amber-500' : 'text-stone-400 dark:text-zinc-500'}`} />
+                                                        <span>{t('settings.genderFemale')}</span>
+                                                        {gender === 'female' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 ml-1"></span>}
+                                                    </button>
                                                 </div>
                                             </div>
 
                                             {/* Email (read-only) */}
                                             <div>
-                                                <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
-                                                    <FaEnvelope className="inline mr-2 text-stone-400" />
-                                                    E-posta
+                                                <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                    <FaEnvelope className="inline mr-1.5 text-stone-400 text-xs" />
+                                                    {t('settings.email')}
                                                 </label>
-                                                <input
-                                                    type="email"
-                                                    value={user?.email || ''}
-                                                    disabled
-                                                    className="w-full px-4 py-3 rounded-xl bg-stone-100 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 text-stone-500 cursor-not-allowed"
-                                                />
-                                                <p className="text-xs text-stone-400 mt-1">E-posta adresi değiştirilemez</p>
+                                                <div className="relative">
+                                                    <input
+                                                        type="email"
+                                                        value={user?.email || ''}
+                                                        disabled
+                                                        className="w-full px-4 py-3 rounded-xl bg-stone-100/80 dark:bg-zinc-800/40 border border-stone-200/80 dark:border-zinc-700/60 text-stone-500 dark:text-zinc-400 text-sm font-medium cursor-not-allowed pr-10"
+                                                    />
+                                                    <FaLock className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 dark:text-zinc-500 text-xs" />
+                                                </div>
+                                                <p className="text-[11px] text-stone-400 dark:text-zinc-500 mt-1.5 flex items-center gap-1.5">
+                                                    <FaLock className="text-[9px]" />
+                                                    {t('settings.emailNotEditable')}
+                                                </p>
                                             </div>
 
-                                            <button
-                                                type="submit"
-                                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 flex items-center justify-center gap-2"
-                                            >
-                                                <FaCheck />
-                                                Bilgileri Güncelle
-                                            </button>
+                                            {/* Submit Button - Sleek Right-Aligned */}
+                                            <div className="pt-2 flex justify-end">
+                                                <button
+                                                    type="submit"
+                                                    disabled={profileSaving}
+                                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all cursor-pointer disabled:opacity-50"
+                                                >
+                                                    {profileSaving ? (
+                                                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <FaCheck className="text-xs" />
+                                                    )}
+                                                    <span>{t('settings.updateInfo')}</span>
+                                                </button>
+                                            </div>
                                         </form>
                                     )}
                                 </div>
 
-                                {/* Account Info */}
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
-                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <FaInfoCircle className="text-blue-500" />
-                                        Hesap Bilgileri
-                                    </h2>
+                                {/* Account Info – Modern Card */}
+                                <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6 sm:p-7">
+                                    <div className="flex items-center gap-3.5 mb-6 pb-5 border-b border-stone-100 dark:border-zinc-800/80">
+                                        <div className="w-10 h-10 rounded-2xl bg-stone-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 text-stone-600 dark:text-zinc-300">
+                                            <FaInfoCircle className="text-base" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white">
+                                                {t('settings.accountInfo')}
+                                            </h2>
+                                            <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                                Hesap kimliği ve kayıt zaman çizelgesi
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between p-3 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <FaCalendar className="text-stone-400" />
-                                                <span className="text-sm text-stone-600 dark:text-zinc-400">Hesap Oluşturma</span>
+                                        <div className="flex items-center justify-between p-4 bg-stone-50/70 dark:bg-zinc-800/40 rounded-2xl border border-stone-200/60 dark:border-zinc-800/60 hover:bg-stone-50 dark:hover:bg-zinc-800/60 transition-colors">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="w-9 h-9 rounded-xl bg-stone-200/60 dark:bg-zinc-700/50 flex items-center justify-center text-stone-600 dark:text-zinc-300">
+                                                    <FaCalendar className="text-xs" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-stone-600 dark:text-zinc-400">{t('settings.accountCreated')}</span>
                                             </div>
-                                            <span className="text-sm font-medium text-stone-900 dark:text-white">{accountCreated}</span>
+                                            <span className="text-xs font-bold text-stone-900 dark:text-white">{accountCreated}</span>
                                         </div>
-                                        <div className="flex items-center justify-between p-3 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <FaHistory className="text-stone-400" />
-                                                <span className="text-sm text-stone-600 dark:text-zinc-400">Son Giriş</span>
+
+                                        <div className="flex items-center justify-between p-4 bg-stone-50/70 dark:bg-zinc-800/40 rounded-2xl border border-stone-200/60 dark:border-zinc-800/60 hover:bg-stone-50 dark:hover:bg-zinc-800/60 transition-colors">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="w-9 h-9 rounded-xl bg-stone-200/60 dark:bg-zinc-700/50 flex items-center justify-center text-stone-600 dark:text-zinc-300">
+                                                    <FaHistory className="text-xs" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-stone-600 dark:text-zinc-400">{t('settings.lastLogin')}</span>
                                             </div>
-                                            <span className="text-sm font-medium text-stone-900 dark:text-white">{lastLogin}</span>
+                                            <span className="text-xs font-bold text-stone-900 dark:text-white">{lastLogin}</span>
                                         </div>
-                                        <div className="flex items-center justify-between p-3 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <FaFingerprint className="text-stone-400" />
-                                                <span className="text-sm text-stone-600 dark:text-zinc-400">Kullanıcı ID</span>
+
+                                        <div className="flex items-center justify-between p-4 bg-stone-50/70 dark:bg-zinc-800/40 rounded-2xl border border-stone-200/60 dark:border-zinc-800/60 hover:bg-stone-50 dark:hover:bg-zinc-800/60 transition-colors">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="w-9 h-9 rounded-xl bg-stone-200/60 dark:bg-zinc-700/50 flex items-center justify-center text-stone-600 dark:text-zinc-300">
+                                                    <FaFingerprint className="text-xs" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-stone-600 dark:text-zinc-400">{t('settings.userId')}</span>
                                             </div>
-                                            <span className="text-xs font-mono text-stone-500 dark:text-zinc-400 truncate ml-4 max-w-[200px]">{user?.uid}</span>
+                                            <span className="text-[11px] font-mono font-medium text-stone-600 dark:text-zinc-300 truncate ml-4 max-w-[180px] bg-stone-200/70 dark:bg-zinc-800 px-2.5 py-1 rounded-lg border border-stone-300/60 dark:border-zinc-700/50 select-all">
+                                                {user?.uid}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {activeTab === 'security' && (
-                            <>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                                 {/* Password Change */}
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
-                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-6 flex items-center gap-2">
-                                        <FaKey className="text-blue-500" />
-                                        Şifre Değiştir
-                                    </h2>
+                                <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6 sm:p-7">
+                                    <div className="flex items-center gap-3.5 mb-6 pb-5 border-b border-stone-100 dark:border-zinc-800/80">
+                                        <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                            <FaKey className="text-base" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white">
+                                                {t('settings.passwordTitle')}
+                                            </h2>
+                                            <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                                Güçlü ve benzersiz bir şifre belirleyin
+                                            </p>
+                                        </div>
+                                    </div>
 
                                     <form onSubmit={handleUpdatePassword} className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
-                                                Mevcut Şifre
+                                            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                {t('settings.currentPassword')}
                                             </label>
                                             <div className="relative">
                                                 <input
@@ -1226,22 +1279,22 @@ export default function SettingsPage() {
                                                     required
                                                     value={currentPassword}
                                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none pr-12"
+                                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none pr-12 text-sm font-medium text-stone-900 dark:text-white transition-all"
                                                     placeholder="••••••••"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-zinc-200 transition-colors p-1"
                                                 >
-                                                    {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                                                    {showCurrentPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
                                                 </button>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
-                                                Yeni Şifre
+                                            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                {t('settings.newPassword')}
                                             </label>
                                             <div className="relative">
                                                 <input
@@ -1249,115 +1302,213 @@ export default function SettingsPage() {
                                                     required
                                                     value={newPassword}
                                                     onChange={(e) => setNewPassword(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none pr-12"
+                                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none pr-12 text-sm font-medium text-stone-900 dark:text-white transition-all"
                                                     placeholder="••••••••"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowNewPassword(!showNewPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-zinc-200 transition-colors p-1"
                                                 >
-                                                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                                                    {showNewPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
                                                 </button>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-stone-700 dark:text-zinc-300 mb-2">
-                                                Yeni Şifre (Tekrar)
+                                            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                                {t('settings.confirmNewPassword')}
                                             </label>
                                             <input
                                                 type="password"
                                                 required
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none text-sm font-medium text-stone-900 dark:text-white transition-all"
                                                 placeholder="••••••••"
                                             />
                                         </div>
 
-                                        <button
-                                            type="submit"
-                                            disabled={loading}
-                                            className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 disabled:opacity-50 flex items-center justify-center gap-2"
-                                        >
-                                            {loading ? (
-                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                            ) : (
-                                                <>
-                                                    <FaCheck />
-                                                    Şifreyi Güncelle
-                                                </>
-                                            )}
-                                        </button>
+                                        <div className="pt-2 flex justify-end">
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-white dark:text-stone-950 dark:hover:bg-stone-100 text-white font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                                            >
+                                                {loading ? (
+                                                    <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    <FaCheck className="text-xs" />
+                                                )}
+                                                <span>{t('settings.updatePassword')}</span>
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
 
-                                {/* Logout */}
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
-                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <FaSignOutAlt className="text-orange-500" />
-                                        Oturum
-                                    </h2>
-                                    <p className="text-sm text-stone-500 dark:text-zinc-400 mb-4">
-                                        Mevcut oturumunuzu sonlandırın.
-                                    </p>
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
-                                    >
-                                        <FaSignOutAlt />
-                                        Çıkış Yap
-                                    </button>
-                                </div>
+                                <div className="space-y-6">
+                                    {/* Session Management Card */}
+                                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6 sm:p-7">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            <div className="flex items-start gap-3.5">
+                                                <div className="w-10 h-10 rounded-2xl bg-stone-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 text-stone-600 dark:text-zinc-300">
+                                                    <FaSignOutAlt className="text-sm" />
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-base font-bold text-stone-900 dark:text-white">
+                                                        {t('settings.session')}
+                                                    </h2>
+                                                    <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1 max-w-md leading-relaxed">
+                                                        {t('settings.sessionDesc')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={handleLogout}
+                                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-200 dark:border-zinc-700 bg-stone-50 hover:bg-stone-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 active:scale-[0.98] font-bold text-xs transition-all shadow-xs shrink-0 cursor-pointer"
+                                            >
+                                                <FaSignOutAlt className="text-xs text-stone-400" />
+                                                <span>{t('settings.logout')}</span>
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                {/* Delete Account */}
-                                <div className="bg-red-50 dark:bg-red-900/10 rounded-2xl shadow-lg border border-red-200 dark:border-red-800 p-6">
-                                    <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
-                                        <FaTrash />
-                                        Hesabı Sil
-                                    </h2>
-                                    <p className="text-sm text-stone-600 dark:text-zinc-400 mb-4">
-                                        Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.
-                                    </p>
-                                    <button
-                                        onClick={() => setShowDeleteModal(true)}
-                                        className="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/25 flex items-center justify-center gap-2"
-                                    >
-                                        <FaExclamationTriangle />
-                                        Hesabımı Sil
-                                    </button>
+                                    {/* Danger Zone: Delete Account */}
+                                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-rose-200/70 dark:border-rose-900/40 p-6 sm:p-7">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            <div className="flex items-start gap-3.5">
+                                                <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/50 dark:border-rose-900/50 flex items-center justify-center shrink-0 text-rose-600 dark:text-rose-400">
+                                                    <FaTrash className="text-sm" />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h2 className="text-base font-bold text-stone-900 dark:text-white">
+                                                            {t('settings.deleteAccount')}
+                                                        </h2>
+                                                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/60 tracking-wider">
+                                                            Tehlikeli Alan
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1 max-w-md leading-relaxed">
+                                                        {t('settings.deleteAccountDesc')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowDeleteModal(true)}
+                                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-xs shadow-sm shadow-rose-600/20 transition-all shrink-0 cursor-pointer"
+                                            >
+                                                <FaExclamationTriangle className="text-xs" />
+                                                <span>{t('settings.deleteConfirm')}</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {activeTab === 'privacy' && (
                             <>
-                                {/* Privacy Settings */}
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-stone-200 dark:border-zinc-800 p-6">
-                                    <h2 className="text-lg font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <FaEye className="text-purple-500" />
-                                        Gizlilik Ayarları
-                                    </h2>
-                                    <p className="text-sm text-stone-500 dark:text-zinc-400 mb-6">
-                                        Verilerinizin nasıl kullanıldığını kontrol edin.
-                                    </p>
-
-                                    <div className="space-y-4">
-                                        <div className="p-4 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <h3 className="font-medium text-stone-900 dark:text-white mb-2">Veri Toplama</h3>
-                                            <p className="text-sm text-stone-500 dark:text-zinc-400">
-                                                Sadece uygulama işlevselliği için gerekli veriler toplanır.
-                                                Üçüncü taraflarla paylaşılmaz.
+                                {/* Privacy Header */}
+                                <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6 sm:p-7">
+                                    <div className="flex items-center gap-3.5">
+                                        <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                            <FaShieldAlt className="text-base" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white">
+                                                {t('settings.privacyTitle')}
+                                            </h2>
+                                            <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                                {t('settings.privacySubtitle')}
                                             </p>
                                         </div>
+                                    </div>
+                                </div>
 
-                                        <div className="p-4 bg-stone-50 dark:bg-zinc-800 rounded-xl">
-                                            <h3 className="font-medium text-stone-900 dark:text-white mb-2">Çerezler</h3>
-                                            <p className="text-sm text-stone-500 dark:text-zinc-400">
-                                                Oturum yönetimi ve kullanıcı tercihlerinizi hatırlamak için
-                                                gerekli çerezler kullanılır.
-                                            </p>
+                                {/* Privacy Cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    {/* Data Collection */}
+                                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6">
+                                        <div className="flex items-start gap-3.5">
+                                            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                                <FaShieldAlt className="text-base" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <h3 className="font-bold text-sm text-stone-900 dark:text-white">{t('settings.privacyDataCollection')}</h3>
+                                                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-0.5 rounded-full">
+                                                        {t('settings.privacyDataCollectionBadge')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                                    {t('settings.privacyDataCollectionDesc')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Cookies */}
+                                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6">
+                                        <div className="flex items-start gap-3.5">
+                                            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                                <FaLock className="text-base" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <h3 className="font-bold text-sm text-stone-900 dark:text-white">{t('settings.privacyCookies')}</h3>
+                                                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-0.5 rounded-full">
+                                                        {t('settings.privacyCookiesBadge')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                                    {t('settings.privacyCookiesDesc')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Third Party */}
+                                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6">
+                                        <div className="flex items-start gap-3.5">
+                                            <div className="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                                                <FaCloud className="text-base" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <h3 className="font-bold text-sm text-stone-900 dark:text-white">{t('settings.privacyThirdParty')}</h3>
+                                                    <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-2.5 py-0.5 rounded-full">
+                                                        {t('settings.privacyThirdPartyBadge')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                                    {t('settings.privacyThirdPartyDesc')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Data Export */}
+                                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xs border border-stone-200/80 dark:border-zinc-800/80 p-6">
+                                        <div className="flex items-start gap-3.5">
+                                            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                                <FaDownload className="text-base" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <h3 className="font-bold text-sm text-stone-900 dark:text-white">{t('settings.privacyDataExport')}</h3>
+                                                </div>
+                                                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed mb-3">
+                                                    {t('settings.privacyDataExportDesc')}
+                                                </p>
+                                                <button
+                                                    onClick={() => setActiveTab('vault')}
+                                                    className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
+                                                >
+                                                    <span>{t('settings.privacyDataExportAction')}</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1374,7 +1525,7 @@ export default function SettingsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center z-[120] p-4"
                         onClick={() => {
                             setShowPasswordModal(false);
                             setConfirmPasswordInput('');
@@ -1386,65 +1537,80 @@ export default function SettingsPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-stone-200 dark:border-zinc-800"
+                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-md border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
                         >
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-                                    <FaLock className="text-amber-500" />
-                                    Şifre Doğrulama
-                                </h3>
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 dark:border-zinc-800/80">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm">
+                                        <FaLock />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold text-stone-900 dark:text-white">
+                                            Şifre Doğrulama
+                                        </h3>
+                                        <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                            Güvenlik için lütfen mevcut şifrenizi girin
+                                        </p>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setShowPasswordModal(false);
                                         setConfirmPasswordInput('');
                                         setPendingProfileUpdate(null);
                                     }}
-                                    className="text-stone-400 hover:text-stone-600 dark:hover:text-zinc-300"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 >
-                                    <FaTimes />
+                                    <FaTimes className="text-sm" />
                                 </button>
                             </div>
 
-                            <p className="text-sm text-stone-600 dark:text-zinc-400 mb-4">
-                                Profil bilgilerinizi güncellemek için mevcut şifrenizi girin.
-                            </p>
+                            <div className="px-6 py-5 space-y-4">
+                                <p className="text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
+                                    Profil bilgilerinizi kaydetmek ve güncellemek için mevcut hesabınızın şifresini onaylayınız.
+                                </p>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                        Mevcut Şifre
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={confirmPasswordInput}
+                                        onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none text-sm font-medium text-stone-900 dark:text-white transition-all"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') confirmProfileUpdate();
+                                        }}
+                                    />
+                                </div>
+                            </div>
 
-                            <input
-                                type="password"
-                                value={confirmPasswordInput}
-                                onChange={(e) => setConfirmPasswordInput(e.target.value)}
-                                placeholder="Mevcut Şifre"
-                                className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-amber-500 focus:outline-none mb-4"
-                                autoFocus
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') confirmProfileUpdate();
-                                }}
-                            />
-
-                            <div className="flex gap-3">
+                            <div className="px-6 py-4 bg-stone-50 dark:bg-zinc-900/80 border-t border-stone-200/80 dark:border-zinc-800/80 flex items-center justify-end gap-2.5">
                                 <button
+                                    type="button"
                                     onClick={() => {
                                         setShowPasswordModal(false);
                                         setConfirmPasswordInput('');
                                         setPendingProfileUpdate(null);
                                     }}
-                                    className="flex-1 py-3 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
+                                    className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-300 font-bold text-xs transition-colors cursor-pointer"
                                 >
                                     İptal
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={confirmProfileUpdate}
                                     disabled={profileSaving || !confirmPasswordInput}
-                                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-amber-500/20 hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
                                 >
                                     {profileSaving ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                     ) : (
-                                        <>
-                                            <FaCheck />
-                                            Onayla
-                                        </>
+                                        <FaCheck className="text-xs" />
                                     )}
+                                    <span>Onayla</span>
                                 </button>
                             </div>
                         </motion.div>
@@ -1459,64 +1625,110 @@ export default function SettingsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-stone-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center z-[120] p-4"
+                        onClick={() => {
+                            setShowDeleteModal(false);
+                            setDeletePassword('');
+                        }}
                     >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-stone-200 dark:border-zinc-800"
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-md border border-rose-200/80 dark:border-rose-900/60 overflow-hidden"
                         >
-                            <div className="text-center mb-6">
-                                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FaExclamationTriangle className="text-red-500 text-2xl" />
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 dark:border-zinc-800/80">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/60 flex items-center justify-center text-sm">
+                                        <FaExclamationTriangle />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold text-stone-900 dark:text-white">
+                                            Hesabınızı Silmek Üzeresiniz
+                                        </h3>
+                                        <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                                            Bu işlem geri alınamaz!
+                                        </p>
+                                    </div>
                                 </div>
-                                <h3 className="text-lg font-bold text-stone-900 dark:text-white mb-2">
-                                    Hesabınızı Silmek Üzeresiniz
-                                </h3>
-                                <p className="text-sm text-stone-500 dark:text-zinc-400">
-                                    Bu işlem geri alınamaz. Tüm verileriniz, favorileriniz ve geçmişiniz kalıcı olarak silinecektir.
-                                </p>
-                            </div>
-
-                            <input
-                                type="password"
-                                value={deletePassword}
-                                onChange={(e) => setDeletePassword(e.target.value)}
-                                placeholder="Devam etmek için şifrenizi girin"
-                                className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 focus:ring-2 focus:ring-red-500 focus:outline-none mb-4"
-                                autoFocus
-                            />
-
-                            <div className="flex gap-3">
                                 <button
                                     onClick={() => {
                                         setShowDeleteModal(false);
                                         setDeletePassword('');
                                     }}
-                                    className="flex-1 py-3 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-zinc-700 transition-all"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                >
+                                    <FaTimes className="text-sm" />
+                                </button>
+                            </div>
+
+                            <div className="px-6 py-5 space-y-4">
+                                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                                    Hesabınızı sildiğinizde kütüphaneniz, favorileriniz, ajanda ve geçmiş kayıtlarınız dahil tüm verileriniz kalıcı olarak imha edilir.
+                                </p>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                                        Onaylamak İçin Şifrenizi Girin
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={deletePassword}
+                                        onChange={(e) => setDeletePassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-zinc-800/70 border border-stone-200/80 dark:border-zinc-700/80 focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 focus:outline-none text-sm font-medium text-stone-900 dark:text-white transition-all"
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="px-6 py-4 bg-stone-50 dark:bg-zinc-900/80 border-t border-stone-200/80 dark:border-zinc-800/80 flex items-center justify-end gap-2.5">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setDeletePassword('');
+                                    }}
+                                    className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-300 font-bold text-xs transition-colors cursor-pointer"
                                 >
                                     Vazgeç
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={handleDeleteAccount}
                                     disabled={loading || !deletePassword}
-                                    className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-rose-600/20 hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
                                 >
                                     {loading ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
-                                        <>
-                                            <FaTrash />
-                                            Hesabımı Sil
-                                        </>
+                                        <FaTrash className="text-xs" />
                                     )}
+                                    <span>Hesabımı Kalıcı Olarak Sil</span>
                                 </button>
                             </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Disaster Recovery Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={confirmRestoreType !== null}
+                onClose={() => setConfirmRestoreType(null)}
+                onConfirm={() => {
+                    if (confirmRestoreType === 'media') {
+                        restoreFileInputRef.current?.click();
+                    } else if (confirmRestoreType === 'expenses') {
+                        restoreExpensesFileInputRef.current?.click();
+                    }
+                }}
+                title={confirmRestoreType === 'media' ? 'Medya JSON Yedeği Aktarımı' : 'Harcama JSON Yedeği Aktarımı'}
+                message="Bu işlem seçtiğiniz JSON yedek dosyasındaki kayıtları doğrudan Firebase veritabanınıza geri aktaracaktır. Devam etmek istediğinize emin misiniz?"
+                confirmText="Yedekten Geri Yükle"
+                cancelText="İptal"
+                variant="danger"
+            />
         </div>
     );
 }

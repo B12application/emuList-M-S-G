@@ -266,7 +266,11 @@ export default function MonthlyView({
                                 {m.title}
                               </span>
                             </div>
-                            {m.startTime && m.startTime !== 'TBD' && m.startTime !== '--:--' ? (
+                            {m.score ? (
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 shrink-0 border border-emerald-500/35" title="Maç Sonucu">
+                                {m.score}
+                              </span>
+                            ) : m.startTime && m.startTime !== 'TBD' && m.startTime !== '--:--' ? (
                               <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-400/40 text-amber-950 dark:text-amber-200 shrink-0">
                                 {m.startTime}
                               </span>
@@ -458,7 +462,11 @@ export default function MonthlyView({
                           <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                             <span>{format(new Date(match.date), 'd MMMM yyyy', { locale: tr })}</span>
                             <span className="w-1 h-1 bg-stone-300 dark:bg-zinc-600 rounded-full" />
-                            {match.startTime && match.startTime !== 'TBD' && match.startTime !== '--:--' ? (
+                            {match.score ? (
+                              <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/35 text-emerald-800 dark:text-emerald-300 font-extrabold text-[10px]">
+                                MS • {match.score}
+                              </span>
+                            ) : match.startTime && match.startTime !== 'TBD' && match.startTime !== '--:--' ? (
                               <span>{match.startTime}</span>
                             ) : (
                               <span className="italic text-stone-500 dark:text-zinc-400 font-semibold">Saat Belli Değil</span>
@@ -545,7 +553,11 @@ export default function MonthlyView({
                       <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                         <span>{format(new Date(match.date), 'd MMMM yyyy', { locale: tr })}</span>
                         <span className="w-1 h-1 bg-stone-300 dark:bg-zinc-600 rounded-full" />
-                        {match.startTime && match.startTime !== 'TBD' && match.startTime !== '--:--' ? (
+                        {match.score ? (
+                          <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/35 text-emerald-800 dark:text-emerald-300 font-extrabold text-[10px]">
+                            MS • {match.score}
+                          </span>
+                        ) : match.startTime && match.startTime !== 'TBD' && match.startTime !== '--:--' ? (
                           <span>{match.startTime}</span>
                         ) : (
                           <span className="italic text-stone-500 dark:text-zinc-400 font-semibold">Saat Belli Değil</span>

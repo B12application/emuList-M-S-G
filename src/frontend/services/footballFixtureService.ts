@@ -1,5 +1,7 @@
 // src/frontend/services/footballFixtureService.ts
 // B12 Kişisel Yaşam Asistanı - Resmi Fikstür ve Canlı Maç Servisi
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../backend/config/firebaseConfig';
 import type { PlannerMeeting } from '../../backend/types/planner';
 
 export interface FootballTeam {
@@ -234,6 +236,7 @@ export const AVAILABLE_FOOTBALL_TEAMS: FootballTeam[] = [
 const STORAGE_KEY_SELECTED_TEAMS = 'b12_selected_football_teams_v6';
 const FIXTURES_CACHE_KEY = 'b12_football_fixtures_cache_v21';
 const FIXTURES_CACHE_TIME = 'b12_football_fixtures_time_v21';
+const FIXTURES_CACHE_TEAMS_KEY = 'b12_football_fixtures_teams_v21';
 const CACHE_TTL = 30 * 60 * 1000; // 30 dakika
 
 export const getSelectedTeamIds = (): string[] => {
@@ -251,13 +254,49 @@ export const getSelectedTeamIds = (): string[] => {
   return ['galatasaray'];
 };
 
-export const saveSelectedTeamIds = (teamIds: string[]) => {
+export const saveSelectedTeamIds = async (teamIds: string[], userId?: string): Promise<void> => {
   try {
     localStorage.setItem(STORAGE_KEY_SELECTED_TEAMS, JSON.stringify(teamIds));
     localStorage.removeItem(FIXTURES_CACHE_KEY); // Cache'i anında geçersiz kıl
+    localStorage.removeItem(FIXTURES_CACHE_TIME);
+    localStorage.removeItem(FIXTURES_CACHE_TEAMS_KEY);
   } catch (e) {
-    console.error("Failed to save selected teams:", e);
+    console.error("Failed to save selected teams to localStorage:", e);
   }
+
+  // Firestore Kullanıcı Profiline Senkronize Et (Cihazlar arası kalıcılık)
+  if (userId) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await setDoc(userRef, {
+        selectedFootballTeams: teamIds,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (e) {
+      console.warn("[Fixtures] Failed to sync selected teams to Firestore:", e);
+    }
+  }
+};
+
+/**
+ * Kullanıcı oturum açtığında Firestore'daki seçili takımları kontrol edip localStorage ile eşitler.
+ */
+export const syncUserSelectedTeamsFromFirestore = async (userId: string): Promise<string[]> => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      if (Array.isArray(data.selectedFootballTeams) && data.selectedFootballTeams.length > 0) {
+        const cloudTeams: string[] = data.selectedFootballTeams;
+        localStorage.setItem(STORAGE_KEY_SELECTED_TEAMS, JSON.stringify(cloudTeams));
+        return cloudTeams;
+      }
+    }
+  } catch (e) {
+    console.warn("[Fixtures] Failed to fetch selected teams from Firestore:", e);
+  }
+  return getSelectedTeamIds();
 };
 
 /**
@@ -292,19 +331,27 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
     return [];
   }
 
-  // 1. Önbellek kontrolü
+  const selectedSignature = [...selectedTeamIds].sort().join(',');
+
+  // 1. Önbellek kontrolü (Yalnızca forceRefresh değilse VE önbellek imzası tam olarak uyuşuyorsa)
   if (!forceRefresh) {
     try {
       const cached = localStorage.getItem(FIXTURES_CACHE_KEY);
       const cachedTime = localStorage.getItem(FIXTURES_CACHE_TIME);
-      if (cached && cachedTime) {
+      const cachedTeams = localStorage.getItem(FIXTURES_CACHE_TEAMS_KEY);
+
+      if (cached && cachedTime && cachedTeams === selectedSignature) {
         const age = Date.now() - parseInt(cachedTime, 10);
         if (age < CACHE_TTL) {
           const parsed: PlannerMeeting[] = JSON.parse(cached);
-          const filtered = parsed.filter(m => 
-            selectedTeamIds.some(tId => (m as any).teamId === tId || m.id?.includes(tId) || m.description?.toLowerCase().includes(tId))
+          // Tüm seçili takımların önbellekte temsil edildiğini doğrula
+          const cachedTeamIds = new Set(
+            parsed.map(m => (m as any).teamId || (m.id ? m.id.split('-')[1] : ''))
           );
-          if (filtered.length > 0) return filtered;
+          const hasAllTeams = selectedTeamIds.every(tId => cachedTeamIds.has(tId));
+          if (hasAllTeams && parsed.length > 0) {
+            return parsed;
+          }
         }
       }
     } catch (e) {
@@ -326,14 +373,22 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
     }
   }
 
-  // 3. Canlı Netlify / Proxy Servisinden Saat Güncellemelerini Al (Non-blocking, 3.5s timeout)
+  // 3. Canlı Cloudflare / Netlify Servisinden Saat & Skor Güncellemelerini Al (Non-blocking, 3.5s timeout)
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const res = await fetch(`/.netlify/functions/fetch-fixtures?teams=${selectedTeamIds.join(',')}`, {
+    const queryParams = `teams=${selectedTeamIds.join(',')}`;
+    // Birincil platform Cloudflare Pages (/api/fetch-fixtures), ikincil Netlify fallback
+    let res = await fetch(`/api/fetch-fixtures?${queryParams}`, {
       signal: controller.signal
     }).catch(() => null);
+
+    if (!res || !res.ok) {
+      res = await fetch(`/.netlify/functions/fetch-fixtures?${queryParams}`, {
+        signal: controller.signal
+      }).catch(() => null);
+    }
 
     clearTimeout(timeoutId);
 
@@ -347,6 +402,11 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
             // Saat kesinleştiyse güncelle (örn: TBD -> 21:00)
             if (sm.time && sm.time !== 'TBD') {
               existing.startTime = sm.time;
+            }
+            // Otomatik canlı/bitmiş skor güncellemesi
+            if (sm.score) {
+              existing.score = sm.score;
+              existing.isFinished = true;
             }
           } else {
             // Yeni eklenmiş maç varsa listeye ekle
@@ -364,6 +424,8 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
                 description: `${team.name} • ${sm.comp || team.leagueName}`,
                 teamBadge: team.logo,
                 teamColor: team.color,
+                score: sm.score,
+                isFinished: !!sm.score
               } as PlannerMeeting);
             }
           }
@@ -383,10 +445,11 @@ export const getUpcomingFootballMatches = async (forceRefresh = false): Promise<
     return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
   });
 
-  // 5. Önbelleğe Kaydet
+  // 5. Önbelleğe Kaydet (Takım imzası ile birlikte)
   try {
     localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify(allMatches));
     localStorage.setItem(FIXTURES_CACHE_TIME, Date.now().toString());
+    localStorage.setItem(FIXTURES_CACHE_TEAMS_KEY, selectedSignature);
   } catch (e) {
     console.warn("[Fixtures] Cache write warning:", e);
   }

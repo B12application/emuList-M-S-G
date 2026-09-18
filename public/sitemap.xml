@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+    <!-- Ana Sayfa & Kişisel Yaşam Asistanı Merkezi -->
+    <url>
+        <loc>https://b12application.pages.dev/</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- Giriş ve Tanıtım Sayfası -->
+    <url>
+        <loc>https://b12application.pages.dev/login</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- Kayıt Ol Sayfası -->
+    <url>
+        <loc>https://b12application.pages.dev/signup</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Film Koleksiyonu & Arşiv -->
+    <url>
+        <loc>https://b12application.pages.dev/movie</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Dizi Koleksiyonu & Sezon Takibi -->
+    <url>
+        <loc>https://b12application.pages.dev/series</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Oyun Koleksiyonu -->
+    <url>
+        <loc>https://b12application.pages.dev/game</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Kitap Koleksiyonu -->
+    <url>
+        <loc>https://b12application.pages.dev/book</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Harcamalar, Bütçe & Finans Radarı -->
+    <url>
+        <loc>https://b12application.pages.dev/expenses</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Takvim, Vardiya & İş Planlayıcı -->
+    <url>
+        <loc>https://b12application.pages.dev/planner</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Şifreli Not Kalesi & İkinci Beyin -->
+    <url>
+        <loc>https://b12application.pages.dev/notes</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Seyahat & Gezi Planlayıcı -->
+    <url>
+        <loc>https://b12application.pages.dev/travel-planner</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- Ziyaret Edilen Şehir & Ülke Haritası (Gezdiğim Mekanlar) -->
+    <url>
+        <loc>https://b12application.pages.dev/map</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- Yaşam ve Arşiv İstatistikleri -->
+    <url>
+        <loc>https://b12application.pages.dev/stats</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- AI Destekli Beden & Kalori Asistanı -->
+    <url>
+        <loc>https://b12application.pages.dev/calorie-chat</loc>
+        <lastmod>2026-09-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+</urlset>

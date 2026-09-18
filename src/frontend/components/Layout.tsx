@@ -7,9 +7,11 @@ import MobileTopBar from './MobileTopBar';
 import EmuAIWidget from './calorie-chat/EmuAIWidget';
 import ScrollToTopButton from './ScrollToTopButton';
 import Footer from './Footer';
+import { useAutoRouteSEO } from '../hooks/usePageSEO';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useAutoRouteSEO();
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased flex flex-col justify-between">

@@ -65,7 +65,7 @@ export default function Footer() {
                                 </span>
                             </div>
                             <p className="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5">
-                                {t('footer.personalAgentTitle') || 'Kişisel Yaşam Asistanı'} &bull; <span className="text-stone-700 dark:text-zinc-300 font-semibold">{t('footer.developer') || 'Geliştirici: EMU'}</span>
+                                {t('footer.personalAgentTitle') || 'Kişisel Yaşam Asistanı'} &bull; <span className="text-stone-700 dark:text-zinc-300 font-semibold">{t('footer.developer') || 'Geliştirici: Mustafa Ulusoy (EMU)'}</span>
                             </p>
                         </div>
                     </Link>

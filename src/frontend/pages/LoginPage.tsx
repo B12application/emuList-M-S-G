@@ -27,6 +27,7 @@ import {
   FaPause
 } from 'react-icons/fa';
 import { seedDemoData } from '../utils/demoSeeder';
+import { usePageSEO } from '../hooks/usePageSEO';
 import '../index.css';
 
 interface ModuleHighlight {
@@ -197,6 +198,14 @@ const SLIDE_DURATION = 14000; // 14 seconds rotation
 export default function LoginPage() {
   const { t, language, setLanguage } = useLanguage();
   const isTr = language === 'tr';
+
+  usePageSEO({
+    title: isTr ? 'Giriş Yap & Asistana Bağlan' : 'Sign In & Connect',
+    description: isTr 
+      ? 'Mustafa Ulusoy tarafından geliştirilen B12 Kişisel Yaşam Asistanı ve Dijital Hafıza Vitamini giriş sayfası. Medya, ajanda, finans ve seyahat hafızanıza erişin.'
+      : 'Sign in to B12, the Personal Life Agent and Digital Memory Vitamin created by Mustafa Ulusoy. Access your media archive, finances, and calendar.',
+    canonicalPath: '/login'
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -337,7 +346,7 @@ export default function LoginPage() {
                 B12 OS
               </span>
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-none">
-                {isTr ? 'Kişisel Yaşam Asistanı' : 'Personal Life Assistant'}
+                {isTr ? 'Kişisel Yaşam Asistanı • Mustafa Ulusoy' : 'Personal Life Assistant • Mustafa Ulusoy'}
               </span>
             </div>
           </div>
@@ -380,8 +389,8 @@ export default function LoginPage() {
               </h1>
               <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
                 {isTr 
-                  ? 'Finans, medya arşivi, takvim, notlar ve seyahat hafızanız tek noktada.' 
-                  : 'Finances, media vault, shifts, travel and encrypted notes in one place.'}
+                  ? 'Mustafa Ulusoy tarafından geliştirilen B12; finans, medya arşivi, takvim, notlar ve seyahat hafızanızı tek noktada buluşturur.' 
+                  : 'B12 by Mustafa Ulusoy unites your finances, media vault, shifts, travel and encrypted notes in one place.'}
               </p>
             </div>
 
@@ -538,6 +547,14 @@ export default function LoginPage() {
                 </p>
               </div>
 
+              {/* Creator Attribution */}
+              <div className="pt-3 mt-1 border-t border-slate-200/70 dark:border-slate-800/70 text-center">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  B12 &bull; {isTr ? 'Dijital Hafıza Vitaminin' : 'Digital Memory Vitamin'} &bull; {isTr ? 'Geliştirici:' : 'Developer:'}{' '}
+                  <span className="font-bold text-slate-700 dark:text-slate-300">Mustafa Ulusoy (EMU)</span>
+                </p>
+              </div>
+
             </form>
           </div>
         </div>
@@ -672,7 +689,7 @@ export default function LoginPage() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{isTr ? 'GÜVENLİ VE ŞİFRELİ BULUT ALTYAPISI' : 'ENCRYPTED SECURE CLOUD'}</span>
             </div>
-            <span>B12 // PERSONAL OS & ASSISTANT</span>
+            <span>B12 // PERSONAL OS & ASSISTANT &bull; MUSTAFA ULUSOY</span>
           </div>
 
         </div>

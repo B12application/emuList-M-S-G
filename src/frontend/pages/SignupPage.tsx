@@ -24,6 +24,7 @@ import {
   FaKey,
   FaPause
 } from 'react-icons/fa';
+import { usePageSEO } from '../hooks/usePageSEO';
 import '../index.css';
 
 interface SecurityFeature {
@@ -143,6 +144,14 @@ const SLIDE_DURATION = 14000;
 export default function SignupPage() {
   const { t, language, setLanguage } = useLanguage();
   const isTr = language === 'tr';
+
+  usePageSEO({
+    title: isTr ? 'Kayıt Ol & Hesap Oluştur' : 'Sign Up & Create Account',
+    description: isTr
+      ? 'B12 Kişisel Yaşam Asistanı ve Dijital Hafıza Vitamini hesabı oluşturun. Geliştirici: Mustafa Ulusoy (EMU).'
+      : 'Create your B12 Personal Life Agent and Digital Memory Vitamin account. Developer: Mustafa Ulusoy (EMU).',
+    canonicalPath: '/signup'
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -306,7 +315,7 @@ export default function SignupPage() {
                 B12 OS
               </span>
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-none">
-                {isTr ? 'Yeni Hesap Kaydı' : 'Account Registration'}
+                {isTr ? 'Mustafa Ulusoy • Kişisel Yaşam Asistanı' : 'Mustafa Ulusoy • Personal Life Assistant'}
               </span>
             </div>
           </div>
@@ -558,6 +567,14 @@ export default function SignupPage() {
                 </p>
               </div>
 
+              {/* Creator Attribution */}
+              <div className="pt-3 mt-1 border-t border-slate-200/70 dark:border-slate-800/70 text-center">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  B12 &bull; {isTr ? 'Dijital Hafıza Vitaminin' : 'Digital Memory Vitamin'} &bull; {isTr ? 'Geliştirici:' : 'Developer:'}{' '}
+                  <span className="font-bold text-slate-700 dark:text-slate-300">Mustafa Ulusoy (EMU)</span>
+                </p>
+              </div>
+
             </form>
           </div>
         </div>
@@ -686,7 +703,7 @@ export default function SignupPage() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{isTr ? 'GÜVENLİ VE ŞİFRELİ BULUT ALTYAPISI' : 'ENCRYPTED SECURE CLOUD'}</span>
             </div>
-            <span>B12 // PRIVACY FIRST OS</span>
+            <span>B12 // PRIVACY FIRST OS &bull; MUSTAFA ULUSOY</span>
           </div>
 
         </div>

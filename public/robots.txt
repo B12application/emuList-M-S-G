@@ -1,0 +1,27 @@
+# B12 - Dijital Hafıza Vitaminin & Kişisel Yaşam Asistanı
+# Geliştirici: Mustafa Ulusoy (EMU)
+# https://b12application.pages.dev/
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /migration
+Disallow: /api/
+
+# Googlebot spesifik direktifler
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /migration
+Disallow: /api/
+
+User-agent: Googlebot-Image
+Allow: /titlelogo.png
+Allow: /emulusoy.jpg
+Allow: /logob12.png
+Allow: /pwa-*.png
+
+# Site Haritası (Google Search Console için)
+Sitemap: https://b12application.pages.dev/sitemap.xml

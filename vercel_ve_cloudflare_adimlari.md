@@ -54,7 +54,7 @@ Cloudflare Pages, sınırsız bant genişliği ve Türkiye'deki doğrudan veri m
    * *(Önemli)* Node versiyonu için: `NODE_VERSION` = `20` değerini ekleyin.
 6. **Yayına Alın:**
    * **"Save and Deploy"** butonuna tıklayın.
-   * 1-2 dakika içinde siteniz `https://emulist.pages.dev` adresiyle yayına girecektir.
+   * 1-2 dakika içinde siteniz `https://b12application.pages.dev` adresiyle yayına girecektir.
 
 ---
 

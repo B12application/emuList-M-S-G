@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote, FaFire, FaTools, FaChartPie, FaUser, FaCog, FaListUl, FaMap, FaHistory, FaHeartbeat } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSignOutAlt, FaFilm, FaTv, FaGamepad, FaBook, FaChevronDown, FaUsersCog, FaPlus, FaCalendarPlus, FaCoffee, FaUserShield, FaCompass, FaHome, FaWallet, FaCalendarAlt, FaLayerGroup, FaStickyNote, FaFire, FaTools, FaChartPie, FaChartLine, FaUser, FaCog, FaListUl, FaMap, FaHistory, FaHeartbeat, FaReceipt, FaCar, FaGem, FaRobot } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 import B12Logo from './B12Logo';
 import QuickAddModal from './planner/QuickAddModal';
@@ -40,12 +40,14 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
   const { language, setLanguage, t } = useLanguage();
   const [showListsDropdown, setShowListsDropdown] = useState(false);
   const [showAgendaDropdown, setShowAgendaDropdown] = useState(false);
+  const [showExpensesDropdown, setShowExpensesDropdown] = useState(false);
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const listsDropdownRef = useRef<HTMLDivElement | null>(null);
   const agendaDropdownRef = useRef<HTMLDivElement | null>(null);
+  const expensesDropdownRef = useRef<HTMLDivElement | null>(null);
   const toolsDropdownRef = useRef<HTMLDivElement | null>(null);
   const addDropdownRef = useRef<HTMLDivElement | null>(null);
   const { getShiftInfo } = useShift();
@@ -91,6 +93,9 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
       }
       if (agendaDropdownRef.current && !agendaDropdownRef.current.contains(target)) {
         setShowAgendaDropdown(false);
+      }
+      if (expensesDropdownRef.current && !expensesDropdownRef.current.contains(target)) {
+        setShowExpensesDropdown(false);
       }
       if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(target)) {
         setShowToolsDropdown(false);
@@ -400,7 +405,7 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
-                                Takımlar & Fikstür
+                                {t('nav.teamFixtures') || 'Takımlar & Fikstür'}
                               </div>
                               <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
                                 {t('nav.fixturesSub') || 'Süper Lig & Avrupa maçları'}
@@ -413,9 +418,186 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                   </AnimatePresence>
                 </div>
 
-                <NavLink to="/expenses" className={getNavCls}>
-                  <span className="flex items-center gap-1.5"><FaWallet className="text-xs opacity-80" />{t('expenses.title')}</span>
-                </NavLink>
+                {/* Harcamalar & Bütçe Dropdown */}
+                <div
+                  ref={expensesDropdownRef}
+                  className="relative group"
+                  onMouseEnter={() => setShowExpensesDropdown(true)}
+                  onMouseLeave={() => setShowExpensesDropdown(false)}
+                >
+                  <button
+                    onClick={() => setShowExpensesDropdown((prev) => !prev)}
+                    className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 border ${location.pathname.startsWith('/expenses')
+                      ? "text-stone-950 bg-amber-400 font-black shadow-md shadow-amber-500/25 border-amber-300 scale-105"
+                      : "text-stone-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 border-transparent"
+                      }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <FaWallet className="text-xs opacity-80" />
+                      {t('expenses.title') || 'Harcamalar'}
+                    </span>
+                    <motion.div
+                      animate={{ rotate: showExpensesDropdown ? 180 : 0 }}
+                      className="flex items-center justify-center"
+                    >
+                      <FaChevronDown className="w-2.5 h-2.5" />
+                    </motion.div>
+                  </button>
+
+                  <AnimatePresence>
+                    {showExpensesDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute top-full mt-2 w-64 p-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-2xl z-50 origin-top left-1/2 -translate-x-1/2"
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <NavLink
+                            to="/expenses?tab=harcamalar"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive && (!location.search || location.search.includes('tab=harcamalar'))
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                              <FaWallet className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('expenses.expensesTab') || 'Harcamalarım'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('expenses.expensesSub') || 'Gelir ve gider takibi'}
+                              </div>
+                            </div>
+                          </NavLink>
+
+                          <NavLink
+                            to="/expenses?tab=faturalar"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive && location.search.includes('tab=faturalar')
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                              <FaReceipt className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('expenses.invoicesTab') || 'Faturalar & Abonelikler'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('expenses.invoicesSub') || 'Düzenli fatura ve sözleşmeler'}
+                              </div>
+                            </div>
+                          </NavLink>
+
+                          <NavLink
+                            to="/expenses?tab=butce"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive && location.search.includes('tab=butce')
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                              <FaHistory className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('expenses.budgetTab') || 'Bütçe Planlayıcı'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('expenses.budgetSub') || 'Aylık ve yıllık bütçe hedefleri'}
+                              </div>
+                            </div>
+                          </NavLink>
+
+                          <NavLink
+                            to="/expenses?tab=yatirimlar"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive && location.search.includes('tab=yatirimlar')
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                              <FaGem className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('expenses.investmentsTab') || 'Yatırımlarım'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('expenses.investmentsSub') || 'Altın ve birikim portföyü'}
+                              </div>
+                            </div>
+                          </NavLink>
+
+                          <NavLink
+                            to="/expenses?tab=araclar"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive && location.search.includes('tab=araclar')
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                              <FaCar className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('expenses.vehicleTab') || 'Araç Masrafları'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('expenses.vehicleSub') || 'KM, yakıt, bakım & lastik'}
+                              </div>
+                            </div>
+                          </NavLink>
+
+                          <div className="h-px bg-stone-100 dark:bg-zinc-800 my-0.5 mx-2" />
+
+                          <NavLink
+                            to="/expenses?tab=raporlar"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive && location.search.includes('tab=raporlar')
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                              <FaChartLine className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                {t('expenses.reportsTab') || 'Finansal Raporlar'}
+                              </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('expenses.reportsSub') || 'Kategori ve harcama grafikleri'}
+                              </div>
+                            </div>
+                          </NavLink>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Araçlar & Yaşam Dropdown */}
                 <div
@@ -473,60 +655,91 @@ export default function Header({ onMobileMenuOpen: _onMobileMenuOpen }: HeaderPr
                             </div>
                           </NavLink>
 
-                          {hasAccess('calorieAi') && (
-                            <NavLink
-                              to="/calorie-details"
-                              className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
-                                  isActive
-                                    ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
-                                    : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
-                                }`
-                              }
-                            >
-                              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                                <FaChartPie className="text-sm" />
+                          <NavLink
+                            to="/calorie-details"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                              <FaChartPie className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                  {t('nav.calorieReport') || 'Kalori Raporu'}
+                                </span>
+                                <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">
+                                  {hasAccess('calorieAi') ? (t('common.new') || 'Yeni') : 'AI'}
+                                </span>
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
-                                    {t('nav.calorieReport') || 'Kalori Raporu'}
-                                  </span>
-                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-600 dark:text-amber-300">
-                                    {t('common.new') || 'Yeni'}
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
-                                  {t('nav.calorieSub') || 'Günlük besin ve kalori'}
-                                </div>
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.calorieSub') || 'Günlük besin ve kalori'}
                               </div>
-                            </NavLink>
-                          )}
+                            </div>
+                          </NavLink>
 
-                          {hasAccess('calorieAi') && (
-                            <NavLink
-                              to="/body-profile"
-                              className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
-                                  isActive
-                                    ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
-                                    : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
-                                }`
-                              }
-                            >
-                              <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                                <FaHeartbeat className="text-sm" />
+                          <NavLink
+                            to="/calorie-chat"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                              <FaRobot className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                                  {t('nav.calorieChat') || 'AI Besin Asistanı'}
+                                </span>
+                                <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-orange-400/20 text-orange-600 dark:text-orange-300">
+                                  AI
+                                </span>
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.calorieChatSub') || 'Fotoğraftan kalori & öğün analizi'}
+                              </div>
+                            </div>
+                          </NavLink>
+
+                          <NavLink
+                            to="/body-profile"
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                                isActive
+                                  ? 'bg-amber-500/15 text-stone-900 dark:text-white font-bold'
+                                  : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/60 font-medium'
+                              }`
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                              <FaHeartbeat className="text-sm" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-stone-900 dark:text-white leading-tight truncate">
                                   {t('nav.bodyProfile') || 'Beden Profili'}
-                                </div>
-                                <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
-                                  {t('nav.bodySub') || 'Vücut ölçüleri ve analiz'}
-                                </div>
+                                </span>
+                                {!hasAccess('calorieAi') && (
+                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-rose-400/20 text-rose-600 dark:text-rose-300">
+                                    Demo
+                                  </span>
+                                )}
                               </div>
-                            </NavLink>
-                          )}
+                              <div className="text-[10px] text-stone-400 dark:text-zinc-400 font-normal truncate">
+                                {t('nav.bodySub') || 'Vücut ölçüleri ve analiz'}
+                              </div>
+                            </div>
+                          </NavLink>
                         </div>
                       </motion.div>
                     )}

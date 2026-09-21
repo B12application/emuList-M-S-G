@@ -17,7 +17,8 @@ const defaultForm = () => ({
   description: '',
   contractStart: '',
   contractYears: '' as unknown as number,
-  notifyBeforeDays: '' as unknown as number
+  notifyBeforeDays: '' as unknown as number,
+  syncToCalendar: false
 });
 
 type BillSubscription = {
@@ -153,7 +154,8 @@ export default function InvoiceTab() {
       description: bill.description || '',
       contractStart: bill.contractStart,
       contractYears: bill.contractYears as unknown as number,
-      notifyBeforeDays: bill.notifyBeforeDays as unknown as number
+      notifyBeforeDays: bill.notifyBeforeDays as unknown as number,
+      syncToCalendar: false
     });
     setEditingId(bill.id);
     setIsModalOpen(true);
@@ -167,7 +169,8 @@ export default function InvoiceTab() {
       description: bill.description || '',
       contractStart: format(new Date(), 'yyyy-MM-dd'),
       contractYears: bill.contractYears as unknown as number,
-      notifyBeforeDays: bill.notifyBeforeDays as unknown as number
+      notifyBeforeDays: bill.notifyBeforeDays as unknown as number,
+      syncToCalendar: false
     });
     setEditingId(bill.id);
     setIsModalOpen(true);
@@ -213,7 +216,7 @@ export default function InvoiceTab() {
       if (editingId) {
         await updateDoc(doc(db, BILL_COLLECTION, editingId), billData);
         setRecords(prev => prev.map(r => r.id === editingId ? { id: editingId, ...billData } : r));
-        toast.success('Fatura güncellendi ve bildirimler ayarlandı');
+        toast.success('Fatura güncellendi');
       } else {
         const docRef = await addDoc(collection(db, BILL_COLLECTION), billData);
         setRecords(prev => [
@@ -223,10 +226,10 @@ export default function InvoiceTab() {
           },
           ...prev
         ]);
-        toast.success('Fatura kaydedildi ve bildirimler ayarlandı');
+        toast.success('Fatura kaydedildi');
       }
 
-      if (user) {
+      if (user && form.syncToCalendar) {
         await addCalendarAlert({
           userId: user.uid,
           label: `${form.title} - Sözleşme Bitişi`,
@@ -469,15 +472,32 @@ export default function InvoiceTab() {
                       placeholder="Fatura numarası veya ekstra detaylar..."
                     />
                   </div>
+
+                  <div className="col-span-1 sm:col-span-2 p-3 rounded-2xl bg-stone-50 dark:bg-zinc-800/40 border border-stone-200/60 dark:border-zinc-700/60">
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={!!form.syncToCalendar}
+                        onChange={e => setForm({ ...form, syncToCalendar: e.target.checked })}
+                        className="w-4 h-4 rounded text-stone-900 accent-amber-500 cursor-pointer"
+                      />
+                      <span className="text-xs font-bold text-stone-800 dark:text-zinc-200">
+                        Takvimde Bildirim Oluştur (İsteğe Bağlı)
+                      </span>
+                    </label>
+                    <p className="text-[10px] text-stone-400 dark:text-zinc-500 mt-1 ml-6.5 leading-relaxed">
+                      İşaretlenmediği sürece takviminiz otomatik olarak doldurulmaz; günü yaklaştığında bu sayfada gösterilir.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="px-6 py-3.5 rounded-2xl bg-stone-900 text-white font-black uppercase tracking-[0.12em] text-[11px] hover:bg-stone-800 disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
+                    className="px-6 py-3.5 rounded-2xl bg-stone-900 text-white font-black uppercase tracking-[0.12em] text-[11px] hover:bg-stone-800 disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto cursor-pointer"
                   >
-                    {isSaving ? 'Kaydediliyor...' : 'Kaydet & Bildirim Oluştur'}
+                    {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
                   </button>
                   <button
                     onClick={reset}

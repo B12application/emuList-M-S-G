@@ -11,7 +11,7 @@ import {
     FaEnvelope, FaMapMarkerAlt, FaCrown, FaArrowRight, FaUserShield,
     FaCalendar, FaVenusMars, FaSignInAlt,
     FaMobileAlt, FaDesktop, FaTabletAlt, FaLaptop, FaToggleOn, FaToggleOff,
-    FaChevronDown, FaChevronUp
+    FaChevronDown, FaChevronUp, FaPaperPlane, FaClock, FaCheckCircle, FaTimesCircle, FaReply
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
@@ -24,15 +24,18 @@ import { getLoginLogs } from '../../backend/services/loginLogService';
 import type { LoginLog } from '../../backend/services/loginLogService';
 import { setFeatureAccess, getAllFeatureAccess, ALL_FEATURES, FEATURE_LABELS } from '../services/featureAccessService';
 import type { FeatureKey } from '../services/featureAccessService';
+import { getAllAccessRequests, updateAccessRequestStatus, deleteAccessRequest } from '../services/accessRequestService';
+import type { AccessRequest } from '../services/accessRequestService';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type TabType = 'users' | 'comments' | 'logins' | 'features';
+type TabType = 'users' | 'comments' | 'logins' | 'features' | 'requests';
 type UserFilterType = 'all' | 'admins' | 'male' | 'female' | 'active';
 
 const PAGE_SIZE_USERS = 10;
 const PAGE_SIZE_LOGS = 15;
 const PAGE_SIZE_COMMENTS = 15;
 const PAGE_SIZE_FEATURES = 10;
+const PAGE_SIZE_REQUESTS = 15;
 
 export default function AdminPage() {
     const { user } = useAuth();
@@ -80,13 +83,80 @@ export default function AdminPage() {
     const [expandedFeatureUserId, setExpandedFeatureUserId] = useState<string | null>(null);
     const [visibleFeaturesCount, setVisibleFeaturesCount] = useState(PAGE_SIZE_FEATURES);
 
+    // Access Requests state
+    const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([]);
+    const [requestsLoading, setRequestsLoading] = useState(false);
+    const [requestFilter, setRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+    const [requestSearchQuery, setRequestSearchQuery] = useState('');
+    const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
+    const [visibleRequestsCount, setVisibleRequestsCount] = useState(PAGE_SIZE_REQUESTS);
+
     // Admin kontrolü
     useEffect(() => {
-        if (user && !isAdmin(user.uid)) {
+        if (user && !isAdmin(user.uid, user.email)) {
             toast.error(t('admin.accessDenied') || 'Bu sayfaya erişim yetkiniz yok!');
             navigate('/');
         }
     }, [user, navigate, t]);
+
+    // Erişim taleplerini yükle
+    useEffect(() => {
+        if (activeTab === 'requests' && user && isAdmin(user.uid, user.email)) {
+            setRequestsLoading(true);
+            getAllAccessRequests(user.uid || user.email || '')
+                .then(data => setAccessRequests(data))
+                .catch(err => {
+                    console.error('Talepler yüklenemedi:', err);
+                    toast.error('Talepler yüklenirken hata oluştu');
+                })
+                .finally(() => setRequestsLoading(false));
+        }
+    }, [activeTab, user]);
+
+    const handleApproveRequest = async (req: AccessRequest) => {
+        if (!user || !req.id) return;
+        setProcessingRequestId(req.id);
+        try {
+            await updateAccessRequestStatus(user.uid || user.email || '', req.id, 'approved', {
+                targetUserId: req.userId,
+                featureKey: req.featureKey
+            });
+            setAccessRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'approved' } : r));
+            toast.success(`Talep onaylandı ve ${req.featureLabel} özelliği aktif edildi!`);
+        } catch (err) {
+            console.error(err);
+            toast.error('Talep onaylanırken hata oluştu.');
+        } finally {
+            setProcessingRequestId(null);
+        }
+    };
+
+    const handleRejectRequest = async (req: AccessRequest) => {
+        if (!user || !req.id) return;
+        setProcessingRequestId(req.id);
+        try {
+            await updateAccessRequestStatus(user.uid || user.email || '', req.id, 'rejected');
+            setAccessRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'rejected' } : r));
+            toast.success('Talep reddedildi.');
+        } catch (err) {
+            console.error(err);
+            toast.error('Talep güncellenirken hata oluştu.');
+        } finally {
+            setProcessingRequestId(null);
+        }
+    };
+
+    const handleDeleteRequest = async (requestId: string) => {
+        if (!user) return;
+        try {
+            await deleteAccessRequest(user.uid || user.email || '', requestId);
+            setAccessRequests(prev => prev.filter(r => r.id !== requestId));
+            toast.success('Talep silindi.');
+        } catch (err) {
+            console.error(err);
+            toast.error('Talep silinirken hata oluştu.');
+        }
+    };
 
     // Kullanıcıları yükle
     useEffect(() => {
@@ -341,7 +411,31 @@ export default function AdminPage() {
         return featureFilteredUsers.slice(0, visibleFeaturesCount);
     }, [featureFilteredUsers, visibleFeaturesCount]);
 
-    if (!user || !isAdmin(user.uid)) {
+    const filteredRequests = useMemo(() => {
+        return accessRequests.filter(req => {
+            if (requestFilter !== 'all' && req.status !== requestFilter) return false;
+            if (requestSearchQuery.trim()) {
+                const q = requestSearchQuery.toLowerCase();
+                return (
+                    (req.userName || '').toLowerCase().includes(q) ||
+                    (req.userEmail || '').toLowerCase().includes(q) ||
+                    (req.featureLabel || '').toLowerCase().includes(q) ||
+                    (req.message && req.message.toLowerCase().includes(q))
+                );
+            }
+            return true;
+        });
+    }, [accessRequests, requestFilter, requestSearchQuery]);
+
+    const visibleRequests = useMemo(() => {
+        return filteredRequests.slice(0, visibleRequestsCount);
+    }, [filteredRequests, visibleRequestsCount]);
+
+    const pendingRequestsCount = useMemo(() => {
+        return accessRequests.filter(r => r.status === 'pending').length;
+    }, [accessRequests]);
+
+    if (!user || !isAdmin(user.uid, user.email)) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
                 <div className="text-center bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-xl max-w-md w-full">
@@ -380,7 +474,7 @@ export default function AdminPage() {
             {/* Fluid Container (Rule #16 Standard) */}
             <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Executive Stats Bar */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -429,6 +523,31 @@ export default function AdminPage() {
                             <div className="text-2xl font-black text-stone-900 dark:text-white">{comments.length}</div>
                             <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">
                                 {t('admin.statsComments') || 'Toplam Yorum'}
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.18 }}
+                        onClick={() => setActiveTab('requests')}
+                        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl p-5 shadow-lg border border-stone-200/80 dark:border-zinc-800/80 flex items-center gap-4 cursor-pointer hover:border-rose-400 transition-colors"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shrink-0">
+                            <FaPaperPlane />
+                        </div>
+                        <div>
+                            <div className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
+                                <span>{accessRequests.length}</span>
+                                {pendingRequestsCount > 0 && (
+                                    <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded-full animate-pulse">
+                                        {pendingRequestsCount} bekleyen
+                                    </span>
+                                )}
+                            </div>
+                            <div className="text-xs text-stone-500 dark:text-zinc-400 font-bold">
+                                {t('admin.tabRequests') || 'Erişim Talepleri'}
                             </div>
                         </div>
                     </motion.div>
@@ -481,6 +600,24 @@ export default function AdminPage() {
                     >
                         <FaToggleOn />
                         <span>{t('admin.tabFeatures') || 'Özellik Yönetimi'}</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab('requests')}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'requests'
+                            ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/25 scale-[1.02]'
+                            : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 border border-stone-200/80 dark:border-zinc-800 hover:border-rose-400'
+                            }`}
+                    >
+                        <FaPaperPlane />
+                        <span>{t('admin.tabRequests') || 'Erişim Talepleri'}</span>
+                        {pendingRequestsCount > 0 ? (
+                            <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black animate-pulse">
+                                {pendingRequestsCount} yeni
+                            </span>
+                        ) : (
+                            <span className="text-xs opacity-75 ml-1">({accessRequests.length})</span>
+                        )}
                     </button>
                 </div>
 
@@ -1042,6 +1179,186 @@ export default function AdminPage() {
                                             />
                                         </div>
                                     )}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {/* ===================== ACCESS REQUESTS TAB ===================== */}
+                    {activeTab === 'requests' && (
+                        <motion.div
+                            key="requests"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-xl border border-stone-200/80 dark:border-zinc-800/80 overflow-hidden"
+                        >
+                            {/* Search & Status Filters */}
+                            <div className="p-5 sm:p-6 border-b border-stone-200/80 dark:border-zinc-800 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                                <div className="relative flex-1 max-w-md">
+                                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
+                                    <input
+                                        type="text"
+                                        placeholder={language === 'tr' ? 'İsim, e-posta, özellik veya mesaj ara...' : 'Search by name, email, feature or message...'}
+                                        value={requestSearchQuery}
+                                        onChange={(e) => {
+                                            setRequestSearchQuery(e.target.value);
+                                            setVisibleRequestsCount(PAGE_SIZE_REQUESTS);
+                                        }}
+                                        className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-900 dark:text-white placeholder:text-stone-400 focus:ring-2 focus:ring-rose-500 text-sm font-medium outline-none"
+                                    />
+                                </div>
+
+                                {/* Status Filters */}
+                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 custom-scrollbar">
+                                    {[
+                                        { key: 'all', label: language === 'tr' ? 'Tümü' : 'All' },
+                                        { key: 'pending', label: language === 'tr' ? 'Bekleyenler' : 'Pending' },
+                                        { key: 'approved', label: language === 'tr' ? 'Onaylananlar' : 'Approved' },
+                                        { key: 'rejected', label: language === 'tr' ? 'Reddedilenler' : 'Rejected' },
+                                    ].map((f) => (
+                                        <button
+                                            key={f.key}
+                                            onClick={() => {
+                                                setRequestFilter(f.key as any);
+                                                setVisibleRequestsCount(PAGE_SIZE_REQUESTS);
+                                            }}
+                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                                                requestFilter === f.key
+                                                    ? 'bg-rose-600 text-white shadow-md'
+                                                    : 'bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-200 dark:hover:bg-zinc-700'
+                                            }`}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Requests List */}
+                            {requestsLoading ? (
+                                <div className="p-12 text-center text-stone-400">
+                                    <FaSpinner className="animate-spin text-2xl mx-auto mb-2 text-rose-500" />
+                                    <span className="text-xs font-medium">{language === 'tr' ? 'Talepler yükleniyor...' : 'Loading requests...'}</span>
+                                </div>
+                            ) : filteredRequests.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <div className="w-14 h-14 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">
+                                        <FaPaperPlane />
+                                    </div>
+                                    <h4 className="text-sm font-bold text-stone-900 dark:text-white mb-1">
+                                        {language === 'tr' ? 'Talep Bulunamadı' : 'No Requests Found'}
+                                    </h4>
+                                    <p className="text-xs text-stone-400">
+                                        {language === 'tr' ? 'Henüz bu filtreye uygun bir erişim veya iletişim talebi bulunmuyor.' : 'No access or communication requests matching this filter.'}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-stone-100 dark:divide-zinc-800">
+                                    {visibleRequests.map((req) => (
+                                        <div key={req.id} className="p-5 sm:p-6 hover:bg-stone-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                                <div className="flex items-start gap-3.5 min-w-0">
+                                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                                                        {(req.userName || req.userEmail || 'U').charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="font-black text-sm text-stone-900 dark:text-white">
+                                                                {req.userName || 'B12 Kullanıcısı'}
+                                                            </span>
+                                                            <span className="text-xs text-stone-400 dark:text-zinc-500">
+                                                                {req.userEmail}
+                                                            </span>
+                                                            {/* Status Badge */}
+                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                                                req.status === 'approved'
+                                                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                                                                    : req.status === 'rejected'
+                                                                    ? 'bg-stone-200 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400'
+                                                                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse'
+                                                            }`}>
+                                                                {req.status === 'approved' ? (language === 'tr' ? '✓ Onaylandı' : '✓ Approved') : req.status === 'rejected' ? (language === 'tr' ? '✕ Reddedildi' : '✕ Rejected') : (language === 'tr' ? '⏳ Beklemede' : '⏳ Pending')}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Feature badge & date */}
+                                                        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                                            <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 rounded-lg border border-amber-200/80 dark:border-amber-900/40 font-mono">
+                                                                🎯 {req.featureLabel || req.featureKey}
+                                                            </span>
+                                                            <span className="text-[10px] text-stone-400 dark:text-zinc-500 flex items-center gap-1">
+                                                                <FaClock className="text-[9px]" />
+                                                                {formatDate(req.createdAt)}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* User message */}
+                                                        {req.message && (
+                                                            <div className="mt-2.5 p-3 rounded-2xl bg-stone-50 dark:bg-zinc-950/60 border border-stone-200/70 dark:border-zinc-800 text-xs text-stone-700 dark:text-zinc-300 leading-relaxed">
+                                                                <span className="font-semibold text-stone-400 dark:text-zinc-500 mr-1.5">{language === 'tr' ? 'Mesaj:' : 'Note:'}</span>
+                                                                {req.message}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                                                    {req.status === 'pending' && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleApproveRequest(req)}
+                                                                disabled={processingRequestId === req.id}
+                                                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                                                            >
+                                                                <FaCheckCircle className="text-xs" />
+                                                                <span>{language === 'tr' ? 'Onayla & Yetki Ver' : 'Approve & Grant'}</span>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRejectRequest(req)}
+                                                                disabled={processingRequestId === req.id}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-stone-600 dark:text-zinc-300 font-bold text-xs transition-all cursor-pointer disabled:opacity-50"
+                                                            >
+                                                                <FaTimesCircle className="text-xs text-rose-500" />
+                                                                <span>{language === 'tr' ? 'Reddet' : 'Reject'}</span>
+                                                            </button>
+                                                        </>
+                                                    )}
+
+                                                    <a
+                                                        href={`mailto:${req.userEmail}?subject=${encodeURIComponent(language === 'tr' ? `B12 ${req.featureLabel} Talebi Hakkında` : `Regarding your B12 ${req.featureLabel} request`)}`}
+                                                        className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200/80 dark:border-indigo-900/50 text-xs transition-colors"
+                                                        title={language === 'tr' ? 'E-posta ile yanıtla' : 'Reply via email'}
+                                                    >
+                                                        <FaReply />
+                                                    </a>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => req.id && handleDeleteRequest(req.id)}
+                                                        className="p-2 rounded-xl bg-stone-100 dark:bg-zinc-800 text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs transition-colors cursor-pointer"
+                                                        title={language === 'tr' ? 'Talebi sil' : 'Delete request'}
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Load More Button (Rule #6 Standard) */}
+                            {filteredRequests.length > visibleRequestsCount && (
+                                <div className="p-4 text-center border-t border-stone-100 dark:border-zinc-800/80 bg-stone-50/50 dark:bg-zinc-900/50">
+                                    <LoadMoreButton
+                                        onClick={() => setVisibleRequestsCount(prev => prev + PAGE_SIZE_REQUESTS)}
+                                        remainingCount={filteredRequests.length - visibleRequestsCount}
+                                        label={language === 'tr' ? 'Daha Fazla Göster' : 'Load More'}
+                                    />
                                 </div>
                             )}
                         </motion.div>

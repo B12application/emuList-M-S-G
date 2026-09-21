@@ -60,7 +60,7 @@ export default function ListsPage() {
                 subtitle={t('lists.subtitle') || 'Film, dizi, oyun ve kitaplarınızı tematik listelerde gruplayın ve paylaşın'}
                 icon={<FaListUl className="text-violet-500 text-xl" />}
                 backTo="/profile"
-                backLabel={t('mapPage.backToProfile') || 'Profile Dön'}
+                backLabel={t('common.backToProfile')}
                 action={
                     <motion.button
                         whileHover={{ scale: 1.05 }}

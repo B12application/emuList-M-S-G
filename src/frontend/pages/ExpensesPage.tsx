@@ -79,8 +79,19 @@ const ExpensesPage: React.FC = () => {
   }, []);
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const validTabs = useMemo(() => ['harcamalar', 'raporlar', 'araclar', 'yatirimlar', 'silinenler', 'faturalar', 'butce', 'mukerrer'], []);
   const defaultTab = (searchParams.get('tab') as any) || 'harcamalar';
-  const [activeTab, setActiveTabState] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>(defaultTab);
+  const [activeTab, setActiveTabState] = useState<'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer'>(
+    validTabs.includes(defaultTab) ? defaultTab : 'harcamalar'
+  );
+
+  // Sync activeTab whenever URL searchParams change (e.g. from Header dropdown)
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTabState(tabFromUrl as any);
+    }
+  }, [searchParams, activeTab, validTabs]);
 
   const setActiveTab = (tab: 'harcamalar' | 'raporlar' | 'araclar' | 'yatirimlar' | 'silinenler' | 'faturalar' | 'butce' | 'mukerrer') => {
     setActiveTabState(tab);
@@ -302,8 +313,8 @@ const ExpensesPage: React.FC = () => {
 
   const menuTabs = [
     { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
-    { id: 'butce', icon: FaHistory, label: 'Bütçe' },
-    { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
+    { id: 'butce', icon: FaHistory, label: t('expenses.budgetTab') },
+    { id: 'yatirimlar', icon: FaGem, label: t('expenses.investmentsTab') },
     { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') },
   ] as const;
   // Handlers
@@ -653,7 +664,7 @@ const ExpensesPage: React.FC = () => {
                 }
               }}
               className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
-                ? 'text-white'
+                ? 'text-white dark:text-zinc-950 font-black'
                 : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }`}
             >
@@ -686,7 +697,7 @@ const ExpensesPage: React.FC = () => {
               ) : (
                 <FaBars className="text-sm" />
               )}
-              <span className="hidden sm:inline">Diğer</span>
+              <span className="hidden sm:inline">{t('common.other') || 'Diğer'}</span>
             </button>
 
             {/* Dropdown */}
@@ -701,8 +712,8 @@ const ExpensesPage: React.FC = () => {
                 >
                   {[
                     { id: 'raporlar', icon: FaChartLine, label: t('expenses.reportsTab') },
-                    { id: 'butce', icon: FaHistory, label: 'Bütçe' },
-                    { id: 'yatirimlar', icon: FaGem, label: 'Yatırımlarım' },
+                    { id: 'butce', icon: FaHistory, label: t('expenses.budgetTab') },
+                    { id: 'yatirimlar', icon: FaGem, label: t('expenses.investmentsTab') },
                     { id: 'faturalar', icon: FaReceipt, label: t('expenses.invoicesTab') },
                   ].map((tab: any) => (
                     <button

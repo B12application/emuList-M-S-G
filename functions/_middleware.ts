@@ -62,5 +62,24 @@ export async function onRequest(context: any) {
   }
 
   // Pass through to next handler / static page
-  return await context.next();
+  const response = await context.next();
+
+  // SPA Fallback: If static asset server returned 404 for a client route (and not an API route),
+  // serve index.html so the client-side router handles it seamlessly when opened in a new tab.
+  if (response.status === 404 && request.method === 'GET' && !path.startsWith('/api/')) {
+    try {
+      if (context.env && context.env.ASSETS && typeof context.env.ASSETS.fetch === 'function') {
+        const indexRequest = new Request(new URL('/index.html', request.url), request);
+        const indexResponse = await context.env.ASSETS.fetch(indexRequest);
+        if (indexResponse && indexResponse.status === 200) {
+          return indexResponse;
+        }
+      }
+    } catch (e) {
+      console.error('[CF Middleware] SPA fallback error:', e);
+    }
+  }
+
+  return response;
 }
+

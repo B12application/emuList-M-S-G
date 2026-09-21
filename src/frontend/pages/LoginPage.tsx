@@ -520,7 +520,7 @@ export default function LoginPage() {
                   type="button"
                   disabled={loading || googleLoading}
                   onClick={handleGoogleLogin}
-                  className="py-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800/80 text-slate-800 dark:text-slate-250 font-bold text-xs rounded-2xl transition-all shadow-3xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="py-3 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 font-bold text-xs rounded-2xl transition-all shadow-3xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <FaGoogle className="text-rose-500 text-xs" />
                   <span>Google</span>
@@ -530,7 +530,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleDemoLogin}
                   disabled={loading || googleLoading}
-                  className="py-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800/80 text-slate-800 dark:text-slate-250 font-bold text-xs rounded-2xl transition-all shadow-3xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="py-3 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 font-bold text-xs rounded-2xl transition-all shadow-3xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <FaPlay className="text-indigo-500 text-[10px]" />
                   <span>{isTr ? 'Demo Modu' : 'Demo Mode'}</span>
@@ -539,7 +539,7 @@ export default function LoginPage() {
 
               {/* Signup Link */}
               <div className="text-center pt-2">
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
                   {isTr ? 'Hesabınız yok mu? ' : "Don't have an account? "}
                   <Link to="/signup" className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold">
                     {isTr ? 'Hemen Kayıt Olun' : 'Sign Up Now'}
@@ -547,11 +547,17 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Creator Attribution */}
-              <div className="pt-3 mt-1 border-t border-slate-200/70 dark:border-slate-800/70 text-center">
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+              {/* Creator Attribution & Direct Contact */}
+              <div className="pt-3 mt-1 border-t border-slate-200/70 dark:border-zinc-800/80 text-center space-y-1">
+                <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
                   B12 &bull; {isTr ? 'Dijital Hafıza Vitaminin' : 'Digital Memory Vitamin'} &bull; {isTr ? 'Geliştirici:' : 'Developer:'}{' '}
-                  <span className="font-bold text-slate-700 dark:text-slate-300">Mustafa Ulusoy (EMU)</span>
+                  <span className="font-bold text-slate-700 dark:text-zinc-300">Mustafa Ulusoy (EMU)</span>
+                </p>
+                <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+                  {isTr ? 'Erişim veya iletişim için:' : 'For access or inquiries:'}{' '}
+                  <a href="mailto:emuwhilist@gmail.com" className="text-indigo-500 dark:text-indigo-400 hover:underline font-bold">
+                    emuwhilist@gmail.com
+                  </a>
                 </p>
               </div>
 
@@ -559,29 +565,33 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ================= RIGHT COLUMN: WHITE & ROTATING SHOWCASE ================= */}
+        {/* ================= RIGHT COLUMN: SLEEK OBSIDIAN GLASS SHOWCASE ================= */}
         <div 
-          className="w-full lg:w-[52%] xl:w-[55%] bg-slate-100/70 dark:bg-slate-900/50 border-t lg:border-t-0 lg:border-l border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between p-6 sm:p-12 lg:p-14 xl:p-16 relative overflow-hidden"
+          className="w-full lg:w-[52%] xl:w-[55%] bg-slate-100/70 dark:bg-gradient-to-b dark:from-zinc-900/95 dark:via-zinc-950 dark:to-black/95 border-t lg:border-t-0 lg:border-l border-slate-200/80 dark:border-zinc-800/80 flex flex-col justify-between p-6 sm:p-12 lg:p-14 xl:p-16 relative overflow-hidden backdrop-blur-2xl"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
+          {/* Subtle Ambient Radial Lighting Blobs */}
+          <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 blur-[120px] pointer-events-none" />
+          <div className="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/10 dark:bg-emerald-500/10 blur-[120px] pointer-events-none" />
+
           {/* Top Showcase Bar */}
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs">
+                <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 text-xs">
                   <FaShieldAlt />
                 </span>
-                <span className="text-xs font-mono font-bold tracking-wider text-slate-600 dark:text-slate-400 uppercase">
+                <span className="text-xs font-mono font-bold tracking-wider text-slate-600 dark:text-zinc-400 uppercase">
                   {isTr ? 'B12 Kişisel Asistan Yetenekleri' : 'B12 Assistant Capabilities'}
                 </span>
               </div>
 
               {/* Pause / Countdown indicator */}
-              <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+              <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
                 {isPaused && (
-                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold bg-amber-100/80 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold bg-amber-100/80 dark:bg-amber-950/50 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/60">
                     <FaPause size={8} /> {isTr ? 'Okuma Duraklatıldı' : 'Paused'}
                   </span>
                 )}
@@ -601,12 +611,12 @@ export default function LoginPage() {
                     onClick={() => handleSelectModule(idx)}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                       isActive 
-                        ? 'bg-white dark:bg-slate-800 border-indigo-500/50 dark:border-indigo-500/50 shadow-sm' 
-                        : 'bg-white/60 dark:bg-slate-850/40 hover:bg-white dark:hover:bg-slate-800 border-slate-200/90 dark:border-slate-800 opacity-80 hover:opacity-100'
+                        ? 'bg-white dark:bg-zinc-800 border-indigo-500/60 dark:border-indigo-500/70 shadow-md shadow-indigo-500/10' 
+                        : 'bg-white/60 dark:bg-zinc-900/60 hover:bg-white dark:hover:bg-zinc-800/70 border-slate-200/90 dark:border-zinc-800/80 opacity-80 hover:opacity-100 text-slate-700 dark:text-zinc-300'
                     }`}
                   >
-                    <MIcon className={`text-sm mb-1.5 ${isActive ? m.colorTheme.accent : 'text-slate-400'}`} />
-                    <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 leading-tight truncate">
+                    <MIcon className={`text-sm mb-1.5 ${isActive ? m.colorTheme.accent : 'text-slate-400 dark:text-zinc-500'}`} />
+                    <div className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate">
                       {isTr ? m.badge : m.badgeEn}
                     </div>
                   </button>
@@ -616,7 +626,7 @@ export default function LoginPage() {
           </div>
 
           {/* Active Card Showcase with Progress Bar */}
-          <div className="my-8">
+          <div className="my-8 relative z-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeModule.id}
@@ -624,10 +634,10 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.25 }}
-                className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/90 dark:border-slate-750 shadow-xl space-y-6 relative overflow-hidden"
+                className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900/95 border border-slate-200/90 dark:border-zinc-800 shadow-2xl space-y-6 relative overflow-hidden backdrop-blur-xl"
               >
                 {/* Reading Progress Line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 dark:bg-zinc-800 overflow-hidden">
                   <motion.div
                     key={progressKey}
                     initial={{ width: '0%' }}
@@ -652,15 +662,15 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
                   {isTr ? activeModule.tagline : activeModule.taglineEn}
                 </p>
 
                 {/* Metrics */}
                 <div className="grid grid-cols-3 gap-2.5 pt-1">
                   {activeModule.metrics.map((metric, i) => (
-                    <div key={i} className="p-3 bg-slate-50 dark:bg-slate-900/70 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-0.5">
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                    <div key={i} className="p-3 bg-slate-50 dark:bg-zinc-950/80 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 space-y-0.5">
+                      <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium truncate">
                         {isTr ? metric.label : metric.labelEn}
                       </div>
                       <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white font-mono">
@@ -673,7 +683,7 @@ export default function LoginPage() {
                 {/* Feature Highlights */}
                 <div className="flex flex-wrap gap-2 pt-1">
                   {activeModule.features.map((feat, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60">
+                    <div key={i} className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 bg-slate-100/90 dark:bg-zinc-950/70 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80">
                       <FaCheckCircle className={`text-[10px] ${activeModule.colorTheme.accent}`} />
                       <span>{isTr ? feat.tr : feat.en}</span>
                     </div>
@@ -684,12 +694,12 @@ export default function LoginPage() {
           </div>
 
           {/* Footer Bar */}
-          <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+          <div className="pt-4 border-t border-slate-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-zinc-400 font-mono relative z-10">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{isTr ? 'GÜVENLİ VE ŞİFRELİ BULUT ALTYAPISI' : 'ENCRYPTED SECURE CLOUD'}</span>
             </div>
-            <span>B12 // PERSONAL OS & ASSISTANT &bull; MUSTAFA ULUSOY</span>
+            <span>B12 // PERSONAL OS & ASSISTANT &bull; MUSTAFA ULUSOY (EMU)</span>
           </div>
 
         </div>

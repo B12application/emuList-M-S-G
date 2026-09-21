@@ -505,8 +505,10 @@ export function analyzeBodyProportions(
   heightCm: number,
   weightKg: number,
   gender: Gender,
-  measurements: BodyMeasurements
+  measurements: BodyMeasurements,
+  lang: 'tr' | 'en' = 'tr'
 ): ProportionDiagnostic {
+  const isEn = lang === 'en';
   const reduceAreas: Array<{ name: string; reason: string; priorityAction: string }> = [];
   const growAreas: Array<{ name: string; reason: string; priorityAction: string }> = [];
 
@@ -518,32 +520,38 @@ export function analyzeBodyProportions(
       vTaper = {
         ratio,
         status: 'ideal',
-        title: '🌟 Mükemmel Adonis Altın Oranı (V-Taper)',
-        advice: 'Omuz genişliğiniz ile bel inceliğiniz altın orana (1.618) çok yakın! Bu estetik formu korumak için belinizi kalınlaştırmadan omuz hipertrofisini sürdürün.',
+        title: isEn ? '🌟 Perfect Adonis Golden Ratio (V-Taper)' : '🌟 Mükemmel Adonis Altın Oranı (V-Taper)',
+        advice: isEn
+          ? 'Your shoulder width relative to your waist is very close to the golden ratio (1.618)! Maintain shoulder hypertrophy without thickening the waist.'
+          : 'Omuz genişliğiniz ile bel inceliğiniz altın orana (1.618) çok yakın! Bu estetik formu korumak için belinizi kalınlaştırmadan omuz hipertrofisini sürdürün.',
       };
     } else if (ratio >= 1.35) {
       vTaper = {
         ratio,
         status: 'good',
-        title: '👍 Dengeli Atletik Oran',
-        advice: 'Oranınız iyi durumda. V-Taper görünümünü zirveye taşımak için: Beli 2-4 cm inceltin ve Lateral Deltoid (Yan Omuz) ile Sırt (Latissimus) genişletmeye odaklanın.',
+        title: isEn ? '👍 Balanced Athletic Ratio' : '👍 Dengeli Atletik Oran',
+        advice: isEn
+          ? 'Your ratio is in great condition. To peak your V-Taper: slim your waist by 2-4 cm and focus on Lateral Deltoids and Latissimus Dorsi.'
+          : 'Oranınız iyi durumda. V-Taper görünümünü zirveye taşımak için: Beli 2-4 cm inceltin ve Lateral Deltoid (Yan Omuz) ile Sırt (Latissimus) genişletmeye odaklanın.',
       };
     } else {
       vTaper = {
         ratio,
         status: 'needs_work',
-        title: '⚠️ Geliştirilmesi Gereken V-Taper (Kare Beden)',
-        advice: 'Bel genişliği omuza göre fazla veya omuzlar dar kalmış. Öncelik: Kalori açığı ile bel çevresindeki yağı eritmek ve haftalık 16 set Lateral Raise + Barfiks ile omuz çatısını açmaktır.',
+        title: isEn ? '⚠️ Needs Work: V-Taper (Square Frame)' : '⚠️ Geliştirilmesi Gereken V-Taper (Kare Beden)',
+        advice: isEn
+          ? 'Waist width is high relative to shoulders or shoulders are narrow. Priority: Calorie deficit to burn waist fat and weekly 16 sets of Lateral Raise + Pull-ups.'
+          : 'Bel genişliği omuza göre fazla veya omuzlar dar kalmış. Öncelik: Kalori açığı ile bel çevresindeki yağı eritmek ve haftalık 16 set Lateral Raise + Barfiks ile omuz çatısını açmaktır.',
       };
       reduceAreas.push({
-        name: 'Bel & Yan Simitler',
-        reason: 'Omuz / Bel oranını bozarak bedeni kare ve tıknaz gösteriyor.',
-        priorityAction: 'Günlük 500 kcal açık + Mide Vakumu + Şeker/un kesintisi.',
+        name: isEn ? 'Waist & Love Handles' : 'Bel & Yan Simitler',
+        reason: isEn ? 'Distorts the shoulder/waist ratio, giving a blocky appearance.' : 'Omuz / Bel oranını bozarak bedeni kare ve tıknaz gösteriyor.',
+        priorityAction: isEn ? 'Daily 500 kcal deficit + Stomach Vacuum + Cut refined sugars.' : 'Günlük 500 kcal açık + Mide Vakumu + Şeker/un kesintisi.',
       });
       growAreas.push({
-        name: 'Yan Omuz & Kanat (Sırt)',
-        reason: 'Gövdeyi yukarıdan genişleterek beli optik olarak anında ince gösterir.',
-        priorityAction: 'Kablo Lateral Raise + Geniş Tutuş Lat Pulldown.',
+        name: isEn ? 'Lateral Deltoids & Lats' : 'Yan Omuz & Kanat (Sırt)',
+        reason: isEn ? 'Broadens upper torso, creating the optical illusion of a slimmer waist.' : 'Gövdeyi yukarıdan genişleterek beli optik olarak anında ince gösterir.',
+        priorityAction: isEn ? 'Cable Lateral Raise + Wide-Grip Lat Pulldown.' : 'Kablo Lateral Raise + Geniş Tutuş Lat Pulldown.',
       });
     }
   }
@@ -556,32 +564,38 @@ export function analyzeBodyProportions(
       waistToHeight = {
         ratio,
         status: 'healthy',
-        title: '✅ Sağlıklı & Estetik Bel Oranı (WHtR < 0.50)',
-        advice: 'İç organ yağlanması (visseral yağ) riskiniz minimum seviyede. Kardiyovasküler sağlık ve insülin duyarlılığınız harika durumda.',
+        title: isEn ? '✅ Healthy & Aesthetic Waist Ratio (WHtR < 0.50)' : '✅ Sağlıklı & Estetik Bel Oranı (WHtR < 0.50)',
+        advice: isEn
+          ? 'Your visceral fat risk is at a minimum. Cardiovascular health and insulin sensitivity are in great shape.'
+          : 'İç organ yağlanması (visseral yağ) riskiniz minimum seviyede. Kardiyovasküler sağlık ve insülin duyarlılığınız harika durumda.',
       };
     } else if (ratio <= 0.54) {
       waistToHeight = {
         ratio,
         status: 'overweight',
-        title: '⚠️ Hafif Bel Kalınlaşması (WHtR: 0.50 - 0.54)',
-        advice: 'Bel çevreniz boyunuzun yarısını geçmiş durumda. Karaciğer ve iç organ çevresinde hafif yağlanma başlamış olabilir. Kalori açığı ile 4-6 cm incelme hedeflenmelidir.',
+        title: isEn ? '⚠️ Moderate Waist Expansion (WHtR: 0.50 - 0.54)' : '⚠️ Hafif Bel Kalınlaşması (WHtR: 0.50 - 0.54)',
+        advice: isEn
+          ? 'Your waist circumference exceeds half your height. Mild visceral fat accumulation may have started. Target 4-6 cm reduction via calorie deficit.'
+          : 'Bel çevreniz boyunuzun yarısını geçmiş durumda. Karaciğer ve iç organ çevresinde hafif yağlanma başlamış olabilir. Kalori açığı ile 4-6 cm incelme hedeflenmelidir.',
       };
       reduceAreas.push({
-        name: 'Bel & Karın Bölgesi',
-        reason: 'Bel/Boy oranı eşiği aşılmış, metabolik risk ve göbek belirginliği.',
-        priorityAction: 'Günde 8.000+ adım atın, akşam 20:00 sonrası kaloriyi kesin.',
+        name: isEn ? 'Waist & Abdominal Region' : 'Bel & Karın Bölgesi',
+        reason: isEn ? 'WHtR threshold exceeded; early metabolic risk and belly protrusion.' : 'Bel/Boy oranı eşiği aşılmış, metabolik risk ve göbek belirginliği.',
+        priorityAction: isEn ? 'Walk 8,000+ steps daily, stop consuming calories after 20:00.' : 'Günde 8.000+ adım atın, akşam 20:00 sonrası kaloriyi kesin.',
       });
     } else {
       waistToHeight = {
         ratio,
         status: 'risk',
-        title: '🚨 Visseral Yağlanma Uyarısı (WHtR > 0.55)',
-        advice: 'Bel çevreniz boyunuza göre belirgin derecede yüksek. Bu durum insülin direnci ve tansiyon riskini katlar. Acil olarak yağ yakım protokolü başlatılmalıdır.',
+        title: isEn ? '🚨 Visceral Fat Warning (WHtR > 0.55)' : '🚨 Visseral Yağlanma Uyarısı (WHtR > 0.55)',
+        advice: isEn
+          ? 'Your waist circumference is significantly elevated compared to height. Increases risk of insulin resistance and hypertension. Urgent fat-loss protocol recommended.'
+          : 'Bel çevreniz boyunuza göre belirgin derecede yüksek. Bu durum insülin direnci ve tansiyon riskini katlar. Acil olarak yağ yakım protokolü başlatılmalıdır.',
       };
       reduceAreas.push({
-        name: 'Alt & Üst Karın (Visseral Yağ)',
-        reason: 'Yüksek metabolik risk ve göbek fırlaması.',
-        priorityAction: 'Kardiyo + Düşük glisemik indeksli beslenme + Günlük 500 kcal kalori açığı.',
+        name: isEn ? 'Lower & Upper Abdomen (Visceral Fat)' : 'Alt & Üst Karın (Visseral Yağ)',
+        reason: isEn ? 'High metabolic risk and pronounced belly.' : 'Yüksek metabolik risk ve göbek fırlaması.',
+        priorityAction: isEn ? 'Cardio + Low glycemic index nutrition + Daily 500 kcal deficit.' : 'Kardiyo + Düşük glisemik indeksli beslenme + Günlük 500 kcal kalori açığı.',
       });
     }
   }
@@ -595,8 +609,12 @@ export function analyzeBodyProportions(
       diffCm,
       hasAsymmetry,
       advice: hasAsymmetry
-        ? `Kollarınız arasında ${diffCm} cm fark var. Bu belirgin bir asimetridir! Çözüm: Halter/bar çalışmalarını bırakıp tek kollu dambıl/kablo hareketlerine geçin. Her sete zayıf olan tarafla başlayın ve dominant kolla sadece zayıf kolun yaptığı kadar tekrar yapın.`
-        : `Kollarınız arasındaki fark ${diffCm} cm ile normal ve dengeli aralıkta (1 cm altı doğal kabul edilir).`,
+        ? (isEn
+            ? `There is a ${diffCm} cm difference between your arms. This is noticeable asymmetry! Solution: Switch to unilateral dumbbell/cable movements and always start sets with the weaker arm.`
+            : `Kollarınız arasında ${diffCm} cm fark var. Bu belirgin bir asimetridir! Çözüm: Halter/bar çalışmalarını bırakıp tek kollu dambıl/kablo hareketlerine geçin. Her sete zayıf olan tarafla başlayın ve dominant kolla sadece zayıf kolun yaptığı kadar tekrar yapın.`)
+        : (isEn
+            ? `Difference between your arms is ${diffCm} cm, which is within the balanced range (under 1 cm is normal).`
+            : `Kollarınız arasındaki fark ${diffCm} cm ile normal ve dengeli aralıkta (1 cm altı doğal kabul edilir).`),
     };
   }
 
@@ -609,8 +627,12 @@ export function analyzeBodyProportions(
       diffCm,
       hasAsymmetry,
       advice: hasAsymmetry
-        ? `Bacaklarınız arasında ${diffCm} cm fark var. Çözüm: Çift bacak squat yerine Bulgarian Split Squat ve tek bacak Leg Press ekleyin.`
-        : `Bacak simetriniz dengeli (${diffCm} cm fark).`,
+        ? (isEn
+            ? `Leg circumference difference is ${diffCm} cm. Solution: Add Bulgarian Split Squats and Single-Leg Press instead of bilateral squats.`
+            : `Bacaklarınız arasında ${diffCm} cm fark var. Çözüm: Çift bacak squat yerine Bulgarian Split Squat ve tek bacak Leg Press ekleyin.`)
+        : (isEn
+            ? `Leg symmetry is balanced (${diffCm} cm difference).`
+            : `Bacak simetriniz dengeli (${diffCm} cm fark).`),
     };
   }
 
@@ -620,9 +642,9 @@ export function analyzeBodyProportions(
     const armRatio = avgArm / heightCm;
     if (armRatio < 0.19) {
       growAreas.push({
-        name: 'Üst Kol (Pazu & Triceps)',
-        reason: `Mevcut kol ölçünüz boyunuza göre ince kalmış (oran: ${armRatio.toFixed(2)} < 0.20).`,
-        priorityAction: 'Haftada 16 direkt set: Incline Dumbbell Curl + Overhead Triceps Extension.',
+        name: isEn ? 'Upper Arm (Biceps & Triceps)' : 'Üst Kol (Pazu & Triceps)',
+        reason: isEn ? `Current arm size is slender relative to height (ratio: ${armRatio.toFixed(2)} < 0.20).` : `Mevcut kol ölçünüz boyunuza göre ince kalmış (oran: ${armRatio.toFixed(2)} < 0.20).`,
+        priorityAction: isEn ? '16 direct weekly sets: Incline Dumbbell Curl + Overhead Triceps Extension.' : 'Haftada 16 direkt set: Incline Dumbbell Curl + Overhead Triceps Extension.',
       });
     }
   }
@@ -632,9 +654,9 @@ export function analyzeBodyProportions(
   if (avgCalf > 0 && avgArm > 0) {
     if (avgCalf < avgArm - 2) {
       growAreas.push({
-        name: 'Baldır (Kalf)',
-        reason: 'Baldırlarınız kollarınıza göre ince kalmış; klasik "tavuk bacak" dengesizliğini önlemek için kalf hipertrofisi şart.',
-        priorityAction: 'En altta 2 saniye duraklamalı Ayakta ve Oturarak Kalf Kaldırma (haftada 3 gün).',
+        name: isEn ? 'Calves' : 'Baldır (Kalf)',
+        reason: isEn ? 'Calves are slender relative to arms; calf hypertrophy recommended for athletic balance.' : 'Baldırlarınız kollarınıza göre ince kalmış; klasik "tavuk bacak" dengesizliğini önlemek için kalf hipertrofisi şart.',
+        priorityAction: isEn ? 'Standing & Seated Calf Raises with 2-second pause at stretch (3 days/week).' : 'En altta 2 saniye duraklamalı Ayakta ve Oturarak Kalf Kaldırma (haftada 3 gün).',
       });
     }
   }

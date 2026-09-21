@@ -36,9 +36,13 @@ export const translationsEN = {
         fixturesSub: 'League & Champions League',
         travelPlannerSub: 'Itineraries & travel packing',
         calorieSub: 'Daily meals & calories',
+        calorieChat: 'AI Nutrition Assistant',
+        calorieChatAI: 'AI Nutrition Assistant',
+        calorieChatSub: 'Calorie & meal analysis from photos',
         bodySub: 'Body metrics & analysis',
         createSub: 'Add new media record',
         quickEventSub: 'Add plan to calendar',
+        teamFixtures: 'Teams & Fixtures',
     },
 
     // Map Page
@@ -521,6 +525,7 @@ export const translationsEN = {
     // Stats Page
     stats: {
         title: 'Statistics & Analysis',
+        subtitle: 'View your library statistics and personal activity trends',
         thisMonth: 'This Month',
         monthlyActivity: 'Monthly Activity',
         typeDistribution: 'Library Distribution',
@@ -665,6 +670,9 @@ export const translationsEN = {
         desc: 'Descending',
         loadMore: 'Load More',
         description: 'Description',
+        new: 'New',
+        backToProfile: 'Back to Profile',
+        other: 'Other',
     },
 
     // Search
@@ -700,6 +708,7 @@ export const translationsEN = {
     // Feed Page
     feed: {
         title: 'Activities',
+        subtitle: 'Track your latest library updates and activity trends',
         empty: 'No activity yet',
         emptyDesc: 'As you add content, watch or add to favorites, it will appear here.',
         loadingActivities: 'Loading activities...',
@@ -713,6 +722,25 @@ export const translationsEN = {
         daysAgo: 'days ago',
         weeksAgo: 'weeks ago',
         monthsAgo: 'months ago',
+        streakTitle: 'Activity Streak',
+        streakDays: 'days streak',
+        categoryEngagement: 'Engagement Breakdown',
+        quickFilter: 'Quick Filter',
+        allFilter: 'All',
+        moviesFilter: 'Movies',
+        seriesFilter: 'Series',
+        gamesFilter: 'Games',
+        booksFilter: 'Books',
+        topHighlight: 'Top Highlight',
+        last10DaysNote: 'Activity feed shows records from the last 10 days. Older logs are automatically archived.',
+        quickAccess: 'Quick Access',
+        addContent: 'Add Content',
+        myStats: 'Statistics',
+        myLists: 'My Lists',
+        todayCount: 'Today',
+        totalActions: 'Total Activities',
+        uniqueItems: 'Unique Items',
+        uniqueTypes: 'Unique Types',
     },
 
     // Public Profile
@@ -1168,6 +1196,13 @@ export const translationsEN = {
     // Expenses
     expenses: {
         title: 'Expenses',
+        subtitle: 'Income, expenses, invoices, installments, gold investments and budget planning',
+        expensesSub: 'Expense tracking and records',
+        invoicesSub: 'Subscription and bill tracking',
+        budgetSub: 'Monthly budget and savings goals',
+        investmentsSub: 'Gold, currency and portfolio tracking',
+        vehicleSub: 'Fuel, maintenance and vehicle costs',
+        reportsSub: 'Financial analytics and charts',
         pageTitle: 'Expense Management',
         pageSubtitle: 'FINANCIAL MANAGEMENT',
         addExpense: 'Add Expense',
@@ -1208,6 +1243,8 @@ export const translationsEN = {
         reportsTab: 'Reports',
         invoicesTab: 'Bills & Passwords',
         vehicleTab: 'Vehicle',
+        budgetTab: 'Budget Planner',
+        investmentsTab: 'Investments',
         // Monthly Summary
         monthlySummary: 'Monthly Summary',
         monthColumn: 'Month',
@@ -1575,10 +1612,12 @@ export const translationsEN = {
         statsUsers: 'Registered Users',
         statsActive: 'Active / Logged In',
         statsComments: 'Total Comments',
+        statsRequests: 'Access Requests',
         tabUsers: 'Users',
         tabLogins: 'Recent Logins (Security)',
         tabComments: 'Comments',
         tabFeatures: 'Feature Access',
+        tabRequests: 'Access Requests',
         searchUsersPlaceholder: 'Search user by name or email...',
         searchLogsPlaceholder: 'Search by device, IP or name...',
         searchCommentsPlaceholder: 'Search comment text or user...',
@@ -1718,6 +1757,8 @@ export const translationsEN = {
         deleteItemConfirmMessage: 'Are you sure you want to delete "{name}" from the calorie report?',
         moveEntireDay: 'Move Entire Day',
         mealTotal: 'Daily Total:',
+        demoNoticeTitle: 'Demo Mode — Sample Nutrition Report (Sedentary / Overweight)',
+        demoNoticeDesc: 'This data is a nutrition simulation of a sample individual with a sedentary lifestyle and high calorie intake since you do not have AI access yet. You can request access to record and track your own meals with B12 AI.',
     },
 
     // Body Profile
@@ -1757,5 +1798,22 @@ export const translationsEN = {
         regionalDiagnosis: 'Regional Composition & Diagnostics',
         recommendedExercises: 'Evidence-Based Exercises for Region',
         openExerciseCatalog: '🎬 View Exercise Catalog & GIFs',
+        bodyPointsTitle: 'Body Measurement Points (15 Regions)',
+        bodyPointsSubtitle: 'Click & Measure',
+        bodyPointsDescription: 'Click the points on the body model to quickly enter the tape measurement.',
+        ratioAnalysisTitle: 'Regional Ratio Analysis & Personal Workout Guide',
+        ratioAnalysisSubtitle: 'Personalized analysis based on your measurements and sports medicine standards (V-Taper, WHtR, Symmetry)',
+        exerciseCatalogBtn: '🎬 Exercise Catalog & GIFs',
+        guidesTitle: 'Guides:',
+        vTaperTitle: 'V-Taper (Adonis Ratio)',
+        whtrTitle: 'Waist / Height (WHtR)',
+        symmetryTitle: 'Body Symmetry',
+        targetLabel: 'Target',
+        idealLabel: 'Ideal',
+        asymmetry: '⚠️ Asymmetry',
+        balanced: '✓ Balanced',
+        demoBannerTitle: 'Demo Mode — Sample Profile (Sedentary / Overweight)',
+        demoBannerDesc: 'This profile belongs to a sample individual with a sedentary lifestyle and higher body weight. To create your own personalized body profile and unlock AI features, please request access.',
+        requestAccessBtn: 'Request Access',
     }
 };

@@ -499,26 +499,34 @@ export default function VehicleTab() {
     const lastEntry = history.length > 0 ? history[history.length - 1] : null;
     const activeSet = lastEntry?.type === 'winter' ? 'winter' : 'summer';
 
-    // Cumulative mileage tracking
-    const totalSummerKm = formData.tireSummerTotalKm || 6000;
-    const totalWinterKm = formData.tireWinterTotalKm || 2800;
+    // Cumulative mileage tracking (read accurately from formData)
+    const totalSummerKm = Number(formData.tireSummerTotalKm) || 0;
+    const totalWinterKm = Number(formData.tireWinterTotalKm) || 0;
 
     const activeTotalKm = activeSet === 'summer' ? totalSummerKm : totalWinterKm;
 
-    // Tire Life Standards: 50,000 km or 5.5 years
+    // Tire Life Standards: 50,000 km standard recommended lifespan
     const avgLifeKm = 50000;
-    const avgLifeMonths = 66;
+    const avgLifeMonths = 66; // ~5.5 years
 
+    // Usage percent accurately reflects driven KM on this tire set
     const kmUsage = (activeTotalKm / avgLifeKm) * 100;
 
-    let ageUsage = 0;
+    let ageMonths = 0;
     const purchaseDate = activeSet === 'summer' ? formData.tireSummerPurchaseDate : formData.tireWinterPurchaseDate;
-    if (purchaseDate) {
+    if (purchaseDate && isValid(parseISO(purchaseDate))) {
       const ageInDays = differenceInDays(new Date(), parseISO(purchaseDate));
-      ageUsage = (ageInDays / (avgLifeMonths * 30.44)) * 100;
+      ageMonths = Math.max(0, Math.round(ageInDays / 30.44));
+    } else {
+      const year = activeSet === 'summer' ? formData.tireSummerYear : formData.tireWinterYear;
+      if (year && Number(year) > 2000) {
+        ageMonths = Math.max(0, (new Date().getFullYear() - Number(year)) * 12);
+      }
     }
 
-    const usagePercent = Math.min(100, Math.round(Math.max(kmUsage, ageUsage)));
+    const isAged = ageMonths >= avgLifeMonths;
+    // Usage percent is bounded between 0% and 100% based on KM
+    const usagePercent = Math.min(100, Math.max(0, Math.round(kmUsage)));
     const remainingKm = Math.max(0, avgLifeKm - activeTotalKm);
 
     return {
@@ -526,7 +534,9 @@ export default function VehicleTab() {
       activeTotalKm,
       usagePercent,
       remainingKm,
-      status: usagePercent > 85 ? 'danger' : usagePercent > 65 ? 'warning' : 'safe'
+      ageMonths,
+      isAged,
+      status: (usagePercent > 85 || isAged) ? 'danger' : usagePercent > 65 ? 'warning' : 'safe'
     };
   }, [formData]);
 
@@ -1053,9 +1063,16 @@ export default function VehicleTab() {
           <div className="flex justify-between items-center mb-2">
             <div>
               <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest">Aktif Lastik Ömrü</p>
-              <p className="text-2xl font-black text-stone-900 dark:text-white leading-none mt-0.5">
-                {tireStats.usagePercent}% <span className="text-sm text-stone-400 font-bold">kullanıldı</span>
-              </p>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <p className="text-2xl font-black text-stone-900 dark:text-white leading-none">
+                  {tireStats.usagePercent}% <span className="text-sm text-stone-400 font-bold">kullanıldı</span>
+                </p>
+                {tireStats.isAged && (
+                  <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                    ⚠️ {Math.round(tireStats.ageMonths / 12)} Yıllık
+                  </span>
+                )}
+              </div>
             </div>
             <div className="text-right">
               <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest">Kalan</p>
@@ -1085,6 +1102,7 @@ export default function VehicleTab() {
             { type: 'winter', label: t('expenses.vehicle.winterTire'), brand: formData.tireWinterBrand, date: formData.tireWinterPurchaseDate, year: formData.tireWinterYear, icon: <FaSnowflake className="text-sky-400" size={16} />, iconBg: 'bg-sky-100 dark:bg-sky-950/30' },
           ].map(tire => {
             const isActive = tireStats.activeSet === tire.type;
+            const tireKm = tire.type === 'summer' ? (formData.tireSummerTotalKm || 0) : (formData.tireWinterTotalKm || 0);
             return (
               <div key={tire.type} className={`p-4 rounded-2xl border-2 transition-all ${isActive ? 'border-stone-900 dark:border-white bg-stone-50 dark:bg-zinc-800/50 shadow-md' : 'border-stone-100 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-800/20 opacity-70'}`}>
                 <div className="flex items-center justify-between mb-3">
@@ -1099,19 +1117,26 @@ export default function VehicleTab() {
                   <div className="space-y-2">
                     <input placeholder="Marka / Model" value={tire.brand || ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerBrand' : 'tireWinterBrand']: e.target.value })}
                       className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black dark:text-white outline-none" />
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <input type="number" placeholder="Üretim Yılı" value={tire.year || ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerYear' : 'tireWinterYear']: Number(e.target.value) })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black dark:text-white outline-none" />
+                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-2 py-1.5 text-[10px] font-black dark:text-white outline-none" />
+                      <input type="number" placeholder="Toplam KM" value={(tire.type === 'summer' ? formData.tireSummerTotalKm : formData.tireWinterTotalKm) ?? ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerTotalKm' : 'tireWinterTotalKm']: Number(e.target.value) })}
+                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-2 py-1.5 text-[10px] font-black dark:text-white outline-none" />
                       <input type="date" value={tire.date || ''} onChange={e => setFormData({ ...formData, [tire.type === 'summer' ? 'tireSummerPurchaseDate' : 'tireWinterPurchaseDate']: e.target.value })}
-                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-[10px] font-black dark:text-white outline-none" />
+                        className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-xl px-2 py-1.5 text-[10px] font-black dark:text-white outline-none" />
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <h4 className="text-sm font-black text-stone-900 dark:text-white uppercase">{tire.brand || '—'} <span className="text-stone-400 text-xs font-bold">{tire.year}</span></h4>
-                    <p className="text-[9px] font-bold text-stone-400 flex items-center gap-1">
-                      <FaCalendarAlt size={8} /> Alım: {tire.date && isValid(parseISO(tire.date)) ? format(parseISO(tire.date), 'MM/yyyy') : '—'}
-                    </p>
+                    <div className="flex items-center justify-between text-[9px] font-bold text-stone-400 mt-1">
+                      <span className="flex items-center gap-1">
+                        <FaCalendarAlt size={8} /> Alım: {tire.date && isValid(parseISO(tire.date)) ? format(parseISO(tire.date), 'MM/yyyy') : '—'}
+                      </span>
+                      <span className="text-stone-700 dark:text-zinc-300 font-black">
+                        {tireKm.toLocaleString()} KM
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

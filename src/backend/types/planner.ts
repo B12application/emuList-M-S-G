@@ -43,5 +43,7 @@ export interface CalendarAlert {
   endDate: string;      // YYYY-MM-DD
   label: string;        // "İstanbul Yolculuğu" gibi
   color?: string;       // Varsayılan: '#ef4444' (kırmızı)
+  isCompleted?: boolean; // Tamamlandı / Yapılmadı durumu
   createdAt?: Date | any;
 }
+

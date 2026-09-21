@@ -50,7 +50,7 @@ export default function PlannerHeader({ selectedDate, meetingCount, onOpenTeamFi
             title="Takip edilen takım fikstürlerini seç"
           >
             <PiSoccerBallFill className="text-sm text-amber-500" />
-            <span>Takımlar & Fikstür</span>
+            <span>{t('nav.teamFixtures') || 'Takımlar & Fikstür'}</span>
           </button>
         )}
       </div>

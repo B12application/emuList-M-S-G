@@ -18,6 +18,16 @@ service cloud.firestore {
       return !(resource.data.userId is string);
     }
 
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email is string && (
+          request.auth.token.email == 'emuwhilist@gmail.com' ||
+          request.auth.token.email == 'mustafaulusoy0707@gmail.com'
+        )) ||
+        request.auth.uid == 'ZKU7SObBkeNzMicltUKJjo6ybHH2'
+      );
+    }
+
     // AI Usage tracking - Protected for authenticated users
     match /ai_usage/{date} {
       allow read, write: if isSignedIn();
@@ -33,7 +43,7 @@ service cloud.firestore {
     // Users Collection
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
 
       // Travel Plans (subcollection)
       match /travelPlans/{planId} {
@@ -54,13 +64,13 @@ service cloud.firestore {
     // User Profiles
     match /userProfiles/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
     
     // Recommendations
     match /recommendations/{recId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == 'ZKU7SObBkeNzMicltUKJjo6ybHH2';
+      allow write: if request.auth != null && (request.auth.uid == 'ZKU7SObBkeNzMicltUKJjo6ybHH2' || isAdmin());
     }
     
     // Activities
@@ -208,6 +218,20 @@ service cloud.firestore {
     match /loginLogs/{logId} {
       allow create: if isOwnerByRequest();
       allow read: if isSignedIn();
+    }
+
+    // Access Requests (Erişim Talepleri & İletişim Bildirimleri)
+    match /accessRequests/{requestId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
     }
   }
 }

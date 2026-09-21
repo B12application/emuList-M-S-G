@@ -13,6 +13,7 @@ import {
 import toast from 'react-hot-toast';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import AccessRequestModal from '../components/access/AccessRequestModal';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
@@ -59,6 +60,7 @@ export default function CalorieDetailsPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAccessModal, setShowAccessModal] = useState(false);
   const [selectedRange, setSelectedRange] = useState<'all' | 'today' | 'week'>('all');
 
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -74,14 +76,81 @@ export default function CalorieDetailsPage() {
     onConfirm: () => {},
   });
 
+  const DEMO_SESSIONS: ChatSession[] = useMemo(() => [
+    {
+      id: 'demo-session-1',
+      userId: 'demo',
+      title: 'Örnek Günlük Öğünler',
+      totalCalories: 3250,
+      estimatedSizeBytes: 1024,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      messages: [
+        {
+          id: 'msg-1',
+          role: 'assistant',
+          text: 'Örnek Kahvaltı Analizi',
+          timestamp: new Date(),
+          mealData: {
+            totalCalories: 760,
+            totalProtein: 26,
+            totalCarbs: 85,
+            totalFat: 36,
+            items: [
+              { name: 'Sucuklu Kaşarlı Tost', amount: '2 dilim', calories: 580, protein: 22, carbs: 65, fat: 28 },
+              { name: 'Şekerli Çay & Zeytin', amount: '2 bardak + 6 zeytin', calories: 180, protein: 4, carbs: 20, fat: 8 }
+            ]
+          }
+        },
+        {
+          id: 'msg-2',
+          role: 'assistant',
+          text: 'Örnek Öğle Yemeği Analizi',
+          timestamp: new Date(),
+          mealData: {
+            totalCalories: 1380,
+            totalProtein: 42,
+            totalCarbs: 145,
+            totalFat: 70,
+            items: [
+              { name: 'Çift Köfteli Burger Menü', amount: '1 menü', calories: 950, protein: 34, carbs: 88, fat: 52 },
+              { name: 'Büyük Boy Patates Kızartması & Kola', amount: '1 porsiyon', calories: 430, protein: 8, carbs: 57, fat: 18 }
+            ]
+          }
+        },
+        {
+          id: 'msg-3',
+          role: 'assistant',
+          text: 'Örnek Akşam Yemeği & Tatlı',
+          timestamp: new Date(),
+          mealData: {
+            totalCalories: 1110,
+            totalProtein: 36,
+            totalCarbs: 120,
+            totalFat: 56,
+            items: [
+              { name: 'Kıymalı Kaşarlı Pide', amount: '1.5 porsiyon', calories: 720, protein: 30, carbs: 75, fat: 34 },
+              { name: 'Fıstıklı Künefe', amount: '1 porsiyon', calories: 390, protein: 6, carbs: 45, fat: 22 }
+            ]
+          }
+        }
+      ]
+    }
+  ], []);
+
   useEffect(() => {
     if (!user) return;
+    if (!hasAccess('calorieAi')) {
+      setSessions(DEMO_SESSIONS);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     getChatSessions(user.uid, 500)
       .then(setSessions)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, hasAccess, DEMO_SESSIONS]);
 
   // Aggregate all meal items grouped by day
   const groupedDays = useMemo(() => {
@@ -495,6 +564,32 @@ export default function CalorieDetailsPage() {
           </div>
         }
       />
+
+      {/* ─── DEMO MODE BANNER FOR NON-AI USERS ─── */}
+      {!hasAccess('calorieAi') && (
+        <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-lg">
+              👀
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-amber-950 dark:text-amber-200">
+                {t('calorieDetails.demoNoticeTitle') || 'Demo Modu — Örnek Birey Beslenme Raporu (Hareketsiz / Kilolu)'}
+              </h4>
+              <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-0.5 max-w-2xl leading-relaxed">
+                {t('calorieDetails.demoNoticeDesc') || 'Bu veriler henüz AI erişim izniniz olmadığı için hareketsiz ve yüksek kalori alan örnek bir bireyin beslenme simülasyonu olarak gösterilmektedir. Kendi öğünlerinizi B12 AI ile kaydetmek ve raporlamak için erişim izni talep edebilirsiniz.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAccessModal(true)}
+            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs rounded-xl shadow-xs transition-all shrink-0 cursor-pointer hover:scale-[1.02]"
+          >
+            ✉️ {t('bodyProfile.requestAccessBtn') || 'Erişim Talebi Gönder'}
+          </button>
+        </div>
+      )}
 
       {/* Mobile AI Quota Banner */}
       <div className="sm:hidden mb-4 p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 flex items-center justify-between text-xs">
@@ -1068,6 +1163,15 @@ export default function CalorieDetailsPage() {
           setConfirmDialog(c => ({ ...c, isOpen: false }));
         }}
         onClose={() => setConfirmDialog(c => ({ ...c, isOpen: false }))}
+      />
+
+      {/* Access Request Modal */}
+      <AccessRequestModal
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        featureKey="calorieAi"
+        featureTitle={language === 'tr' ? 'B12 AI Kalori & Beslenme Takibi' : 'B12 AI Calorie & Nutrition Tracking'}
+        featureDescription={language === 'tr' ? 'Fotoğraflı öğün kaydı, otomatik besin ve makro dökümü, kalori istatistikleri ve günlük takip.' : 'Photo meal logging, automatic macro and nutrition calculation, and daily calorie analytics.'}
       />
     </div>
   );

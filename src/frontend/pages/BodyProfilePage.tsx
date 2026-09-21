@@ -16,6 +16,7 @@ import {
 import toast from 'react-hot-toast';
 import ExercisePreviewModal from '../components/body/ExercisePreviewModal';
 import ExerciseCatalogModal from '../components/body/ExerciseCatalogModal';
+import AccessRequestModal from '../components/access/AccessRequestModal';
 import {
   getExerciseMedia,
   extractExercisesFromText,
@@ -30,7 +31,7 @@ import type {
   Gender, ActivityLevel, BodyMeasurements, ValidMeasurementKey,
 } from '../services/bodyProfileService';
 import {
-  ACTIVITY_LABELS, MEASUREMENT_LIST, MEASUREMENT_LABELS,
+  ACTIVITY_LABELS, MEASUREMENT_LIST, MEASUREMENT_LABELS, getMeasurementLabels,
   calculateBMR, calculateTDEE, calculateBMI, getBMICategory,
   calculateBodyFat, getBodyFatCategory,
   calculateCalorieDeficit, getIdealWeightRange,
@@ -153,6 +154,7 @@ export default function BodyProfilePage() {
   const [selectedKey, setSelectedKey] = useState<ValidMeasurementKey | null>(null);
   const [measurementCategory, setMeasurementCategory] = useState<'all' | 'upper' | 'arms' | 'core' | 'legs'>('all');
   const [copied, setCopied] = useState(false);
+  const [showAccessModal, setShowAccessModal] = useState(false);
 
   // Profile state
   const [gender, setGender] = useState<Gender>('male');
@@ -166,9 +168,48 @@ export default function BodyProfilePage() {
   // Today's calorie data from existing sessions
   const [todayCalories, setTodayCalories] = useState(0);
 
-  // Load profile from Firebase
+  const DEMO_OVERWEIGHT_PROFILE = useMemo(() => ({
+    gender: 'male' as Gender,
+    age: 38,
+    heightCm: 176,
+    weightKg: 104,
+    targetWeightKg: 78,
+    activityLevel: 'sedentary' as ActivityLevel,
+    measurements: {
+      neckCm: 43,
+      shoulderCm: 116,
+      chestCm: 112,
+      upperArmLeftCm: 35,
+      upperArmRightCm: 35.5,
+      forearmLeftCm: 29,
+      forearmRightCm: 29,
+      upperAbdomenCm: 104,
+      waistCm: 108,
+      lowerAbdomenCm: 112,
+      hipCm: 114,
+      thighLeftCm: 64,
+      thighRightCm: 64.5,
+      calfLeftCm: 42,
+      calfRightCm: 42,
+    }
+  }), []);
+
+  // Load profile from Firebase (or load demo overweight individual for non-AI users)
   useEffect(() => {
     if (!user) return;
+    if (!hasAccess('calorieAi')) {
+      // Demo overweight sedentary individual
+      setGender(DEMO_OVERWEIGHT_PROFILE.gender);
+      setAge(DEMO_OVERWEIGHT_PROFILE.age);
+      setHeightCm(DEMO_OVERWEIGHT_PROFILE.heightCm);
+      setWeightKg(DEMO_OVERWEIGHT_PROFILE.weightKg);
+      setTargetWeightKg(DEMO_OVERWEIGHT_PROFILE.targetWeightKg);
+      setActivityLevel(DEMO_OVERWEIGHT_PROFILE.activityLevel);
+      setMeasurements(DEMO_OVERWEIGHT_PROFILE.measurements);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     getBodyProfile(user.uid)
       .then(profile => {
@@ -180,13 +221,22 @@ export default function BodyProfilePage() {
           setTargetWeightKg(profile.targetWeightKg);
           setActivityLevel(profile.activityLevel);
           setMeasurements(profile.measurements || emptyMeasurements());
+        } else {
+          // Reset to clean default when user has access
+          setGender('male');
+          setAge(25);
+          setHeightCm(175);
+          setWeightKg(75);
+          setTargetWeightKg(70);
+          setActivityLevel('moderate');
+          setMeasurements(emptyMeasurements());
         }
       })
       .catch(err => {
         console.warn('Profile load notice:', err);
       })
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, hasAccess, DEMO_OVERWEIGHT_PROFILE]);
 
   // Load today's calorie intake from calorie sessions
   useEffect(() => {
@@ -268,8 +318,8 @@ export default function BodyProfilePage() {
 
   // Body proportions & personal sports science diagnostic
   const proportions = useMemo(() => {
-    return analyzeBodyProportions(heightCm, weightKg, gender, measurements);
-  }, [heightCm, weightKg, gender, measurements]);
+    return analyzeBodyProportions(heightCm, weightKg, gender, measurements, language);
+  }, [heightCm, weightKg, gender, measurements, language]);
 
   // 15 Bölge Detaylı Yağ vs Kas Teşhisi (Akademik Antropometri & Doktora Tezleri)
   const regionalDiagnoses = useMemo(() => {
@@ -278,6 +328,10 @@ export default function BodyProfilePage() {
 
   // Save handler
   const handleSave = useCallback(async () => {
+    if (!hasAccess('calorieAi')) {
+      toast.error('Demo modundasınız. Kişisel profilinizi kaydedebilmek için lütfen AI erişim izni talep edin.');
+      return;
+    }
     if (!user) return;
     setSaving(true);
     try {
@@ -290,10 +344,10 @@ export default function BodyProfilePage() {
         activityLevel,
         measurements,
       });
-      toast.success(t('bodyProfile.profileSaved') || 'Beden profiliniz kaydedildi!');
+      toast.success(t('bodyProfile.profileSaved'));
     } catch (err: any) {
-      console.error('Profile save error:', err);
-      toast.error(t('common.genericError') || 'Kaydetme sırasında hata oluştu.');
+      console.error('Beden profili kaydedilemedi:', err);
+      toast.error('Profil kaydedilirken hata oluştu.');
     } finally {
       setSaving(false);
     }
@@ -330,6 +384,8 @@ export default function BodyProfilePage() {
     });
   }, [measurements]);
 
+  const measurementLabels = useMemo(() => getMeasurementLabels(language), [language]);
+
   if (accessLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -338,7 +394,7 @@ export default function BodyProfilePage() {
     );
   }
 
-  const activeMeta = selectedKey ? MEASUREMENT_LABELS[selectedKey] : null;
+  const activeMeta = selectedKey ? measurementLabels[selectedKey] : null;
 
   const getActivityLabel = (level: ActivityLevel) => {
     switch (level) {
@@ -377,6 +433,32 @@ export default function BodyProfilePage() {
           </button>
         }
       />
+
+      {/* ─── DEMO MODE BANNER FOR NON-AI USERS ─── */}
+      {!hasAccess('calorieAi') && (
+        <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-lg">
+              👀
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-amber-950 dark:text-amber-200">
+                {t('bodyProfile.demoBannerTitle') || 'Demo Modu — Örnek Birey Profili (Hareketsiz / Kilolu)'}
+              </h4>
+              <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-0.5 max-w-2xl leading-relaxed">
+                {t('bodyProfile.demoBannerDesc') || 'Bu profil hareketsiz ve yüksek kilo/yağ oranına sahip örnek bir bireye aittir. Kendi kişisel beden profilinizi oluşturmak ve AI özelliklerini açmak için erişim talebinde bulunabilirsiniz.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAccessModal(true)}
+            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs rounded-xl shadow-xs transition-all shrink-0 cursor-pointer hover:scale-[1.02]"
+          >
+            ✉️ {t('bodyProfile.requestAccessBtn') || 'Erişim Talebi Gönder'}
+          </button>
+        </div>
+      )}
 
       {/* 2 Ana Sekme ve Sağ Tarafta BMI / Vücut Göstergesi */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -502,14 +584,14 @@ export default function BodyProfilePage() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase text-stone-500 dark:text-zinc-400 tracking-wider">
                     <FaTape className="text-sm text-amber-500" />
-                    Vücut Noktaları (15 Bölge)
+                    {t('bodyProfile.bodyPointsTitle') || 'Vücut Noktaları (15 Bölge)'}
                   </div>
                   <span className="text-[11px] text-stone-400">
-                    Tıkla & Ölç
+                    {t('bodyProfile.bodyPointsSubtitle') || 'Tıkla & Ölç'}
                   </span>
                 </div>
                 <p className="text-[11px] text-stone-400 dark:text-zinc-500 mb-4 leading-relaxed">
-                  Vücut üzerindeki noktalara tıklayarak ilgili mezura ölçüsünü hızlıca girebilirsiniz.
+                  {t('bodyProfile.bodyPointsDescription') || 'Vücut üzerindeki noktalara tıklayarak ilgili mezura ölçüsünü hızlıca girebilirsiniz.'}
                 </p>
 
                 <Suspense
@@ -741,10 +823,10 @@ export default function BodyProfilePage() {
                 <div>
                   <h3 className="text-base font-black text-stone-900 dark:text-white flex items-center gap-2">
                     <FaDumbbell className="text-amber-500" />
-                    Bölgesel Oran Analizi & Kişisel Spor Tavsiyeleri
+                    {t('bodyProfile.ratioAnalysisTitle') || 'Bölgesel Oran Analizi & Kişisel Spor Tavsiyeleri'}
                   </h3>
                   <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">
-                    Ölçümlerinize ve spor hekimliği standartlarına (V-Taper, WHtR, Simetri) göre kişiselleştirilmiş analiz
+                    {t('bodyProfile.ratioAnalysisSubtitle') || 'Ölçümlerinize ve spor hekimliği standartlarına (V-Taper, WHtR, Simetri) göre kişiselleştirilmiş analiz'}
                   </p>
                 </div>
 
@@ -756,17 +838,19 @@ export default function BodyProfilePage() {
                     className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-black flex items-center gap-1.5 shadow-xs transition-all cursor-pointer hover:scale-[1.02]"
                   >
                     <FaPlay className="text-[9px]" />
-                    <span>🎬 Egzersiz Kataloğu &amp; GIF'ler</span>
+                    <span>{t('bodyProfile.exerciseCatalogBtn') || '🎬 Egzersiz Kataloğu & GIF\'ler'}</span>
                   </button>
 
-                  <span className="text-[11px] font-bold text-stone-400 ml-1 mr-0.5">Rehberler:</span>
+                  <span className="text-[11px] font-bold text-stone-400 ml-1 mr-0.5">
+                    {t('bodyProfile.guidesTitle') || 'Rehberler:'}
+                  </span>
                   {(['shoulderCm', 'chestCm', 'waistCm', 'upperArmRightCm', 'lowerAbdomenCm', 'thighRightCm', 'calfRightCm'] as ValidMeasurementKey[]).map(key => (
                     <button
                       key={key}
                       onClick={() => setGuideModalKey(key)}
                       className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-zinc-800 hover:bg-amber-400 hover:text-stone-950 dark:hover:bg-amber-400 dark:hover:text-stone-950 text-[11px] font-bold text-stone-600 dark:text-zinc-300 transition-all cursor-pointer"
                     >
-                      {MEASUREMENT_LABELS[key]?.emoji} {MEASUREMENT_LABELS[key]?.label}
+                      {measurementLabels[key]?.emoji} {measurementLabels[key]?.label}
                     </button>
                   ))}
                 </div>
@@ -779,7 +863,7 @@ export default function BodyProfilePage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black uppercase text-stone-500 dark:text-zinc-400 flex items-center gap-1.5">
                       <FaMedal className="text-amber-500" />
-                      V-Taper (Adonis Oranı)
+                      {t('bodyProfile.vTaperTitle') || 'V-Taper (Adonis Oranı)'}
                     </span>
                     {proportions.vTaper && (
                       <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${
@@ -789,7 +873,7 @@ export default function BodyProfilePage() {
                             ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400'
                             : 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400'
                       }`}>
-                        {proportions.vTaper.ratio} (Hedef: 1.618)
+                        {proportions.vTaper.ratio} ({language === 'tr' ? 'Hedef: 1.618' : 'Target: 1.618'})
                       </span>
                     )}
                   </div>
@@ -804,7 +888,7 @@ export default function BodyProfilePage() {
                     </div>
                   ) : (
                     <p className="text-xs text-stone-400 leading-relaxed">
-                      Omuz ve bel ölçünüzü girerek V-Taper Adonis oranınızı hesaplayın.
+                      {language === 'tr' ? 'Omuz ve bel ölçünüzü girerek V-Taper Adonis oranınızı hesaplayın.' : 'Enter your shoulder and waist measurements to calculate your V-Taper Adonis ratio.'}
                     </p>
                   )}
                 </div>
@@ -814,7 +898,7 @@ export default function BodyProfilePage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black uppercase text-stone-500 dark:text-zinc-400 flex items-center gap-1.5">
                       <FaHeartbeat className="text-rose-500" />
-                      Bel / Boy (WHtR)
+                      {t('bodyProfile.whtrTitle') || 'Bel / Boy (WHtR)'}
                     </span>
                     {proportions.waistToHeight && (
                       <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${
@@ -822,7 +906,7 @@ export default function BodyProfilePage() {
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400'
                           : 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400'
                       }`}>
-                        {proportions.waistToHeight.ratio} (İdeal &lt; 0.50)
+                        {proportions.waistToHeight.ratio} ({language === 'tr' ? 'İdeal < 0.50' : 'Ideal < 0.50'})
                       </span>
                     )}
                   </div>
@@ -837,7 +921,7 @@ export default function BodyProfilePage() {
                     </div>
                   ) : (
                     <p className="text-xs text-stone-400 leading-relaxed">
-                      Bel ve boy bilginiz girildiğinde iç organ (visseral) yağlanma riskiniz teşhis edilir.
+                      {language === 'tr' ? 'Bel ve boy bilginiz girildiğinde iç organ (visseral) yağlanma riskiniz teşhis edilir.' : 'Visceral fat risk is diagnosed when waist and height information is entered.'}
                     </p>
                   )}
                 </div>
@@ -847,18 +931,18 @@ export default function BodyProfilePage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-black uppercase text-stone-500 dark:text-zinc-400 flex items-center gap-1.5">
                       <FaBalanceScale className="text-blue-500" />
-                      Beden Simetrisi
+                      {t('bodyProfile.symmetryTitle') || 'Beden Simetrisi'}
                     </span>
                     {proportions.armSymmetry && (
                       <span className="text-[11px] font-black px-2 py-0.5 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400">
-                        {proportions.armSymmetry.hasAsymmetry ? '⚠️ Asimetri' : '✓ Dengeli'}
+                        {proportions.armSymmetry.hasAsymmetry ? (language === 'tr' ? '⚠️ Asimetri' : '⚠️ Asymmetry') : (language === 'tr' ? '✓ Dengeli' : '✓ Balanced')}
                       </span>
                     )}
                   </div>
                   {proportions.armSymmetry ? (
                     <div>
                       <div className="text-xs font-bold text-stone-900 dark:text-white mb-1">
-                        Kol Farkı: {proportions.armSymmetry.diffCm} cm {proportions.legSymmetry ? `| Bacak Farkı: ${proportions.legSymmetry.diffCm} cm` : ''}
+                        {language === 'tr' ? 'Kol Farkı' : 'Arm Difference'}: {proportions.armSymmetry.diffCm} cm {proportions.legSymmetry ? `| ${language === 'tr' ? 'Bacak Farkı' : 'Leg Difference'}: ${proportions.legSymmetry.diffCm} cm` : ''}
                       </div>
                       <p className="text-xs text-stone-600 dark:text-zinc-300 leading-relaxed">
                         {proportions.armSymmetry.advice}
@@ -866,7 +950,7 @@ export default function BodyProfilePage() {
                     </div>
                   ) : (
                     <p className="text-xs text-stone-400 leading-relaxed">
-                      Sağ ve sol kol ölçülerinizi girerek kas asimetrinizi kontrol edin.
+                      {language === 'tr' ? 'Sağ ve sol kol ölçülerinizi girerek kas asimetrinizi kontrol edin.' : 'Enter your left and right arm measurements to check for muscle asymmetry.'}
                     </p>
                   )}
                 </div>
@@ -878,7 +962,7 @@ export default function BodyProfilePage() {
                 <div className="p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40">
                   <div className="flex items-center gap-2 text-xs font-black text-rose-700 dark:text-rose-400 uppercase mb-3">
                     <FaArrowDown />
-                    İncelmesi &amp; Sıkılaşması Gereken Bölgeler
+                    {language === 'tr' ? 'İncelmesi & Sıkılaşması Gereken Bölgeler' : 'Areas to Slim & Tighten'}
                   </div>
                   {proportions.priorityActions.reduceAreas.length > 0 ? (
                     <div className="space-y-2.5">
@@ -886,11 +970,11 @@ export default function BodyProfilePage() {
                         <div key={idx} className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-rose-200/50 dark:border-zinc-800 text-xs">
                           <div className="font-black text-stone-900 dark:text-white flex items-center justify-between">
                             <span>{area.name}</span>
-                            <span className="text-[10px] text-rose-500 font-bold">Hedef: İncelme</span>
+                            <span className="text-[10px] text-rose-500 font-bold">{language === 'tr' ? 'Hedef: İncelme' : 'Goal: Slimming'}</span>
                           </div>
                           <p className="text-stone-500 dark:text-zinc-400 text-[11px] mt-0.5">{area.reason}</p>
                           <div className="mt-1.5 p-1.5 bg-rose-50 dark:bg-rose-900/20 rounded-lg text-rose-800 dark:text-rose-300 font-bold text-[11px]">
-                            💡 Reçete: {area.priorityAction}
+                            {language === 'tr' ? '💡 Reçete:' : '💡 Protocol:'} {area.priorityAction}
                           </div>
 
                           {/* Dinamik Egzersiz Çipleri */}
@@ -900,7 +984,7 @@ export default function BodyProfilePage() {
                             return (
                               <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                                 <span className="text-[10px] font-black uppercase text-rose-700/80 dark:text-rose-400">
-                                  🎬 Hareketi Gör:
+                                  {language === 'tr' ? '🎬 Hareketi Gör:' : '🎬 View Exercise:'}
                                 </span>
                                 {exercises.map(ex => (
                                   <button
@@ -924,7 +1008,7 @@ export default function BodyProfilePage() {
                     </div>
                   ) : (
                     <p className="text-xs text-stone-500 dark:text-zinc-400">
-                      Tebrikler! Bel veya karın bölgenizde aşırı yağlanma tespit edilmedi. Mevcut kilonuzu ve formunuzu koruyun.
+                      {language === 'tr' ? 'Tebrikler! Bel veya karın bölgenizde aşırı yağlanma tespit edilmedi. Mevcut kilonuzu ve formunuzu koruyun.' : 'Congratulations! No excessive abdominal fat detected. Maintain your healthy body composition.'}
                     </p>
                   )}
                 </div>
@@ -933,7 +1017,7 @@ export default function BodyProfilePage() {
                 <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40">
                   <div className="flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase mb-3">
                     <FaArrowUp />
-                    Büyütülmesi &amp; Kas Eklenmesi Gereken Bölgeler
+                    {language === 'tr' ? 'Büyütülmesi & Kas Eklenmesi Gereken Bölgeler' : 'Areas to Grow & Build Muscle'}
                   </div>
                   {proportions.priorityActions.growAreas.length > 0 ? (
                     <div className="space-y-2.5">
@@ -941,11 +1025,11 @@ export default function BodyProfilePage() {
                         <div key={idx} className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200/50 dark:border-zinc-800 text-xs">
                           <div className="font-black text-stone-900 dark:text-white flex items-center justify-between">
                             <span>{area.name}</span>
-                            <span className="text-[10px] text-emerald-600 font-bold">Hedef: Hipertrofi</span>
+                            <span className="text-[10px] text-emerald-600 font-bold">{language === 'tr' ? 'Hedef: Hipertrofi' : 'Goal: Hypertrophy'}</span>
                           </div>
                           <p className="text-stone-500 dark:text-zinc-400 text-[11px] mt-0.5">{area.reason}</p>
                           <div className="mt-1.5 p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
-                            ⚡ Reçete: {area.priorityAction}
+                            {language === 'tr' ? '⚡ Reçete:' : '⚡ Protocol:'} {area.priorityAction}
                           </div>
 
                           {/* Dinamik Egzersiz Çipleri */}
@@ -955,7 +1039,7 @@ export default function BodyProfilePage() {
                             return (
                               <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                                 <span className="text-[10px] font-black uppercase text-emerald-700/80 dark:text-emerald-400">
-                                  🎬 Hareketi Gör:
+                                  {language === 'tr' ? '🎬 Hareketi Gör:' : '🎬 View Exercise:'}
                                 </span>
                                 {exercises.map(ex => (
                                   <button
@@ -979,7 +1063,7 @@ export default function BodyProfilePage() {
                     </div>
                   ) : (
                     <p className="text-xs text-stone-500 dark:text-zinc-400">
-                      Ölçümleriniz dengeli dağılmış durumda. Tüm vücut hipertrofi programı ile genel kas kütlenizi artırmaya devam edin.
+                      {language === 'tr' ? 'Tüm kas gruplarınız dengeli oranda gelişmiş.' : 'All muscle groups have achieved balanced proportional development.'}
                     </p>
                   )}
                 </div>
@@ -1284,13 +1368,13 @@ export default function BodyProfilePage() {
                 {/* Modal Başlığı */}
                 <div className="p-5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between bg-amber-400/10">
                   <div className="flex items-center gap-2.5">
-                    <span className="text-2xl">{MEASUREMENT_LABELS[guideModalKey]?.emoji}</span>
+                    <span className="text-2xl">{measurementLabels[guideModalKey]?.emoji}</span>
                     <div>
                       <h3 className="text-lg font-black text-stone-900 dark:text-white">
-                        {guide.regionName} — Bilimsel Gelişim &amp; İnceltme Rehberi
+                        {guide.regionName} — {language === 'tr' ? 'Bilimsel Gelişim & İnceltme Rehberi' : 'Scientific Hypertrophy & Leanness Guide'}
                       </h3>
                       <p className="text-xs text-stone-500 dark:text-zinc-400">
-                        Hedef Kaslar: <span className="font-bold text-stone-700 dark:text-zinc-200">{guide.targetMuscles}</span>
+                        {language === 'tr' ? 'Hedef Kaslar:' : 'Target Muscles:'} <span className="font-bold text-stone-700 dark:text-zinc-200">{guide.targetMuscles}</span>
                       </p>
                     </div>
                   </div>
@@ -1554,6 +1638,15 @@ export default function BodyProfilePage() {
           setShowExerciseCatalogModal(false);
           setSelectedExerciseForPreview(ex);
         }}
+      />
+
+      {/* ── MODAL 5: ERİŞİM & İLETİŞİM TALEBİ MODALI ── */}
+      <AccessRequestModal
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        featureKey="calorieAi"
+        featureTitle={language === 'tr' ? 'B12 AI Beden Profili & Kalori Koçu' : 'B12 AI Body Profile & Nutrition Coach'}
+        featureDescription={language === 'tr' ? 'Kişiselleştirilmiş Beden Profili, 15 Bölge antropometri analizi ve AI destekli spor-beslenme koçluğu.' : 'Personalized Body Profile, 15-region anthropometric analysis, and AI sports/nutrition coaching.'}
       />
     </div>
   );

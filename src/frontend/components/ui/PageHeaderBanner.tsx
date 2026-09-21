@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface PageHeaderBannerProps {
     title: string;
@@ -27,6 +28,8 @@ export default function PageHeaderBanner({
     action,
     className = '',
 }: PageHeaderBannerProps) {
+    const { t } = useLanguage();
+    const effectiveBackLabel = backLabel || t('common.back') || 'Geri';
     return (
         <div
             className={`bg-white dark:bg-zinc-900 border border-stone-200/90 dark:border-zinc-800 mb-8 rounded-2xl sm:rounded-3xl shadow-xs ${className}`}
@@ -68,7 +71,7 @@ export default function PageHeaderBanner({
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700 rounded-xl transition-all text-xs sm:text-sm font-bold shadow-xs cursor-pointer"
                             >
                                 <FaArrowLeft className="text-xs" />
-                                <span>{backLabel || 'Geri'}</span>
+                                <span>{effectiveBackLabel}</span>
                             </Link>
                         )}
                     </div>

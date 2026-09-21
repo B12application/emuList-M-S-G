@@ -88,7 +88,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       items: [
         { to: '/planner', icon: FaCalendarAlt, label: t('nav.calendar') || 'Takvim & Planlayıcı' },
         { to: '/notes', icon: FaStickyNote, label: t('nav.notes') || 'Notlarım' },
-        { to: '/planner?fixtures=true', icon: PiSoccerBallFill, label: 'Takımlar & Fikstür' },
+        { to: '/planner?fixtures=true', icon: PiSoccerBallFill, label: t('nav.teamFixtures') || 'Takımlar & Fikstür' },
       ]
     },
     {
@@ -111,10 +111,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         { to: '/feed', icon: FaHistory, label: t('nav.feed') || 'Aktiviteler' },
         { to: '/map', icon: FaMap, label: t('nav.map') || 'Harita' },
         { to: '/all', icon: FaClone, label: t('nav.all') || 'Tüm Liste' },
-        ...(hasAccess('calorieAi') ? [
-          { to: '/calorie-details', icon: FaChartPie, label: t('nav.calorieReport') || 'Kalori Raporu' },
-          { to: '/body-profile', icon: FaHeartbeat, label: t('nav.bodyProfile') || 'Beden Profili' },
-        ] : []),
+        { to: '/calorie-details', icon: FaChartPie, label: t('nav.calorieReport') || 'Kalori Raporu' },
+        { to: '/body-profile', icon: FaHeartbeat, label: t('nav.bodyProfile') || 'Beden Profili' },
       ]
     }
   ];

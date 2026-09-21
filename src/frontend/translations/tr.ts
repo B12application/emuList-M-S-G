@@ -34,9 +34,13 @@ export const translationsTR = {
         fixturesSub: 'Süper Lig & Avrupa maçları',
         travelPlannerSub: 'Rotalar & seyahat listesi',
         calorieSub: 'Günlük besin ve kalori',
+        calorieChat: 'AI Besin Asistanı',
+        calorieChatAI: 'AI Besin Asistanı',
+        calorieChatSub: 'Fotoğraftan kalori & öğün analizi',
         bodySub: 'Vücut ölçüleri ve analiz',
         createSub: 'Yeni medya kaydı ekle',
         quickEventSub: 'Ajandaya plan ekle',
+        teamFixtures: 'Takımlar & Fikstür',
     },
 
     // Map Page
@@ -519,6 +523,7 @@ export const translationsTR = {
     // Stats Page
     stats: {
         title: 'İstatistikler & Analiz',
+        subtitle: 'İstatistiklerinizi ve aktivitelerinizi görüntüleyin',
         thisMonth: 'Bu Ay',
         monthlyActivity: 'Aylık Aktivite',
         typeDistribution: 'Kütüphane Dağılımı',
@@ -663,7 +668,9 @@ export const translationsTR = {
         desc: 'Azalan',
         loadMore: 'Daha Fazla Yükle',
         description: 'Açıklama',
-
+        new: 'Yeni',
+        backToProfile: 'Profile Dön',
+        other: 'Diğer',
     },
 
     // Search
@@ -699,6 +706,7 @@ export const translationsTR = {
     // Feed Page
     feed: {
         title: 'Aktiviteler',
+        subtitle: 'Son aktivitelerinizi ve etkileşim trendlerinizi takip edin',
         empty: 'Henüz aktivite yok',
         emptyDesc: 'İçerik ekledikçe, izledikçe veya favorilere ekledikçe burada görünecek.',
         loadingActivities: 'Aktiviteler yükleniyor...',
@@ -712,6 +720,25 @@ export const translationsTR = {
         daysAgo: 'gün önce',
         weeksAgo: 'hafta önce',
         monthsAgo: 'ay önce',
+        streakTitle: 'Aktivite Serisi',
+        streakDays: 'gün kesintisiz',
+        categoryEngagement: 'Etkileşim Dağılımı',
+        quickFilter: 'Hızlı Filtre',
+        allFilter: 'Tümü',
+        moviesFilter: 'Filmler',
+        seriesFilter: 'Diziler',
+        gamesFilter: 'Oyunlar',
+        booksFilter: 'Kitaplar',
+        topHighlight: 'Öne Çıkan İçerik',
+        last10DaysNote: 'Aktivite akışı son 10 günlük verileri gösterir. Eski kayıtlar otomatik arşivlenir.',
+        quickAccess: 'Hızlı Erişim',
+        addContent: 'İçerik Ekle',
+        myStats: 'İstatistikler',
+        myLists: 'Listelerim',
+        todayCount: 'Bugün',
+        totalActions: 'Toplam Aktivite',
+        uniqueItems: 'Benzersiz İçerik',
+        uniqueTypes: 'Farklı Tür',
     },
 
     // Public Profile
@@ -1170,6 +1197,13 @@ export const translationsTR = {
     // Expenses
     expenses: {
         title: 'Harcamalar',
+        subtitle: 'Gelir, gider, faturalar, taksitler, altın yatırımı ve bütçe planlaması',
+        expensesSub: 'Giderler ve harcama kayıtları',
+        invoicesSub: 'Abonelik ve fatura takibi',
+        budgetSub: 'Aylık bütçe ve tasarruf hedefleri',
+        investmentsSub: 'Altın, döviz ve portföy takibi',
+        vehicleSub: 'Yakıt, servis ve araç masrafları',
+        reportsSub: 'Finansal analiz ve grafikler',
         pageTitle: 'Gider Yönetimi',
         pageSubtitle: 'FİNANSAL YÖNETİM',
         addExpense: 'Harcama Ekle',
@@ -1210,6 +1244,8 @@ export const translationsTR = {
         reportsTab: 'Raporlar',
         invoicesTab: 'Faturalar & Şifreler',
         vehicleTab: 'Araçlarım',
+        budgetTab: 'Bütçe Planlayıcı',
+        investmentsTab: 'Yatırımlarım',
         // Monthly Summary
         monthlySummary: 'Aylık Özet',
         monthColumn: 'Ay',
@@ -1577,10 +1613,12 @@ export const translationsTR = {
         statsUsers: 'Kayıtlı Kullanıcı',
         statsActive: 'Aktif / Giriş Yapan',
         statsComments: 'Toplam Yorum',
+        statsRequests: 'Erişim Talepleri',
         tabUsers: 'Kullanıcılar',
         tabLogins: 'Son Girişler (Güvenlik)',
         tabComments: 'Yorumlar',
         tabFeatures: 'Özellik Yönetimi',
+        tabRequests: 'Erişim Talepleri',
         searchUsersPlaceholder: 'İsim veya e-posta ile kullanıcı ara...',
         searchLogsPlaceholder: 'Cihaz, IP veya isim ile ara...',
         searchCommentsPlaceholder: 'Yorum metni veya kullanıcı ara...',
@@ -1720,6 +1758,8 @@ export const translationsTR = {
         deleteItemConfirmMessage: '"{name}" besinini kalori raporundan silmek istediğinize emin misiniz?',
         moveEntireDay: 'Günün Tümünü Taşı',
         mealTotal: 'Günlük Toplam:',
+        demoNoticeTitle: 'Demo Modu — Örnek Birey Beslenme Raporu (Hareketsiz / Kilolu)',
+        demoNoticeDesc: 'Bu veriler henüz AI erişim izniniz olmadığı için hareketsiz ve yüksek kalori alan örnek bir bireyin beslenme simülasyonu olarak gösterilmektedir. Kendi öğünlerinizi B12 AI ile kaydetmek ve raporlamak için erişim izni talep edebilirsiniz.',
     },
 
     // Beden Profili & Kalori Açığı (Body Profile)
@@ -1759,5 +1799,22 @@ export const translationsTR = {
         regionalDiagnosis: 'Bölgesel Gelişim & Hipertrofi Teşhisi',
         recommendedExercises: 'Bölgeye Özel Kanıtlanmış Egzersizler',
         openExerciseCatalog: '🎬 Tüm Egzersizleri & Hareket Kataloğunu Gör',
+        bodyPointsTitle: 'Vücut Noktaları (15 Bölge)',
+        bodyPointsSubtitle: 'Tıkla & Ölç',
+        bodyPointsDescription: 'Vücut üzerindeki noktalara tıklayarak ilgili mezura ölçüsünü hızlıca girebilirsiniz.',
+        ratioAnalysisTitle: 'Bölgesel Oran Analizi & Kişisel Spor Tavsiyeleri',
+        ratioAnalysisSubtitle: 'Ölçümlerinize ve spor hekimliği standartlarına (V-Taper, WHtR, Simetri) göre kişiselleştirilmiş analiz',
+        exerciseCatalogBtn: '🎬 Egzersiz Kataloğu & GIF\'ler',
+        guidesTitle: 'Rehberler:',
+        vTaperTitle: 'V-Taper (Adonis Oranı)',
+        whtrTitle: 'Bel / Boy (WHtR)',
+        symmetryTitle: 'Beden Simetrisi',
+        targetLabel: 'Hedef',
+        idealLabel: 'İdeal',
+        asymmetry: '⚠️ Asimetri',
+        balanced: '✓ Dengeli',
+        demoBannerTitle: 'Demo Modu — Örnek Birey Profili (Hareketsiz / Kilolu)',
+        demoBannerDesc: 'Bu profil hareketsiz ve yüksek kilo/yağ oranına sahip örnek bir bireye aittir. Kendi kişisel beden profilinizi oluşturmak ve AI özelliklerini açmak için erişim talebinde bulunabilirsiniz.',
+        requestAccessBtn: 'Erişim Talebi Gönder',
     }
 };

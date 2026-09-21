@@ -1,13 +1,14 @@
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths
+  eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths,
+  differenceInDays, parseISO
 } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
-import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 
 interface MonthlyViewProps {
@@ -16,6 +17,7 @@ interface MonthlyViewProps {
   meetings: PlannerMeeting[];
   onSelectDate: (date: Date) => void;
   calendarAlerts?: CalendarAlert[];
+  onItemDateChange?: (itemId: string, newDateStr: string, itemType?: string) => void;
 }
 
 export default function MonthlyView({
@@ -23,14 +25,66 @@ export default function MonthlyView({
   onMonthChange,
   meetings,
   onSelectDate,
-  calendarAlerts = []
+  calendarAlerts = [],
+  onItemDateChange
 }: MonthlyViewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [showMatches, setShowMatches] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [leagueFilter, setLeagueFilter] = useState<'all' | 'superlig' | 'championsleague'>('all');
+  const [hoveredMatch, setHoveredMatch] = useState<{ match: PlannerMeeting; rect: DOMRect } | null>(null);
+  const [hoveredDayTasks, setHoveredDayTasks] = useState<{ date: Date; dateStr: string; tasks: PlannerMeeting[] } | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
+  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
   const { language, t } = useLanguage();
+
+  const openDayTasksModal = (date: Date, dateStr: string, tasks: PlannerMeeting[]) => {
+    if (draggingItemId) return;
+    setHoveredDayTasks({ date, dateStr, tasks });
+  };
+
+  // Escape tuşuna basıldığında modalı kapat
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setHoveredDayTasks(null);
+      }
+    };
+    if (hoveredDayTasks) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [hoveredDayTasks]);
+
+  /**
+   * Görevleri sıralar:
+   * 1. Tamamlanmamışlar en üstte (öncelik sırasına göre: urgent > high > jira > medium > low)
+   * 2. Tamamlanmışlar en altta
+   */
+  const sortPlannerTasks = (tasks: PlannerMeeting[]) => {
+    return [...tasks].sort((a, b) => {
+      const aDone = !!(a.isCompleted || a.status === 'done');
+      const bDone = !!(b.isCompleted || b.status === 'done');
+      if (aDone !== bDone) return aDone ? 1 : -1;
+
+      const getPriorityWeight = (m: PlannerMeeting) => {
+        if (m.priority === 'urgent') return 1;
+        if (m.priority === 'high') return 2;
+        if (m.itemType === 'jira') return 2.5;
+        if (m.priority === 'medium') return 3;
+        if (m.priority === 'low') return 4;
+        return 3.5;
+      };
+
+      const weightA = getPriorityWeight(a);
+      const weightB = getPriorityWeight(b);
+      if (weightA !== weightB) return weightA - weightB;
+
+      return (a.startTime || '99:99').localeCompare(b.startTime || '99:99');
+    });
+  };
+
   const dateLocale = language === 'tr' ? tr : enUS;
 
   const monthStart = startOfMonth(currentMonth);
@@ -56,6 +110,8 @@ export default function MonthlyView({
       isEnd: boolean;
       isRowStart: boolean;
       isRowEnd: boolean;
+      diffDays: number;
+      currentDayIndex: number;
     }[] = [];
 
     calendarAlerts.forEach(alert => {
@@ -65,11 +121,60 @@ export default function MonthlyView({
         const colInWeek = dayIndex % 7;
         const isRowStart = isStart || colInWeek === 0;
         const isRowEnd = isEnd || colInWeek === 6;
-        results.push({ alert, isStart, isEnd, isRowStart, isRowEnd });
+        let diffDays = 1;
+        let currentDayIndex = 1;
+        try {
+          diffDays = differenceInDays(parseISO(alert.endDate), parseISO(alert.startDate)) + 1;
+          currentDayIndex = differenceInDays(parseISO(dateStr), parseISO(alert.startDate)) + 1;
+        } catch {
+          diffDays = 1;
+          currentDayIndex = 1;
+        }
+        results.push({ alert, isStart, isEnd, isRowStart, isRowEnd, diffDays, currentDayIndex });
       }
     });
 
     return results;
+  };
+
+  const getPopoverStyle = (rect: DOMRect, width: number = 320, expectedHeight: number = 360) => {
+    if (typeof window === 'undefined') {
+      return { top: `${rect.bottom + 6}px`, left: `${rect.left}px` };
+    }
+
+    const margin = 12;
+    // Hücrenin veya görevlerin üstünü örtmemek için öncelikle yan tarafa (sağa veya sola) konumlandır
+    const hasRightSpace = rect.right + width + margin <= window.innerWidth;
+    const hasLeftSpace = rect.left - width - margin >= 0;
+
+    let left: number;
+    let top = rect.top;
+
+    // Dikeyde ekran sınırları içinde tut
+    if (top + expectedHeight > window.innerHeight - margin) {
+      top = Math.max(margin, window.innerHeight - expectedHeight - margin);
+    }
+    if (top < margin) {
+      top = margin;
+    }
+
+    if (hasRightSpace && (rect.left < window.innerWidth / 2 || !hasLeftSpace)) {
+      // Hücrenin SAĞINA açılır
+      left = rect.right + 8;
+    } else if (hasLeftSpace) {
+      // Hücrenin SOLUNA açılır
+      left = rect.left - width - 8;
+    } else {
+      // Çok dar mobil/tablet ekranlarda fallback (ortala ve üst/alt aç)
+      left = Math.max(margin, Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - margin));
+      if (rect.bottom + expectedHeight + margin <= window.innerHeight) {
+        top = rect.bottom + 6;
+      } else {
+        top = Math.max(margin, rect.top - expectedHeight - 6);
+      }
+    }
+
+    return { top: `${top}px`, left: `${left}px` };
   };
 
   const nextMonth = () => {
@@ -115,6 +220,13 @@ export default function MonthlyView({
       return matchLeague && matchSearch;
     });
   }, [monthMatches, leagueFilter, searchQuery]);
+
+  // Aktif ay içindeki özel takvim uyarıları
+  const activeMonthAlerts = useMemo(() => {
+    const mStartStr = format(monthStart, 'yyyy-MM-dd');
+    const mEndStr = format(monthEnd, 'yyyy-MM-dd');
+    return calendarAlerts.filter(a => a.startDate <= mEndStr && a.endDate >= mStartStr);
+  }, [calendarAlerts, monthStart, monthEnd]);
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -163,6 +275,33 @@ export default function MonthlyView({
             </div>
           </div>
 
+          {/* BU AYKİ ÖZEL DÖNEMLER / UYARILAR BİLGİ ŞERİDİ */}
+          {activeMonthAlerts.length > 0 && (
+            <div className="px-6 py-2.5 bg-stone-50/70 dark:bg-zinc-900/50 border-b border-stone-100 dark:border-zinc-800/80 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+              <span className="text-[11px] font-black text-stone-400 dark:text-zinc-500 uppercase tracking-wider shrink-0 flex items-center gap-1.5">
+                <FaMapMarkerAlt className="text-red-500 text-xs" />
+                {language === 'tr' ? 'Bu Ayki Dönemler / Uyarılar:' : 'Special Alerts This Month:'}
+              </span>
+              {activeMonthAlerts.map(alert => (
+                <div
+                  key={alert.id || alert.label}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold shrink-0 border"
+                  style={{
+                    backgroundColor: `${alert.color || '#ef4444'}15`,
+                    borderColor: `${alert.color || '#ef4444'}35`,
+                    color: alert.color || '#ef4444',
+                  }}
+                >
+                  <span>{alert.label}</span>
+                  <span className="text-[10px] opacity-75 font-medium">
+                    ({format(parseISO(alert.startDate), 'd MMM', { locale: dateLocale })} - {format(parseISO(alert.endDate), 'd MMM', { locale: dateLocale })})
+                  </span>
+                  {alert.isCompleted && <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">✓</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* GÜN BAŞLIKLARI */}
           <div className="grid grid-cols-7 border-b border-stone-200/60 dark:border-zinc-800/80 bg-stone-50/70 dark:bg-zinc-900/40">
             {weekDays.map(day => (
@@ -183,65 +322,163 @@ export default function MonthlyView({
                 return m.date === dateStr;
               });
               const dayMatches = dayMeetings.filter(m => m.itemType === 'match');
-              const nonMatchMeetings = dayMeetings.filter(m => m.itemType !== 'match');
+              const nonMatchMeetings = sortPlannerTasks(dayMeetings.filter(m => m.itemType !== 'match'));
 
               const isCurrentMonth = isSameMonth(day, monthStart);
               const isToday = isSameDay(day, new Date());
               const alertInfos = getAlertInfoForDay(day, idx);
+              const primaryAlert = alertInfos[0]?.alert;
+              const isAlertActive = alertInfos.length > 0 && isCurrentMonth;
 
               return (
                 <div
                   key={day.toString()}
                   data-date={dateStr}
                   onClick={() => onSelectDate(day)}
-                  className={`min-h-[90px] sm:min-h-[130px] p-2 sm:p-2.5 cursor-pointer transition-colors hover:bg-stone-50/80 dark:hover:bg-zinc-900/80 relative group flex flex-col justify-between
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    if (dragOverDate !== dateStr) {
+                      setDragOverDate(dateStr);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      if (dragOverDate === dateStr) {
+                        setDragOverDate(null);
+                      }
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverDate(null);
+                    setDraggingItemId(null);
+                    const raw = e.dataTransfer.getData('text/plain');
+                    if (!raw) return;
+                    try {
+                      const itemData = JSON.parse(raw);
+                      if (itemData.id && itemData.date !== dateStr) {
+                        onItemDateChange?.(itemData.id, dateStr, itemData.itemType);
+                      }
+                    } catch (err) {
+                      console.error('Drop error:', err);
+                    }
+                  }}
+                  className={`min-h-[95px] sm:min-h-[125px] p-2 sm:p-2.5 cursor-pointer transition-all hover:bg-stone-50/80 dark:hover:bg-zinc-900/80 relative group flex flex-col justify-between min-w-0 w-full overflow-hidden
                     ${!isCurrentMonth ? 'opacity-30 pointer-events-none bg-stone-50/40 dark:bg-zinc-950/40' : ''}
                     ${dayMatches.length > 0 && showMatches ? 'bg-amber-400/5 dark:bg-amber-400/[0.03]' : ''}
+                    ${dragOverDate === dateStr ? 'bg-amber-400/20 dark:bg-amber-400/20 ring-2 ring-inset ring-amber-400 z-10' : ''}
                   `}
+                  style={{
+                    backgroundColor: isAlertActive && primaryAlert?.color && !(dayMatches.length > 0 && showMatches) && dragOverDate !== dateStr
+                      ? `${primaryAlert.color}0c`
+                      : undefined,
+                  }}
                 >
-                  {/* Gün Başlığı & Numarası */}
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-xl text-xs sm:text-sm font-black ${
-                        isToday 
-                          ? 'bg-amber-400 text-stone-950 shadow-sm' 
-                          : 'text-stone-700 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-400'
-                      }`}>
-                        {format(day, dateFormat)}
-                      </span>
-                    </div>
-
-                    {isCurrentMonth && alertInfos.length > 0 && (
-                      <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: alertInfos[0].alert.color || '#ef4444' }}>
-                        <FaMapMarkerAlt className="text-[10px]" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ─── ÖZEL TAKVİM UYARILARI (BAŞLIK, İKON VE RENKLİ ROZET) ─── */}
-                  {alertInfos.length > 0 && isCurrentMonth && (
-                    <div className="my-1 space-y-1">
+                  {/* Kesintisiz Üst Dönem Şeridi (Continuous Top Period Bar) */}
+                  {isCurrentMonth && alertInfos.length > 0 && (
+                    <div className="absolute top-0 left-0 right-0 flex flex-col pointer-events-none z-10">
                       {alertInfos.map((info, aIdx) => (
                         <div
-                          key={`${info.alert.id}-${aIdx}`}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-black border transition-all truncate shadow-2xs"
+                          key={`${info.alert.id || info.alert.label}-${aIdx}`}
+                          className="h-[3.5px] w-full transition-all"
                           style={{
-                            backgroundColor: `${info.alert.color || '#ef4444'}18`,
-                            borderColor: `${info.alert.color || '#ef4444'}45`,
-                            color: info.alert.color || '#ef4444',
+                            backgroundColor: info.alert.color || '#ef4444',
+                            opacity: info.alert.isCompleted ? 0.4 : 0.85,
+                            borderTopLeftRadius: info.isRowStart ? '4px' : '0px',
+                            borderBottomLeftRadius: info.isRowStart ? '4px' : '0px',
+                            borderTopRightRadius: info.isRowEnd ? '4px' : '0px',
+                            borderBottomRightRadius: info.isRowEnd ? '4px' : '0px',
                           }}
-                          title={`${info.alert.label} (${info.alert.startDate} → ${info.alert.endDate})`}
-                        >
-                          <FaMapMarkerAlt className="shrink-0 text-[9px]" />
-                          <span className="truncate leading-tight tracking-tight">
-                            {info.alert.label}
-                          </span>
-                        </div>
+                          title={`${info.alert.label} (${info.currentDayIndex}/${info.diffDays}. Gün)`}
+                        />
                       ))}
                     </div>
                   )}
 
-                  {/* ─── MAÇ KARTLARI (UZAKTAN BAKILDIĞINDA ANLAŞILIR VE BELİRGİN) ─── */}
+                  {/* Gün Başlığı: Numara ve Zarif Dönem Göstergesi */}
+                  <div className="flex justify-between items-center gap-1 mb-1 min-w-0">
+                    <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-xl text-xs sm:text-sm font-black shrink-0 ${
+                      isToday 
+                        ? 'bg-amber-400 text-stone-950 shadow-sm' 
+                        : 'text-stone-700 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-400'
+                    }`}>
+                      {format(day, dateFormat)}
+                    </span>
+
+                    {/* Dönem Rozeti / Göstergesi */}
+                    {isCurrentMonth && alertInfos.length > 0 && (
+                      <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+                        {alertInfos.map((info, aIdx) => {
+                          const color = info.alert.color || '#ef4444';
+                          const isDone = !!info.alert.isCompleted;
+
+                          // Tek günlük uyarı veya çok günlünün Başlangıç Günü
+                          if (info.diffDays <= 1 || info.isStart) {
+                            return (
+                              <span
+                                key={`${info.alert.id}-${aIdx}`}
+                                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-black border transition-all truncate shadow-2xs ${
+                                  isDone ? 'opacity-40 grayscale line-through' : ''
+                                }`}
+                                style={{
+                                  backgroundColor: `${color}18`,
+                                  borderColor: `${color}45`,
+                                  color: color,
+                                }}
+                                title={`${info.alert.label} (${format(parseISO(info.alert.startDate), 'd MMM', { locale: dateLocale })} → ${format(parseISO(info.alert.endDate), 'd MMM', { locale: dateLocale })}${info.diffDays > 1 ? ` · ${info.diffDays} gün` : ''})`}
+                              >
+                                {isDone ? (
+                                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-black shrink-0">✓</span>
+                                ) : (
+                                  <FaMapMarkerAlt className="shrink-0 text-[8px]" />
+                                )}
+                                <span className="truncate">{info.alert.label}</span>
+                                {info.diffDays > 1 && (
+                                  <span className="text-[8px] px-1 py-0.2 rounded bg-white/80 dark:bg-black/40 font-bold shrink-0">
+                                    {info.diffDays}g
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          }
+
+                          // Çok günlünün Bitiş Günü
+                          if (info.isEnd) {
+                            return (
+                              <span
+                                key={`${info.alert.id}-${aIdx}-end`}
+                                className={`flex items-center gap-0.5 px-1 py-0.5 rounded-md text-[8px] sm:text-[9px] font-bold border transition-all truncate ${
+                                  isDone ? 'opacity-40 grayscale line-through' : ''
+                                }`}
+                                style={{
+                                  backgroundColor: `${color}12`,
+                                  borderColor: `${color}35`,
+                                  color: color,
+                                }}
+                                title={`${info.alert.label} Son Gün (${info.diffDays}/${info.diffDays})`}
+                              >
+                                <span>🏁</span>
+                                <span className="truncate hidden sm:inline">{info.alert.label}</span>
+                              </span>
+                            );
+                          }
+
+                          // Çok günlünün Ara Günleri: Gün numarasının yanında minik renkli nokta
+                          return (
+                            <span
+                              key={`${info.alert.id}-${aIdx}-dot`}
+                              className="w-2 h-2 rounded-full shrink-0 shadow-2xs hover:scale-125 transition-transform"
+                              style={{ backgroundColor: color }}
+                              title={`${info.alert.label} (${info.currentDayIndex}/${info.diffDays}. Gün)`}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ─── MAÇ KARTLARI (YUKARIDA, GÜN BAŞLIĞININ ALTINDA) ─── */}
                   {dayMatches.length > 0 && (
                     <div className="my-1 space-y-1">
                       {dayMatches.map((m, i) => (
@@ -249,11 +486,16 @@ export default function MonthlyView({
                           key={m.id || `match-${i}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setShowMatches(true);
-                            onSelectDate(day);
+                            // Maça tıklanınca gün sayfasına yönlendirme engellendi
                           }}
-                          className="p-1 sm:p-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 dark:bg-amber-400/15 dark:hover:bg-amber-400/25 border border-amber-400/40 dark:border-amber-400/30 transition-all shadow-xs group/pill"
-                          title={`${m.title} (${m.description}) - ${m.startTime}`}
+                          onMouseEnter={(e) => {
+                            if (draggingItemId) return;
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredMatch({ match: m, rect });
+                          }}
+                          onMouseLeave={() => setHoveredMatch(null)}
+                          className="p-1 sm:p-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 dark:bg-amber-400/15 dark:hover:bg-amber-400/25 border border-amber-400/40 dark:border-amber-400/30 transition-all shadow-xs group/pill cursor-pointer"
+                          title={`${m.title} (${m.description || ''}) - ${m.startTime}`}
                         >
                           <div className="flex items-center justify-between gap-1">
                             <div className="flex items-center gap-1 min-w-0">
@@ -285,34 +527,74 @@ export default function MonthlyView({
                     </div>
                   )}
 
-                  {/* Masaüstü Görünüm İçin Normal Etkinlikler */}
-                  <div className="hidden sm:block space-y-0.5 mt-auto">
-                    {nonMatchMeetings.slice(0, 2).map((m, i) => {
-                      const mDateTime = new Date(`${m.date}T${m.startTime}`);
-                      const isPast = mDateTime < now;
+                  {/* Masaüstü Görünüm İçin Normal Etkinlikler (AŞAĞIDA, mt-auto) */}
+                  {(() => {
+                    const maxTasksToShow = dayMatches.length > 0 ? 2 : 3;
+                    return (
+                      <div
+                        className="hidden sm:block space-y-0.5 mt-auto pt-1"
+                      >
+                        {nonMatchMeetings.slice(0, maxTasksToShow).map((m, i) => {
+                          const isDone = !!(m.isCompleted || m.status === 'done');
+                          const mDateTime = new Date(`${m.date}T${m.startTime}`);
+                          const isPast = mDateTime < now;
 
-                      return (
-                        <div
-                          key={m.id || i}
-                          className={`text-[10px] truncate px-1.5 py-[2px] rounded-lg font-bold border-l-[3px] transition-all bg-stone-100/70 dark:bg-zinc-800/40 ${
-                            isPast ? 'opacity-40 grayscale-[0.5]' : ''
-                          } ${
-                            m.itemType === 'jira' ? 'border-l-blue-500 text-stone-700 dark:text-zinc-300' :
-                            m.itemType === 'todo' ? 'border-l-emerald-500 text-stone-700 dark:text-zinc-300' :
-                            m.itemType === 'sport' ? 'border-l-orange-500 text-stone-700 dark:text-zinc-300' :
-                            'border-l-rose-500 text-stone-700 dark:text-zinc-300'
-                          }`}
-                        >
-                          <span className="opacity-60 mr-1">{m.startTime}</span>{m.title}
-                        </div>
-                      );
-                    })}
-                    {nonMatchMeetings.length > 2 && (
-                      <div className="text-[9px] text-stone-500 dark:text-zinc-400 font-bold px-1">
-                        +{nonMatchMeetings.length - 2} {t('planner.more')}
+                          return (
+                            <div
+                              key={m.id || i}
+                              draggable={true}
+                              onDragStart={(e) => {
+                                e.stopPropagation();
+                                setHoveredDayTasks(null);
+                                setHoveredMatch(null);
+                                setDraggingItemId(m.id || null);
+                                e.dataTransfer.setData('text/plain', JSON.stringify({ id: m.id, date: m.date, itemType: m.itemType }));
+                                e.dataTransfer.effectAllowed = 'move';
+                              }}
+                              onDragEnd={() => {
+                                setDraggingItemId(null);
+                                setDragOverDate(null);
+                              }}
+                              className={`text-[10px] truncate px-1.5 py-[2px] rounded-lg font-bold border-l-[3px] transition-all cursor-grab active:cursor-grabbing select-none ${
+                                isDone
+                                  ? 'opacity-45 line-through bg-stone-100/50 dark:bg-zinc-800/30 text-stone-400 dark:text-zinc-500 border-l-emerald-500'
+                                  : isPast
+                                  ? 'opacity-60 bg-stone-100/70 dark:bg-zinc-800/40 text-stone-600 dark:text-zinc-300'
+                                  : 'bg-stone-100/90 dark:bg-zinc-800/70 text-stone-700 dark:text-zinc-200 shadow-2xs hover:scale-[1.02]'
+                              } ${
+                                !isDone ? (
+                                  m.itemType === 'jira' ? 'border-l-blue-500' :
+                                  m.itemType === 'todo' ? 'border-l-emerald-500' :
+                                  m.itemType === 'sport' ? 'border-l-orange-500' :
+                                  'border-l-rose-500'
+                                ) : ''
+                              }`}
+                            >
+                              {isDone ? (
+                                <span className="text-emerald-600 dark:text-emerald-400 font-black mr-1 text-[9px]">✓</span>
+                              ) : (
+                                <span className="opacity-60 mr-1">{m.startTime}</span>
+                              )}
+                              <span>{m.title}</span>
+                            </div>
+                          );
+                        })}
+                        {nonMatchMeetings.length > maxTasksToShow && (
+                          <div 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDayTasksModal(day, dateStr, nonMatchMeetings);
+                            }}
+                            className="text-[9px] text-amber-600 dark:text-amber-400 font-black px-1.5 py-0.5 rounded-md hover:bg-amber-400/15 transition-colors cursor-pointer flex items-center justify-between group/more select-none"
+                            title={language === 'tr' ? 'Tüm görevleri görmek için tıklayın' : 'Click to view all tasks'}
+                          >
+                            <span>+{nonMatchMeetings.length - maxTasksToShow} {t('planner.more')}</span>
+                            <span className="text-[8px] opacity-60 group-hover/more:translate-x-0.5 transition-transform">➔</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
 
                   {/* Mobil Görünüm İçin Noktalar */}
                   <div className="sm:hidden flex flex-wrap gap-0.5 mt-auto pt-1">
@@ -328,30 +610,6 @@ export default function MonthlyView({
                       />
                     ))}
                   </div>
-
-                  {/* ─── CALENDAR ALERT BARS ─── */}
-                  {alertInfos.length > 0 && (
-                    <div className="absolute bottom-0 left-0 right-0 pointer-events-none hidden sm:block">
-                      {alertInfos.map((info, aIdx) => (
-                        <div
-                          key={`${info.alert.id}-${aIdx}`}
-                          className="relative"
-                          style={{ marginBottom: aIdx * 14 }}
-                        >
-                          <div
-                            className="h-[3px] absolute bottom-1"
-                            style={{
-                              backgroundColor: info.alert.color || '#ef4444',
-                              left: info.isRowStart ? '4px' : '-1px',
-                              right: info.isRowEnd ? '4px' : '-1px',
-                              borderRadius: `${info.isStart ? '4px' : '0'} ${info.isEnd ? '4px' : '0'} ${info.isEnd ? '4px' : '0'} ${info.isStart ? '4px' : '0'}`,
-                              opacity: 0.8,
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -584,6 +842,217 @@ export default function MonthlyView({
               )}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── HOVER PREVIEW POPOVER FOR MATCH ─── */}
+      <AnimatePresence>
+        {hoveredMatch && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.12 }}
+            style={getPopoverStyle(hoveredMatch.rect, 290)}
+            className="fixed z-[150] w-[290px] p-3.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-stone-200/90 dark:border-zinc-800 shadow-2xl pointer-events-none"
+          >
+            <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-stone-100 dark:border-zinc-800">
+              <div className="flex items-center gap-1.5 text-xs font-black text-amber-600 dark:text-amber-400">
+                <PiSoccerBallFill className="text-sm" />
+                <span>Maç Önizlemesi</span>
+              </div>
+              {hoveredMatch.match.score ? (
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/35 text-emerald-800 dark:text-emerald-300 font-extrabold text-[10px]">
+                  MS: {hoveredMatch.match.score}
+                </span>
+              ) : hoveredMatch.match.startTime && hoveredMatch.match.startTime !== 'TBD' && hoveredMatch.match.startTime !== '--:--' ? (
+                <span className="px-2 py-0.5 rounded-md bg-amber-400/25 text-amber-950 dark:text-amber-300 font-black text-[10px]">
+                  {hoveredMatch.match.startTime}
+                </span>
+              ) : (
+                <span className="text-[10px] text-stone-400 italic">Saat Belli Değil</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 mb-2">
+              {hoveredMatch.match.teamBadge ? (
+                <img src={hoveredMatch.match.teamBadge} alt="" className="w-6 h-6 object-contain shrink-0" />
+              ) : (
+                <span className="text-lg shrink-0">⚽</span>
+              )}
+              <div className="text-xs font-black text-stone-900 dark:text-zinc-100 leading-snug">
+                {hoveredMatch.match.title}
+              </div>
+            </div>
+
+            <div className="space-y-1 text-[11px] text-stone-600 dark:text-zinc-400">
+              {hoveredMatch.match.category && (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-stone-400 dark:text-zinc-500">Turnuva:</span>
+                  <span className="font-bold text-stone-800 dark:text-zinc-200">{hoveredMatch.match.category}</span>
+                </div>
+              )}
+              {hoveredMatch.match.description && (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-stone-400 dark:text-zinc-500">Açıklama:</span>
+                  <span className="text-stone-700 dark:text-zinc-300 truncate">{hoveredMatch.match.description}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1.5 text-stone-500 dark:text-zinc-400 text-[10px] pt-1">
+                <FaClock className="text-[9px]" />
+                <span>{format(new Date(hoveredMatch.match.date), 'dd MMMM yyyy', { locale: dateLocale })}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── TÜM GÜN GÖREVLERİ STANDART B12 MODALI (SÜRÜKLE-BIRAK DESTEKLİ) ─── */}
+      <AnimatePresence>
+        {hoveredDayTasks && (
+          <div
+            className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setHoveredDayTasks(null);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 dark:border-zinc-800/80 bg-stone-50/70 dark:bg-zinc-900/80">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-black">
+                    📅
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-stone-900 dark:text-zinc-100 leading-snug">
+                      {format(hoveredDayTasks.date, 'd MMMM yyyy, EEEE', { locale: dateLocale })}
+                    </h3>
+                    <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-zinc-400 font-medium">
+                      <span>{hoveredDayTasks.tasks.length} {language === 'tr' ? 'Görev' : 'Tasks'}</span>
+                      <span className="w-1 h-1 bg-stone-300 dark:bg-zinc-600 rounded-full" />
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                        {hoveredDayTasks.tasks.filter(t => t.isCompleted || t.status === 'done').length} {language === 'tr' ? 'Tamamlandı' : 'Completed'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHoveredDayTasks(null)}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition"
+                  title={language === 'tr' ? 'Kapat' : 'Close'}
+                >
+                  <FaTimes className="text-xs" />
+                </button>
+              </div>
+
+              {/* Scrollable Tasks Body */}
+              <div className="p-4 space-y-2 overflow-y-auto custom-scrollbar flex-1 max-h-[55vh]">
+                {sortPlannerTasks(hoveredDayTasks.tasks).map((task, idx) => {
+                  const isDone = !!(task.isCompleted || task.status === 'done');
+                  return (
+                    <div
+                      key={task.id || idx}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.stopPropagation();
+                        // Tarayıcının drag ghost görüntüsünü oluşturabilmesi için çok kısa gecikmeyle modalı kapat
+                        setTimeout(() => {
+                          setHoveredDayTasks(null);
+                        }, 20);
+                        setDraggingItemId(task.id || null);
+                        e.dataTransfer.setData('text/plain', JSON.stringify({
+                          id: task.id,
+                          date: task.date || hoveredDayTasks.dateStr,
+                          itemType: task.itemType
+                        }));
+                        e.dataTransfer.effectAllowed = 'move';
+                      }}
+                      onDragEnd={() => {
+                        setDraggingItemId(null);
+                        setDragOverDate(null);
+                      }}
+                      onClick={() => {
+                        onSelectDate(hoveredDayTasks.date);
+                        setHoveredDayTasks(null);
+                      }}
+                      className={`p-3 rounded-2xl border transition-all flex items-start justify-between gap-3 cursor-grab active:cursor-grabbing hover:scale-[1.01] select-none ${
+                        isDone
+                          ? 'bg-stone-50/70 dark:bg-zinc-900/40 border-stone-200/60 dark:border-zinc-800/60 opacity-60'
+                          : 'bg-stone-50/90 dark:bg-zinc-800/60 border-stone-200/90 dark:border-zinc-700/80 hover:border-amber-400/60 shadow-xs'
+                      }`}
+                      title={language === 'tr' ? 'Tarihini değiştirmek için takvime sürükleyebilirsiniz' : 'Drag onto calendar to change date'}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                            task.itemType === 'jira' ? 'bg-blue-500' :
+                            task.itemType === 'todo' ? 'bg-emerald-500' :
+                            task.itemType === 'sport' ? 'bg-orange-500' : 'bg-rose-500'
+                          }`} />
+                          <span className={`text-xs font-black truncate ${isDone ? 'line-through text-stone-400 dark:text-zinc-500' : 'text-stone-900 dark:text-zinc-100'}`}>
+                            {task.title}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-[11px] text-stone-500 dark:text-zinc-400 line-clamp-2 pl-4">
+                            {task.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end shrink-0 text-[11px] gap-1">
+                        {isDone ? (
+                          <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px]">
+                            ✓ {language === 'tr' ? 'Tamamlandı' : 'Done'}
+                          </span>
+                        ) : (
+                          <span className="font-bold text-stone-600 dark:text-zinc-300 bg-stone-200/60 dark:bg-zinc-700/60 px-1.5 py-0.5 rounded-md text-[10px]">
+                            {task.startTime || '--:--'}
+                          </span>
+                        )}
+                        {task.priority && !isDone && (
+                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                            task.priority === 'urgent' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
+                            task.priority === 'high' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400' :
+                            'bg-stone-200/50 text-stone-500 dark:text-zinc-400'
+                          }`}>
+                            {task.priority === 'urgent' ? (language === 'tr' ? 'Acil' : 'Urgent') :
+                             task.priority === 'high' ? (language === 'tr' ? 'Yüksek' : 'High') : task.priority}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="px-5 py-3 bg-stone-50 dark:bg-zinc-900/90 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-stone-400 dark:text-zinc-500 flex items-center gap-1.5">
+                  <span>💡</span>
+                  <span>{language === 'tr' ? 'Sürükleyerek başka bir güne taşıyabilirsiniz' : 'Drag to move to another day'}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectDate(hoveredDayTasks.date);
+                    setHoveredDayTasks(null);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 font-bold text-xs transition shadow-xs"
+                >
+                  {language === 'tr' ? 'Günü Aç' : 'Open Day'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

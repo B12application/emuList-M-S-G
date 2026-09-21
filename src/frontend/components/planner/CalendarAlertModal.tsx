@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaTrash, FaPlus, FaCalendarPlus, FaEdit, FaMapMarkerAlt, FaInfoCircle } from 'react-icons/fa';
+import { FaTimes, FaTrash, FaPlus, FaCalendarPlus, FaEdit, FaMapMarkerAlt, FaInfoCircle, FaCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { addCalendarAlert, deleteCalendarAlert, updateCalendarAlert } from '../../../backend/services/plannerService';
 import { showMarqueeToast } from '../MarqueeToast';
@@ -91,6 +91,21 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
   const handleCancelEdit = () => {
     resetForm();
     setActiveTab('list');
+  };
+
+  const handleToggleAlertComplete = async (alert: CalendarAlert) => {
+    if (!alert.id) return;
+    try {
+      await updateCalendarAlert(alert.id, { isCompleted: !alert.isCompleted });
+      showMarqueeToast({ 
+        message: !alert.isCompleted ? 'Uyarı tamamlandı olarak işaretlendi' : 'Uyarı tamamlanmadı olarak işaretlendi', 
+        type: 'success' 
+      });
+      onAdded();
+    } catch (err) {
+      console.error(err);
+      showMarqueeToast({ message: t('planner.operationFailed'), type: 'error' });
+    }
   };
 
   const handleDeleteAlert = async (alertId: string) => {
@@ -189,21 +204,38 @@ export default function CalendarAlertModal({ isOpen, onClose, onAdded, existingA
                 {existingAlerts.map(alert => (
                   <div
                     key={alert.id}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl border border-stone-200/80 bg-stone-50 group hover:border-stone-300 dark:border-zinc-800 dark:bg-zinc-900/70 dark:hover:border-zinc-700 transition"
+                    className={`flex items-center gap-3 p-3.5 rounded-2xl border transition ${
+                      alert.isCompleted
+                        ? 'border-stone-200/60 bg-stone-50/50 dark:border-zinc-800/60 dark:bg-zinc-900/40 opacity-75'
+                        : 'border-stone-200/80 bg-stone-50 group hover:border-stone-300 dark:border-zinc-800 dark:bg-zinc-900/70 dark:hover:border-zinc-700'
+                    }`}
                   >
                     <div
                       className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
                       style={{ backgroundColor: alert.color || '#ef4444' }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-stone-900 dark:text-zinc-100 truncate">
+                      <p className={`text-sm font-black truncate ${alert.isCompleted ? 'line-through text-stone-400 dark:text-zinc-500' : 'text-stone-900 dark:text-zinc-100'}`}>
                         {alert.label}
                       </p>
                       <p className="text-[11px] text-stone-500 dark:text-zinc-400 mt-0.5 font-medium">
                         {formatDateLabel(alert.startDate)} → {formatDateLabel(alert.endDate)}
                       </p>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAlertComplete(alert)}
+                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer border ${
+                          alert.isCompleted
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
+                            : 'bg-white text-stone-600 border-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-zinc-700'
+                        }`}
+                        title={alert.isCompleted ? 'Tamamlandı (Geri Al)' : 'Tamamlandı Olarak İşaretle'}
+                      >
+                        {alert.isCompleted ? <FaCheckCircle className="text-xs text-emerald-500" /> : <FaRegCircle className="text-xs" />}
+                        <span className="hidden sm:inline">{alert.isCompleted ? 'Tamamlandı' : 'Yapılmadı'}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleEditAlert(alert)}

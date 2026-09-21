@@ -254,6 +254,22 @@ export default function PlannerPage() {
     }
   };
 
+  const handleItemDateChange = async (itemId: string, newDateStr: string, itemType?: string) => {
+    try {
+      const updateData: Partial<PlannerMeeting> = itemType === 'jira'
+        ? { dueDate: newDateStr }
+        : { date: newDateStr };
+      await updateMeeting(itemId, updateData);
+      setDbMeetings(prev => prev.map(m => m.id === itemId ? { ...m, ...updateData } : m));
+      showMarqueeToast({
+        message: language === 'tr' ? `Tarih güncellendi: ${newDateStr}` : `Date updated: ${newDateStr}`,
+        type: 'success'
+      });
+    } catch (err) {
+      console.error('Failed to update date on drag-drop:', err);
+    }
+  };
+
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const dateLocale = language === 'tr' ? tr : enUS;
 
@@ -267,12 +283,39 @@ export default function PlannerPage() {
     .filter(m => m.itemType === 'meeting' || m.itemType === 'match')
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const currentDayTodos = currentDayAll.filter(m => {
-    if (m.itemType === 'jira') {
-      return m.dueDate === selectedDateStr;
-    }
-    return m.itemType === 'todo';
-  });
+  const currentDayTodos = useMemo(() => {
+    const rawTodos = currentDayAll.filter(m => {
+      if (m.itemType === 'jira') {
+        return m.dueDate === selectedDateStr;
+      }
+      return m.itemType === 'todo';
+    });
+
+    return rawTodos.sort((a, b) => {
+      const aDone = !!(a.isCompleted || a.status === 'done');
+      const bDone = !!(b.isCompleted || b.status === 'done');
+      if (aDone !== bDone) {
+        return aDone ? 1 : -1; // completed goes to bottom
+      }
+
+      // Priority scoring for incomplete tasks:
+      const getPriorityScore = (item: PlannerMeeting) => {
+        if (item.priority === 'urgent') return 4;
+        if (item.priority === 'high' || item.itemType === 'jira') return 3;
+        if (item.priority === 'medium') return 2;
+        if (item.priority === 'low') return 1;
+        return 1;
+      };
+
+      const scoreA = getPriorityScore(a);
+      const scoreB = getPriorityScore(b);
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // higher priority first
+      }
+
+      return (a.startTime || '').localeCompare(b.startTime || '');
+    });
+  }, [currentDayAll, selectedDateStr]);
 
   return (
     <motion.div
@@ -514,6 +557,7 @@ export default function PlannerPage() {
               onMonthChange={setSelectedDate}
               meetings={meetings}
               calendarAlerts={calendarAlerts}
+              onItemDateChange={handleItemDateChange}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 setActiveTab('daily');

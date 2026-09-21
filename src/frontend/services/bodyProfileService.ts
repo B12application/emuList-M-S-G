@@ -71,6 +71,36 @@ export const MEASUREMENT_LIST: MeasurementMeta[] = [
   { key: 'calfRightCm', label: 'Baldır (Sağ)', emoji: '🟤', category: 'legs', categoryLabel: 'Bacaklar', tip: 'Sağ baldırın en geniş noktasından ölçün.' },
 ];
 
+export const MEASUREMENT_LIST_EN: MeasurementMeta[] = [
+  { key: 'neckCm', label: 'Neck', emoji: '🔵', category: 'upper', categoryLabel: 'Upper Body', tip: 'Measure horizontally just below the Adam\'s apple.' },
+  { key: 'shoulderCm', label: 'Shoulders', emoji: '🥋', category: 'upper', categoryLabel: 'Upper Body', tip: 'Measure across the outermost points of the shoulders around the back.' },
+  { key: 'chestCm', label: 'Chest', emoji: '🟣', category: 'upper', categoryLabel: 'Upper Body', tip: 'Measure at nipple line with arms relaxed and normal breathing.' },
+  { key: 'upperArmLeftCm', label: 'Upper Arm (L)', emoji: '💪', category: 'arms', categoryLabel: 'Arms', tip: 'Measure at the peak of the left bicep.' },
+  { key: 'upperArmRightCm', label: 'Upper Arm (R)', emoji: '💪', category: 'arms', categoryLabel: 'Arms', tip: 'Measure at the peak of the right bicep.' },
+  { key: 'forearmLeftCm', label: 'Forearm (L)', emoji: '🦾', category: 'arms', categoryLabel: 'Arms', tip: 'Measure at the thickest part ~5 cm below the left elbow.' },
+  { key: 'forearmRightCm', label: 'Forearm (R)', emoji: '🦾', category: 'arms', categoryLabel: 'Arms', tip: 'Measure at the thickest part ~5 cm below the right elbow.' },
+  { key: 'upperAbdomenCm', label: 'Upper Abs', emoji: '📐', category: 'core', categoryLabel: 'Core & Hips', tip: 'Measure between the ribcage and navel.' },
+  { key: 'waistCm', label: 'Waist', emoji: '🟠', category: 'core', categoryLabel: 'Core & Hips', tip: 'Measure ~2 cm above the navel at the narrowest point.' },
+  { key: 'lowerAbdomenCm', label: 'Lower Abs', emoji: '📏', category: 'core', categoryLabel: 'Core & Hips', tip: 'Measure 3-4 cm below the navel across the lower belly.' },
+  { key: 'hipCm', label: 'Hips', emoji: '🔴', category: 'core', categoryLabel: 'Core & Hips', tip: 'Measure around the widest, most prominent part of the glutes.' },
+  { key: 'thighLeftCm', label: 'Thigh (L)', emoji: '🦵', category: 'legs', categoryLabel: 'Legs', tip: 'Measure at the thickest part of the left thigh near the groin.' },
+  { key: 'thighRightCm', label: 'Thigh (R)', emoji: '🦵', category: 'legs', categoryLabel: 'Legs', tip: 'Measure at the thickest part of the right thigh near the groin.' },
+  { key: 'calfLeftCm', label: 'Calf (L)', emoji: '🟤', category: 'legs', categoryLabel: 'Legs', tip: 'Measure at the widest part of the left calf.' },
+  { key: 'calfRightCm', label: 'Calf (R)', emoji: '🟤', category: 'legs', categoryLabel: 'Legs', tip: 'Measure at the widest part of the right calf.' },
+];
+
+export const getMeasurementList = (lang: 'tr' | 'en' = 'tr'): MeasurementMeta[] => {
+  return lang === 'en' ? MEASUREMENT_LIST_EN : MEASUREMENT_LIST;
+};
+
+export const getMeasurementLabels = (lang: 'tr' | 'en' = 'tr'): Record<ValidMeasurementKey, { label: string; emoji: string; tip: string }> => {
+  const list = getMeasurementList(lang);
+  return list.reduce((acc, item) => {
+    acc[item.key] = { label: item.label, emoji: item.emoji, tip: item.tip };
+    return acc;
+  }, {} as Record<ValidMeasurementKey, { label: string; emoji: string; tip: string }>);
+};
+
 export const MEASUREMENT_LABELS: Record<ValidMeasurementKey, { label: string; emoji: string; tip: string }> =
   MEASUREMENT_LIST.reduce((acc, item) => {
     acc[item.key] = { label: item.label, emoji: item.emoji, tip: item.tip };

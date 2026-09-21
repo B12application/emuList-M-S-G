@@ -287,10 +287,10 @@ export default function StatsPage() {
             {/* Page Header Banner */}
             <PageHeaderBanner
                 title={t('stats.title')}
-                subtitle="İstatistiklerinizi ve aktivitelerinizi görüntüleyin"
+                subtitle={t('stats.subtitle')}
                 icon={<FaChartPie />}
                 backTo="/profile"
-                backLabel="Profile Dön"
+                backLabel={t('common.backToProfile')}
             />
 
             <div className="w-full mx-auto">

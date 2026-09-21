@@ -6,10 +6,12 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaArrowLeft, FaPlus, FaTrash, FaHistory, FaTimes,
-  FaChevronRight, FaExclamationTriangle, FaDatabase, FaFire, FaChartPie
+  FaChevronRight, FaExclamationTriangle, FaDatabase, FaFire, FaChartPie,
+  FaCamera, FaBullseye, FaRobot, FaEnvelope, FaCheckCircle
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFeatureAccess } from '../hooks/useFeatureAccess';
@@ -327,29 +329,190 @@ export default function CalorieChatPage() {
 
   if (!hasAccess('calorieAi')) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-stone-200 dark:border-zinc-800 shadow-xl max-w-md w-full"
-        >
-          <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-5">
-            <FaExclamationTriangle className="text-4xl text-amber-500" />
+      <div className="w-full max-w-7xl xl:max-w-screen-2xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+        <PageHeaderBanner
+          title={language === 'tr' ? 'B12 AI Beslenme & Kalori Asistanı' : 'B12 AI Nutrition & Calorie Assistant'}
+          subtitle={
+            language === 'tr'
+              ? 'Fotoğraftan tabak ve porsiyon analizi, anlık makro & kalori hesabı ve kişisel yaşam koçluğu'
+              : 'Meal photo recognition, automated macros & calories, and personal nutrition coaching'
+          }
+          icon={<FaRobot className="text-amber-500 text-xl" />}
+          badge="AI Life Agent"
+          backTo="/"
+          backLabel={t('common.backToProfile')}
+        />
+
+        <div className="space-y-8">
+          {/* Hero Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <motion.div
+              whileHover={{ y: -3 }}
+              className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-4">
+                  <FaCamera />
+                </div>
+                <h3 className="text-base font-black text-stone-900 dark:text-white mb-2">
+                  {language === 'tr' ? 'Fotoğrafla Anında Besin Analizi' : 'Instant Photo Nutrition Analysis'}
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                  {language === 'tr'
+                    ? 'Yediğiniz yemeğin fotoğrafını çekin veya galeriden yükleyin. B12 AI tabağı segmentlere ayırır, gramajı ve kalori/makro değerlerini saniyeler içinde hesaplar.'
+                    : 'Take a photo of your meal or upload from gallery. B12 AI segments the plate, calculating portions, calories, and macros in seconds.'}
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-stone-100 dark:border-zinc-800/80 flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                <FaCheckCircle className="text-xs" />
+                <span>{language === 'tr' ? 'Gemini AI Görüntü İşleme' : 'Gemini AI Vision Engine'}</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -3 }}
+              className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl mb-4">
+                  <FaBullseye />
+                </div>
+                <h3 className="text-base font-black text-stone-900 dark:text-white mb-2">
+                  {language === 'tr' ? 'Beden Profili & Kalori Açığı' : 'Body Profile & Deficit Engine'}
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                  {language === 'tr'
+                    ? 'Beden ölçüleriniz, yağ oranınız ve aktivite seviyenizle entegre çalışır. Kilo verme veya kas geliştirme hedefinize göre günlük kalori açığınızı otomatik dengeler.'
+                    : 'Integrates with your body measurements, body fat, and activity level. Balances your daily deficit target for fat loss or hypertrophy.'}
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-stone-100 dark:border-zinc-800/80 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+                <FaCheckCircle className="text-xs" />
+                <span>{language === 'tr' ? '15 Bölgesel Mezura Entegrasyonu' : '15-Region Anthropometric Integration'}</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -3 }}
+              className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-4">
+                  <FaChartPie />
+                </div>
+                <h3 className="text-base font-black text-stone-900 dark:text-white mb-2">
+                  {language === 'tr' ? 'Otomatik Arşiv & Makro Raporu' : 'Automated Nutrition Journal'}
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                  {language === 'tr'
+                    ? 'Konuşarak veya fotoğrafla eklediğiniz her öğün anında günlük beslenme günlüğünüze kaydedilir. Günlük protein, karb ve yağ kotalarınızı canlı takip edersiniz.'
+                    : 'Every meal you log via text or photo automatically saves to your daily journal with live tracking of daily protein, carb, and fat goals.'}
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-stone-100 dark:border-zinc-800/80 flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <FaCheckCircle className="text-xs" />
+                <span>{language === 'tr' ? 'Kalori Raporuyla %100 Senkron' : '100% Synced with Calorie Report'}</span>
+              </div>
+            </motion.div>
           </div>
-          <h1 className="text-2xl font-black text-stone-900 dark:text-white mb-2">
-            {t('calorieChat.accessDenied') || 'Erişim Kısıtlı'}
-          </h1>
-          <p className="text-stone-500 dark:text-zinc-400 text-sm mb-6">
-            {t('calorieChat.accessDeniedDesc') || 'Bu özellik henüz hesabınız için aktif edilmemiş. Yönetici ile iletişime geçin.'}
-          </p>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-amber-400 text-stone-950 font-bold rounded-2xl shadow-md hover:bg-amber-300 transition-all text-sm"
-          >
-            <FaArrowLeft className="text-xs" />
-            {t('calorieChat.backToHome') || 'Ana Sayfaya Dön'}
-          </Link>
-        </motion.div>
+
+          {/* Interactive Chat Mockup / Demo Simulation */}
+          <div className="bg-stone-50 dark:bg-zinc-900/60 border border-stone-200 dark:border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-sm">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-stone-200/80 dark:border-zinc-800">
+              <div className="flex items-center gap-2.5">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-black uppercase tracking-wider text-stone-700 dark:text-zinc-300">
+                  {language === 'tr' ? 'Canlı AI Sohbet Simülasyonu (Örnek)' : 'Live AI Conversation Simulation (Sample)'}
+                </span>
+              </div>
+              <span className="text-[11px] px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-800 dark:text-amber-300 font-black">
+                B12 Vision AI v2.5
+              </span>
+            </div>
+
+            <div className="space-y-4 max-w-3xl mx-auto">
+              {/* User message */}
+              <div className="flex justify-end">
+                <div className="bg-stone-200/80 dark:bg-zinc-800 text-stone-900 dark:text-zinc-100 p-3.5 rounded-2xl rounded-tr-xs text-xs max-w-md shadow-xs space-y-2">
+                  <div className="flex items-center gap-2 text-stone-600 dark:text-zinc-300 font-bold pb-1 border-b border-stone-300/60 dark:border-zinc-700/60">
+                    <span>📸 [Fotoğraf: Izgara Tavuklu Salata &amp; Ayran]</span>
+                  </div>
+                  <p>Bu öğünümün kalori ve protein değerini hesaplayıp günlüğüme ekler misin?</p>
+                </div>
+              </div>
+
+              {/* AI Assistant response */}
+              <div className="flex justify-start items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-stone-950 flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                  🤖
+                </div>
+                <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-stone-900 dark:text-zinc-100 p-4 rounded-2xl rounded-tl-xs text-xs shadow-md space-y-3 max-w-lg">
+                  <p className="font-semibold text-stone-800 dark:text-zinc-200">
+                    Harika bir öğün seçimi! Tabağınızdaki porsiyonları ve besin değerlerini analiz ettim:
+                  </p>
+
+                  <div className="space-y-1.5 p-3 rounded-xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60 text-[11px]">
+                    <div className="flex justify-between font-bold">
+                      <span>🍗 Izgara Tavuk Göğsü (180g)</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-black">297 kcal • 55g P</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span>🥗 Zeytinyağlı Akdeniz Yeşilliği</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-black">85 kcal • 1g P</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span>🥛 Tam Yağlı Ayran (200ml)</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-black">76 kcal • 4g P</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-950 dark:text-amber-200 font-black">
+                    <span>🔥 Toplam: 458 kcal</span>
+                    <span>🥩 60g Protein</span>
+                    <span>🍞 11g Karb</span>
+                    <span>🧈 18g Yağ</span>
+                  </div>
+
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                    <FaCheckCircle />
+                    <span>Öğün başarıyla bugünkü Kalori Raporunuza kaydedildi!</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Access Request CTA Banner */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-amber-500/5 border border-amber-500/30 backdrop-blur-md shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-800 dark:text-amber-300 text-xs font-black">
+                ✨ Özel AI Özelliği
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-white">
+                Bu Özelliği Hesabınızda Aktif Edin
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 dark:text-zinc-400 max-w-xl leading-relaxed">
+                B12 AI Beslenme &amp; Kalori Asistanı özel izinle açılan kişiselleştirilmiş bir yapay zeka modülüdür. Hesabınıza tanımlanması için EMU ile iletişime geçebilirsiniz.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
+              <a
+                href={`mailto:mustafaulusoy0707@gmail.com?subject=B12%20AI%20Kalori%20Asistani%20Erisim%20Talebi&body=Merhaba%20EMU%2C%0A%0AB12%20AI%20Beslenme%20%26%20Kalori%20Asistan%C4%B1%20mod%C3%BCl%C3%BCn%C3%BC%20hesab%C4%B1mda%20aktif%20etmek%20istiyorum.%0A%0AKullan%C4%B1c%C4%B1%20E-posta%3A%20${encodeURIComponent(user?.email || '')}%0AKullan%C4%B1c%C4%B1%20ID%3A%20${encodeURIComponent(user?.uid || '')}%0A%0ATe%C5%9Fekk%C3%BCrler!`}
+                className="w-full sm:w-auto px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-sm rounded-2xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+              >
+                <FaEnvelope className="text-sm" />
+                <span>Erişim Talebi Gönder (E-posta)</span>
+              </a>
+              <Link
+                to="/calorie-details"
+                className="w-full sm:w-auto px-5 py-3.5 bg-white dark:bg-zinc-900 hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-800 dark:text-zinc-200 font-bold text-xs rounded-2xl border border-stone-200 dark:border-zinc-800 transition-all text-center"
+              >
+                Örnek Raporu Gör
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

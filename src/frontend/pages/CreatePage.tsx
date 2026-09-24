@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../../backend/config/firebaseConfig';
 import { addDoc, collection, serverTimestamp, Timestamp, getDocs, query, where } from 'firebase/firestore';
-import type { MediaItem, MediaType } from '../../backend/types/media';
+import type { MediaItem, MediaType, CastMember } from '../../backend/types/media';
 import {
   FaFilm, FaTv, FaGamepad, FaBook, FaStar, FaCheck,
   FaSearch, FaPen, FaTags, FaMagic, FaEye, FaEyeSlash,
@@ -14,6 +14,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import MediaCard from '../components/MediaCard';
 import SearchInput from '../components/create/SearchInput';
+import type { MediaDetails } from '../components/create/SearchInput';
+import ProminentCastSection from '../components/media/ProminentCastSection';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import toast from 'react-hot-toast';
@@ -114,6 +116,7 @@ export default function CreatePage() {
   const [releaseDate, setReleaseDate] = useState<string | undefined>(undefined);
   const [runtime, setRuntime] = useState<string | undefined>(undefined);
   const [imdbId, setImdbId] = useState<string | undefined>(undefined);
+  const [cast, setCast] = useState<CastMember[] | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [isJustSelected, setIsJustSelected] = useState(false);
   
@@ -134,18 +137,7 @@ export default function CreatePage() {
     return MEDIA_TYPES.find(m => m.id === type) || MEDIA_TYPES[0];
   }, [type]);
 
-  const handleSearchSelect = (details: {
-    title: string;
-    image: string;
-    description: string;
-    rating: string;
-    author?: string;
-    genres: string[];
-    totalSeasons?: number;
-    releaseDate?: string;
-    runtime?: string;
-    imdbId?: string;
-  }) => {
+  const handleSearchSelect = (details: MediaDetails) => {
     // Blur any active keyboard on mobile
     if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -161,6 +153,8 @@ export default function CreatePage() {
     if (details.releaseDate) setReleaseDate(details.releaseDate);
     if (details.runtime) setRuntime(details.runtime);
     if (details.imdbId) setImdbId(details.imdbId);
+    if (details.cast) setCast(details.cast);
+    else setCast(undefined);
 
     // Trigger visual feedback highlight
     setIsJustSelected(true);
@@ -214,7 +208,9 @@ export default function CreatePage() {
     runtime: runtime || '',
     imdbId: imdbId || '',
     platform: undefined,
-    addedAt: undefined
+    addedAt: undefined,
+    cast: cast,
+    actors: cast ? cast.map(c => c.name) : undefined
   };
 
   const resetForm = () => {
@@ -231,6 +227,7 @@ export default function CreatePage() {
     setReleaseDate(undefined);
     setRuntime(undefined);
     setImdbId(undefined);
+    setCast(undefined);
     setShowAdvancedOptions(false);
     
     // Scroll back to top search input so user can quickly add another item
@@ -274,8 +271,6 @@ export default function CreatePage() {
         userId: user.uid
       };
 
-
-
       if (author && type === 'book') newItem.author = author.trim();
       if (genres.length) newItem.genre = genres.join(', ');
       if (tags.length) newItem.tags = tags;
@@ -283,6 +278,10 @@ export default function CreatePage() {
       if (releaseDate) newItem.releaseDate = releaseDate;
       if (runtime) newItem.runtime = runtime;
       if (imdbId) newItem.imdbId = imdbId;
+      if (cast && cast.length > 0) {
+        newItem.cast = cast;
+        newItem.actors = cast.map(c => c.name);
+      }
 
       const docRef = await addDoc(collection(db, 'mediaItems'), newItem);
 
@@ -683,6 +682,21 @@ export default function CreatePage() {
                 </div>
               </div>
             </motion.div>
+
+            {/* 4. ÖNE ÇIKAN OYUNCULAR KADROSU */}
+            {(type === 'movie' || type === 'series') && cast && cast.length > 0 && (
+              <motion.div
+                layout
+                className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-3xl p-4 sm:p-6 border border-stone-200/80 dark:border-zinc-800/80 shadow-lg"
+              >
+                <ProminentCastSection
+                  cast={cast}
+                  imdbId={imdbId}
+                  title={title}
+                  type={type}
+                />
+              </motion.div>
+            )}
           </div>
 
         </form>

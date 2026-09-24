@@ -10,6 +10,16 @@ export type FilterType = MediaType | 'all';
 // Bu, izlenme durumu filtresi (URL'den gelir)
 export type FilterStatus = 'all' | 'watched' | 'not-watched' | 'in-progress' | 'favorites';
 
+// Oyuncu kadrosu üyesi
+export interface CastMember {
+  id: number; // TMDb person ID
+  name: string;
+  character?: string;
+  profilePath?: string | null;
+  order?: number;
+  popularity?: number;
+}
+
 // Veritabanı objemizin arayüzü
 export interface MediaItem {
   platform: any;
@@ -39,4 +49,6 @@ export interface MediaItem {
   lastWatchedAt?: Timestamp; // Son izleme tarihi (bölüm işaretlendiğinde güncellenir)
   myRating?: number; // Kullanıcının kendi puanı (0-10, 0.5 adım)
   myNote?: string; // Kullanıcının kısa kişisel notu
+  cast?: CastMember[]; // Öne çıkan oyuncular kadrosu
+  actors?: string[]; // Oyuncu isimleri listesi (hızlı arama/filtreleme için)
 }

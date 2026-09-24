@@ -1,5 +1,7 @@
 // src/services/omdbApi.ts
 
+import { getCachedApiResponse, setCachedApiResponse, trackApiCall, isDailyLimitReached } from './apiQuotaService';
+
 const API_KEY = import.meta.env.VITE_OMDB_API_KEY;
 const BASE_URL = 'https://www.omdbapi.com';
 const POSTER_URL = 'https://img.omdbapi.com';
@@ -71,6 +73,17 @@ export async function searchMovies(
     return [];
   }
 
+  const normalizedQuery = query.trim().toLowerCase();
+  const cacheKey = `omdb_search_${type || 'all'}_${normalizedQuery}`;
+  const cached = getCachedApiResponse<OMDbSearchResult[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  if (isDailyLimitReached('omdb')) {
+    throw new Error('Günlük OMDb API istek limitine (1.000) ulaşıldı. Lütfen TMDb API kullanın veya yarın tekrar deneyin.');
+  }
+
   const params = new URLSearchParams({
     apikey: API_KEY,
     s: query.trim(),
@@ -82,6 +95,7 @@ export async function searchMovies(
   }
 
   try {
+    trackApiCall('omdb');
     const response = await fetch(`${BASE_URL}/?${params.toString()}`);
     const data: OMDbSearchResponse = await response.json();
 
@@ -92,7 +106,9 @@ export async function searchMovies(
       throw new Error(data.Error || 'Arama sırasında bir hata oluştu');
     }
 
-    return data.Search || [];
+    const results = data.Search || [];
+    setCachedApiResponse(cacheKey, results, 24 * 60 * 60 * 1000); // 24 hours
+    return results;
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -111,6 +127,17 @@ export async function getMovieById(imdbId: string): Promise<OMDbMovieDetails> {
     throw new Error('OMDb API key bulunamadı. Lütfen .env.local dosyasını kontrol edin.');
   }
 
+  const normId = imdbId.trim().toLowerCase();
+  const cacheKey = `omdb_movie_id_${normId}`;
+  const cached = getCachedApiResponse<OMDbMovieDetails>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  if (isDailyLimitReached('omdb')) {
+    throw new Error('Günlük OMDb API istek limitine (1.000) ulaşıldı. Lütfen TMDb API kullanın veya yarın tekrar deneyin.');
+  }
+
   const params = new URLSearchParams({
     apikey: API_KEY,
     i: imdbId,
@@ -119,6 +146,7 @@ export async function getMovieById(imdbId: string): Promise<OMDbMovieDetails> {
   });
 
   try {
+    trackApiCall('omdb');
     const response = await fetch(`${BASE_URL}/?${params.toString()}`);
     const data: OMDbMovieDetails = await response.json();
 
@@ -126,6 +154,7 @@ export async function getMovieById(imdbId: string): Promise<OMDbMovieDetails> {
       throw new Error(data.Error || 'Film bulunamadı');
     }
 
+    setCachedApiResponse(cacheKey, data, 14 * 24 * 60 * 60 * 1000); // 14 days
     return data;
   } catch (error) {
     if (error instanceof Error) {
@@ -151,6 +180,17 @@ export async function getMovieByTitle(
     throw new Error('OMDb API key bulunamadı. Lütfen .env.local dosyasını kontrol edin.');
   }
 
+  const normTitle = title.trim().toLowerCase();
+  const cacheKey = `omdb_movie_title_${normTitle}_${type || 'all'}_${year || ''}`;
+  const cached = getCachedApiResponse<OMDbMovieDetails>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  if (isDailyLimitReached('omdb')) {
+    throw new Error('Günlük OMDb API istek limitine (1.000) ulaşıldı. Lütfen TMDb API kullanın veya yarın tekrar deneyin.');
+  }
+
   const params = new URLSearchParams({
     apikey: API_KEY,
     t: title.trim(),
@@ -167,6 +207,7 @@ export async function getMovieByTitle(
   }
 
   try {
+    trackApiCall('omdb');
     const response = await fetch(`${BASE_URL}/?${params.toString()}`);
     const data: OMDbMovieDetails = await response.json();
 
@@ -174,6 +215,7 @@ export async function getMovieByTitle(
       throw new Error(data.Error || 'Film bulunamadı');
     }
 
+    setCachedApiResponse(cacheKey, data, 14 * 24 * 60 * 60 * 1000); // 14 days
     return data;
   } catch (error) {
     if (error instanceof Error) {
@@ -215,6 +257,12 @@ export async function getSeasonEpisodes(
     throw new Error('OMDb API key bulunamadı.');
   }
 
+  const cacheKey = `omdb_season_${imdbId}_${season}`;
+  const cached = getCachedApiResponse<OMDbEpisode[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const params = new URLSearchParams({
     apikey: API_KEY,
     i: imdbId,
@@ -223,6 +271,7 @@ export async function getSeasonEpisodes(
   });
 
   try {
+    trackApiCall('omdb');
     const response = await fetch(`${BASE_URL}/?${params.toString()}`);
     const data: OMDbSeasonResponse = await response.json();
 
@@ -231,7 +280,9 @@ export async function getSeasonEpisodes(
       return [];
     }
 
-    return data.Episodes || [];
+    const episodes = data.Episodes || [];
+    setCachedApiResponse(cacheKey, episodes, 14 * 24 * 60 * 60 * 1000); // 14 days
+    return episodes;
   } catch (error) {
     console.error(`Sezon ${season} bölümleri çekilemedi:`, error);
     return [];

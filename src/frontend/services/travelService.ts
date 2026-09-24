@@ -1,6 +1,7 @@
 import type { TouristAttraction, AttractionDetail } from '../../backend/types/travelPlanner';
 import { db } from '../../backend/config/firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getRedisCache, setRedisCache } from '../../backend/services/redisService';
 
 const API_KEY = import.meta.env.VITE_OPENTRIPMAP_API_KEY;
 const BASE_URL = 'https://api.opentripmap.com/0.1/en/places';
@@ -66,7 +67,20 @@ export async function fetchAttractionsByDistrict(
     }
   } catch { /* ignore parse errors */ }
 
-  // 3. Check Firestore persistent cache
+  // 3. Check Edge Redis cache (shared across all devices/users)
+  try {
+    const redisHit = await getRedisCache<TouristAttraction[]>(localCacheKey);
+    if (redisHit.hit && Array.isArray(redisHit.data) && redisHit.data.length > 0) {
+      const deduped = deduplicate(redisHit.data);
+      attractionCache.set(cacheKey, deduped);
+      try {
+        localStorage.setItem(localCacheKey, JSON.stringify({ data: deduped, timestamp: Date.now() }));
+      } catch {}
+      return deduped;
+    }
+  } catch {}
+
+  // 4. Check Firestore persistent cache
   try {
     const firestoreRef = doc(db, 'districtAttractions', district.id);
     const snap = await getDoc(firestoreRef);
@@ -138,6 +152,9 @@ export async function fetchAttractionsByDistrict(
         timestamp: Date.now()
       }));
     } catch {}
+
+    // Save to shared Edge Redis
+    setRedisCache(localCacheKey, finalMerged, 30 * 24 * 60 * 60).catch(() => {});
 
     try {
       setDoc(doc(db, 'districtAttractions', district.id), {

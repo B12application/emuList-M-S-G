@@ -4,9 +4,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaSpinner, FaTimes, FaFilm, FaCalendarAlt, FaUser } from 'react-icons/fa';
 import { searchMovies, getMovieById, normalizeRating } from '../../../backend/services/omdbApi';
-import { searchTMDB, getTMDBDetails, getTMDBPosterUrl, normalizeTMDBRating } from '../../../backend/services/tmdbApi';
+import { searchTMDB, getTMDBDetails, getTMDBPosterUrl, normalizeTMDBRating, getMediaCreditsByImdbOrTitle } from '../../../backend/services/tmdbApi';
 import { searchBooks, getBookById, normalizeBookRating, getBookCoverUrl, formatAuthors } from '../../../backend/services/googleBooksApi';
 import { searchGames, getGameById, normalizeGameRating } from '../../../backend/services/rawgApi';
+import type { CastMember } from '../../../backend/types/media';
 import ImageWithFallback from '../ui/ImageWithFallback';
 import { useLanguage } from '../../context/LanguageContext';
 import toast from 'react-hot-toast';
@@ -22,7 +23,7 @@ interface SearchResult {
     source?: 'tmdb' | 'omdb';
 }
 
-interface MediaDetails {
+export interface MediaDetails {
     title: string;
     image: string;
     description: string;
@@ -33,6 +34,7 @@ interface MediaDetails {
     releaseDate?: string; // Çıkış tarihi
     runtime?: string; // Süre (Film: "120 min")
     imdbId?: string; // IMDb ID
+    cast?: CastMember[]; // Öne çıkan oyuncular
 }
 
 interface SearchInputProps {
@@ -150,6 +152,15 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                     const releaseDateStr = data.release_date || data.first_air_date || '';
                     const runtimeStr = data.runtime ? `${data.runtime} min` : (data.episode_run_time && data.episode_run_time[0] ? `${data.episode_run_time[0]} min` : '');
 
+                    const castMembers: CastMember[] = (data.credits?.cast || []).slice(0, 15).map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        character: c.character,
+                        profilePath: c.profile_path,
+                        order: c.order,
+                        popularity: c.popularity
+                    }));
+
                     details = {
                         title: itemTitle,
                         image: getTMDBPosterUrl(data.poster_path),
@@ -159,10 +170,38 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                         totalSeasons: type === 'series' && data.number_of_seasons ? data.number_of_seasons : undefined,
                         releaseDate: releaseDateStr,
                         runtime: runtimeStr,
-                        imdbId: data.external_ids?.imdb_id || undefined
+                        imdbId: data.external_ids?.imdb_id || undefined,
+                        cast: castMembers.length > 0 ? castMembers : undefined
                     };
                 } else {
                     const data = await getMovieById(result.id);
+                    let castMembers: CastMember[] = [];
+                    if (data.imdbID) {
+                        try {
+                            const tmdbCast = await getMediaCreditsByImdbOrTitle(data.imdbID, data.Title, type === 'series' ? 'series' : 'movie');
+                            if (tmdbCast.length > 0) {
+                                castMembers = tmdbCast.slice(0, 15).map(c => ({
+                                    id: c.id,
+                                    name: c.name,
+                                    character: c.character,
+                                    profilePath: c.profile_path,
+                                    order: c.order,
+                                    popularity: c.popularity
+                                }));
+                            }
+                        } catch {
+                            // Non-blocking fallback
+                        }
+                    }
+
+                    if (castMembers.length === 0 && data.Actors && data.Actors !== 'N/A') {
+                        castMembers = data.Actors.split(', ').map((actorName, idx) => ({
+                            id: -(idx + 1),
+                            name: actorName.trim(),
+                            order: idx
+                        }));
+                    }
+
                     details = {
                         title: data.Title,
                         image: data.Poster !== 'N/A' ? data.Poster : '',
@@ -172,7 +211,8 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                         totalSeasons: type === 'series' && data.totalSeasons ? parseInt(data.totalSeasons, 10) : undefined,
                         releaseDate: data.Released && data.Released !== 'N/A' ? data.Released : '',
                         runtime: data.Runtime && data.Runtime !== 'N/A' ? data.Runtime : '',
-                        imdbId: data.imdbID
+                        imdbId: data.imdbID,
+                        cast: castMembers.length > 0 ? castMembers : undefined
                     };
                 }
             } else if (type === 'book') {

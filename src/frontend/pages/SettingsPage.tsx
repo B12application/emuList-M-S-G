@@ -30,6 +30,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageHeaderBanner from '../components/ui/PageHeaderBanner';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import ApiQuotaSettingsSection from '../components/settings/ApiQuotaSettingsSection';
 
 export default function SettingsPage() {
     const { user } = useAuth();
@@ -71,7 +72,7 @@ export default function SettingsPage() {
 
     // Database usage estimation
     const [dbUsageBytes, setDbUsageBytes] = useState<number>(0);
-    const [activeTab, setActiveTab] = useState<'general' | 'profile' | 'security' | 'privacy' | 'vault'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'profile' | 'security' | 'privacy' | 'vault' | 'apiQuota'>('general');
 
     // IMDb Sync state
     const [isSyncingImdb, setIsSyncingImdb] = useState(false);
@@ -428,6 +429,7 @@ export default function SettingsPage() {
     const tabs = [
         { id: 'general' as const, label: t('settings.tabs.general'), icon: <FaCog /> },
         { id: 'vault' as const, label: t('settings.tabs.vault'), icon: <FaDatabase /> },
+        { id: 'apiQuota' as const, label: t('settings.tabs.apiQuota'), icon: <FaBolt /> },
         { id: 'profile' as const, label: t('settings.tabs.profile'), icon: <FaUserEdit /> },
         { id: 'security' as const, label: t('settings.tabs.security'), icon: <FaShieldAlt /> },
         { id: 'privacy' as const, label: t('settings.tabs.privacy'), icon: <FaEye /> },
@@ -468,7 +470,7 @@ export default function SettingsPage() {
                 {/* Tab Navigation – Modern Segment Control */}
                 <div className="mb-8">
                     <div className="bg-stone-100 dark:bg-zinc-800/80 rounded-2xl p-1.5 border border-stone-200/60 dark:border-zinc-700/60 shadow-sm overflow-x-auto">
-                        <div className="flex gap-1.5 min-w-max sm:min-w-0 sm:grid sm:grid-cols-5">
+                        <div className="flex gap-1.5 min-w-max sm:min-w-0 sm:grid sm:grid-cols-6">
                             {tabs.map((tab) => (
                                 <motion.button
                                     key={tab.id}
@@ -1513,6 +1515,10 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </>
+                        )}
+
+                        {activeTab === 'apiQuota' && (
+                            <ApiQuotaSettingsSection />
                         )}
                     </motion.div>
                 </AnimatePresence>

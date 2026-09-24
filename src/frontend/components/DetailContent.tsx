@@ -15,6 +15,7 @@ import { createActivity } from '../../backend/services/activityService';
 import { getSeriesProgress } from '../../backend/services/episodeTrackingService';
 import { showMarqueeToast } from './MarqueeToast';
 import EditModal from './EditModal';
+import ProminentCastSection from './media/ProminentCastSection';
 
 interface DetailContentProps {
     item: MediaItem;
@@ -375,6 +376,16 @@ export default function DetailContent({ item, refetch, readOnly = false }: Detai
                                     {item.myNote}
                                 </p>
                             </div>
+                        )}
+
+                        {/* Öne Çıkan Oyuncular (Film ve Diziler) */}
+                        {(item.type === 'movie' || item.type === 'series') && (
+                            <ProminentCastSection
+                                cast={item.cast}
+                                imdbId={item.imdbId}
+                                title={item.title}
+                                type={item.type}
+                            />
                         )}
 
                         {/* Eklenme Tarihi */}

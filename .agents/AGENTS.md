@@ -128,4 +128,17 @@ This file contains repository-specific guidelines, architecture constraints, and
 - **Git Gizlilik Kuralı**:
   - `.env`, `.env.*`, `*.key`, `*.pem`, `service-account*.json` vb. dosyalar asla Git'e eklenemez veya commit edilemez.
 
+## 19. 4 Katmanlı Akıllı Önbellek & Serverless Edge Redis Mimarisi (MANDATORY)
+- **Hızlı Veri Erişimi Standardı**:
+  - B12 platformunda harici API'lerden (OMDb, TMDb, OpenTripMap, döviz, fikstür vb.) veya veritabanından veri çeken **herhangi bir yeni özellik veya modül geliştirilirken**, verilerin ışık hızında (5-15ms) gelmesi için mutlaka 4 katmanlı hibrit mimari kullanılmalıdır:
+    1. **Katman 1 (Tarayıcı RAM - 0ms):** Açık sekmede anında gösterim.
+    2. **Katman 2 (Upstash Serverless Edge Redis - 5-15ms):** Cloudflare Pages Edge (`functions/api/redis-cache.ts` ve `src/backend/services/redisService.ts`) üzerinden tüm kullanıcılar ve cihazlar arasında paylaşımlı global önbellek.
+    3. **Katman 3 (Firestore Veritabanı - 50-100ms):** Kalıcı veritabanı yedeği.
+    4. **Katman 4 (Dış API - 200-800ms):** Yalnızca ilk üç katmanda veri yoksa çağrılır ve çekilen veri otomatik olarak RAM + Redis + Firestore'a kaydedilir.
+- **Tek Tip Sarmalayıcı (Wrapper)**:
+  - Yeni servislerde veri çekimleri doğrudan [`getOrFetchWithRedisCache()`](file:///c:/GithubProjects/emuList-M-S-G/src/backend/services/apiQuotaService.ts) veya [`redisService.ts`](file:///c:/GithubProjects/emuList-M-S-G/src/backend/services/redisService.ts) ile sarmalanmalıdır.
+- **Paylaşımlı Kota Sayacı**:
+  - Günlük sınırı olan kotalı API'ler (örneğin OMDb 1.000 istek sınırı), istemci tarafında değil Redis üzerinde atomik sayaçla (`INCR b12:quota:api:YYYY-MM-DD`) tutulmalı ve tüm kullanıcılar için tek merkezden sayılmalıdır.
+- **Referans Dokümantasyon**: Detaylı mimari şema ve kurallar için projedeki [`REDIS_CACHE_ARCHITECTURE.md`](file:///c:/GithubProjects/emuList-M-S-G/REDIS_CACHE_ARCHITECTURE.md) dosyası esastır.
+
 

@@ -256,6 +256,14 @@ export const translationsEN = {
         searchPlaceholderSeries: 'Search series...',
         searchPlaceholderBook: 'Search book...',
         searchPlaceholderGame: 'Search game...',
+        searchSource: 'Search Source',
+        searchLang: 'Search Language',
+        searchLangEn: 'EN (Original)',
+        searchLangTr: 'TR (Turkish)',
+        searchPlaceholderMovieEn: 'Search movie (Original / English)...',
+        searchPlaceholderMovieTr: 'Search movie (Turkish)...',
+        searchPlaceholderSeriesEn: 'Search series (Original / English)...',
+        searchPlaceholderSeriesTr: 'Search series (Turkish)...',
     },
 
     // HomePage

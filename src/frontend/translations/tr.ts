@@ -254,6 +254,14 @@ export const translationsTR = {
         searchPlaceholderSeries: 'Dizi ara...',
         searchPlaceholderBook: 'Kitap ara...',
         searchPlaceholderGame: 'Oyun ara...',
+        searchSource: 'Arama Kaynağı',
+        searchLang: 'Arama Dili',
+        searchLangEn: 'EN (Orijinal)',
+        searchLangTr: 'TR (Türkçe)',
+        searchPlaceholderMovieEn: 'Film ara (Orijinal / İngilizce)...',
+        searchPlaceholderMovieTr: 'Film ara (Türkçe)...',
+        searchPlaceholderSeriesEn: 'Dizi ara (Orijinal / İngilizce)...',
+        searchPlaceholderSeriesTr: 'Dizi ara (Türkçe)...',
     },
 
     // HomePage

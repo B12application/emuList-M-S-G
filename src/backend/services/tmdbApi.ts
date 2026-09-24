@@ -48,6 +48,8 @@ export interface TMDBMovieDetails {
     id: number;
     title?: string;
     name?: string;
+    original_title?: string;
+    original_name?: string;
     overview: string;
     poster_path: string | null;
     backdrop_path: string | null;
@@ -224,7 +226,7 @@ export async function getTMDBDetails(
  */
 export async function getPersonDetails(
     personId: number,
-    language: string = 'tr-TR'
+    language: string = 'en-US'
 ): Promise<TMDBPersonDetails> {
     const cacheKey = `tmdb_person_details_${personId}_${language}`;
     return getOrFetchWithRedisCache(cacheKey, async () => {
@@ -242,7 +244,7 @@ export async function getPersonDetails(
  */
 export async function getPersonCombinedCredits(
     personId: number,
-    language: string = 'tr-TR'
+    language: string = 'en-US'
 ): Promise<TMDBPersonCreditItem[]> {
     if (!API_KEY) {
         throw new Error('TMDB API key bulunamadı.');
@@ -267,7 +269,7 @@ export async function getMediaCreditsByImdbOrTitle(
     imdbId?: string,
     title?: string,
     type: 'movie' | 'series' = 'movie',
-    language: string = 'tr-TR'
+    language: string = 'en-US'
 ): Promise<TMDBCastMember[]> {
     if (!API_KEY) return [];
 

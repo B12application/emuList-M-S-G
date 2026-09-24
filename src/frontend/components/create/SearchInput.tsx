@@ -50,6 +50,20 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
     const [showResults, setShowResults] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [apiPreference, setApiPreference] = useState<'omdb' | 'tmdb'>('omdb');
+    const [searchLang, setSearchLang] = useState<'en' | 'tr'>(() => {
+        try {
+            const saved = localStorage.getItem('b12_media_search_lang');
+            if (saved === 'tr' || saved === 'en') return saved;
+        } catch {}
+        return 'en'; // Default to Original/English
+    });
+
+    const handleLangChange = (newLang: 'en' | 'tr') => {
+        setSearchLang(newLang);
+        try {
+            localStorage.setItem('b12_media_search_lang', newLang);
+        } catch {}
+    };
 
     const containerRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<number | null>(null);
@@ -92,10 +106,13 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                             source: 'omdb'
                         }));
                     } else {
-                        const tmdbResults = await searchTMDB(query, type === 'movie' ? 'movie' : 'series');
+                        const tmdbLang = searchLang === 'tr' ? 'tr-TR' : 'en-US';
+                        const tmdbResults = await searchTMDB(query, type === 'movie' ? 'movie' : 'series', tmdbLang);
                         searchResults = (tmdbResults || []).map(r => ({
                             id: String(r.id),
-                            title: type === 'movie' ? (r.title || r.original_title || '') : (r.name || r.original_name || ''),
+                            title: searchLang === 'en'
+                                ? (type === 'movie' ? (r.original_title || r.title || '') : (r.original_name || r.name || ''))
+                                : (type === 'movie' ? (r.title || r.original_title || '') : (r.name || r.original_name || '')),
                             image: getTMDBPosterUrl(r.poster_path),
                             year: (r.release_date || r.first_air_date || '').split('-')[0],
                             source: 'tmdb'
@@ -132,7 +149,7 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [query, type, apiPreference, t]);
+    }, [query, type, apiPreference, searchLang, t]);
 
     const handleSelect = async (result: SearchResult) => {
         // Blur active input element immediately to close virtual keyboard on mobile devices
@@ -147,8 +164,11 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
 
             if (type === 'movie' || type === 'series') {
                 if (result.source === 'tmdb') {
-                    const data = await getTMDBDetails(result.id, type === 'movie' ? 'movie' : 'series');
-                    const itemTitle = type === 'movie' ? (data.title || data.name || '') : (data.name || data.title || '');
+                    const tmdbLang = searchLang === 'tr' ? 'tr-TR' : 'en-US';
+                    const data = await getTMDBDetails(result.id, type === 'movie' ? 'movie' : 'series', tmdbLang);
+                    const itemTitle = searchLang === 'en'
+                        ? (type === 'movie' ? (data.original_title || data.title || '') : (data.original_name || data.name || ''))
+                        : (type === 'movie' ? (data.title || data.original_title || '') : (data.name || data.original_name || ''));
                     const releaseDateStr = data.release_date || data.first_air_date || '';
                     const runtimeStr = data.runtime ? `${data.runtime} min` : (data.episode_run_time && data.episode_run_time[0] ? `${data.episode_run_time[0]} min` : '');
 
@@ -251,8 +271,14 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
 
     const getPlaceholder = () => {
         switch (type) {
-            case 'movie': return t('create.searchPlaceholderMovie') || 'Film ara (örn. Inception)...';
-            case 'series': return t('create.searchPlaceholderSeries') || 'Dizi ara (örn. Breaking Bad)...';
+            case 'movie':
+                return searchLang === 'en'
+                    ? (t('create.searchPlaceholderMovieEn') || 'Film ara (Orijinal / İngilizce)...')
+                    : (t('create.searchPlaceholderMovieTr') || 'Film ara (Türkçe)...');
+            case 'series':
+                return searchLang === 'en'
+                    ? (t('create.searchPlaceholderSeriesEn') || 'Dizi ara (Orijinal / İngilizce)...')
+                    : (t('create.searchPlaceholderSeriesTr') || 'Dizi ara (Türkçe)...');
             case 'book': return t('create.searchPlaceholderBook') || 'Kitap veya yazar ara...';
             case 'game': return t('create.searchPlaceholderGame') || 'Oyun ara (örn. Witcher 3)...';
             default: return t('create.searchPlaceholder') || 'Aramak için yazın...';
@@ -291,36 +317,73 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                 )}
             </div>
 
-            {/* API Engine Selection Toggle - For Movies and Series */}
+            {/* API Engine & Language Selection Toggle - For Movies and Series */}
             {(type === 'movie' || type === 'series') && (
                 <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 px-1">
-                    <span className="text-[10px] uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-extrabold flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
-                        {language === 'tr' ? 'Arama Kaynağı' : 'Search Source'}
-                    </span>
-                    <div className="flex items-center bg-stone-100 dark:bg-zinc-800 p-1 rounded-xl shadow-inner border border-stone-200/60 dark:border-zinc-700/60">
-                        <button
-                            type="button"
-                            onClick={() => setApiPreference('omdb')}
-                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                                apiPreference === 'omdb'
-                                    ? 'bg-amber-400 text-stone-950 shadow-sm'
-                                    : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
-                            }`}
-                        >
-                            OMDb <span className="text-[9px] opacity-75 font-normal">(IMDb)</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setApiPreference('tmdb')}
-                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                                apiPreference === 'tmdb'
-                                    ? 'bg-sky-500 text-white shadow-sm'
-                                    : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
-                            }`}
-                        >
-                            TMDb <span className="text-[9px] opacity-75 font-normal">(Modern)</span>
-                        </button>
+                    {/* Source Selector */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-extrabold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+                            {t('create.searchSource') || 'Kaynak'}
+                        </span>
+                        <div className="flex items-center bg-stone-100 dark:bg-zinc-800 p-0.5 rounded-xl shadow-inner border border-stone-200/60 dark:border-zinc-700/60">
+                            <button
+                                type="button"
+                                onClick={() => setApiPreference('omdb')}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                    apiPreference === 'omdb'
+                                        ? 'bg-amber-400 text-stone-950 shadow-xs'
+                                        : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                }`}
+                            >
+                                OMDb <span className="text-[9px] opacity-75 font-normal">(IMDb)</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setApiPreference('tmdb')}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                    apiPreference === 'tmdb'
+                                        ? 'bg-sky-500 text-white shadow-xs'
+                                        : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                }`}
+                            >
+                                TMDb <span className="text-[9px] opacity-75 font-normal">(Modern)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Language Selector (TR / EN) */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-extrabold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block" />
+                            {t('create.searchLang') || 'Dil'}
+                        </span>
+                        <div className="flex items-center bg-stone-100 dark:bg-zinc-800 p-0.5 rounded-xl shadow-inner border border-stone-200/60 dark:border-zinc-700/60">
+                            <button
+                                type="button"
+                                onClick={() => handleLangChange('en')}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                    searchLang === 'en'
+                                        ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-xs'
+                                        : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                }`}
+                                title="Orijinal İngilizce Başlık ve Bilgiler"
+                            >
+                                {t('create.searchLangEn') || 'EN (Orijinal)'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleLangChange('tr')}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                    searchLang === 'tr'
+                                        ? 'bg-rose-500 text-white shadow-xs'
+                                        : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                }`}
+                                title="Türkçe Başlık ve Açıklamalar"
+                            >
+                                {t('create.searchLangTr') || 'TR (Türkçe)'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

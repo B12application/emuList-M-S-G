@@ -21,7 +21,7 @@ import {
     type TMDBPersonCreditItem
 } from '../../backend/services/tmdbApi';
 import { createActivity } from '../../backend/services/activityService';
-import { getAllSeriesEpisodeCounts } from '../../backend/services/omdbApi';
+import { getAllSeriesEpisodeCounts, getMovieById, normalizeRating } from '../../backend/services/omdbApi';
 import { saveEpisodesPerSeason } from '../../backend/services/episodeTrackingService';
 
 /**
@@ -90,30 +90,54 @@ export async function addMediaFromTMDB(
     creditItem: TMDBPersonCreditItem
 ): Promise<MediaItem> {
     const targetType: MediaType = creditItem.media_type === 'tv' ? 'series' : 'movie';
-    const fallbackTitle = creditItem.title || creditItem.name || 'Untitled';
+    const fallbackTitle = creditItem.original_title || creditItem.original_name || creditItem.title || creditItem.name || 'Untitled';
 
-    // 1. Fetch detailed metadata from TMDb (genres, runtime/seasons, imdb_id, cast)
+    // 1. Fetch detailed metadata from TMDb with en-US (for original credits and imdb_id)
     let detailedData: any = null;
     try {
-        detailedData = await getTMDBDetails(creditItem.id, targetType, 'tr-TR');
-    } catch {
-        // Fallback to English if Turkish fetch fails
+        detailedData = await getTMDBDetails(creditItem.id, targetType, 'en-US');
+    } catch (e) {
+        console.warn('TMDb detayları alınamadı, creditItem verisi kullanılacak:', e);
+    }
+
+    const imdbId = detailedData?.external_ids?.imdb_id || undefined;
+
+    // 2. Try fetching pure OMDb data if IMDb ID is available
+    let omdbData: any = null;
+    if (imdbId) {
         try {
-            detailedData = await getTMDBDetails(creditItem.id, targetType, 'en-US');
-        } catch (e) {
-            console.warn('TMDb detayları alınamadı, creditItem verisi kullanılacak:', e);
+            const fetched = await getMovieById(imdbId);
+            if (fetched && fetched.Response !== 'False') {
+                omdbData = fetched;
+            }
+        } catch {
+            // Non-blocking fallback to TMDb
         }
     }
 
-    const title = detailedData?.title || detailedData?.name || fallbackTitle;
-    const posterPath = detailedData?.poster_path || creditItem.poster_path;
-    const overview = detailedData?.overview || creditItem.overview || '';
-    const voteAverage = detailedData?.vote_average ?? creditItem.vote_average ?? 0;
-    const releaseDate = detailedData?.release_date || detailedData?.first_air_date || creditItem.release_date || creditItem.first_air_date || '';
-    const genres = detailedData?.genres ? detailedData.genres.map((g: any) => g.name) : [];
-    const imdbId = detailedData?.external_ids?.imdb_id || undefined;
-    const totalSeasons = targetType === 'series' && detailedData?.number_of_seasons ? detailedData.number_of_seasons : undefined;
-    const runtime = detailedData?.runtime ? `${detailedData.runtime} min` : undefined;
+    // Prioritize OMDb first, then TMDb en-US
+    const title = omdbData?.Title || detailedData?.original_title || detailedData?.title || fallbackTitle;
+    const posterUrl = (omdbData?.Poster && omdbData.Poster !== 'N/A')
+        ? omdbData.Poster
+        : getTMDBPosterUrl(detailedData?.poster_path || creditItem.poster_path);
+    const overview = (omdbData?.Plot && omdbData.Plot !== 'N/A')
+        ? omdbData.Plot
+        : (detailedData?.overview || creditItem.overview || '');
+    const rating = omdbData?.imdbRating
+        ? normalizeRating(omdbData.imdbRating)
+        : normalizeTMDBRating(detailedData?.vote_average ?? creditItem.vote_average ?? 0);
+    const genres = (omdbData?.Genre && omdbData.Genre !== 'N/A')
+        ? omdbData.Genre.split(', ')
+        : (detailedData?.genres ? detailedData.genres.map((g: any) => g.name) : []);
+    const totalSeasons = targetType === 'series' && (omdbData?.totalSeasons || detailedData?.number_of_seasons)
+        ? parseInt(String(omdbData?.totalSeasons || detailedData?.number_of_seasons), 10)
+        : undefined;
+    const runtime = (omdbData?.Runtime && omdbData.Runtime !== 'N/A')
+        ? omdbData.Runtime
+        : (detailedData?.runtime ? `${detailedData.runtime} min` : undefined);
+    const releaseDate = (omdbData?.Released && omdbData.Released !== 'N/A')
+        ? omdbData.Released
+        : (detailedData?.release_date || detailedData?.first_air_date || creditItem.release_date || creditItem.first_air_date || '');
 
     // Top cast from details
     const cast: CastMember[] = (detailedData?.credits?.cast || []).slice(0, 10).map((c: any) => ({
@@ -130,8 +154,8 @@ export async function addMediaFromTMDB(
     const newItem: any = {
         title: title.trim(),
         type: targetType,
-        rating: normalizeTMDBRating(voteAverage),
-        image: getTMDBPosterUrl(posterPath),
+        rating: rating,
+        image: posterUrl,
         description: overview.trim(),
         watched: false,
         createdAt: serverTimestamp(),

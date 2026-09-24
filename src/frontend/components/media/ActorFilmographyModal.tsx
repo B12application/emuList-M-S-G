@@ -65,9 +65,8 @@ export default function ActorFilmographyModal({
 
         const fetchCredits = async () => {
             try {
-                // If personId is positive (real TMDb ID)
                 if (personId > 0) {
-                    const data = await getPersonCombinedCredits(personId, language === 'tr' ? 'tr-TR' : 'en-US');
+                    const data = await getPersonCombinedCredits(personId, 'en-US');
                     if (isMounted) {
                         setCredits(data);
                     }
@@ -276,8 +275,8 @@ export default function ActorFilmographyModal({
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
                             {filteredCredits.map((item) => {
-                                const title = item.title || item.name || 'Untitled';
                                 const originalTitle = item.original_title || item.original_name;
+                                const title = originalTitle || item.title || item.name || 'Untitled';
                                 const year = (item.release_date || item.first_air_date || '').split('-')[0];
                                 const inLibrary = isItemInLibrary(title, originalTitle);
                                 const isAdding = !!addingMap[item.id];

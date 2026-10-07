@@ -147,6 +147,7 @@ export default function BodyProfilePage() {
   const { user } = useAuth();
   const { language, t } = useLanguage();
   const { hasAccess, loading: accessLoading } = useFeatureAccess();
+  const isAiAllowed = hasAccess('calorieAi');
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
   const [loading, setLoading] = useState(true);
@@ -196,8 +197,8 @@ export default function BodyProfilePage() {
 
   // Load profile from Firebase (or load demo overweight individual for non-AI users)
   useEffect(() => {
-    if (!user) return;
-    if (!hasAccess('calorieAi')) {
+    if (!user || accessLoading) return;
+    if (!isAiAllowed) {
       // Demo overweight sedentary individual
       setGender(DEMO_OVERWEIGHT_PROFILE.gender);
       setAge(DEMO_OVERWEIGHT_PROFILE.age);
@@ -236,11 +237,11 @@ export default function BodyProfilePage() {
         console.warn('Profile load notice:', err);
       })
       .finally(() => setLoading(false));
-  }, [user, hasAccess, DEMO_OVERWEIGHT_PROFILE]);
+  }, [user?.uid, isAiAllowed, accessLoading, DEMO_OVERWEIGHT_PROFILE]);
 
   // Load today's calorie intake from calorie sessions
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) return;
     getChatSessions(user.uid, 500)
       .then(sessions => {
         const todayKey = getDateKey(new Date());
@@ -263,7 +264,7 @@ export default function BodyProfilePage() {
         setTodayCalories(totalToday);
       })
       .catch(console.error);
-  }, [user]);
+  }, [user?.uid]);
 
   // State for Sports Science modals
   const [guideModalKey, setGuideModalKey] = useState<ValidMeasurementKey | null>(null);
@@ -328,7 +329,7 @@ export default function BodyProfilePage() {
 
   // Save handler
   const handleSave = useCallback(async () => {
-    if (!hasAccess('calorieAi')) {
+    if (!isAiAllowed) {
       toast.error('Demo modundasınız. Kişisel profilinizi kaydedebilmek için lütfen AI erişim izni talep edin.');
       return;
     }
@@ -351,7 +352,7 @@ export default function BodyProfilePage() {
     } finally {
       setSaving(false);
     }
-  }, [user, gender, age, heightCm, weightKg, targetWeightKg, activityLevel, measurements, t]);
+  }, [user, isAiAllowed, gender, age, heightCm, weightKg, targetWeightKg, activityLevel, measurements, t]);
 
   // Handle measurement value change
   const updateMeasurement = useCallback((key: ValidMeasurementKey, value: number) => {
@@ -435,7 +436,7 @@ export default function BodyProfilePage() {
       />
 
       {/* ─── DEMO MODE BANNER FOR NON-AI USERS ─── */}
-      {!hasAccess('calorieAi') && (
+      {!isAiAllowed && (
         <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-lg">

@@ -1,6 +1,7 @@
 // src/frontend/hooks/useFeatureAccess.ts
 // Kullanıcının özellik erişimlerini React Query ile cache'leyen hook
 
+import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { getAllFeatureAccess } from '../services/featureAccessService';
@@ -27,18 +28,18 @@ export function useFeatureAccess() {
    * Belirli bir özelliğe erişim var mı kontrol eder
    * Admin her zaman true döner
    */
-  const hasAccess = (feature: FeatureKey): boolean => {
+  const hasAccess = useCallback((feature: FeatureKey): boolean => {
     if (userIsAdmin) return true; // Admin her şeye erişebilir
     if (!data) return feature !== 'calorieAi'; // Yüklenirken varsayılan
     return data[feature] ?? false;
-  };
+  }, [userIsAdmin, data]);
 
   /**
    * Erişim verilerini yeniden yükle (admin toggle sonrası)
    */
-  const refetch = () => {
+  const refetch = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['featureAccess'] });
-  };
+  }, [queryClient]);
 
   return {
     featureAccess: data,

@@ -55,6 +55,7 @@ export default function CalorieDetailsPage() {
   const { user } = useAuth();
   const { language, t } = useLanguage();
   const { hasAccess, loading: accessLoading } = useFeatureAccess();
+  const isAiAllowed = hasAccess('calorieAi');
   const { usage: quotaUsage } = useCalorieAiUsage(user?.uid);
 
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -139,8 +140,8 @@ export default function CalorieDetailsPage() {
   ], []);
 
   useEffect(() => {
-    if (!user) return;
-    if (!hasAccess('calorieAi')) {
+    if (!user?.uid || accessLoading) return;
+    if (!isAiAllowed) {
       setSessions(DEMO_SESSIONS);
       setLoading(false);
       return;
@@ -150,7 +151,7 @@ export default function CalorieDetailsPage() {
       .then(setSessions)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user, hasAccess, DEMO_SESSIONS]);
+  }, [user?.uid, isAiAllowed, accessLoading, DEMO_SESSIONS]);
 
   // Aggregate all meal items grouped by day
   const groupedDays = useMemo(() => {
@@ -566,7 +567,7 @@ export default function CalorieDetailsPage() {
       />
 
       {/* ─── DEMO MODE BANNER FOR NON-AI USERS ─── */}
-      {!hasAccess('calorieAi') && (
+      {!isAiAllowed && (
         <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-lg">

@@ -60,6 +60,7 @@ export function RotatableBody3D({
   const [angle, setAngle] = useState<number>(0);
   const [isAutoRotating, setIsAutoRotating] = useState<boolean>(false);
   const [hoveredKey, setHoveredKey] = useState<ValidMeasurementKey | null>(null);
+  const [webGLError, setWebGLError] = useState<boolean>(false);
 
   // Drag / Pointer rotasyon referansları
   const isDraggingRef = useRef<boolean>(false);
@@ -165,11 +166,19 @@ export function RotatableBody3D({
     cameraRef.current = camera;
 
     // 3. Renderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+      });
+    } catch (err) {
+      console.warn('[RotatableBody3D] WebGL not supported or initialization failed:', err);
+      setWebGLError(true);
+      return;
+    }
+
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -278,10 +287,10 @@ export function RotatableBody3D({
     return () => {
       window.removeEventListener('resize', handleResize);
       if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
-      if (renderer.domElement.parentElement === container) {
+      if (renderer && renderer.domElement && renderer.domElement.parentElement === container) {
         container.removeChild(renderer.domElement);
       }
-      renderer.dispose();
+      if (renderer) renderer.dispose();
     };
   }, []);
 
@@ -644,7 +653,52 @@ export function RotatableBody3D({
     footMeshR.position.set(thighOffsetX, -0.92, 0.055);
     footMeshR.rotation.y = -0.08;
     bodyGroup.add(footMeshR);
-  }, [gender, morph, selectedKey, hoveredKey, getRegionColor, diagnoses]);
+  }, [gender, morph]);
+
+  // ── Sadece Materyal / Vurgu Güncelleme (Geometriyi Yeniden Oluşturmadan 60 FPS) ──
+  useEffect(() => {
+    const meshMap = meshMapRef.current;
+    if (!meshMap || meshMap.size === 0) return;
+
+    meshMap.forEach((meshes, key) => {
+      const colorHex = getRegionColor(key);
+      const isSelected = selectedKey === key;
+      const isHovered = hoveredKey === key;
+      const diagStatus = diagnoses[key]?.status;
+      const isFatExcess = diagStatus === 'excess_fat';
+      const isOptimal = diagStatus === 'optimal';
+      const isUnderdeveloped = diagStatus === 'underdeveloped';
+
+      const emissiveColor = isSelected
+        ? '#fbbf24'
+        : isHovered
+          ? '#f59e0b'
+          : isFatExcess
+            ? '#f43f5e'
+            : isUnderdeveloped
+              ? '#0284c7'
+              : isOptimal
+                ? '#10b981'
+                : colorHex;
+
+      const emissiveIntensity = isSelected
+        ? 0.85
+        : isHovered
+          ? 0.55
+          : isFatExcess || isUnderdeveloped || isOptimal
+            ? 0.35
+            : 0.12;
+
+      for (const mesh of meshes) {
+        if (mesh.material && 'emissive' in mesh.material) {
+          const mat = mesh.material as THREE.MeshStandardMaterial;
+          mat.color.set(colorHex);
+          mat.emissive.set(emissiveColor);
+          mat.emissiveIntensity = emissiveIntensity;
+        }
+      }
+    });
+  }, [selectedKey, hoveredKey, diagnoses, getRegionColor]);
 
   // ── 3D Sahne Üzerinde Fare ile Döndürme & Tıklama ───────────
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -710,6 +764,20 @@ export function RotatableBody3D({
   };
 
   const normalizedAngle = ((angle % 360) + 360) % 360;
+
+  if (webGLError) {
+    return (
+      <div className="w-full h-[400px] flex flex-col items-center justify-center p-6 bg-stone-50 dark:bg-zinc-800/40 rounded-3xl border border-dashed border-stone-200 dark:border-zinc-700 text-center">
+        <FaCube className="text-3xl text-amber-500 mb-2" />
+        <span className="text-xs font-bold text-stone-700 dark:text-zinc-200">
+          3D Model Cihazınızda / Tarayıcınızda Desteklenmiyor
+        </span>
+        <span className="text-[11px] text-stone-400 dark:text-zinc-500 mt-1 max-w-xs">
+          Ölçümlerinizi ve bölgesel analizinizi sağ taraftaki 15 bölge tablosundan eksiksiz olarak yönetebilirsiniz.
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center select-none w-full">

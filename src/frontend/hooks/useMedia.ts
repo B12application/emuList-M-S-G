@@ -15,7 +15,7 @@ import type { MediaItem, FilterType, FilterStatus } from '../../backend/types/me
 import { autoBackupToLocalStorage } from '../../backend/services/backupService';
 
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 42;
 
 // Sayfa tipi - cursor pagination için
 interface MediaPage {

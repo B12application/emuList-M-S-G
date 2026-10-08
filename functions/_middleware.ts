@@ -65,19 +65,11 @@ export async function onRequest(context: any) {
   const response = await context.next();
 
   // SPA Fallback: If static asset server returned 404 for a client route (and not an API route),
-  // serve index.html so the client-side router handles it seamlessly when opened in a new tab.
+  // serve the root index.html so the client-side React Router handles it seamlessly.
   if (response.status === 404 && request.method === 'GET' && !path.startsWith('/api/')) {
-    try {
-      if (context.env && context.env.ASSETS && typeof context.env.ASSETS.fetch === 'function') {
-        const indexRequest = new Request(new URL('/index.html', request.url), request);
-        const indexResponse = await context.env.ASSETS.fetch(indexRequest);
-        if (indexResponse && indexResponse.status === 200) {
-          return indexResponse;
-        }
-      }
-    } catch (e) {
-      console.error('[CF Middleware] SPA fallback error:', e);
-    }
+    // In Cloudflare Pages, fetching the root URL (/) returns index.html natively
+    const rootUrl = new URL('/', request.url);
+    return context.env.ASSETS.fetch(rootUrl);
   }
 
   return response;

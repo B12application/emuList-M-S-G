@@ -1,11 +1,11 @@
 =======================================================
                B12 MEDYA KOLEKSIYON ARSIVI
-           Tarih: 21.09.2026 23:47:50
-           Toplam Icerik: 389
-           Filmler: 244 | Diziler: 77 | Oyunlar: 56 | Kitaplar: 12
+           Tarih: 08.10.2026 00:42:42
+           Toplam Icerik: 400
+           Filmler: 254 | Diziler: 78 | Oyunlar: 56 | Kitaplar: 12
 =======================================================
 
-🎬 FILMLER (244 Adet)
+🎬 FILMLER (254 Adet)
 -------------------------------------------------------
 1. Oblivion [Puan: 7.0] [Durum: Izlendi] (IMDb: tt1483013)
    Tur: Action, Adventure, Sci-Fi
@@ -70,639 +70,667 @@
 21. Blindspotting [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt7242142)
    Tur: Comedy, Crime, Drama
    Yil: 27 Jul 2018
-22. Fast X [Puan: 6] [Durum: Izlendi] (IMDb: tt5433140)
+22. The Judge [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt1872194)
+   Tur: Crime, Drama, Mystery
+   Yil: 10 Oct 2014
+23. Fast X [Puan: 6] [Durum: Izlendi] (IMDb: tt5433140)
    Tur: Action, Adventure, Crime
    Yil: 19 May 2023
-23. Nouvelle Vague [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt31688586)
+24. Nouvelle Vague [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt31688586)
    Tur: Biography, Comedy, Drama
    Yil: 14 Nov 2025
-24. Hwang-ya - tr Çöl Avcıları [Puan: 2.5] [Durum: Izlendi] 
-25. The Map That Leads to You [Puan: 6.2] [Durum: Izlendi] (IMDb: tt33549478)
+25. Hwang-ya - tr Çöl Avcıları [Puan: 2.5] [Durum: Izlendi] 
+26. A Separation [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt1832382)
+   Tur: Drama
+   Yil: 16 Mar 2011
+27. The Map That Leads to You [Puan: 6.2] [Durum: Izlendi] (IMDb: tt33549478)
    Tur: Drama, Romance
    Yil: 20 Aug 2025
-26. Source Code [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0945513)
+28. Source Code [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0945513)
    Tur: Action, Drama, Mystery
    Yil: 01 Apr 2011
-27. Upgrade [Puan: 7.5] [Durum: Izlendi] (IMDb: tt6499752)
+29. Upgrade [Puan: 7.5] [Durum: Izlendi] (IMDb: tt6499752)
    Tur: Action, Sci-Fi, Thriller
    Yil: 01 Jun 2018
-28. Manchester by the Sea [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt4034228)
+30. Manchester by the Sea [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt4034228)
    Tur: Drama
    Yil: 16 Dec 2016
-29. Tomorrowland [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt1964418)
+31. Tomorrowland [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt1964418)
    Tur: Action, Adventure, Family
    Yil: 22 May 2015
-30. Mission: Impossible - The Final Reckoning [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt9603208)
+32. Mission: Impossible - The Final Reckoning [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt9603208)
    Yil: 23 May 2025
-31. The Housemaid [Puan: 7.0] [Durum: Izlendi] (IMDb: tt27543632)
+33. The Housemaid [Puan: 7.0] [Durum: Izlendi] (IMDb: tt27543632)
    Tur: Drama, Thriller
    Yil: 19 Dec 2025
-32. The Northman [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt11138512)
+34. The Northman [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt11138512)
    Tur: Action, Adventure, Drama
    Yil: 22 Apr 2022
-33. Becky [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt10314450)
+35. Becky [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt10314450)
    Tur: Action, Crime, Drama
    Yil: 05 Jun 2020
-34. The Dog Stars [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt21285562)
+36. The Dog Stars [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt21285562)
    Tur: Science Fiction, Adventure, Thriller
    Yil: 2026-08-26
-35. Take My Hand [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt16025158)
+37. Take My Hand [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt16025158)
    Tur: Drama, Romance
    Yil: 22 Aug 2024
-36. The Idea of You [Puan: 6.3] [Durum: Izlendi] (IMDb: tt9466114)
+38. The Idea of You [Puan: 6.3] [Durum: Izlendi] (IMDb: tt9466114)
    Tur: Comedy, Drama, Romance
    Yil: 02 May 2024
-37. Sentimental Value [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt27714581)
+39. Sentimental Value [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt27714581)
    Tur: Drama
    Yil: 20 Aug 2025
-38. The Phoenician Scheme [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt30840798)
+40. The Phoenician Scheme [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt30840798)
    Tur: Action, Comedy, Crime
    Yil: 06 Jun 2025
-39. Ambulance [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt4998632)
+41. Ambulance [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt4998632)
    Tur: Action, Crime, Drama
    Yil: 08 Apr 2022
-40. Ex Machina [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt0470752)
+42. Ex Machina [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt0470752)
    Tur: Drama, Sci-Fi, Thriller
    Yil: 24 Apr 2015
-41. Babylon [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt10640346)
+43. Babylon [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt10640346)
    Tur: Comedy, Drama
    Yil: 23 Dec 2022
-42. The Odyssey [Puan: 8.5] [Durum: Izlendi] (IMDb: tt33764258)
+44. The Odyssey [Puan: 8.5] [Durum: Izlendi] (IMDb: tt33764258)
    Tur: Action, Adventure, Fantasy
    Yil: 17 Jul 2026
-43. Nobody [Puan: 7.4] [Durum: Izlendi] (IMDb: tt7888964)
+45. Nobody [Puan: 7.4] [Durum: Izlendi] (IMDb: tt7888964)
    Tur: Action, Crime, Drama
    Yil: 26 Mar 2021
-44. Mad Max 2015 [Puan: 8.1] [Durum: Izlendi] 
-45. The Equalizer 2 [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt3766354)
+46. Mad Max 2015 [Puan: 8.1] [Durum: Izlendi] 
+47. The Equalizer 2 [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt3766354)
    Tur: Action, Crime, Mystery
    Yil: 20 Jul 2018
-46. Kaptan Philips [Puan: 7.8] [Durum: Izlendi] 
-47. Uykucu [Puan: 5] [Durum: Izlendi] (IMDb: tt37536947)
+48. Kaptan Philips [Puan: 7.8] [Durum: Izlendi] 
+49. Uykucu [Puan: 5] [Durum: Izlendi] (IMDb: tt37536947)
    Tur: Action
-48. Caddo Lake [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt15552142)
+50. Caddo Lake [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt15552142)
    Tur: Drama, Mystery, Sci-Fi
    Yil: 10 Oct 2024
-49. The Story of My Wife [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt8205028)
+51. The Story of My Wife [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt8205028)
    Tur: Drama, Romance
    Yil: 23 Sep 2021
-50. Project Hail Mary [Puan: 8.2] [Durum: Izlendi] (IMDb: tt12042730)
+52. Project Hail Mary [Puan: 8.2] [Durum: Izlendi] (IMDb: tt12042730)
    Tur: Adventure, Comedy, Drama
    Yil: 20 Mar 2026
-51. Papillon [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt5093026)
+53. The Invisible Guest [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt4857264)
+   Tur: Crime, Drama, Mystery
+   Yil: 06 Jan 2017
+54. Papillon [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt5093026)
    Tur: Adventure, Biography, Crime
    Yil: 24 Aug 2018
-52. The Peanut Butter Falcon [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt4364194)
+55. The Peanut Butter Falcon [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt4364194)
    Tur: Adventure, Comedy, Drama
    Yil: 23 Aug 2019
-53. Fall [Puan: 6.4] [Durum: Izlendi] (IMDb: tt15325794)
+56. Fall [Puan: 6.4] [Durum: Izlendi] (IMDb: tt15325794)
    Tur: Action, Comedy, Drama
    Yil: 12 Aug 2022
-54. Jurassic World: Rebirth [Puan: 5.9] [Durum: Izlendi] (IMDb: tt31036941)
+57. Jurassic World: Rebirth [Puan: 5.9] [Durum: Izlendi] (IMDb: tt31036941)
    Tur: Action, Adventure, Sci-Fi
    Yil: 02 Jul 2025
-55. This Is Where I Leave You [Puan: 6.6] [Durum: Izlenecek] (IMDb: tt1371150)
+58. This Is Where I Leave You [Puan: 6.6] [Durum: Izlenecek] (IMDb: tt1371150)
    Tur: Comedy, Drama
    Yil: 19 Sep 2014
-56. Pride & Prejudice [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt0414387)
+59. Pride & Prejudice [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt0414387)
    Tur: Drama, Romance
    Yil: 23 Nov 2005
-57. Başka bir sen [Puan: 6] [Durum: Izlendi] (IMDb: tt35948720)
-58. The Punisher: One Last Kill [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt36042156)
+60. Başka bir sen [Puan: 6] [Durum: Izlendi] (IMDb: tt35948720)
+61. The Punisher: One Last Kill [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt36042156)
    Tur: Action, Adventure, Crime
    Yil: 12 May 2026
-59. Black Widow [Puan: 6.7] [Durum: Izlendi] (IMDb: tt3480822)
+62. Black Widow [Puan: 6.7] [Durum: Izlendi] (IMDb: tt3480822)
    Tur: Action, Adventure, Sci-Fi
    Yil: 09 Jul 2021
-60. Bird [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt28277817)
+63. Bird [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt28277817)
    Tur: Drama
    Yil: 23 Dec 2024
-61. Hain [Puan: 6] [Durum: Izlenecek] (IMDb: tt34910062)
+64. Hain [Puan: 6] [Durum: Izlenecek] (IMDb: tt34910062)
    Tur: Comedy, Drama, Musical
    Yil: 13 Dec 2024
-62. Obsession [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt37287335)
+65. Obsession [Puan: 8.2] [Durum: Izlendi] (IMDb: tt37287335)
    Tur: Horror, Thriller
    Yil: 2026-05-13
-63. No Time to Die [Puan: 7.3] [Durum: Izlendi] (IMDb: tt2382320)
+66. No Time to Die [Puan: 7.3] [Durum: Izlendi] (IMDb: tt2382320)
    Tur: Action, Adventure, Thriller
    Yil: 08 Oct 2021
-64. Shelter [Puan: 6.4] [Durum: Izlendi] (IMDb: tt32357218)
+67. Shelter [Puan: 6.4] [Durum: Izlendi] (IMDb: tt32357218)
    Tur: Action, Thriller
    Yil: 30 Jan 2026
-65. Perfect Sense [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt1439572)
+68. Perfect Sense [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt1439572)
    Tur: Drama, Romance, Sci-Fi
    Yil: 07 Oct 2011
-66. No Country for Old Men [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt0477348)
+69. No Country for Old Men [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt0477348)
    Tur: Crime, Drama, Thriller
    Yil: 21 Nov 2007
-67. The Prestige [Puan: 9.3] [Durum: Izlendi] (IMDb: tt0482571)
+70. The Prestige [Puan: 9.3] [Durum: Izlendi] (IMDb: tt0482571)
    Tur: Drama, Mystery, Sci-Fi
    Yil: 20 Oct 2006
-68. Companion [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt26584495)
+71. Companion [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt26584495)
    Tur: Sci-Fi, Thriller
    Yil: 31 Jan 2025
-69. The gorge [Puan: 6] [Durum: Izlendi] (IMDb: tt13654226)
+72. The gorge [Puan: 6] [Durum: Izlendi] (IMDb: tt13654226)
    Tur: Action, Adventure, Horror
    Yil: 14 Feb 2025
-70. What Happened to Monday [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt1536537)
+73. What Happened to Monday [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt1536537)
    Tur: Action, Crime, Fantasy
    Yil: 18 Aug 2017
-71. Deadpool & Wolverine [Puan: 8] [Durum: Izlendi] (IMDb: tt6263850)
+74. Deadpool & Wolverine [Puan: 8] [Durum: Izlendi] (IMDb: tt6263850)
    Tur: Action, Adventure, Comedy
    Yil: 26 Jul 2024
-72. The Electric State [Puan: 5.9] [Durum: Izlenecek] (IMDb: tt7766378)
+75. The Electric State [Puan: 5.9] [Durum: Izlenecek] (IMDb: tt7766378)
    Tur: Action, Adventure, Comedy
    Yil: 14 Mar 2025
-73. Blood Diamond [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt0450259)
+76. Blood Diamond [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt0450259)
    Tur: Adventure, Drama, Thriller
    Yil: 08 Dec 2006
-74. Top Gun Maverick [Puan: 8.3] [Durum: Izlendi] (IMDb: tt1745960)
+77. Top Gun Maverick [Puan: 8.3] [Durum: Izlendi] (IMDb: tt1745960)
    Tur: Action, Drama
    Yil: 27 May 2022
-75. Bak Postaci Geliyor [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt38782233)
+78. Bak Postaci Geliyor [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt38782233)
    Tur: Drama, Romance
    Yil: 12 Dec 2025
-76. Road House [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt3359350)
+79. Road House [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt3359350)
    Tur: Action, Drama, Thriller
    Yil: 21 Mar 2024
-77. Minions & Monsters [Puan: 6.6] [Durum: Izlenecek] (IMDb: tt32890033)
+80. Minions & Monsters [Puan: 6.6] [Durum: Izlenecek] (IMDb: tt32890033)
    Tur: Animation, Adventure, Comedy
    Yil: 01 Jul 2026
-78. Society of the Snow [Puan: 7.8] [Durum: Izlendi] (IMDb: tt16277242)
+81. Lone Survivor [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt1091191)
+   Tur: Action, Biography, Drama
+   Yil: 10 Jan 2014
+82. Society of the Snow [Puan: 7.8] [Durum: Izlendi] (IMDb: tt16277242)
    Tur: Adventure, Biography, Drama
    Yil: 04 Jan 2024
-79. We Bought a Zoo [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt1389137)
+83. We Bought a Zoo [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt1389137)
    Tur: Comedy, Drama, Family
    Yil: 23 Dec 2011
-80. 28 Years Later: The Bone Temple [Puan: 7.6] [Durum: Izlendi] (IMDb: tt32141377)
+84. 28 Years Later: The Bone Temple [Puan: 7.6] [Durum: Izlendi] (IMDb: tt32141377)
    Tur: Horror, Sci-Fi, Thriller
    Yil: 16 Jan 2026
-81. The Ballad of Buster Scruggs [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt6412452)
+85. The Ballad of Buster Scruggs [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt6412452)
    Tur: Comedy, Drama, Musical
    Yil: 09 Nov 2018
-82. The Assistant [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt9000224)
+86. The Assistant [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt9000224)
    Tur: Action, Adventure, Fantasy
    Yil: 31 Jan 2020
-83. The Covenant [Puan: 7.5] [Durum: Izlendi] (IMDb: tt4873118)
+87. The Covenant [Puan: 7.5] [Durum: Izlendi] (IMDb: tt4873118)
    Tur: Action, Drama, Thriller
    Yil: 21 Apr 2023
-84. A Million Ways to Die in the West [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt2557490)
+88. A Million Ways to Die in the West [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt2557490)
    Tur: Comedy, Western
    Yil: 30 May 2014
-85. Eternal Sunshine of the Spotless Mind [Puan: 8.3] [Durum: Izlendi] (IMDb: tt0338013)
+89. Eternal Sunshine of the Spotless Mind [Puan: 8.3] [Durum: Izlendi] (IMDb: tt0338013)
    Tur: Drama, Romance, Sci-Fi
    Yil: 19 Mar 2004
-86. Anna [Puan: 6.7] [Durum: Izlendi] (IMDb: tt7456310)
+90. Anna [Puan: 6.7] [Durum: Izlendi] (IMDb: tt7456310)
    Tur: Drama, Romance
    Yil: 21 Jun 2019
-87. Men [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt13841850)
+91. Men [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt13841850)
    Tur: Crime, Drama, Thriller
    Yil: 20 May 2022
-88. D.I.S.C.O. [Puan: 7.2] [Durum: Izlendi] (IMDb: tt39105882)
+92. D.I.S.C.O. [Puan: 7.2] [Durum: Izlendi] (IMDb: tt39105882)
    Tur: Action, Comedy
    Yil: 01 Jan 2026
-89. A Man Called Otto [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt7405458)
+93. A Man Called Otto [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt7405458)
    Tur: Comedy, Drama
    Yil: 13 Jan 2023
-90. news world  [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt13240320)
+94. news world  [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt13240320)
    Tur: Action, Adventure, Drama
    Yil: 23 Feb 2012
-91. Million Dollar Baby [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt0405159)
+95. Million Dollar Baby [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt0405159)
    Tur: Drama, Sport
    Yil: 28 Jan 2005
-92. Eternity [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt24950660)
+96. Eternity [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt24950660)
    Tur: Comedy, Drama, Fantasy
    Yil: 26 Nov 2025
-93. Love & Other Drugs [Puan: 6.7] [Durum: Izlendi] (IMDb: tt0758752)
+97. Love & Other Drugs [Puan: 6.7] [Durum: Izlendi] (IMDb: tt0758752)
    Tur: Comedy, Drama, Romance
    Yil: 24 Nov 2010
-94. Finch [Puan: 6.9] [Durum: Izlendi] (IMDb: tt3420504)
+98. Finch [Puan: 6.9] [Durum: Izlendi] (IMDb: tt3420504)
    Tur: Adventure, Drama, Sci-Fi
    Yil: 05 Nov 2021
-95. Mayday [Puan: 7.9] [Durum: Izlendi] (IMDb: tt28014327)
+99. Mayday [Puan: 7.9] [Durum: Izlendi] (IMDb: tt28014327)
    Tur: Action, Comedy
    Yil: 2026-09-03
-96. I Swear [Puan: 8.4] [Durum: Izlendi] (IMDb: tt31514146)
+100. I Swear [Puan: 8.4] [Durum: Izlendi] (IMDb: tt31514146)
    Tur: Biography, Drama
    Yil: 24 Apr 2026
-97. Sinners [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt31193180)
+101. Sinners [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt31193180)
    Tur: Action, Drama, Horror
    Yil: 18 Apr 2025
-98. Nightcrawler [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt2872718)
+102. Nightcrawler [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt2872718)
    Tur: Crime, Drama, Thriller
    Yil: 31 Oct 2014
-99. 13 Going on 30 [Puan: 6.3] [Durum: Izlenecek] (IMDb: tt0337563)
+103. 13 Going on 30 [Puan: 6.3] [Durum: Izlenecek] (IMDb: tt0337563)
    Tur: Comedy, Fantasy, Romance
    Yil: 23 Apr 2004
-100. Kul [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt26447242)
+104. Kul [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt26447242)
    Tur: Drama
    Yil: 15 May 2021
-101. Frankenstein [Puan: 7.5] [Durum: Izlendi] (IMDb: tt1312221)
+105. Frankenstein [Puan: 7.5] [Durum: Izlendi] (IMDb: tt1312221)
    Tur: Comedy
    Yil: 07 Nov 2025
-102. The Dark Knight Rises [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt1345836)
+106. The Dark Knight Rises [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt1345836)
    Tur: Action, Crime, Drama
    Yil: 20 Jul 2012
-103. Reality [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt24068064)
+107. Reality [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt24068064)
    Tur: Comedy
    Yil: 29 May 2023
-104. The Father [Puan: 8.2] [Durum: Izlendi] (IMDb: tt10272386)
+108. The Father [Puan: 8.2] [Durum: Izlendi] (IMDb: tt10272386)
    Tur: Drama, Mystery
    Yil: 26 Feb 2021
-105. Babam ve Oğlum [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt0476735)
+109. Babam ve Oğlum [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt0476735)
    Tur: Dram
    Yil: 2005-11-18
-106. The Perfect Storm [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt0177971)
+110. The Perfect Storm [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt0177971)
    Tur: Action, Adventure, Drama
    Yil: 30 Jun 2000
-107. It Ends [Puan: 4.4] [Durum: Izlendi] (IMDb: tt35519455)
+111. It Ends [Puan: 4.4] [Durum: Izlendi] (IMDb: tt35519455)
    Tur: Comedy, Horror, Thriller
    Yil: 07 Mar 2025
-108. Twisters [Puan: 6] [Durum: Izlenecek] (IMDb: tt12584954)
+112. Twisters [Puan: 6] [Durum: Izlenecek] (IMDb: tt12584954)
    Tur: Action, Adventure, Thriller
    Yil: 19 Jul 2024
-109. Teamül [Puan: 5.3] [Durum: Izlenecek] (IMDb: tt33090286)
+113. Teamül [Puan: 5.3] [Durum: Izlenecek] (IMDb: tt33090286)
    Tur: Short
    Yil: 19 Sep 2023
-110. The End of Oak Street [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt27165187)
+114. The End of Oak Street [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt27165187)
    Tur: Science Fiction, Mystery, Thriller
    Yil: 2026-08-12
-111. Warfare [Puan: 5.1] [Durum: Izlendi] (IMDb: tt31434639)
+115. Warfare [Puan: 5.1] [Durum: Izlendi] (IMDb: tt31434639)
    Tur: Action, Drama, War
    Yil: 11 Apr 2025
-112. Hakkı [Puan: 6] [Durum: Izlendi] (IMDb: tt30810790)
+116. Hakkı [Puan: 6] [Durum: Izlendi] (IMDb: tt30810790)
    Tur: Drama
    Yil: 06 Apr 2024
-113. It Was Just an Accident [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt36491653)
+117. It Was Just an Accident [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt36491653)
    Tur: Documentary
-114. Mr mrs smith [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt0356910)
+118. Mr mrs smith [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt0356910)
    Tur: Action, Comedy, Crime
    Yil: 10 Jun 2005
-115. Umudunu Kaybetme [Puan: 8] [Durum: Izlendi] (IMDb: tt0454921)
-116. Leave No Trace [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt3892172)
+119. Umudunu Kaybetme [Puan: 8] [Durum: Izlendi] (IMDb: tt0454921)
+120. Leave No Trace [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt3892172)
    Tur: Adventure, Drama
    Yil: 29 Jun 2018
-117. The Florida Project [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt5649144)
+121. The Florida Project [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt5649144)
    Tur: Drama
    Yil: 10 Nov 2017
-118. Sisu: Road to Revenge [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt31844586)
+122. Sisu: Road to Revenge [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt31844586)
    Tur: Action, War
    Yil: 21 Nov 2025
-119. 28 Years Later [Puan: 7.9] [Durum: Izlendi] (IMDb: tt10548174)
+123. 28 Years Later [Puan: 7.9] [Durum: Izlendi] (IMDb: tt10548174)
    Tur: Horror, Sci-Fi, Thriller
    Yil: 20 Jun 2025
-120. Kalender Pide [Puan: 4.5] [Durum: Izlendi] (IMDb: tt35825882)
+124. Kalender Pide [Puan: 4.5] [Durum: Izlendi] (IMDb: tt35825882)
    Tur: Komedi
    Yil: 2025-05-02
-121. Canavarın Çağrısı [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt3416532)
-122. Troll [Puan: 3] [Durum: Izlendi] (IMDb: tt11116912)
+125. Canavarın Çağrısı [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt3416532)
+126. Troll [Puan: 3] [Durum: Izlendi] (IMDb: tt11116912)
    Tur: Action, Adventure, Drama
    Yil: 01 Dec 2022
-123. Caught by the Tides [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt27958252)
+127. Caught by the Tides [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt27958252)
    Tur: Drama
    Yil: 22 Nov 2024
-124. The Art of Racing in the Rain [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt1478839)
+128. The Art of Racing in the Rain [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt1478839)
    Tur: Comedy, Drama, Romance
    Yil: 09 Aug 2019
-125. Inglorious Basterds [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt3563338)
+129. Inglorious Basterds [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt3563338)
    Tur: Short, War
    Yil: 15 Dec 2009
-126. 28 Days Later [Puan: 8] [Durum: Izlenecek] (IMDb: tt0289043)
+130. 28 Days Later [Puan: 8] [Durum: Izlenecek] (IMDb: tt0289043)
    Tur: Drama, Horror, Sci-Fi
    Yil: 27 Jun 2003
-127. Into the Wild [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt0758758)
+131. Into the Wild [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt0758758)
    Tur: Adventure, Biography, Drama
    Yil: 19 Oct 2007
-128. The Substance [Puan: 6.8] [Durum: Izlendi] (IMDb: tt17526714)
+132. The Substance [Puan: 6.8] [Durum: Izlendi] (IMDb: tt17526714)
    Tur: Drama, Horror, Sci-Fi
    Yil: 20 Sep 2024
-129. Kneecap [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt27367464)
+133. Kneecap [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt27367464)
    Tur: Comedy, Drama, Music
    Yil: 02 Aug 2024
-130. Snatch [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt0208092)
+134. Snatch [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt0208092)
    Tur: Comedy, Crime
    Yil: 19 Jan 2001
-131. Damsel [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt13452446)
+135. Damsel [Puan: 6.1] [Durum: Izlenecek] (IMDb: tt13452446)
    Tur: Action, Adventure, Fantasy
    Yil: 08 Mar 2024
-132. Dunkirk [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt5013056)
+136. Dunkirk [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt5013056)
    Tur: Action, Drama, History
    Yil: 21 Jul 2017
-133. Yan Yana [Puan: 8.0] [Durum: Izlendi] (IMDb: tt37529347)
+137. Yan Yana [Puan: 8.0] [Durum: Izlendi] (IMDb: tt37529347)
    Tur: Drama
    Yil: 14 Nov 2025
-134. No Other Choice [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt1527793)
+138. No Other Choice [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt1527793)
    Tur: Comedy, Crime, Drama
-135. Inferno [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt3062096)
+139. Inferno [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt3062096)
    Tur: Action, Adventure, Crime
    Yil: 28 Oct 2016
-136. Eden [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt23149780)
+140. Eden [Puan: 6.5] [Durum: Izlendi] (IMDb: tt23149780)
    Tur: Adventure, Drama, History
    Yil: 22 Aug 2025
-137. Heart of the Beast [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt7526136)
+141. Heart of the Beast [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt7526136)
    Tur: Adventure, Thriller, Drama
    Yil: 2026-09-19
-138. Triangle of Sadness [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt7322224)
+142. Triangle of Sadness [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt7322224)
    Tur: Comedy, Drama
    Yil: 18 Sep 2022
-139. Dungeons and Dragons [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0305797)
+143. Dungeons and Dragons [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0305797)
    Tur: Documentary
-140. Predator: Badlands [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt31227572)
+144. Predator: Badlands [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt31227572)
    Tur: Action, Adventure, Sci-Fi
    Yil: 07 Nov 2025
-141. LaRoy [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt20102596)
+145. LaRoy [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt20102596)
    Tur: Comedy, Crime, Thriller
    Yil: 12 Apr 2024
-142. Exterritorial [Puan: 5.8] [Durum: Izlendi] (IMDb: tt30876483)
+146. Exterritorial [Puan: 5.8] [Durum: Izlendi] (IMDb: tt30876483)
    Tur: Action, Mystery, Thriller
    Yil: 30 Apr 2025
-143. Her [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt1798709)
+147. Her [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt1798709)
    Tur: Drama, Romance, Sci-Fi
    Yil: 10 Jan 2014
-144. Gladyatör ll [Puan: 7.9] [Durum: Izlendi] 
-145. Mickey 17 [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt12299608)
+148. Gladyatör ll [Puan: 7.9] [Durum: Izlendi] 
+149. Mickey 17 [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt12299608)
    Tur: Adventure, Comedy, Fantasy
    Yil: 07 Mar 2025
-146. The Power of the Dog [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt10293406)
+150. The Power of the Dog [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt10293406)
    Tur: Drama, Western
    Yil: 01 Dec 2021
-147. Zodiac [Puan: 7.7] [Durum: Izlendi] (IMDb: tt0443706)
+151. Zodiac [Puan: 7.7] [Durum: Izlendi] (IMDb: tt0443706)
    Tur: Crime, Drama, Mystery
    Yil: 02 Mar 2007
-148. We Live In Time [Puan: 7] [Durum: Izlenecek] (IMDb: tt27131358)
+152. We Live In Time [Puan: 7] [Durum: Izlenecek] (IMDb: tt27131358)
    Tur: Drama, Romance
    Yil: 18 Oct 2024
-149. Splenhead [Puan: 7] [Durum: Izlenecek] 
-150. Motor City [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt2012616)
+153. Splenhead [Puan: 7] [Durum: Izlenecek] 
+154. Motor City [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt2012616)
    Tur: Action, Thriller, Crime
    Yil: 2026-07-23
-151. Batman Begins [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt0372784)
+155. Apex [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt16431404)
+   Tur: Action, Thriller
+   Yil: 2026-04-24
+156. Batman Begins [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt0372784)
    Tur: Action, Crime, Drama
    Yil: 15 Jun 2005
-152. The Killer [Puan: 7.2] [Durum: Izlendi] (IMDb: tt1136617)
+157. The Killer [Puan: 7.2] [Durum: Izlendi] (IMDb: tt1136617)
    Tur: Action, Adventure, Crime
    Yil: 10 Nov 2023
-153. Dune [Puan: 8] [Durum: Izlendi] (IMDb: tt0087182)
+158. Dune [Puan: 8] [Durum: Izlendi] (IMDb: tt0087182)
    Tur: Action, Adventure, Drama
    Yil: 14 Dec 1984
-154. Split [Puan: 7.3] [Durum: Izlendi] (IMDb: tt4972582)
+159. Split [Puan: 7.3] [Durum: Izlendi] (IMDb: tt4972582)
    Tur: Horror, Thriller
    Yil: 20 Jan 2017
-155. Looper [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt1276104)
+160. Looper [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt1276104)
    Tur: Action, Drama, Sci-Fi
    Yil: 28 Sep 2012
-156. The Roses [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt31973693)
+161. The Roses [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt31973693)
    Tur: Comedy
    Yil: 29 Aug 2025
-157. Superman [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt5950044)
+162. Superman [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt5950044)
    Tur: Action, Adventure, Sci-Fi
    Yil: 11 Jul 2025
-158. The Boy, the Mole, the Fox and the Horse [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt22667880)
+163. The Boy, the Mole, the Fox and the Horse [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt22667880)
    Tur: Animation, Short, Adventure
    Yil: 25 Dec 2022
-159. The Italian Job [Puan: 7] [Durum: Izlenecek] (IMDb: tt0317740)
+164. The Italian Job [Puan: 7] [Durum: Izlenecek] (IMDb: tt0317740)
    Tur: Action, Crime, Thriller
    Yil: 30 May 2003
-160. The Score [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt0227445)
+165. The Score [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt0227445)
    Tur: Crime, Drama, Thriller
    Yil: 13 Jul 2001
-161. Mosul [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt9252468)
+166. Mosul [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt9252468)
    Tur: Action, Drama, Thriller
    Yil: 26 Nov 2020
-162. Safe [Puan: 6.5] [Durum: Izlendi] (IMDb: tt1656190)
+167. Safe [Puan: 6.5] [Durum: Izlendi] (IMDb: tt1656190)
    Tur: Action, Crime, Thriller
    Yil: 27 Apr 2012
-163. Tom Clancy's Jack Ryan: Ghost War [Puan: 0] [Durum: Izlenecek] (IMDb: tt34378301)
+168. Tom Clancy's Jack Ryan: Ghost War [Puan: 0] [Durum: Izlenecek] (IMDb: tt34378301)
    Tur: Action, Drama, Thriller
    Yil: 20 May 2026
-164. Joker [Puan: 8.3] [Durum: Izlendi] (IMDb: tt7286456)
+169. Joker [Puan: 8.3] [Durum: Izlendi] (IMDb: tt7286456)
    Tur: Crime, Drama, Thriller
    Yil: 04 Oct 2019
-165. Coda [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt10366460)
+170. 2073 [Puan: 5.1] [Durum: Izlendi] (IMDb: tt22042346)
+   Tur: Documentary, Sci-Fi, Thriller
+   Yil: 27 Dec 2024
+171. Coda [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt10366460)
    Tur: Comedy, Drama, Music
    Yil: 13 Aug 2021
-166. The Intouchables [Puan: 8.5] [Durum: Izlendi] (IMDb: tt1675434)
+172. The Intouchables [Puan: 8.5] [Durum: Izlendi] (IMDb: tt1675434)
    Tur: Comedy, Drama
    Yil: 02 Nov 2011
-167. Anatomy of a Fall [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt17009710)
+173. Anatomy of a Fall [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt17009710)
    Tur: Crime, Drama, Mystery
    Yil: 22 Mar 2024
-168. Tetris [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt12758060)
+174. Tetris [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt12758060)
    Tur: Biography, Drama, History
    Yil: 31 Mar 2023
-169. Sharp Corner [Puan: 5.9] [Durum: Izlenecek] (IMDb: tt9569096)
+175. Sharp Corner [Puan: 5.9] [Durum: Izlenecek] (IMDb: tt9569096)
    Tur: Thriller
    Yil: 09 May 2025
-170. Troll 2 [Puan: 1.7] [Durum: Izlendi] (IMDb: tt29232158)
+176. Troll 2 [Puan: 1.7] [Durum: Izlendi] (IMDb: tt29232158)
    Tur: Action, Adventure, Drama
    Yil: 01 Dec 2025
-171. Spider-Man: Brand New Day [Puan: 7.9] [Durum: Izlendi] (IMDb: tt22084616)
+177. Spider-Man: Brand New Day [Puan: 7.9] [Durum: Izlendi] (IMDb: tt22084616)
    Tur: Science Fiction, Action, Adventure
    Yil: 2026-07-29
-172. Novocaine [Puan: 6.5] [Durum: Izlendi] (IMDb: tt29603959)
+178. Novocaine [Puan: 6.5] [Durum: Izlendi] (IMDb: tt29603959)
    Tur: Action, Comedy, Crime
    Yil: 14 Mar 2025
-173. Ay dede [Puan: 6.5] [Durum: Izlenecek] 
-174. Escape Plan [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt1211956)
+179. Ay dede [Puan: 6.5] [Durum: Izlenecek] 
+180. Escape Plan [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt1211956)
    Tur: Action, Thriller
    Yil: 18 Oct 2013
-175. The Year Earth Changed [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt14372240)
+181. The Year Earth Changed [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt14372240)
    Tur: Documentary
    Yil: 16 Apr 2021
-176. Ordinary Angels [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt4996328)
+182. Ordinary Angels [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt4996328)
    Tur: Biography, Drama
    Yil: 23 Feb 2024
-177. Maymunlar Cehennemi: Yeni Krallık [Puan: 7.1] [Durum: Izlendi] (IMDb: tt11389872)
-178. T34 [Puan: 7] [Durum: Izlenecek] (IMDb: tt8820590)
-179. Memento [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt0209144)
+183. Maymunlar Cehennemi: Yeni Krallık [Puan: 7.1] [Durum: Izlendi] (IMDb: tt11389872)
+184. T34 [Puan: 7] [Durum: Izlenecek] (IMDb: tt8820590)
+185. Memento [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt0209144)
    Tur: Drama, Mystery, Thriller
    Yil: 25 May 2001
-180. Challengers [Puan: 7.3] [Durum: Izlenecek] (IMDb: tt16426418)
+186. Challengers [Puan: 7.3] [Durum: Izlenecek] (IMDb: tt16426418)
    Tur: Comedy, Drama, Romance
    Yil: 26 Apr 2024
-181. The Vow [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt1606389)
+187. The Vow [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt1606389)
    Tur: Drama, Romance
    Yil: 10 Feb 2012
-182. Capernaum [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt8267604)
+188. Capernaum [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt8267604)
    Tur: Drama
    Yil: 20 Sep 2018
-183. Oppenheimer [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt15398776)
+189. Oppenheimer [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt15398776)
    Tur: Biography, Drama, History
    Yil: 21 Jul 2023
-184. Sisu [Puan: 6.9] [Durum: Izlendi] (IMDb: tt14846026)
+190. Sisu [Puan: 6.9] [Durum: Izlendi] (IMDb: tt14846026)
    Tur: Action, Drama, Thriller
    Yil: 28 Apr 2023
-185. Hacksaw Ridge [Puan: 8.1] [Durum: Izlendi] (IMDb: tt2119532)
+191. Hacksaw Ridge [Puan: 8.1] [Durum: Izlendi] (IMDb: tt2119532)
    Tur: Biography, Drama, History
    Yil: 04 Nov 2016
-186. Avatar: The Way of Water [Puan: 7.5] [Durum: Izlendi] (IMDb: tt1630029)
+192. Avatar: The Way of Water [Puan: 7.5] [Durum: Izlendi] (IMDb: tt1630029)
    Tur: Action, Adventure, Fantasy
    Yil: 16 Dec 2022
-187. Welcome to Marwen [Puan: 6] [Durum: Izlenecek] (IMDb: tt3289724)
+193. Welcome to Marwen [Puan: 6] [Durum: Izlenecek] (IMDb: tt3289724)
    Tur: Biography, Comedy, Drama
    Yil: 21 Dec 2018
-188. Prisoners [Puan: 8.1] [Durum: Izlendi] (IMDb: tt1392214)
+194. Prisoners [Puan: 8.1] [Durum: Izlendi] (IMDb: tt1392214)
    Tur: Crime, Drama, Mystery
    Yil: 20 Sep 2013
-189. Mad Max Furiosa [Puan: 7.5] [Durum: Izlendi] (IMDb: tt12037194)
+195. Mad Max Furiosa [Puan: 7.5] [Durum: Izlendi] (IMDb: tt12037194)
    Tur: Action, Adventure, Sci-Fi
-190. Good Boy [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt35521922)
+196. Good Boy [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt35521922)
    Tur: Horror, Thriller
    Yil: 08 Sep 2023
-191. Marty Supreme [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt32916440)
+197. Marty Supreme [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt32916440)
    Tur: Comedy
    Yil: 23 Jan 2026
-192. Shotgun Wedding [Puan: 5.5] [Durum: Izlenecek] (IMDb: tt9686790)
+198. Shotgun Wedding [Puan: 5.5] [Durum: Izlenecek] (IMDb: tt9686790)
    Tur: Action, Comedy, Romance
    Yil: 27 Jan 2023
-193. Triple Frontier [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt1488606)
+199. Triple Frontier [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt1488606)
    Tur: Action, Adventure, Thriller
    Yil: 13 Mar 2019
-194. Flood [Puan: 4.8] [Durum: Izlenecek] (IMDb: tt0790665)
+200. Forgotten [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt7057496)
+   Tur: Crime, Mystery, Thriller
+   Yil: 21 Feb 2018
+201. Flood [Puan: 4.8] [Durum: Izlenecek] (IMDb: tt0790665)
    Tur: Action, Drama, Thriller
    Yil: 24 Aug 2007
-195. Kesisme: Iyi Ki Varsin Eren [Puan: 7.3] [Durum: Izlendi] (IMDb: tt13761148)
+202. Kesisme: Iyi Ki Varsin Eren [Puan: 7.3] [Durum: Izlendi] (IMDb: tt13761148)
    Tur: Action, Biography, Drama
    Yil: 01 Jan 2022
-196. Idiocracy [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt0387808)
+203. Idiocracy [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt0387808)
    Tur: Adventure, Comedy, Sci-Fi
    Yil: 25 Jan 2007
-197. Hamnet [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt14905854)
+204. Hamnet [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt14905854)
    Tur: Biography, Drama, History
    Yil: 05 Dec 2025
-198. The Fast and the Furious [Puan: 6.9] [Durum: Izlendi] (IMDb: tt0232500)
+205. The Fast and the Furious [Puan: 6.9] [Durum: Izlendi] (IMDb: tt0232500)
    Tur: Action, Crime, Thriller
    Yil: 22 Jun 2001
-199. The Courier [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt8368512)
+206. The Courier [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt8368512)
    Tur: Drama, History, Mystery
    Yil: 19 Mar 2021
-200. The Great Flood [Puan: 0.5] [Durum: Izlendi] (IMDb: tt29927663)
+207. The Great Flood [Puan: 0.5] [Durum: Izlendi] (IMDb: tt29927663)
    Tur: Action, Adventure, Drama
    Yil: 19 Dec 2025
-201. Resident Evil [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt35538033)
+208. Resident Evil [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt35538033)
    Tur: Horror, Thriller, Science Fiction
    Yil: 2026-09-16
-202. Mary and Max [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt0978762)
+209. Mary and Max [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt0978762)
    Tur: Animation, Comedy, Drama
    Yil: 09 Apr 2009
-203. Kuru Otlar Üstüne [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt13231544)
+210. Kuru Otlar Üstüne [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt13231544)
    Tur: Dram
    Yil: 2023-07-12
-204. The Creator [Puan: 6.7] [Durum: Izlendi] (IMDb: tt11858890)
+211. The Creator [Puan: 6.7] [Durum: Izlendi] (IMDb: tt11858890)
    Tur: Action, Adventure, Drama
    Yil: 29 Sep 2023
-205. Hemmin'in Olduğu Günlerden Biri [Puan: 6] [Durum: Izlenecek] 
-206. Aftersun [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt19770238)
+212. Hemmin'in Olduğu Günlerden Biri [Puan: 6] [Durum: Izlenecek] 
+213. Aftersun [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt19770238)
    Tur: Drama
    Yil: 18 Nov 2022
-207. Under the Silver Lake [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt5691670)
+214. Under the Silver Lake [Puan: 6.5] [Durum: Izlenecek] (IMDb: tt5691670)
    Tur: Crime, Horror, Mystery
    Yil: 19 Apr 2019
-208. Babel [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0449467)
+215. Babel [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0449467)
    Tur: Drama
    Yil: 10 Nov 2006
-209. 14 Peaks: Nothing Is Impossible [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt14079374)
+216. 14 Peaks: Nothing Is Impossible [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt14079374)
    Tur: Documentary, Adventure, Sport
    Yil: 29 Nov 2021
-210. A Big Bold Beautiful Journey [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt13650700)
+217. A Big Bold Beautiful Journey [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt13650700)
    Tur: Drama, Fantasy, Romance
    Yil: 19 Sep 2025
-211. The Lighthouse [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt7984734)
+218. The Lighthouse [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt7984734)
    Tur: Drama, Fantasy, Horror
    Yil: 01 Nov 2019
-212. Civil War [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt17279496)
+219. Civil War [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt17279496)
    Tur: Action, Sci-Fi
    Yil: 12 Apr 2024
-213. Hayat [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt20258974)
+220. Hayat [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt20258974)
    Tur: Dram
    Yil: 2023-12-15
-214. The Amateur [Puan: 6.5] [Durum: Izlendi] (IMDb: tt0899043)
+221. The Amateur [Puan: 6.5] [Durum: Izlendi] (IMDb: tt0899043)
    Tur: Action, Thriller
    Yil: 11 Apr 2025
-215. The Leisure Seeker [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt3741632)
+222. E sepera [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt1832382)
+223. The Leisure Seeker [Puan: 6.7] [Durum: Izlenecek] (IMDb: tt3741632)
    Tur: Adventure, Comedy, Drama
    Yil: 03 Jan 2018
-216. Mutiny [Puan: 6.4] [Durum: Izlendi] (IMDb: tt32338669)
+224. Mutiny [Puan: 6.4] [Durum: Izlendi] (IMDb: tt32338669)
    Tur: Action, Thriller
    Yil: 2026-08-19
-217. Nefes yer eksi 2 [Puan: 6] [Durum: Izlendi] 
-218. Last Night in Soho [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt9639470)
+225. Nefes yer eksi 2 [Puan: 6] [Durum: Izlendi] 
+226. Last Night in Soho [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt9639470)
    Tur: Drama, Horror, Mystery
    Yil: 29 Oct 2021
-219. Sorry, Baby [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt32843349)
+227. Sorry, Baby [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt32843349)
    Tur: Comedy, Drama
    Yil: 25 Jul 2025
-220. Amundsen [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt6054846)
+228. Amundsen [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt6054846)
    Tur: Adventure, Biography, Drama
    Yil: 02 Apr 2021
-221. Lamborghini: The Man Behind the Legend [Puan: 5.5] [Durum: Izlenecek] (IMDb: tt5533370)
+229. Lamborghini: The Man Behind the Legend [Puan: 5.5] [Durum: Izlenecek] (IMDb: tt5533370)
    Tur: Biography, Drama, Sport
    Yil: 18 Nov 2022
-222. The Whisper Man [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt11561116)
+230. The Whisper Man [Puan: 6.8] [Durum: Izlenecek] (IMDb: tt11561116)
    Tur: Crime, Drama, Thriller
    Yil: 2026-08-27
-223. Nobody 2 [Puan: 6.3] [Durum: Izlendi] (IMDb: tt28996126)
+231. Nobody 2 [Puan: 6.3] [Durum: Izlendi] (IMDb: tt28996126)
    Tur: Action, Comedy, Crime
    Yil: 15 Aug 2025
-224. Aşık Güzel [Puan: 7.2] [Durum: Izlenecek] 
-225. Enemy at the Gates [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0215750)
+232. Aşık Güzel [Puan: 7.2] [Durum: Izlenecek] 
+233. Enemy at the Gates [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt0215750)
    Tur: Action, Drama, War
    Yil: 16 Mar 2001
-226. Requiem for a Dream [Puan: 8.3] [Durum: Izlendi] (IMDb: tt0180093)
+234. Requiem for a Dream [Puan: 8.3] [Durum: Izlendi] (IMDb: tt0180093)
    Tur: Drama
    Yil: 15 Dec 2000
-227. The War with Grandpa [Puan: 5.7] [Durum: Izlenecek] (IMDb: tt4532038)
+235. The War with Grandpa [Puan: 5.7] [Durum: Izlenecek] (IMDb: tt4532038)
    Tur: Comedy, Drama, Family
    Yil: 09 Oct 2020
-228. Insomnia [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt0278504)
+236. Insomnia [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt0278504)
    Tur: Drama, Mystery, Thriller
    Yil: 24 May 2002
-229. O Brother, Where Art Thou? [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt0190590)
+237. O Brother, Where Art Thou? [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt0190590)
    Tur: Adventure, Comedy, Crime
    Yil: 02 Feb 2001
-230. Next [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt0435705)
+238. Next [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt0435705)
    Tur: Action, Sci-Fi, Thriller
    Yil: 27 Apr 2007
-231. İstanbul İçin Son Çağrı [Puan: 6] [Durum: Izlenecek] (IMDb: tt23334616)
-232. The Hateful Eight [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt3460252)
+239. Fractured [Puan: 6.5] [Durum: Izlendi] (IMDb: tt4332232)
+   Tur: Drama, Mystery, Thriller
+   Yil: 11 Oct 2019
+240. İstanbul İçin Son Çağrı [Puan: 6] [Durum: Izlenecek] (IMDb: tt23334616)
+241. The Hateful Eight [Puan: 7.8] [Durum: Izlenecek] (IMDb: tt3460252)
    Tur: Crime, Drama, Mystery
    Yil: 30 Dec 2015
-233. Front of the class [Puan: 8] [Durum: Izlendi] (IMDb: tt1292594)
+242. Front of the class [Puan: 8] [Durum: Izlendi] (IMDb: tt1292594)
    Tur: Biography, Drama
    Yil: 07 Dec 2008
-234. The Longest Ride [Puan: 7.0] [Durum: Izlendi] (IMDb: tt2726560)
+243. The Longest Ride [Puan: 7.0] [Durum: Izlendi] (IMDb: tt2726560)
    Tur: Drama, Romance
    Yil: 10 Apr 2015
-235. The Bourne Identity [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt0258463)
+244. The Bourne Identity [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt0258463)
    Tur: Action, Mystery, Thriller
    Yil: 14 Jun 2002
-236. Top Gun: Maverick [Puan: 8.2] [Durum: Izlendi] (IMDb: tt1745960)
+245. Top Gun: Maverick [Puan: 8.2] [Durum: Izlendi] (IMDb: tt1745960)
    Tur: Action, Drama
    Yil: 27 May 2022
-237. Anora [Puan: 7.9] [Durum: Izlendi] (IMDb: tt28607951)
+246. Anora [Puan: 7.9] [Durum: Izlendi] (IMDb: tt28607951)
    Tur: Comedy, Drama, Romance
    Yil: 08 Nov 2024
-238. Inseption [Puan: 8] [Durum: Izlenecek] 
-239. Disclosure Day [Puan: 6.4] [Durum: Izlendi] (IMDb: tt15047880)
+247. Inseption [Puan: 8] [Durum: Izlenecek] 
+248. Disclosure Day [Puan: 6.4] [Durum: Izlendi] (IMDb: tt15047880)
    Tur: Action, Drama, Mystery
    Yil: 12 Jun 2026
-240. Weapons [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt26581740)
+249. UNABOMBER [Puan: 6.8] [Durum: Izlendi] (IMDb: tt6933238)
+   Tur: Thriller, Drama, Crime
+   Yil: 2026-09-25
+250. Weapons [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt26581740)
    Tur: Horror, Mystery
    Yil: 08 Aug 2025
-241. Dangerous Animals [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt32299316)
+251. Dangerous Animals [Puan: 6.4] [Durum: Izlenecek] (IMDb: tt32299316)
    Tur: Horror, Thriller
    Yil: 06 Jun 2025
-242. Old School [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt0302886)
+252. Old School [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt0302886)
    Tur: Comedy
    Yil: 21 Feb 2003
-243. 20 Days in Mariupol [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt24082438)
+253. 20 Days in Mariupol [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt24082438)
    Tur: Documentary, War
    Yil: 21 Nov 2023
-244. The 12th Man [Puan: 7.9] [Durum: Izlendi] (IMDb: tt3300980)
+254. The 12th Man [Puan: 7.9] [Durum: Izlendi] (IMDb: tt3300980)
    Tur: Drama, History, Thriller
    Yil: 04 May 2018
 
-📺 DIZILER (77 Adet)
+📺 DIZILER (78 Adet)
 -------------------------------------------------------
 1. You [Puan: 7.7] [Durum: Izlendi] (IMDb: tt7335184) [5 Sezon]
    Tur: Crime, Drama, Romance
@@ -712,148 +740,150 @@
    Tur: Action, Crime, Drama
 4. Gangs of london [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt7661390) [3 Sezon]
    Tur: Action, Crime, Drama
-5. Dutton Ranch [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt34991493) [1 Sezon]
+5. The Ex-Wife [Puan: 6.3] [Durum: Izlenecek] (IMDb: tt13069604) [2 Sezon]
+   Tur: Drama, Mystery, Thriller
+6. Dutton Ranch [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt34991493) [1 Sezon]
    Tur: Drama, Western
-6. The 100 [Puan: 7.6] [Durum: Izlendi] (IMDb: tt2661044) [7 Sezon]
+7. The 100 [Puan: 7.6] [Durum: Izlendi] (IMDb: tt2661044) [7 Sezon]
    Tur: Action, Drama, Sci-Fi
-7. Unbelievable [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt7909970) [1 Sezon]
+8. Unbelievable [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt7909970) [1 Sezon]
    Tur: Crime, Drama
-8. Fallen [Puan: 6.6] [Durum: Izlenecek] (IMDb: tt22776032) [1 Sezon]
+9. Fallen [Puan: 6.6] [Durum: Izlenecek] (IMDb: tt22776032) [1 Sezon]
    Tur: Action, Drama
-9. Mare of Easttown [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt10155688) [1 Sezon]
+10. Mare of Easttown [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt10155688) [1 Sezon]
    Tur: Crime, Drama, Mystery
-10. The White Lotus [Puan: 8.0] [Durum: Izlendi] (IMDb: tt13406094) [3 Sezon]
+11. The White Lotus [Puan: 8.0] [Durum: Izlendi] (IMDb: tt13406094) [3 Sezon]
    Tur: Comedy, Drama
-11. Game of Thrones [Puan: 9.2] [Durum: Izlenecek] (IMDb: tt0944947) [8 Sezon]
+12. Game of Thrones [Puan: 9.2] [Durum: Izlenecek] (IMDb: tt0944947) [8 Sezon]
    Tur: Action, Adventure, Drama
-12. A Knight of the Seven Kingdoms [Puan: 9.5] [Durum: Izlenecek] (IMDb: tt27497448) [1 Sezon]
+13. A Knight of the Seven Kingdoms [Puan: 9.5] [Durum: Izlenecek] (IMDb: tt27497448) [1 Sezon]
    Tur: Action, Adventure, Drama
-13. Yellowstone [Puan: 9] [Durum: Izlendi] (IMDb: tt4236770) [5 Sezon]
+14. Yellowstone [Puan: 9] [Durum: Izlendi] (IMDb: tt4236770) [5 Sezon]
    Tur: Drama, Western
-14. Fleabag [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt5687612) [2 Sezon]
+15. Fleabag [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt5687612) [2 Sezon]
    Tur: Comedy, Drama
-15. Strike back [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt1492179) [8 Sezon]
+16. Strike back [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt1492179) [8 Sezon]
    Tur: Action, Drama, Thriller
-16. Gibi [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt13675832) [6 Sezon]
+17. Gibi [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt13675832) [6 Sezon]
    Tur: Komedi
-17. Dogu [Puan: 7.3] [Durum: Izlendi] (IMDb: tt14183052) [2 Sezon]
+18. Dogu [Puan: 7.3] [Durum: Izlendi] (IMDb: tt14183052) [2 Sezon]
    Tur: Comedy
-18. Turk Dedektif [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt19636762) 
-19. Merlin [Puan: 7.9] [Durum: Izlendi] (IMDb: tt1199099) [5 Sezon]
+19. Turk Dedektif [Puan: 6.2] [Durum: Izlenecek] (IMDb: tt19636762) 
+20. Merlin [Puan: 7.9] [Durum: Izlendi] (IMDb: tt1199099) [5 Sezon]
    Tur: Adventure, Drama, Fantasy
-20. Lockerbie: A Search for Truth [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt31029686) [1 Sezon]
+21. Lockerbie: A Search for Truth [Puan: 7.4] [Durum: Izlenecek] (IMDb: tt31029686) [1 Sezon]
    Tur: Drama, History
-21. The Day of the Jackal [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt24053860) [2 Sezon]
+22. The Day of the Jackal [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt24053860) [2 Sezon]
    Tur: Action, Crime, Drama
-22. 11.22.63 [Puan: 8.0] [Durum: Izlendi] (IMDb: tt2879552) [1 Sezon]
+23. 11.22.63 [Puan: 8.0] [Durum: Izlendi] (IMDb: tt2879552) [1 Sezon]
    Tur: Drama, Mystery, Romance
-23. Special Ops: Lioness [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt13111078) [3 Sezon]
+24. Special Ops: Lioness [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt13111078) [3 Sezon]
    Tur: Dram, Savaş & Politik
-24. Mouse [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt13634792) [1 Sezon]
+25. Mouse [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt13634792) [1 Sezon]
    Tur: Action, Crime, Mystery
-25. See [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt7949218) [3 Sezon]
+26. See [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt7949218) [3 Sezon]
    Tur: Biography, Crime, Drama
-26. Fear The Walking Dead [Puan: 6.8] [Durum: Izlendi] (IMDb: tt3743822) [8 Sezon]
+27. Fear The Walking Dead [Puan: 6.8] [Durum: Izlendi] (IMDb: tt3743822) [8 Sezon]
    Tur: Drama, Horror, Sci-Fi
-27. Mr Inbetween [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt7472896) [3 Sezon]
+28. Mr Inbetween [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt7472896) [3 Sezon]
    Tur: Comedy, Crime, Drama
-28. 12 Monkeys [Puan: 8.0] [Durum: Izlendi] (IMDb: tt3148266) [4 Sezon]
+29. 12 Monkeys [Puan: 8.0] [Durum: Izlendi] (IMDb: tt3148266) [4 Sezon]
    Tur: Adventure, Drama, Mystery
-29. Young Sherlock [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt8599532) [1 Sezon]
+30. Young Sherlock [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt8599532) [1 Sezon]
    Tur: Action, Adventure, Mystery
-30. Task [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt28013708) [1 Sezon]
+31. Task [Puan: 8.0] [Durum: Izlenecek] (IMDb: tt28013708) [1 Sezon]
    Tur: Crime, Drama
-31. Ripley [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt11016042) [1 Sezon]
+32. Ripley [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt11016042) [1 Sezon]
    Tur: Crime, Drama, Thriller
-32. Eric [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt16283824) [1 Sezon]
+33. Eric [Puan: 6.9] [Durum: Izlenecek] (IMDb: tt16283824) [1 Sezon]
    Tur: Crime, Drama, Thriller
-33. Steal [Puan: 7.0] [Durum: Izlendi] (IMDb: tt32499731) [1 Sezon]
+34. Steal [Puan: 7.0] [Durum: Izlendi] (IMDb: tt32499731) [1 Sezon]
    Tur: Crime, Thriller
-34. Beckham [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt14524712) [1 Sezon]
+35. Beckham [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt14524712) [1 Sezon]
    Tur: Documentary, Biography, Sport
-35. Bloodhounds [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt26315487) [2 Sezon]
+36. Bloodhounds [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt26315487) [2 Sezon]
    Tur: Action, Crime, Drama
-36. SEAL Team [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt6473344) [7 Sezon]
+37. SEAL Team [Puan: 7.9] [Durum: Izlenecek] (IMDb: tt6473344) [7 Sezon]
    Tur: Action, Drama, War
-37. The Walking Dead: Daryl Dixon [Puan: 7.7] [Durum: Izlendi] (IMDb: tt13062500) [4 Sezon]
+38. The Walking Dead: Daryl Dixon [Puan: 7.7] [Durum: Izlendi] (IMDb: tt13062500) [4 Sezon]
    Tur: Drama, Horror
-38. Prens [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt14533970) [3 Sezon]
+39. Prens [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt14533970) [3 Sezon]
    Tur: Komedi
-39. Sweetpea [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt11218290) [1 Sezon]
+40. Sweetpea [Puan: 7.2] [Durum: Izlenecek] (IMDb: tt11218290) [1 Sezon]
    Tur: Comedy, Drama, Thriller
-40. Adolescence [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt31806037) [1 Sezon]
+41. Adolescence [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt31806037) [1 Sezon]
    Tur: Crime, Drama, Thriller
-41. Severance [Puan: 8.7] [Durum: Izlendi] (IMDb: tt11280740) [2 Sezon]
+42. Severance [Puan: 8.7] [Durum: Izlendi] (IMDb: tt11280740) [2 Sezon]
    Tur: Drama, Mystery, Sci-Fi
-42. Dexter: New Blood [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt14164730) [1 Sezon]
+43. Dexter: New Blood [Puan: 8.1] [Durum: Izlenecek] (IMDb: tt14164730) [1 Sezon]
    Tur: Crime, Drama, Mystery
-43. Warrior [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt5743796) [3 Sezon]
+44. Warrior [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt5743796) [3 Sezon]
    Tur: Action, Drama, Fantasy
-44. The Walking Dead: Dead City [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt18546730) [2 Sezon]
+45. The Walking Dead: Dead City [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt18546730) [2 Sezon]
    Tur: Action, Adventure, Drama
-45. I Will Find You [Puan: 0] [Durum: Izlenecek] (IMDb: tt34771210) [1 Sezon]
+46. I Will Find You [Puan: 0] [Durum: Izlenecek] (IMDb: tt34771210) [1 Sezon]
    Tur: Crime, Drama, Mystery
-46. Çekiç ve Gül [Puan: 8.1] [Durum: Izlendi] (IMDb: tt21095396) [3 Sezon]
+47. Çekiç ve Gül [Puan: 8.1] [Durum: Izlendi] (IMDb: tt21095396) [3 Sezon]
    Tur: Action, Crime, Drama
-47. Fire Country [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt16098700) [5 Sezon]
+48. Fire Country [Puan: 7.7] [Durum: Izlenecek] (IMDb: tt16098700) [5 Sezon]
    Tur: Drama
-48. Pluribus [Puan: 9.1] [Durum: Izlendi] (IMDb: tt22202452) [2 Sezon]
+49. Pluribus [Puan: 9.1] [Durum: Izlendi] (IMDb: tt22202452) [2 Sezon]
    Tur: Drama, Sci-Fi
-49. Patriot [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt4687882) [2 Sezon]
+50. Patriot [Puan: 8.3] [Durum: Izlenecek] (IMDb: tt4687882) [2 Sezon]
    Tur: Comedy, Drama, Thriller
-50. 1899 [Puan: 7.3] [Durum: Izlenecek] (IMDb: tt9319668) [1 Sezon]
+51. 1899 [Puan: 7.3] [Durum: Izlenecek] (IMDb: tt9319668) [1 Sezon]
    Tur: Adventure, Drama, Thriller
-51. Succession [Puan: 8.8] [Durum: Izlenecek] (IMDb: tt7660850) [4 Sezon]
+52. Succession [Puan: 8.8] [Durum: Izlenecek] (IMDb: tt7660850) [4 Sezon]
    Tur: Comedy, Drama
-52. Karşılaşmalar [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt33998293) 
+53. Karşılaşmalar [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt33998293) 
    Tur: Comedy
-53. Berlin [Puan: 7.1] [Durum: Izlendi] (IMDb: tt16288804) [1 Sezon]
+54. Berlin [Puan: 7.1] [Durum: Izlendi] (IMDb: tt16288804) [1 Sezon]
    Tur: Action, Crime, Drama
-54. Outer Banks [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt10293938) [5 Sezon]
+55. Outer Banks [Puan: 7.5] [Durum: Izlenecek] (IMDb: tt10293938) [5 Sezon]
    Tur: Action, Crime, Drama
-55. His & Hers [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt33035373) [1 Sezon]
+56. His & Hers [Puan: 7.1] [Durum: Izlenecek] (IMDb: tt33035373) [1 Sezon]
    Tur: Crime, Drama, Mystery
-56. Reacher [Puan: 8.1] [Durum: Izlendi] (IMDb: tt9288030) [4 Sezon]
+57. Reacher [Puan: 8.1] [Durum: Izlendi] (IMDb: tt9288030) [4 Sezon]
    Tur: Action, Crime, Drama
-57. Off Campus [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt33546863) [1 Sezon]
+58. Off Campus [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt33546863) [1 Sezon]
    Tur: Drama, Romance, Sport
-58. Secret Invasion [Puan: 6.0] [Durum: Izlenecek] (IMDb: tt13157618) [1 Sezon]
+59. Secret Invasion [Puan: 6.0] [Durum: Izlenecek] (IMDb: tt13157618) [1 Sezon]
    Tur: Action, Adventure, Mystery
-59. Silicon Valley [Puan: 8] [Durum: Izlenecek] (IMDb: tt2575988) [6 Sezon]
+60. Silicon Valley [Puan: 8] [Durum: Izlenecek] (IMDb: tt2575988) [6 Sezon]
    Tur: Comedy
-60. Şahsiyet l ll [Puan: 8.3] [Durum: Izlendi]  
-61. Normal People [Puan: 8.4] [Durum: Izlendi] (IMDb: tt9059760) [1 Sezon]
+61. Şahsiyet l ll [Puan: 8.3] [Durum: Izlendi]  
+62. Normal People [Puan: 8.4] [Durum: Izlendi] (IMDb: tt9059760) [1 Sezon]
    Tur: Drama, Romance
-62. Sherlock [Puan: 9.0] [Durum: Izlenecek] (IMDb: tt1475582) [4 Sezon]
+63. Sherlock [Puan: 9.0] [Durum: Izlenecek] (IMDb: tt1475582) [4 Sezon]
    Tur: Crime, Drama, Mystery
-63. Dexter: Resurrection [Puan: 9.1] [Durum: Izlenecek] (IMDb: tt33043892) [1 Sezon]
+64. Dexter: Resurrection [Puan: 9.1] [Durum: Izlenecek] (IMDb: tt33043892) [1 Sezon]
    Tur: Crime, Drama, Thriller
-64. Sons of Anarchy [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1124373) [7 Sezon]
+65. Sons of Anarchy [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1124373) [7 Sezon]
    Tur: Crime, Drama, Thriller
-65. Shogun [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt2788316) [3 Sezon]
+66. Shogun [Puan: 8.6] [Durum: Izlenecek] (IMDb: tt2788316) [3 Sezon]
    Tur: Action, Adventure, Drama
-66. Black Mirror [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt2085059) [7 Sezon]
+67. Black Mirror [Puan: 8.7] [Durum: Izlenecek] (IMDb: tt2085059) [7 Sezon]
    Tur: Crime, Drama, Mystery
-67. Swimming with Sharks [Puan: 6.4] [Durum: Izlendi] (IMDb: tt11343686) [1 Sezon]
+68. Swimming with Sharks [Puan: 6.4] [Durum: Izlendi] (IMDb: tt11343686) [1 Sezon]
    Tur: Drama, Thriller
-68. Dept. Q [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt27995114) [1 Sezon]
+69. Dept. Q [Puan: 8.2] [Durum: Izlenecek] (IMDb: tt27995114) [1 Sezon]
    Tur: Crime, Drama, Mystery
-69. Manifest [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt8421350) [4 Sezon]
+70. Manifest [Puan: 7.0] [Durum: Izlenecek] (IMDb: tt8421350) [4 Sezon]
    Tur: Drama, Mystery, Sci-Fi
-70. Sekizinci Aile [Puan: 8] [Durum: Izlenecek] (IMDb: tt38781098) 
-71. Spider-Noir [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt30460310) [1 Sezon]
+71. Sekizinci Aile [Puan: 8] [Durum: Izlenecek] (IMDb: tt38781098) 
+72. Spider-Noir [Puan: 7.6] [Durum: Izlenecek] (IMDb: tt30460310) [1 Sezon]
    Tur: Action, Adventure, Crime
-72. Supernatural [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt0460681) [15 Sezon]
+73. Supernatural [Puan: 8.4] [Durum: Izlenecek] (IMDb: tt0460681) [15 Sezon]
    Tur: Drama, Fantasy, Horror
-73. Silo [Puan: 8.1] [Durum: Izlendi] (IMDb: tt14688458) [4 Sezon]
+74. Silo [Puan: 8.1] [Durum: Izlendi] (IMDb: tt14688458) [4 Sezon]
    Tur: Drama, Mystery, Sci-Fi
-74. Shameless [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1586680) [11 Sezon]
+75. Shameless [Puan: 8.5] [Durum: Izlenecek] (IMDb: tt1586680) [11 Sezon]
    Tur: Comedy, Drama
-75. Gassal [Puan: 8.1] [Durum: Izlendi] (IMDb: tt35082593) 
+76. Gassal [Puan: 8.1] [Durum: Izlendi] (IMDb: tt35082593) 
    Tur: Comedy, Drama
-76. Breaking Bad [Puan: 9.5] [Durum: Izlenecek] (IMDb: tt0903747) [5 Sezon]
+77. Breaking Bad [Puan: 9.5] [Durum: Izlenecek] (IMDb: tt0903747) [5 Sezon]
    Tur: Crime, Drama, Thriller
-77. The Walking Dead [Puan: 8.1] [Durum: Izlendi] (IMDb: tt1520211) [11 Sezon]
+78. The Walking Dead [Puan: 8.1] [Durum: Izlendi] (IMDb: tt1520211) [11 Sezon]
    Tur: Drama, Horror, Thriller
 
 🎮 OYUNLAR (56 Adet)

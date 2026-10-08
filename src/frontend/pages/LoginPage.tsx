@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { auth, db } from '../../backend/config/firebaseConfig';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -252,7 +253,19 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError(isTr ? 'E-posta adresi veya şifre hatalı.' : 'Invalid email or password.');
+        // Provider-aware error: check if this email is registered via Google
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, email.trim());
+          if (methods.includes('google.com') && !methods.includes('password')) {
+            setError(isTr
+              ? 'Bu hesap Google ile kayıtlı. Lütfen aşağıdaki "Google" butonuyla giriş yapın.'
+              : 'This account is registered with Google. Please use the "Google" button below to sign in.');
+          } else {
+            setError(isTr ? 'E-posta adresi veya şifre hatalı.' : 'Invalid email or password.');
+          }
+        } catch {
+          setError(isTr ? 'E-posta adresi veya şifre hatalı.' : 'Invalid email or password.');
+        }
       } else if (err.code === 'auth/too-many-requests') {
         setError(isTr ? 'Çok fazla deneme. Lütfen birkaç dakika sonra tekrar deneyin.' : 'Too many attempts. Please try again later.');
       } else {

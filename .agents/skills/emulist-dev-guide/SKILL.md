@@ -147,4 +147,15 @@ Sitedeki tüm modal ve diyaloglar 4 standart tipe göre yapılandırılmalıdır
   - Günlük sınırı olan kotalı API'ler (örneğin OMDb 1.000 istek sınırı), istemci tarafında değil Redis üzerinde atomik sayaçla (`INCR b12:quota:api:YYYY-MM-DD`) tutulmalı ve tüm kullanıcılar için tek merkezden sayılmalıdır.
 - **Referans Dokümantasyon**: Detaylı mimari şema ve kurallar için projedeki [`REDIS_CACHE_ARCHITECTURE.md`](file:///c:/GithubProjects/emuList-M-S-G/REDIS_CACHE_ARCHITECTURE.md) dosyası esastır.
 
+## 20. Kimlik Doğrulama Akışı Koruma Standardı (Auth Flow Protection — MANDATORY)
+- **Firebase Auth Bütünlüğü (Tek Kullanıcı İlkesi)**:
+  - Bir e-posta adresine YALNIZCA TEK BİR Firebase Auth kullanıcısı karşılık gelmelidir. Firebase Console'da **"One account per email address"** aktif olmalıdır.
+- **Signup'ta Proaktif E-posta Kontrolü**:
+  - `handleSignup` içinde `createUserWithEmailAndPassword` öncesinde `fetchSignInMethodsForEmail` ile provider kontrolü yapılmalı.
+  - Google ile kayıtlı e-posta → "Google ile giriş yapın" uyarısı, zaten kayıtlı → "Giriş sayfasına gidin" uyarısı.
+- **Login'de Provider-Aware Hata Yönetimi**:
+  - `signInWithEmailAndPassword` başarısız olduğunda `fetchSignInMethodsForEmail` ile Google provider tespiti yapılmalı.
+  - Yalnızca Google provider aktifse → "Bu hesap Google ile kayıtlı, Google ile giriş yapın" mesajı gösterilmelidir.
+- **Kritik Auth Dosyaları**:
+  - `LoginPage.tsx`, `SignupPage.tsx`, `AuthContext.tsx`, `firebaseConfig.ts` dosyalarında yapılan her değişiklik 5 test senaryosu ile doğrulanmalıdır.
 

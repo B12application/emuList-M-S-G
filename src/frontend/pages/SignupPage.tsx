@@ -5,7 +5,8 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { auth, db } from '../../backend/config/firebaseConfig';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -216,6 +217,22 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
+      // Proactive email provider check — prevent duplicate accounts
+      const existingMethods = await fetchSignInMethodsForEmail(auth, email.trim());
+      if (existingMethods.length > 0) {
+        if (existingMethods.includes('google.com')) {
+          setError(isTr
+            ? 'Bu e-posta bir Google hesabıyla ilişkili. Lütfen "Google ile Kayıt Ol" butonunu kullanın.'
+            : 'This email is linked to a Google account. Please use the "Sign up with Google" button.');
+        } else {
+          setError(isTr
+            ? 'Bu e-posta zaten kayıtlı. Lütfen giriş sayfasına gidin.'
+            : 'This email is already registered. Please go to the login page.');
+        }
+        setLoading(false);
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const newUser = userCredential.user;
 

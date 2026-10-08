@@ -141,4 +141,34 @@ This file contains repository-specific guidelines, architecture constraints, and
   - Günlük sınırı olan kotalı API'ler (örneğin OMDb 1.000 istek sınırı), istemci tarafında değil Redis üzerinde atomik sayaçla (`INCR b12:quota:api:YYYY-MM-DD`) tutulmalı ve tüm kullanıcılar için tek merkezden sayılmalıdır.
 - **Referans Dokümantasyon**: Detaylı mimari şema ve kurallar için projedeki [`REDIS_CACHE_ARCHITECTURE.md`](file:///c:/GithubProjects/emuList-M-S-G/REDIS_CACHE_ARCHITECTURE.md) dosyası esastır.
 
+## 20. Kimlik Doğrulama Akışı Koruma Standardı (Auth Flow Protection — MANDATORY)
+- **Firebase Auth Bütünlüğü (Tek Kullanıcı İlkesi)**:
+  - B12 platformunda bir e-posta adresine YALNIZCA TEK BİR Firebase Auth kullanıcısı karşılık gelmelidir. Aynı e-posta için birden fazla Firebase Auth hesabı (email+password ve Google provider ayrı ayrı) oluşturulmasına kesinlikle izin verilmemelidir.
+  - Firebase Console'daki Authentication ayarlarında **"One account per email address"** seçeneği her zaman aktif tutulmalıdır.
+- **Signup Sayfasında Proaktif E-posta Kontrolü**:
+  - `SignupPage.tsx`'deki `handleSignup` fonksiyonunda, `createUserWithEmailAndPassword` çağrılmadan ÖNCE `fetchSignInMethodsForEmail` ile e-postanın mevcut provider'ları kontrol edilmelidir.
+  - Eğer e-posta zaten Google provider ile kayıtlıysa, kullanıcıya "Bu e-posta bir Google hesabıyla ilişkili. Lütfen 'Google ile Giriş Yap' butonunu kullanın." mesajı gösterilmeli ve form submit engellenmeli.
+  - Eğer e-posta zaten email/password provider ile kayıtlıysa, kullanıcıya "Bu e-posta zaten kayıtlı. Lütfen giriş sayfasına gidin." mesajı gösterilmeli.
+- **Login Sayfasında Provider-Aware Hata Yönetimi**:
+  - `LoginPage.tsx`'deki `handleLogin` fonksiyonunda `signInWithEmailAndPassword` başarısız olduğunda, `auth/invalid-credential` veya `auth/wrong-password` hatası alınırsa, o e-posta için `fetchSignInMethodsForEmail` çağrılarak hangi provider'ların aktif olduğu tespit edilmeli.
+  - Eğer yalnızca `google.com` provider aktifse, kullanıcıya "Bu hesap Google ile kayıtlı. Lütfen Google ile giriş yapın." mesajı gösterilmelidir (genel "E-posta veya şifre hatalı" mesajı yerine).
+- **Google ile Giriş/Kayıt'ta Firestore Bütünlüğü**:
+  - Hem `LoginPage.tsx` hem `SignupPage.tsx` içindeki `handleGoogleLogin` fonksiyonlarında:
+    1. `signInWithPopup` sonrası `doc(db, "users", googleUser.uid)` referansı ile `getDoc` çağrılmalı.
+    2. Doküman yoksa (`!docSnap.exists()`) yeni doküman oluşturulmalı.
+    3. Doküman varsa yalnızca `{ photoURL, displayName }` alanları `merge: true` ile güncellenmelidir.
+    4. ASLA `setDoc` ile mevcut dokümanın üzerine tamamen yazılmamalıdır.
+- **Değiştirilemez Dosyalar Listesi (Auth Critical Path)**:
+  - Aşağıdaki dosyalar "Kritik Auth Yolu" olarak işaretlenmiştir. Bu dosyalarda yapılacak HER değişiklik, yukarıdaki kurallarla çapraz kontrol edilmeli ve mevcut Google / e-posta giriş akışlarının bozulmadığı doğrulanmalıdır:
+    - `src/frontend/pages/LoginPage.tsx` (handleLogin, handleGoogleLogin)
+    - `src/frontend/pages/SignupPage.tsx` (handleSignup, handleGoogleLogin)
+    - `src/frontend/context/AuthContext.tsx`
+    - `src/backend/config/firebaseConfig.ts`
+  - Bu dosyalarda yapılan değişikliklerden sonra mutlaka şu senaryolar test edilmelidir:
+    1. ✅ Yeni e-posta ile kayıt ol → Giriş yap (email/password)
+    2. ✅ Google ile ilk kez kayıt ol → Google ile tekrar giriş yap
+    3. ✅ Google ile kayıtlı e-posta ile elle signup denemesi → Uyarı mesajı
+    4. ✅ Google ile kayıtlı e-posta ile e-posta+şifre giriş denemesi → Yönlendirici mesaj
+    5. ✅ Aynı kullanıcının Firestore `users` koleksiyonunda tek dokümanı olduğunu doğrula
+
 

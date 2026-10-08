@@ -1,19 +1,2 @@
-# Security Blocks (Cloudflare only supports * at the end of a path)
-/.env*          /404.html 404
-/.git/*         /404.html 404
-/wp-admin/*     /404.html 404
-/wordpress/*    /404.html 404
-/tmp/*          /404.html 404
-/temp/*         /404.html 404
-/etc/*          /404.html 404
-/proc/*         /404.html 404
-/var/*          /404.html 404
-/debug/*        /404.html 404
-/actuator/*     /404.html 404
-/cgi-bin/*      /404.html 404
-/.aws/*         /404.html 404
-/.ssh/*         /404.html 404
-/server-status  /404.html 404
-
 # SPA Catch-all routing
-/*              /index.html 200
+/*  /index.html  200

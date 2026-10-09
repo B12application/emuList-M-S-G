@@ -1,10 +1,12 @@
 import { useMemo, useState, cloneElement } from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch, FaFilter, FaPlus, FaCheckCircle, FaClock, FaTools, FaVial, FaClipboardList } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaPlus, FaCheckCircle, FaClock, FaTools, FaVial, FaClipboardList, FaCamera, FaCameraRetro } from 'react-icons/fa';
 import { SiJira } from 'react-icons/si';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import TodoCard from './TodoCard';
 import { useLanguage } from '../../context/LanguageContext';
+import { useFeatureAccess } from '../../hooks/useFeatureAccess';
+import toast from 'react-hot-toast';
 
 interface JiraViewProps {
   meetings: PlannerMeeting[];
@@ -13,12 +15,31 @@ interface JiraViewProps {
   onDelete: (item: PlannerMeeting) => void;
   onEdit: (item: PlannerMeeting) => void;
   onAdd: () => void;
+  onPhotoScan: () => void;
 }
 
-export default function JiraView({ meetings, onToggle, onStatusChange, onDelete, onEdit, onAdd }: JiraViewProps) {
+export default function JiraView({ meetings, onToggle, onStatusChange, onDelete, onEdit, onAdd, onPhotoScan }: JiraViewProps) {
   const { t } = useLanguage();
+  const { hasAccess } = useFeatureAccess();
+  const adminHasAccess = hasAccess('jiraPhotoScan');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'done'>('all');
+
+  const [isPhotoScanEnabled, setIsPhotoScanEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('b12_jira_photo_scan_enabled') !== 'false';
+  });
+
+  const togglePhotoScan = () => {
+    const nextState = !isPhotoScanEnabled;
+    setIsPhotoScanEnabled(nextState);
+    localStorage.setItem('b12_jira_photo_scan_enabled', String(nextState));
+    toast.success(
+      nextState
+        ? (t('planner.photoScanToggleOn') || 'Fotoğraf Tarama Açık')
+        : (t('planner.photoScanToggleOff') || 'Fotoğraf Tarama Kapalı')
+    );
+  };
 
   const jiraTasks = useMemo(() => {
     return meetings.filter(m => m.itemType === 'jira');
@@ -90,6 +111,35 @@ export default function JiraView({ meetings, onToggle, onStatusChange, onDelete,
             <FaFilter />
             <span>{statusFilter === 'all' ? t('planner.filterAll') : statusFilter === 'pending' ? t('planner.filterActive') : t('planner.filterDone')}</span>
           </button>
+          {adminHasAccess && (
+            <div className="flex items-center gap-1 shrink-0">
+              {isPhotoScanEnabled && (
+                <button
+                  onClick={onPhotoScan}
+                  className="px-3.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5 font-bold shrink-0 cursor-pointer"
+                  title={t('planner.importFromPhoto') || 'Fotoğraftan Ekle'}
+                >
+                  <FaCamera size={14} />
+                  <span className="text-xs sm:text-sm font-bold whitespace-nowrap hidden sm:inline">{t('planner.importFromPhoto') || 'Fotoğraftan Ekle'}</span>
+                </button>
+              )}
+              <button
+                onClick={togglePhotoScan}
+                className={`p-3 rounded-2xl border transition-all shrink-0 cursor-pointer ${
+                  isPhotoScanEnabled
+                    ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100'
+                    : 'bg-stone-100 dark:bg-zinc-800 border-stone-200 dark:border-zinc-700 text-stone-400 hover:text-stone-600'
+                }`}
+                title={
+                  isPhotoScanEnabled
+                    ? (t('planner.photoScanToggleOff') || 'Fotoğraf Taramayı Kapat')
+                    : (t('planner.photoScanToggleOn') || 'Fotoğraf Taramayı Aç')
+                }
+              >
+                <FaCameraRetro size={14} className={isPhotoScanEnabled ? 'opacity-100' : 'opacity-40'} />
+              </button>
+            </div>
+          )}
           <button 
             onClick={onAdd}
             className="px-3.5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-1.5 font-bold shrink-0"

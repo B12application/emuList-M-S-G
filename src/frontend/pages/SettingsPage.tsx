@@ -11,7 +11,7 @@ import {
     FaUserEdit, FaEnvelope, FaCalendar, FaFingerprint, FaHistory, FaDownload,
     FaEye, FaEyeSlash, FaSignOutAlt, FaCog, FaHome, FaSyncAlt, FaFileCode,
     FaFileAlt, FaFileUpload, FaCheckCircle, FaSpinner, FaFilm, FaTv, FaBolt,
-    FaMars, FaVenus
+    FaMars, FaVenus, FaCamera
 } from 'react-icons/fa';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updateProfile, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -47,6 +47,9 @@ export default function SettingsPage() {
     const [gender, setGender] = useState<'male' | 'female' | ''>('');
     const [profileLoading, setProfileLoading] = useState(true);
     const [profileSaving, setProfileSaving] = useState(false);
+    const [isJiraPhotoScanEnabled, setIsJiraPhotoScanEnabled] = useState<boolean>(() => {
+        return localStorage.getItem('b12_jira_photo_scan_enabled') !== 'false';
+    });
 
     // Password confirmation modal
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -597,6 +600,40 @@ export default function SettingsPage() {
                                                         }`}
                                                 >
                                                     <FaCalendar className={`text-[10px] ${shiftSettings.enableShiftSystem ? 'text-indigo-500' : 'text-stone-400'}`} />
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        {/* Jira Photo Scan Toggle */}
+                                        <div className="flex items-center justify-between p-4 bg-stone-50 dark:bg-zinc-800/70 rounded-xl border-l-4 border-blue-400 dark:border-blue-500">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isJiraPhotoScanEnabled ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-stone-100 dark:bg-zinc-700'}`}>
+                                                    <FaCamera className={`text-lg ${isJiraPhotoScanEnabled ? 'text-blue-500' : 'text-stone-400'}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm text-stone-900 dark:text-white">
+                                                        {t('planner.photoScanFeature') || 'Jira Fotoğraf Tarama'}
+                                                    </p>
+                                                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                                                        {isJiraPhotoScanEnabled 
+                                                            ? (t('planner.photoScanToggleOn') || 'Fotoğraf Tarama Açık') 
+                                                            : (t('planner.photoScanToggleOff') || 'Fotoğraf Tarama Kapalı')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const nextVal = !isJiraPhotoScanEnabled;
+                                                    setIsJiraPhotoScanEnabled(nextVal);
+                                                    localStorage.setItem('b12_jira_photo_scan_enabled', String(nextVal));
+                                                    toast.success(nextVal ? (t('planner.photoScanToggleOn') || 'Fotoğraf Tarama Açık') : (t('planner.photoScanToggleOff') || 'Fotoğraf Tarama Kapalı'));
+                                                }}
+                                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-300 shadow-inner cursor-pointer ${isJiraPhotoScanEnabled ? 'bg-blue-600' : 'bg-stone-300 dark:bg-zinc-600'}`}
+                                            >
+                                                <span
+                                                    className={`inline-flex h-6 w-6 items-center justify-center transform rounded-full bg-white shadow-lg transition-all duration-300 ${isJiraPhotoScanEnabled ? 'translate-x-7' : 'translate-x-1'}`}
+                                                >
+                                                    <FaCamera className={`text-[10px] ${isJiraPhotoScanEnabled ? 'text-blue-500' : 'text-stone-400'}`} />
                                                 </span>
                                             </button>
                                         </div>

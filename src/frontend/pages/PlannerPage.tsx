@@ -14,6 +14,7 @@ import QuickAddModal from '../components/planner/QuickAddModal';
 import MonthlyView from '../components/planner/MonthlyView';
 import WeeklyView from '../components/planner/WeeklyView';
 import JiraView from '../components/planner/JiraView';
+import JiraBoardView from '../components/planner/JiraBoardView';
 import RecurringManagerModal from '../components/planner/RecurringManagerModal';
 import TodoManagerModal from '../components/planner/TodoManagerModal';
 import DeleteChoiceModal from '../components/planner/DeleteChoiceModal';
@@ -21,6 +22,7 @@ import CalendarAlertModal from '../components/planner/CalendarAlertModal';
 import SportAddModal from '../components/planner/SportAddModal';
 import SportTrackingModal from '../components/planner/SportTrackingModal';
 import TeamFixtureModal from '../components/planner/TeamFixtureModal';
+import JiraPhotoScanModal from '../components/planner/JiraPhotoScanModal';
 import { useAuth } from '../context/AuthContext';
 import { getUserMeetings, deleteMeeting, toggleTodoStatus, syncRecurringItems, deleteRecurringSeries, updateMeeting, getUserCalendarAlerts } from '../../backend/services/plannerService';
 import { getUpcomingFootballMatches, syncUserSelectedTeamsFromFirestore } from '../services/footballFixtureService';
@@ -74,9 +76,10 @@ export default function PlannerPage() {
   const [isSportAddModalOpen, setIsSportAddModalOpen] = useState(false);
   const [isSportTrackingModalOpen, setIsSportTrackingModalOpen] = useState(false);
   const [isTeamFixtureModalOpen, setIsTeamFixtureModalOpen] = useState(false);
+  const [isJiraPhotoScanOpen, setIsJiraPhotoScanOpen] = useState(false);
   const [calendarAlerts, setCalendarAlerts] = useState<CalendarAlert[]>([]);
   // Mobilde daily, desktop'ta monthly başlat
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira'>(() =>
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'jira' | 'board'>(() =>
     window.innerWidth < 768 ? 'daily' : 'monthly'
   );
 
@@ -254,6 +257,15 @@ export default function PlannerPage() {
     }
   };
 
+  const handleMeetingUpdate = async (id: string, updates: Partial<PlannerMeeting>) => {
+    try {
+      await updateMeeting(id, updates);
+      setDbMeetings(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    } catch (err) {
+      console.error('Failed to update meeting:', err);
+    }
+  };
+
   const handleItemDateChange = async (itemId: string, newDateStr: string, itemType?: string) => {
     try {
       const updateData: Partial<PlannerMeeting> = itemType === 'jira'
@@ -332,24 +344,25 @@ export default function PlannerPage() {
           <div className="flex flex-wrap items-center gap-2">
             {/* Sub-nav */}
             <div className="flex items-center bg-stone-100 dark:bg-zinc-800/80 p-1 rounded-2xl border border-stone-200/80 dark:border-zinc-700/80 shadow-xs">
-              {(['daily', 'weekly', 'monthly', 'jira'] as const).map(tab => (
+              {(['daily', 'weekly', 'monthly', 'jira', 'board'] as const).map(tab => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 sm:px-4 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === tab
+                  className={`px-3 sm:px-4 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${activeTab === tab
                       ? 'bg-amber-400 text-stone-950 shadow-xs'
                       : 'text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   {tab === 'daily'
                     ? t('planner.daily') || 'Günlük'
                     : tab === 'weekly'
-                    ? t('planner.weekly') || 'Haftalık'
-                    : tab === 'monthly'
-                    ? t('planner.monthly') || 'Aylık'
-                    : 'Jira'}
+                      ? t('planner.weekly') || 'Haftalık'
+                      : tab === 'monthly'
+                        ? t('planner.monthly') || 'Aylık'
+                        : tab === 'jira'
+                          ? 'Jira'
+                          : t('planner.stickyBoard') || 'Yapışkan Pano'}
                 </button>
               ))}
             </div>
@@ -358,30 +371,38 @@ export default function PlannerPage() {
             <button
               type="button"
               onClick={() => {
-                setModalInitialData(null);
-                setModalInitialTab('meeting');
-                setIsModalOpen(true);
+                if (activeTab === 'board') {
+                  window.dispatchEvent(new CustomEvent('open-sticky-composer'));
+                } else {
+                  setModalInitialData(null);
+                  setModalInitialTab('meeting');
+                  setIsModalOpen(true);
+                }
               }}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold rounded-2xl text-xs hover:from-amber-400 hover:to-orange-400 transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               <FaCalendarPlus className="text-xs" />
-              <span>{t('planner.addEvent') || 'Etkinlik Ekle'}</span>
+              <span>{activeTab === 'board' ? 'Not Ekle' : (t('planner.addEvent') || 'Etkinlik Ekle')}</span>
             </button>
           </div>
         }
       />
 
       <div className="space-y-6">
-        <PlannerHeader
-          selectedDate={selectedDate}
-          meetingCount={currentDayMeetings.length}
-          onOpenTeamFixtures={() => setIsTeamFixtureModalOpen(true)}
-        />
+        {activeTab !== 'board' && (
+          <>
+            <PlannerHeader
+              selectedDate={selectedDate}
+              meetingCount={currentDayMeetings.length}
+              onOpenTeamFixtures={() => setIsTeamFixtureModalOpen(true)}
+            />
 
-        <HorizontalTimeline
-          selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
-        />
+            <HorizontalTimeline
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+            />
+          </>
+        )}
 
         {activeTab === 'daily' && (
           <div className="space-y-6">
@@ -592,6 +613,29 @@ export default function PlannerPage() {
                 setModalInitialTab('jira');
                 setIsModalOpen(true);
               }}
+              onPhotoScan={() => setIsJiraPhotoScanOpen(true)}
+            />
+          </div>
+        )}
+
+        {activeTab === 'board' && (
+          <div className="mt-4">
+            <JiraBoardView
+              meetings={meetings}
+              selectedDate={selectedDate}
+              onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+              onAdd={() => {
+                setModalInitialTab('jira');
+                setIsModalOpen(true);
+              }}
+              onPhotoScan={() => setIsJiraPhotoScanOpen(true)}
+              onUpdate={handleMeetingUpdate}
+              onRefresh={loadData}
+              onAddLocal={(newItem: PlannerMeeting) => {
+                setDbMeetings(prev => [...prev, newItem]);
+              }}
             />
           </div>
         )}
@@ -660,6 +704,13 @@ export default function PlannerPage() {
         isOpen={isTeamFixtureModalOpen}
         onClose={() => setIsTeamFixtureModalOpen(false)}
         onSaved={() => loadData(true)}
+      />
+
+      <JiraPhotoScanModal
+        isOpen={isJiraPhotoScanOpen}
+        onClose={() => setIsJiraPhotoScanOpen(false)}
+        onAdded={loadData}
+        existingMeetings={dbMeetings}
       />
     </motion.div>
   );

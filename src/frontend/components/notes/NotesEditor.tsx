@@ -306,7 +306,8 @@ export default function NotesEditor({
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3]
-        }
+        },
+        link: false
       }),
       TaskList,
       TaskItem.configure({

@@ -1,4 +1,4 @@
-import { FaTrash, FaCheck, FaEdit, FaSyncAlt, FaCar, FaHome, FaUser, FaHeartbeat, FaBriefcase, FaExclamationCircle } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaEdit, FaSyncAlt, FaCar, FaHome, FaUser, FaHeartbeat, FaBriefcase, FaExclamationCircle, FaBug, FaFeather, FaSearch, FaTasks } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { PlannerMeeting } from '../../../backend/types/planner';
 import { useLanguage } from '../../context/LanguageContext';
@@ -19,6 +19,14 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
   const isJira = todo.itemType === 'jira';
   const statuses: PlannerMeeting['status'][] = ['todo', 'planned', 'dev', 'test', 'done'];
   const currentStatus = todo.status || 'todo';
+
+  // Jira task tipi için renk konfigürasyonu
+  const jiraTypeConfig = todo.jiraTaskType ? {
+    bug: { accentColor: 'bg-rose-500', Icon: FaBug, label: 'Bug' },
+    feature: { accentColor: 'bg-emerald-500', Icon: FaFeather, label: 'Feature' },
+    research: { accentColor: 'bg-violet-500', Icon: FaSearch, label: 'Araştırma' },
+    task: { accentColor: 'bg-sky-500', Icon: FaTasks, label: 'Task' },
+  }[todo.jiraTaskType] : null;
 
   const getCategoryIcon = (cat?: string) => {
     switch (cat) {
@@ -139,7 +147,7 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
 
       {/* Status Accent Bar - Jira gets colored accent, Todo gets neutral or none */}
       {isJira ? (
-        <div className={`absolute left-0 top-0 bottom-0 w-2 ${statusInfo.accent} ${isCompleted ? 'opacity-50' : 'opacity-100'}`} />
+        <div className={`absolute left-0 top-0 bottom-0 w-2 ${jiraTypeConfig ? jiraTypeConfig.accentColor : statusInfo.accent} ${isCompleted ? 'opacity-50' : 'opacity-100'}`} />
       ) : (
         <div
           className={`absolute left-0 top-0 bottom-0 w-1 ${
@@ -180,6 +188,21 @@ export default function TodoCard({ todo, onToggle, onStatusChange, onDelete, onE
                 
                 {todo.isRecurring && (
                   <FaSyncAlt size={10} className="text-stone-400 dark:text-zinc-600 animate-spin-slow" />
+                )}
+
+                {/* Jira Task Tip Badge (fotoğraftan aktarılmış) */}
+                {isJira && jiraTypeConfig && !isCompleted && (
+                  <span
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black border whitespace-nowrap ${
+                      todo.jiraTaskType === 'bug' ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-900/40'
+                      : todo.jiraTaskType === 'feature' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-900/40'
+                      : todo.jiraTaskType === 'research' ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-900/40'
+                      : 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-900/40'
+                    }`}
+                  >
+                    <jiraTypeConfig.Icon size={9} />
+                    {jiraTypeConfig.label}
+                  </span>
                 )}
 
                 {/* Kategori Badge */}

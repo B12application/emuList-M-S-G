@@ -9,7 +9,7 @@ export interface PlannerMeeting {
   notes?: string;   // For detailed meeting notes
   isGoogleSheet?: boolean; // True if it came from the external sync
   createdAt?: Date | any;
-  itemType?: 'meeting' | 'todo' | 'jira' | 'match' | 'sport';
+  itemType?: 'meeting' | 'todo' | 'jira' | 'match' | 'sport' | 'sticky';
   isCompleted?: boolean;
   dueDate?: string; // used specifically for tasks/jira
   externalLink?: string; // Link to jira ticket / match info
@@ -26,7 +26,34 @@ export interface PlannerMeeting {
   teamColor?: string;     // Futbol takımı ana rengi
   score?: string;         // Maç skoru (örn: '2 - 1')
   isFinished?: boolean;   // Maç bitti mi?
+  jiraTaskId?: string;    // Jira ticket ID (örn: SPB-5238) — fotoğraftan aktarılan task'lar için benzersizlik anahtarı
+  jiraTaskType?: 'bug' | 'feature' | 'research' | 'task'; // Jira ticket tipi (renk kodlaması için)
+  // Sticky Notes (Google Notes / Yapışkan Notlar Tuvali) alanları:
+  stickyColor?: 'yellow' | 'green' | 'blue' | 'pink' | 'purple' | 'orange' | 'zinc';
+  canvasX?: number;
+  canvasY?: number;
+  isPinned?: boolean;
+  rotation?: number;
+  checklist?: PlannerChecklistItem[];
+  stickyType?: PlannerStickyType;
+  comments?: PlannerComment[];
 }
+
+export interface PlannerChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface PlannerComment {
+  id: string;
+  text: string;
+  createdAt: string;
+  authorName?: string;
+  authorPhoto?: string;
+}
+
+export type PlannerStickyType = 'task' | 'jira' | 'idea' | 'memo' | 'reminder';
 
 export interface GoogleSheetMeeting {
   Tarih: string; // "YYYY-MM-DD" or similar format in CSV

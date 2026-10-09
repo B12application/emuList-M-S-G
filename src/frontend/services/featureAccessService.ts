@@ -20,7 +20,8 @@ export type FeatureKey =
   | 'feed'
   | 'map'
   | 'myShows'
-  | 'calorieAi';
+  | 'calorieAi'
+  | 'jiraPhotoScan';
 
 export type FeatureAccessMap = Partial<Record<FeatureKey, boolean>>;
 
@@ -39,6 +40,7 @@ const DEFAULT_ACCESS: Record<FeatureKey, boolean> = {
   map: true,
   myShows: true,
   calorieAi: false, // Sadece admin açabilir
+  jiraPhotoScan: true,
 };
 
 /**
@@ -55,6 +57,7 @@ export const FEATURE_LABELS: Record<FeatureKey, { tr: string; en: string; icon: 
   map: { tr: 'Harita', en: 'Map', icon: '🗺️' },
   myShows: { tr: 'Dizi Takibi', en: 'My Shows', icon: '📺' },
   calorieAi: { tr: 'Kalori AI', en: 'Calorie AI', icon: '🔥' },
+  jiraPhotoScan: { tr: 'Jira Fotoğraf Tarama', en: 'Jira Photo Scan', icon: '📷' },
 };
 
 export const ALL_FEATURES: FeatureKey[] = Object.keys(DEFAULT_ACCESS) as FeatureKey[];

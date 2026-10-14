@@ -6,7 +6,7 @@ import { useAppSound } from '../../context/SoundContext';
 import { addMeeting, updateMeeting } from '../../../backend/services/plannerService';
 import { format, addMinutes } from 'date-fns';
 import { showMarqueeToast } from '../MarqueeToast';
-import type { PlannerMeeting } from '../../../backend/types/planner';
+import type { PlannerMeeting, RecurrenceFrequency } from '../../../backend/types/planner';
 import { useLanguage } from '../../context/LanguageContext';
 
 interface QuickAddModalProps {
@@ -31,6 +31,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
   const [endTime, setEndTime] = useState('09:30');
   const [notes, setNotes] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceFreq, setRecurrenceFreq] = useState<RecurrenceFrequency>('weekly');
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<PlannerMeeting['status']>('todo');
@@ -64,6 +65,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setEndTime(initialData.endTime || '09:30');
       setNotes(initialData.notes || '');
       setIsRecurring(!!initialData.isRecurring);
+      setRecurrenceFreq(initialData.recurrenceFrequency || 'weekly');
       setDueDate(initialData.dueDate || '');
       setStatus(initialData.status || 'todo');
       setCategory(initialData.category || '');
@@ -79,6 +81,7 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
       setStartTime('09:00');
       setNotes('');
       setIsRecurring(false);
+      setRecurrenceFreq('weekly');
       setDueDate('');
       setStatus('todo');
       setCategory('');
@@ -110,35 +113,54 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
 
     setIsSubmitting(true);
     try {
-      const meetingData = {
+      const meetingData: any = {
         userId: user.uid,
         title,
-        date: itemDate, // Artık yeni state'i gönderiyoruz
+        date: itemDate,
         startTime: activeTab === 'meeting' ? startTime : '',
         endTime: activeTab === 'meeting' ? endTime : '',
         notes: notes.trim(),
         dueDate: activeTab === 'jira' ? dueDate : '',
         itemType: activeTab,
-        ...(activeTab === 'todo' || activeTab === 'jira' ? { 
-          isCompleted: initialData?.isCompleted ?? false,
-          status: status || 'todo'
-        } : {}),
-        ...(activeTab === 'todo' ? {
-          category,
-          categoryColor
-        } : {}),
-        priority: activeTab !== 'meeting' ? priority : undefined,
         isRecurring,
       };
+
+      if (activeTab === 'todo' || activeTab === 'jira') {
+        meetingData.isCompleted = initialData?.isCompleted ?? false;
+        meetingData.status = status || 'todo';
+      }
+
+      if (activeTab === 'todo' && category) {
+        meetingData.category = category;
+        meetingData.categoryColor = categoryColor;
+      }
+
+      if (activeTab !== 'meeting' && priority) {
+        meetingData.priority = priority;
+      }
+
+      if (isRecurring && recurrenceFreq) {
+        meetingData.recurrenceFrequency = recurrenceFreq;
+      }
 
       if (isEditMode && initialData?.id) {
         await updateMeeting(initialData.id, meetingData);
         showMarqueeToast({ message: t('planner.updated'), type: 'success' });
       } else {
-        await addMeeting(meetingData, isRecurring);
+        await addMeeting(meetingData, isRecurring, recurrenceFreq);
         const typeLabel = activeTab === 'meeting' ? t('planner.meeting') : activeTab === 'jira' ? 'Jira' : t('planner.task');
+        let successMsg = t('planner.itemAdded').replace('{type}', typeLabel);
+        if (isRecurring) {
+          if (recurrenceFreq === 'daily') {
+            successMsg = t('planner.dailySeriesCreated').replace('{type}', typeLabel.toLowerCase());
+          } else if (recurrenceFreq === 'weekdays') {
+            successMsg = t('planner.weekdaysSeriesCreated').replace('{type}', typeLabel.toLowerCase());
+          } else {
+            successMsg = t('planner.weeklySeriesCreated').replace('{type}', typeLabel.toLowerCase());
+          }
+        }
         showMarqueeToast({
-          message: isRecurring ? t('planner.weeklySeriesCreated').replace('{type}', typeLabel.toLowerCase()) : t('planner.itemAdded').replace('{type}', typeLabel),
+          message: successMsg,
           type: 'success'
         });
       }
@@ -426,19 +448,81 @@ export default function QuickAddModal({ isOpen, onClose, selectedDate, onAdded, 
               </motion.div>
             )}
 
-            {/* Recurrence Switch */}
-            <div className="flex items-center justify-between p-3 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl">
-              <div className="flex items-center gap-2">
-                <FaSyncAlt className={`text-xs ${isRecurring ? 'text-rose-500 animate-spin-slow' : 'text-stone-400'}`} />
-                <span className="text-sm font-semibold text-stone-700 dark:text-zinc-300">{t('planner.repeatWeekly')}</span>
+            {/* Recurrence Selector */}
+            <div className="p-3 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FaSyncAlt className={`text-xs ${isRecurring ? 'text-indigo-500 animate-spin-slow' : 'text-stone-400'}`} />
+                  <span className="text-sm font-semibold text-stone-700 dark:text-zinc-300">
+                    {t('planner.recurringEvent')}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsRecurring(!isRecurring)}
+                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${isRecurring ? 'bg-indigo-600' : 'bg-stone-300 dark:bg-zinc-700'}`}
+                >
+                  <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${isRecurring ? 'translate-x-5' : ''}`} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsRecurring(!isRecurring)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${isRecurring ? 'bg-rose-500' : 'bg-stone-300 dark:bg-zinc-700'}`}
-              >
-                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${isRecurring ? 'translate-x-5' : ''}`} />
-              </button>
+
+              {isRecurring && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="pt-2 border-t border-stone-200/60 dark:border-zinc-800/80 space-y-2"
+                >
+                  <label className="block text-[10px] font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider">
+                    {t('planner.recurrenceFreq')}
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setRecurrenceFreq('daily')}
+                      className={`py-1.5 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        recurrenceFreq === 'daily'
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                          : 'border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-900'
+                      }`}
+                    >
+                      {t('planner.freqDaily')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecurrenceFreq('weekdays')}
+                      className={`py-1.5 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        recurrenceFreq === 'weekdays'
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                          : 'border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-900'
+                      }`}
+                    >
+                      {t('planner.freqWeekdays')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecurrenceFreq('weekly')}
+                      className={`py-1.5 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        recurrenceFreq === 'weekly'
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
+                          : 'border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-900'
+                      }`}
+                    >
+                      {t('planner.freqWeekly')}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-stone-500 dark:text-zinc-400 flex items-center gap-1.5 pt-0.5">
+                    <span>💡</span>
+                    <span>
+                      {recurrenceFreq === 'daily'
+                        ? t('planner.freqDailyDesc')
+                        : recurrenceFreq === 'weekdays'
+                        ? t('planner.freqWeekdaysDesc')
+                        : t('planner.freqWeeklyDesc')}
+                    </span>
+                  </p>
+                </motion.div>
+              )}
             </div>
 
             <div className="pt-2">

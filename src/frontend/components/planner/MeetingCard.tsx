@@ -38,7 +38,19 @@ export default function MeetingCard({ meeting, onDelete, onEdit }: MeetingCardPr
               {meeting.title}
             </h4>
             {meeting.isRecurring && (
-              <FaSyncAlt size={10} className="text-stone-400 dark:text-zinc-600 animate-spin-slow" title={t('planner.recurringSeries')} />
+              <span 
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60 text-[9px] font-bold shrink-0"
+                title={t('planner.recurringSeries')}
+              >
+                <FaSyncAlt size={8} className="animate-spin-slow" />
+                <span>
+                  {meeting.recurrenceFrequency === 'daily'
+                    ? t('planner.freqDaily')
+                    : meeting.recurrenceFrequency === 'weekdays'
+                    ? t('planner.freqWeekdays')
+                    : t('planner.freqWeekly')}
+                </span>
+              </span>
             )}
           </div>
           

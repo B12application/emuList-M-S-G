@@ -1,18 +1,64 @@
 import { collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
-import type { PlannerMeeting, CalendarAlert } from '../types/planner';
+import type { PlannerMeeting, CalendarAlert, RecurrenceFrequency } from '../types/planner';
+
+// Firestore'un undefined alanları reddetmesini önlemek için nesneyi temizleyen yardımcı
+const sanitizeData = <T extends Record<string, any>>(obj: T): Partial<T> => {
+  const result: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  }
+  return result;
+};
 
 // Dahili yardımcı: Gelecek Instances'ları oluşturma
-const generateFutureInstances = async (master: PlannerMeeting, weeks: number = 3) => {
+const generateFutureInstances = async (master: PlannerMeeting) => {
   if (!master.date || !master.recurringGroupId) return;
 
   const [y, m, d] = master.date.split('-').map(Number);
+  const freq = master.recurrenceFrequency || 'weekly';
+  const targetDates: string[] = [];
 
-  for (let i = 1; i <= weeks; i++) {
-    // Yerel tarih üzerinden hesaplama yaparak timezone kaymalarını önle
-    const targetDateObj = new Date(y, m - 1, d + (i * 7));
-    const targetDate = `${targetDateObj.getFullYear()}-${String(targetDateObj.getMonth() + 1).padStart(2, '0')}-${String(targetDateObj.getDate()).padStart(2, '0')}`;
+  if (freq === 'daily') {
+    // Gelecek 21 gün boyunca her gün oluştur
+    for (let i = 1; i <= 21; i++) {
+      const targetDateObj = new Date(y, m - 1, d + i);
+      const targetDate = `${targetDateObj.getFullYear()}-${String(targetDateObj.getMonth() + 1).padStart(2, '0')}-${String(targetDateObj.getDate()).padStart(2, '0')}`;
+      targetDates.push(targetDate);
+    }
+  } else if (freq === 'weekdays') {
+    // Gelecek 4 hafta boyunca sadece hafta içi (Pazartesi-Cuma) günleri oluştur
+    let added = 0;
+    let offset = 1;
+    while (added < 20 && offset <= 35) {
+      const targetDateObj = new Date(y, m - 1, d + offset);
+      const dayOfWeek = targetDateObj.getDay(); // 0 = Pazar, 6 = Cumartesi
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const targetDate = `${targetDateObj.getFullYear()}-${String(targetDateObj.getMonth() + 1).padStart(2, '0')}-${String(targetDateObj.getDate()).padStart(2, '0')}`;
+        targetDates.push(targetDate);
+        added++;
+      }
+      offset++;
+    }
+  } else if (freq === 'monthly') {
+    // Gelecek 3 ay boyunca aynı gün oluştur
+    for (let i = 1; i <= 3; i++) {
+      const targetDateObj = new Date(y, m - 1 + i, d);
+      const targetDate = `${targetDateObj.getFullYear()}-${String(targetDateObj.getMonth() + 1).padStart(2, '0')}-${String(targetDateObj.getDate()).padStart(2, '0')}`;
+      targetDates.push(targetDate);
+    }
+  } else {
+    // Varsayılan: weekly (haftalık)
+    for (let i = 1; i <= 4; i++) {
+      const targetDateObj = new Date(y, m - 1, d + (i * 7));
+      const targetDate = `${targetDateObj.getFullYear()}-${String(targetDateObj.getMonth() + 1).padStart(2, '0')}-${String(targetDateObj.getDate()).padStart(2, '0')}`;
+      targetDates.push(targetDate);
+    }
+  }
 
+  for (const targetDate of targetDates) {
     // Bu tarihte bu grup için kayıt var mı check?
     const checkQ = query(
       collection(db, 'meetings'),
@@ -23,9 +69,9 @@ const generateFutureInstances = async (master: PlannerMeeting, weeks: number = 3
     const checkSnap = await getDocs(checkQ);
 
     if (checkSnap.empty) {
-      // Eksik haftayı oluştur (Master DEĞİL, normal instance olarak)
+      // Eksik kopyayı oluştur (Master DEĞİL, normal instance olarak)
       const { id, ...masterData } = master;
-      const newInstance = {
+      const rawInstance = {
         ...masterData,
         date: targetDate,
         isRecurringMaster: false,
@@ -34,6 +80,7 @@ const generateFutureInstances = async (master: PlannerMeeting, weeks: number = 3
         notes: master.itemType === 'meeting' ? '' : (master.notes || '')
       };
 
+      const newInstance = sanitizeData(rawInstance);
       await addDoc(collection(db, 'meetings'), newInstance);
     }
   }
@@ -42,12 +89,13 @@ const generateFutureInstances = async (master: PlannerMeeting, weeks: number = 3
 // Toplantı Ekleme
 export const addMeeting = async (
   meeting: Omit<PlannerMeeting, 'id' | 'createdAt'>,
-  isRecurring: boolean = false
+  isRecurring: boolean = false,
+  recurrenceFrequency: RecurrenceFrequency = 'weekly'
 ): Promise<string> => {
   try {
     const recurringGroupId = isRecurring ? crypto.randomUUID() : null;
 
-    const docData: any = {
+    const rawDocData: any = {
       ...meeting,
       createdAt: serverTimestamp(),
       isGoogleSheet: false,
@@ -56,16 +104,17 @@ export const addMeeting = async (
     };
 
     if (isRecurring) {
-      docData.isRecurringMaster = true;
-      docData.recurrenceFrequency = 'weekly';
+      rawDocData.isRecurringMaster = true;
+      rawDocData.recurrenceFrequency = meeting.recurrenceFrequency || recurrenceFrequency || 'weekly';
     }
 
+    const docData = sanitizeData(rawDocData);
     const docRef = await addDoc(collection(db, 'meetings'), docData);
 
-    // EĞER TEKRARLAYAN ise: Hemen ilk 3 haftayı oluştur ki kullanıcı beklediğini görsün
+    // EĞER TEKRARLAYAN ise: Hemen gelecek kopyaları oluştur
     if (isRecurring) {
       const fullMaster = { ...docData, id: docRef.id } as PlannerMeeting;
-      await generateFutureInstances(fullMaster, 3);
+      await generateFutureInstances(fullMaster);
     }
 
     return docRef.id;
@@ -79,10 +128,11 @@ export const addMeeting = async (
 export const updateMeeting = async (meetingId: string, updates: Partial<PlannerMeeting>): Promise<void> => {
   try {
     const meetingRef = doc(db, 'meetings', meetingId);
-    await updateDoc(meetingRef, {
+    const cleanedUpdates = sanitizeData({
       ...updates,
       updatedAt: serverTimestamp()
     });
+    await updateDoc(meetingRef, cleanedUpdates);
   } catch (error) {
     console.error('Error updating meeting:', error);
     throw error;
@@ -102,7 +152,7 @@ export const syncRecurringItems = async (userId: string): Promise<void> => {
     
     for (const masterDoc of snapshot.docs) {
       const master = { id: masterDoc.id, ...masterDoc.data() } as PlannerMeeting;
-      await generateFutureInstances(master, 3);
+      await generateFutureInstances(master);
 
       // 3. Geçmiş temizliği (Opsiyonel: Veritabanında yığılma olmaması için 2 haftadan eski kayıtları sil)
       const twoWeeksAgo = new Date();

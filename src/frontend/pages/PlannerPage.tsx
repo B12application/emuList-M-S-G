@@ -583,6 +583,12 @@ export default function PlannerPage() {
                 setSelectedDate(date);
                 setActiveTab('daily');
               }}
+              onAddMeeting={(date) => {
+                if (date) setSelectedDate(date);
+                setModalInitialData(null);
+                setModalInitialTab('meeting');
+                setIsModalOpen(true);
+              }}
             />
           </div>
         )}

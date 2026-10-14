@@ -1,3 +1,5 @@
+export type RecurrenceFrequency = 'daily' | 'weekdays' | 'weekly' | 'monthly';
+
 export interface PlannerMeeting {
   id?: string;
   userId: string;
@@ -16,7 +18,7 @@ export interface PlannerMeeting {
   isRecurring?: boolean;
   recurringGroupId?: string; // To group instances of a series
   isRecurringMaster?: boolean; // If true, this is the template doc
-  recurrenceFrequency?: 'weekly';
+  recurrenceFrequency?: RecurrenceFrequency;
   lastGeneratedDate?: string; // Track up to which date instances are generated
   status?: 'todo' | 'planned' | 'dev' | 'test' | 'done';
   priority?: 'urgent' | 'high' | 'medium' | 'low';

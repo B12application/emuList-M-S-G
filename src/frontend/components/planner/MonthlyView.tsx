@@ -8,7 +8,7 @@ import { useState, useRef, useMemo, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PlannerMeeting, CalendarAlert } from '../../../backend/types/planner';
-import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaSearch, FaTimes, FaMapMarkerAlt, FaClock, FaVideo, FaSyncAlt } from 'react-icons/fa';
 import { PiSoccerBallFill } from 'react-icons/pi';
 
 interface MonthlyViewProps {
@@ -18,7 +18,28 @@ interface MonthlyViewProps {
   onSelectDate: (date: Date) => void;
   calendarAlerts?: CalendarAlert[];
   onItemDateChange?: (itemId: string, newDateStr: string, itemType?: string) => void;
+  onAddMeeting?: (date: Date) => void;
 }
+
+// Gün başlığındaki toplantı hapları için hafif ve zarif renk varyasyonları
+const MEETING_PILL_THEMES = [
+  {
+    pill: 'bg-indigo-50/95 dark:bg-indigo-950/70 border-indigo-200/90 dark:border-indigo-800/80 text-indigo-950 dark:text-indigo-200 hover:border-indigo-400 dark:hover:border-indigo-400',
+    timeText: 'text-indigo-950 dark:text-indigo-200',
+  },
+  {
+    pill: 'bg-violet-50/95 dark:bg-violet-950/70 border-violet-200/90 dark:border-violet-800/80 text-violet-950 dark:text-violet-200 hover:border-violet-400 dark:hover:border-violet-400',
+    timeText: 'text-violet-950 dark:text-violet-200',
+  },
+  {
+    pill: 'bg-sky-50/95 dark:bg-sky-950/70 border-sky-200/90 dark:border-sky-800/80 text-sky-950 dark:text-sky-200 hover:border-sky-400 dark:hover:border-sky-400',
+    timeText: 'text-sky-950 dark:text-sky-200',
+  },
+  {
+    pill: 'bg-teal-50/95 dark:bg-teal-950/70 border-teal-200/90 dark:border-teal-800/80 text-teal-950 dark:text-teal-200 hover:border-teal-400 dark:hover:border-teal-400',
+    timeText: 'text-teal-950 dark:text-teal-200',
+  },
+];
 
 export default function MonthlyView({
   currentMonth,
@@ -26,7 +47,8 @@ export default function MonthlyView({
   meetings,
   onSelectDate,
   calendarAlerts = [],
-  onItemDateChange
+  onItemDateChange,
+  onAddMeeting
 }: MonthlyViewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -35,6 +57,12 @@ export default function MonthlyView({
   const [leagueFilter, setLeagueFilter] = useState<'all' | 'superlig' | 'championsleague'>('all');
   const [hoveredMatch, setHoveredMatch] = useState<{ match: PlannerMeeting; rect: DOMRect } | null>(null);
   const [hoveredDayTasks, setHoveredDayTasks] = useState<{ date: Date; dateStr: string; tasks: PlannerMeeting[] } | null>(null);
+  const [activeMeetingMenu, setActiveMeetingMenu] = useState<{
+    date: Date;
+    dateStr: string;
+    meetings: PlannerMeeting[];
+    rect: DOMRect;
+  } | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
   const { language, t } = useLanguage();
@@ -44,18 +72,28 @@ export default function MonthlyView({
     setHoveredDayTasks({ date, dateStr, tasks });
   };
 
-  // Escape tuşuna basıldığında modalı kapat
+  // Escape tuşuna ve dışarı tıklamaya göre menü/modalları kapat
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setHoveredDayTasks(null);
+        setActiveMeetingMenu(null);
       }
     };
-    if (hoveredDayTasks) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [hoveredDayTasks]);
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (activeMeetingMenu && !target.closest('.meeting-popover-container') && !target.closest('.meeting-badge-trigger')) {
+        setActiveMeetingMenu(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [hoveredDayTasks, activeMeetingMenu]);
 
   /**
    * Görevleri sıralar:
@@ -177,6 +215,34 @@ export default function MonthlyView({
     return { top: `${top}px`, left: `${left}px` };
   };
 
+  /**
+   * Toplantı menüsünü gün kutucuğunun üstüne (yukarı doğru) açar.
+   * Ekranın üst kenarına çok yakınsa aşağıya doğru esner.
+   */
+  const getUpwardPopoverStyle = (rect: DOMRect, width: number = 320, expectedHeight: number = 280) => {
+    if (typeof window === 'undefined') {
+      return { top: `${rect.top - expectedHeight - 8}px`, left: `${rect.left}px` };
+    }
+
+    const margin = 12;
+    let left = rect.left;
+    if (left + width > window.innerWidth - margin) {
+      left = window.innerWidth - width - margin;
+    }
+    if (left < margin) {
+      left = margin;
+    }
+
+    // Öncelikli olarak YUKARI AÇILIR (rect.top - expectedHeight - 8)
+    let top = rect.top - expectedHeight - 8;
+    // Eğer ekranın üst kısmına sığmıyorsa aşağıya açılır
+    if (top < margin) {
+      top = rect.bottom + 8;
+    }
+
+    return { top: `${top}px`, left: `${left}px` };
+  };
+
   const nextMonth = () => {
     onMonthChange(addMonths(currentMonth, 1));
   };
@@ -244,6 +310,17 @@ export default function MonthlyView({
               {format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}
             </h2>
             <div className="flex items-center gap-2">
+              {onAddMeeting && (
+                <button
+                  type="button"
+                  onClick={() => onAddMeeting(currentMonth)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/25 border border-indigo-400/30 transition-all shadow-xs active:scale-95 cursor-pointer"
+                  title={t('planner.monthlyAddMeeting')}
+                >
+                  <FaVideo className="text-xs" />
+                  <span>{t('planner.monthlyAddMeeting')}</span>
+                </button>
+              )}
               <button
                 onClick={() => setShowMatches(v => !v)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -322,7 +399,13 @@ export default function MonthlyView({
                 return m.date === dateStr;
               });
               const dayMatches = dayMeetings.filter(m => m.itemType === 'match');
-              const nonMatchMeetings = sortPlannerTasks(dayMeetings.filter(m => m.itemType !== 'match'));
+              const dayMeetingsOnly = dayMeetings
+                .filter(m => m.itemType === 'meeting' || (!m.itemType && m.startTime))
+                .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+              const dayTasksOnly = sortPlannerTasks(
+                dayMeetings.filter(m => m.itemType === 'todo' || m.itemType === 'jira' || m.itemType === 'sport')
+              );
+              const nonMatchMeetings = [...dayMeetingsOnly, ...dayTasksOnly];
 
               const isCurrentMonth = isSameMonth(day, monthStart);
               const isToday = isSameDay(day, new Date());
@@ -396,15 +479,110 @@ export default function MonthlyView({
                     </div>
                   )}
 
-                  {/* Gün Başlığı: Numara ve Zarif Dönem Göstergesi */}
+                  {/* Gün Başlığı: Numara ve Zarif Dönem Göstergesi + Hızlı Toplantı Ekle */}
                   <div className="flex justify-between items-center gap-1 mb-1 min-w-0">
-                    <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-xl text-xs sm:text-sm font-black shrink-0 ${
-                      isToday 
-                        ? 'bg-amber-400 text-stone-950 shadow-sm' 
-                        : 'text-stone-700 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-400'
-                    }`}>
-                      {format(day, dateFormat)}
-                    </span>
+                    <div className="flex items-center gap-1 min-w-0">
+                      <span className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-xl text-xs sm:text-sm font-black shrink-0 ${
+                        isToday 
+                          ? 'bg-amber-400 text-stone-950 shadow-sm' 
+                          : 'text-stone-700 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-400'
+                      }`}>
+                        {format(day, dateFormat)}
+                      </span>
+
+                      {/* Toplantı Saatleri (İkonsuz, küçük ve zarif renk varyasyonlu, maks 3 saat yan yana) */}
+                      {isCurrentMonth && dayMeetingsOnly.length > 0 && (
+                        <div className="flex items-center gap-0.5 sm:gap-1 min-w-0 overflow-hidden">
+                          {dayMeetingsOnly.slice(0, 3).map((m, mIdx) => {
+                            const theme = MEETING_PILL_THEMES[mIdx % MEETING_PILL_THEMES.length];
+                            const isDayActive = activeMeetingMenu?.dateStr === dateStr;
+
+                            return (
+                              <button
+                                key={m.id || `meet-pill-${mIdx}`}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  if (activeMeetingMenu?.dateStr === dateStr) {
+                                    setActiveMeetingMenu(null);
+                                  } else {
+                                    setActiveMeetingMenu({
+                                      date: day,
+                                      dateStr,
+                                      meetings: dayMeetingsOnly,
+                                      rect
+                                    });
+                                  }
+                                }}
+                                className={`meeting-badge-trigger px-1 sm:px-1.5 py-0.5 rounded-md border text-[9px] sm:text-[9.5px] font-black leading-none transition-all shrink-0 cursor-pointer shadow-2xs hover:scale-105 active:scale-95 flex items-center gap-1 min-w-0 ${
+                                  isDayActive
+                                    ? 'bg-indigo-600 text-white border-indigo-700 ring-1 ring-indigo-400/50'
+                                    : theme.pill
+                                }`}
+                                title={`${m.title} (${m.startTime}${m.endTime ? ` - ${m.endTime}` : ''})`}
+                              >
+                                <span className={isDayActive ? 'text-white' : theme.timeText}>
+                                  {m.startTime}
+                                </span>
+                                {dayMeetingsOnly.length === 1 && m.title && (
+                                  <span className={`text-[8.5px] font-medium truncate max-w-[55px] xl:max-w-[85px] hidden sm:inline ${
+                                    isDayActive ? 'text-white/90' : 'opacity-75'
+                                  }`}>
+                                    {m.title}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+
+                          {/* 3'ten fazla toplantı varsa küçük +X sayacı */}
+                          {dayMeetingsOnly.length > 3 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                if (activeMeetingMenu?.dateStr === dateStr) {
+                                  setActiveMeetingMenu(null);
+                                } else {
+                                  setActiveMeetingMenu({
+                                    date: day,
+                                    dateStr,
+                                    meetings: dayMeetingsOnly,
+                                    rect
+                                  });
+                                }
+                              }}
+                              className={`meeting-badge-trigger px-1 py-0.5 rounded-md border text-[8.5px] sm:text-[9px] font-black leading-none transition-all shrink-0 cursor-pointer shadow-2xs hover:scale-105 active:scale-95 ${
+                                activeMeetingMenu?.dateStr === dateStr
+                                  ? 'bg-indigo-700 text-white border-indigo-800'
+                                  : 'bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 border-stone-200 dark:border-zinc-700'
+                              }`}
+                              title={`${dayMeetingsOnly.length} ${language === 'tr' ? 'Toplantı (Tümünü görmek için tıklayın)' : 'Meetings (Click to view all)'}`}
+                            >
+                              +{dayMeetingsOnly.length - 3}
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Hiç toplantı yoksa hover ile hızlı ekleme butonu */}
+                      {isCurrentMonth && onAddMeeting && dayMeetingsOnly.length === 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddMeeting(day);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 sm:px-1.5 sm:py-0.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/35 border border-indigo-400/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold transition-all flex items-center gap-1 shrink-0 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          title={t('planner.addMeetingForDate')}
+                        >
+                          <FaVideo className="text-[9px]" />
+                          <span className="hidden xl:inline text-[9px]">+ Toplantı</span>
+                        </button>
+                      )}
+                    </div>
 
                     {/* Dönem Rozeti / Göstergesi */}
                     {isCurrentMonth && alertInfos.length > 0 && (
@@ -527,14 +705,15 @@ export default function MonthlyView({
                     </div>
                   )}
 
-                  {/* Masaüstü Görünüm İçin Normal Etkinlikler (AŞAĞIDA, mt-auto) */}
+                  {/* ─── GÖREVLER & DİĞERLERİ (AŞAĞIDA, mt-auto) ─── */}
                   {(() => {
-                    const maxTasksToShow = dayMatches.length > 0 ? 2 : 3;
+                    const remainingTasksSlots = dayMatches.length > 0 ? 2 : 3;
+                    const tasksToShow = dayTasksOnly.slice(0, remainingTasksSlots);
+                    const totalHidden = Math.max(0, dayTasksOnly.length - tasksToShow.length);
+
                     return (
-                      <div
-                        className="hidden sm:block space-y-0.5 mt-auto pt-1"
-                      >
-                        {nonMatchMeetings.slice(0, maxTasksToShow).map((m, i) => {
+                      <div className="hidden sm:block space-y-0.5 mt-auto pt-1">
+                        {tasksToShow.map((m, i) => {
                           const isDone = !!(m.isCompleted || m.status === 'done');
                           const mDateTime = new Date(`${m.date}T${m.startTime}`);
                           const isPast = mDateTime < now;
@@ -579,16 +758,16 @@ export default function MonthlyView({
                             </div>
                           );
                         })}
-                        {nonMatchMeetings.length > maxTasksToShow && (
+                        {totalHidden > 0 && (
                           <div 
                             onClick={(e) => {
                               e.stopPropagation();
-                              openDayTasksModal(day, dateStr, nonMatchMeetings);
+                              openDayTasksModal(day, dateStr, dayMeetings);
                             }}
                             className="text-[9px] text-amber-600 dark:text-amber-400 font-black px-1.5 py-0.5 rounded-md hover:bg-amber-400/15 transition-colors cursor-pointer flex items-center justify-between group/more select-none"
-                            title={language === 'tr' ? 'Tüm görevleri görmek için tıklayın' : 'Click to view all tasks'}
+                            title={language === 'tr' ? 'Tüm etkinlik ve görevleri görmek için tıklayın' : 'Click to view all events'}
                           >
-                            <span>+{nonMatchMeetings.length - maxTasksToShow} {t('planner.more')}</span>
+                            <span>+{totalHidden} {t('planner.more')}</span>
                             <span className="text-[8px] opacity-60 group-hover/more:translate-x-0.5 transition-transform">➔</span>
                           </div>
                         )}
@@ -596,16 +775,38 @@ export default function MonthlyView({
                     );
                   })()}
 
-                  {/* Mobil Görünüm İçin Noktalar */}
-                  <div className="sm:hidden flex flex-wrap gap-0.5 mt-auto pt-1">
-                    {nonMatchMeetings.slice(0, 3).map((m, i) => (
+                  {/* Mobil Görünüm İçin Rozet & Noktalar */}
+                  <div className="sm:hidden flex flex-wrap items-center gap-1 mt-auto pt-1">
+                    {dayMeetingsOnly.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          if (activeMeetingMenu?.dateStr === dateStr) {
+                            setActiveMeetingMenu(null);
+                          } else {
+                            setActiveMeetingMenu({
+                              date: day,
+                              dateStr,
+                              meetings: dayMeetingsOnly,
+                              rect
+                            });
+                          }
+                        }}
+                        className="meeting-badge-trigger flex items-center gap-0.5 px-1 py-0.2 rounded-md bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-400/30 text-[8px] font-black shrink-0 cursor-pointer active:scale-95"
+                      >
+                        <span>{dayMeetingsOnly.length > 1 ? `${dayMeetingsOnly.length}T` : dayMeetingsOnly[0].startTime || 'Top.'}</span>
+                      </button>
+                    )}
+                    {dayTasksOnly.slice(0, 3).map((m, i) => (
                       <div
                         key={m.id || i}
-                        className={`w-1.5 h-1.5 rounded-full ${
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                           m.itemType === 'jira' ? 'bg-blue-500' :
                           m.itemType === 'todo' ? 'bg-emerald-500' :
                           m.itemType === 'sport' ? 'bg-orange-500' :
-                          'bg-rose-500'
+                          'bg-stone-400'
                         }`}
                       />
                     ))}
@@ -907,6 +1108,155 @@ export default function MonthlyView({
         )}
       </AnimatePresence>
 
+      {/* ─── YUKARI AÇILIR TOPLANTI MENÜSÜ (UPWARD MEETING POPOVER) ─── */}
+      <AnimatePresence>
+        {activeMeetingMenu && (
+          <motion.div
+            key={`meeting-popover-${activeMeetingMenu.dateStr}`}
+            initial={{ opacity: 0, scale: 0.94, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 10 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={getUpwardPopoverStyle(
+              activeMeetingMenu.rect,
+              320,
+              Math.min(380, 110 + activeMeetingMenu.meetings.length * 68)
+            )}
+            className="meeting-popover-container fixed z-[170] w-[310px] sm:w-[330px] rounded-3xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-indigo-200/90 dark:border-indigo-900/70 shadow-2xl overflow-hidden flex flex-col"
+          >
+            {/* Popover Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-transparent border-b border-indigo-100 dark:border-indigo-950/60">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs shrink-0">
+                  <FaVideo />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-black text-indigo-950 dark:text-indigo-200 truncate">
+                      {language === 'tr' ? 'Toplantılar' : 'Meetings'}
+                    </h4>
+                    <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">
+                      {activeMeetingMenu.meetings.length}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-stone-500 dark:text-zinc-400 font-medium truncate">
+                    {format(activeMeetingMenu.date, 'd MMMM yyyy, EEEE', { locale: dateLocale })}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveMeetingMenu(null)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-500 hover:text-stone-700 dark:text-zinc-400 transition cursor-pointer"
+                title={language === 'tr' ? 'Kapat' : 'Close'}
+              >
+                <FaTimes className="text-[10px]" />
+              </button>
+            </div>
+
+            {/* Popover Meetings List */}
+            <div className="p-3 space-y-2 max-h-[250px] overflow-y-auto custom-scrollbar">
+              {activeMeetingMenu.meetings.map((m, idx) => {
+                const mDateTime = new Date(`${m.date}T${m.startTime}`);
+                const isPast = mDateTime < now;
+
+                return (
+                  <div
+                    key={m.id || `popover-meet-${idx}`}
+                    onClick={() => {
+                      onSelectDate(activeMeetingMenu.date);
+                      setActiveMeetingMenu(null);
+                    }}
+                    className={`p-2.5 rounded-2xl border transition-all cursor-pointer group/meet shadow-2xs hover:scale-[1.01] ${
+                      isPast
+                        ? 'bg-stone-50/60 dark:bg-zinc-900/50 border-stone-200/60 dark:border-zinc-800/60 opacity-60'
+                        : 'bg-gradient-to-r from-indigo-50/70 to-violet-50/50 dark:from-indigo-950/40 dark:to-violet-950/30 border-indigo-200/80 dark:border-indigo-800/60 hover:border-indigo-400 dark:hover:border-indigo-400'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-xs font-black text-indigo-950 dark:text-indigo-200 truncate group-hover/meet:text-indigo-600 dark:group-hover/meet:text-indigo-400 transition-colors">
+                            {m.title}
+                          </span>
+                          {m.isRecurring && (
+                            <span 
+                              className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-bold shrink-0 flex items-center gap-1"
+                              title={m.recurrenceFrequency === 'daily' ? 'Günlük Seri' : m.recurrenceFrequency === 'weekdays' ? 'Hafta İçi Seri' : 'Haftalık Seri'}
+                            >
+                              <FaSyncAlt className="text-[7px] animate-spin-slow" />
+                              <span>
+                                {m.recurrenceFrequency === 'daily' 
+                                  ? (language === 'tr' ? 'Günlük' : 'Daily') 
+                                  : m.recurrenceFrequency === 'weekdays' 
+                                    ? (language === 'tr' ? 'Hafta İçi' : 'Weekdays') 
+                                    : (language === 'tr' ? 'Haftalık' : 'Weekly')}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                        {m.description && (
+                          <p className="text-[10.5px] text-stone-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                            {m.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col items-end shrink-0 gap-1">
+                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-900 dark:text-indigo-200 flex items-center gap-1">
+                          <FaClock className="text-[8px]" />
+                          <span>{m.startTime}</span>
+                          {m.endTime && <span className="opacity-70 font-normal">-{m.endTime}</span>}
+                        </span>
+                        {m.externalLink && (
+                          <a
+                            href={m.externalLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white transition flex items-center gap-1 shadow-2xs mt-1"
+                          >
+                            <span>{language === 'tr' ? 'Bağlantı' : 'Link'}</span>
+                            <span>↗</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Popover Footer */}
+            <div className="px-3.5 py-2.5 bg-stone-50/80 dark:bg-zinc-900/90 border-t border-indigo-100/70 dark:border-indigo-950/60 flex items-center justify-between gap-2">
+              {onAddMeeting ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddMeeting(activeMeetingMenu.date);
+                    setActiveMeetingMenu(null);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer active:scale-95"
+                >
+                  <FaVideo className="text-[10px]" />
+                  <span>+ {language === 'tr' ? 'Toplantı Ekle' : 'Add Meeting'}</span>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectDate(activeMeetingMenu.date);
+                  setActiveMeetingMenu(null);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-stone-200/70 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-300 font-bold text-xs transition cursor-pointer active:scale-95"
+              >
+                {language === 'tr' ? 'Günü Aç' : 'Open Day'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ─── TÜM GÜN GÖREVLERİ STANDART B12 MODALI (SÜRÜKLE-BIRAK DESTEKLİ) ─── */}
       <AnimatePresence>
         {hoveredDayTasks && (
@@ -955,101 +1305,209 @@ export default function MonthlyView({
               </div>
 
               {/* Scrollable Tasks Body */}
-              <div className="p-4 space-y-2 overflow-y-auto custom-scrollbar flex-1 max-h-[55vh]">
-                {sortPlannerTasks(hoveredDayTasks.tasks).map((task, idx) => {
-                  const isDone = !!(task.isCompleted || task.status === 'done');
-                  return (
-                    <div
-                      key={task.id || idx}
-                      draggable={true}
-                      onDragStart={(e) => {
-                        e.stopPropagation();
-                        // Tarayıcının drag ghost görüntüsünü oluşturabilmesi için çok kısa gecikmeyle modalı kapat
-                        setTimeout(() => {
-                          setHoveredDayTasks(null);
-                        }, 20);
-                        setDraggingItemId(task.id || null);
-                        e.dataTransfer.setData('text/plain', JSON.stringify({
-                          id: task.id,
-                          date: task.date || hoveredDayTasks.dateStr,
-                          itemType: task.itemType
-                        }));
-                        e.dataTransfer.effectAllowed = 'move';
-                      }}
-                      onDragEnd={() => {
-                        setDraggingItemId(null);
-                        setDragOverDate(null);
-                      }}
-                      onClick={() => {
-                        onSelectDate(hoveredDayTasks.date);
-                        setHoveredDayTasks(null);
-                      }}
-                      className={`p-3 rounded-2xl border transition-all flex items-start justify-between gap-3 cursor-grab active:cursor-grabbing hover:scale-[1.01] select-none ${
-                        isDone
-                          ? 'bg-stone-50/70 dark:bg-zinc-900/40 border-stone-200/60 dark:border-zinc-800/60 opacity-60'
-                          : 'bg-stone-50/90 dark:bg-zinc-800/60 border-stone-200/90 dark:border-zinc-700/80 hover:border-amber-400/60 shadow-xs'
-                      }`}
-                      title={language === 'tr' ? 'Tarihini değiştirmek için takvime sürükleyebilirsiniz' : 'Drag onto calendar to change date'}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                            task.itemType === 'jira' ? 'bg-blue-500' :
-                            task.itemType === 'todo' ? 'bg-emerald-500' :
-                            task.itemType === 'sport' ? 'bg-orange-500' : 'bg-rose-500'
-                          }`} />
-                          <span className={`text-xs font-black truncate ${isDone ? 'line-through text-stone-400 dark:text-zinc-500' : 'text-stone-900 dark:text-zinc-100'}`}>
-                            {task.title}
-                          </span>
-                        </div>
-                        {task.description && (
-                          <p className="text-[11px] text-stone-500 dark:text-zinc-400 line-clamp-2 pl-4">
-                            {task.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end shrink-0 text-[11px] gap-1">
-                        {isDone ? (
-                          <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px]">
-                            ✓ {language === 'tr' ? 'Tamamlandı' : 'Done'}
-                          </span>
-                        ) : (
-                          <span className="font-bold text-stone-600 dark:text-zinc-300 bg-stone-200/60 dark:bg-zinc-700/60 px-1.5 py-0.5 rounded-md text-[10px]">
-                            {task.startTime || '--:--'}
-                          </span>
-                        )}
-                        {task.priority && !isDone && (
-                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
-                            task.priority === 'urgent' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
-                            task.priority === 'high' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400' :
-                            'bg-stone-200/50 text-stone-500 dark:text-zinc-400'
-                          }`}>
-                            {task.priority === 'urgent' ? (language === 'tr' ? 'Acil' : 'Urgent') :
-                             task.priority === 'high' ? (language === 'tr' ? 'Yüksek' : 'High') : task.priority}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+              <div className="p-4 space-y-3 overflow-y-auto custom-scrollbar flex-1 max-h-[55vh]">
+                {(() => {
+                  const modalMeetings = hoveredDayTasks.tasks
+                    .filter(t => t.itemType === 'meeting' || (!t.itemType && t.startTime))
+                    .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+                  const modalTasks = sortPlannerTasks(
+                    hoveredDayTasks.tasks.filter(t => t.itemType === 'todo' || t.itemType === 'jira' || t.itemType === 'sport')
                   );
-                })}
+
+                  return (
+                    <>
+                      {/* TOPLANTILAR BÖLÜMÜ */}
+                      {modalMeetings.length > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between px-1 mb-1">
+                            <span className="text-[11px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                              <FaVideo className="text-xs" />
+                              <span>{t('planner.meetingsSection')} ({modalMeetings.length})</span>
+                            </span>
+                          </div>
+                          {modalMeetings.map((meet, idx) => (
+                            <div
+                              key={meet.id || `meet-modal-${idx}`}
+                              draggable={true}
+                              onDragStart={(e) => {
+                                e.stopPropagation();
+                                setTimeout(() => setHoveredDayTasks(null), 20);
+                                setDraggingItemId(meet.id || null);
+                                e.dataTransfer.setData('text/plain', JSON.stringify({
+                                  id: meet.id,
+                                  date: meet.date || hoveredDayTasks.dateStr,
+                                  itemType: meet.itemType || 'meeting'
+                                }));
+                                e.dataTransfer.effectAllowed = 'move';
+                              }}
+                              onDragEnd={() => {
+                                setDraggingItemId(null);
+                                setDragOverDate(null);
+                              }}
+                              onClick={() => {
+                                onSelectDate(hoveredDayTasks.date);
+                                setHoveredDayTasks(null);
+                              }}
+                              className="p-3 rounded-2xl border transition-all flex items-start justify-between gap-3 cursor-grab active:cursor-grabbing hover:scale-[1.01] select-none bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-200/80 dark:border-indigo-800/80 hover:border-indigo-400 shadow-xs"
+                              title={language === 'tr' ? 'Tarihini değiştirmek için takvime sürükleyebilirsiniz' : 'Drag onto calendar to change date'}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <div className="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0">
+                                    <FaVideo className="text-[10px]" />
+                                  </div>
+                                  <span className="text-xs font-black text-indigo-950 dark:text-indigo-100 truncate">
+                                    {meet.title}
+                                  </span>
+                                  {meet.isRecurring && (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-[9px] font-bold">
+                                      <FaSyncAlt size={8} className="animate-spin-slow" />
+                                      <span>
+                                        {meet.recurrenceFrequency === 'daily'
+                                          ? t('planner.freqDaily')
+                                          : meet.recurrenceFrequency === 'weekdays'
+                                          ? t('planner.freqWeekdays')
+                                          : t('planner.freqWeekly')}
+                                      </span>
+                                    </span>
+                                  )}
+                                </div>
+                                {meet.notes && (
+                                  <p className="text-[11px] text-stone-600 dark:text-zinc-400 line-clamp-2 pl-7 italic">
+                                    {meet.notes}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-end shrink-0 text-[11px] gap-1">
+                                <span className="font-extrabold text-indigo-950 dark:text-indigo-200 bg-indigo-200/70 dark:bg-indigo-900/70 px-2 py-0.5 rounded-lg text-[10px]">
+                                  {meet.startTime}{meet.endTime ? ` - ${meet.endTime}` : ''}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* GÖREVLER BÖLÜMÜ */}
+                      {modalTasks.length > 0 && (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between px-1 mb-1">
+                            <span className="text-[11px] font-black uppercase tracking-wider text-stone-500 dark:text-zinc-400 flex items-center gap-1.5">
+                              <span>📋</span>
+                              <span>{t('planner.tasksSection')} ({modalTasks.length})</span>
+                            </span>
+                          </div>
+                          {modalTasks.map((task, idx) => {
+                            const isDone = !!(task.isCompleted || task.status === 'done');
+                            return (
+                              <div
+                                key={task.id || idx}
+                                draggable={true}
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  setTimeout(() => setHoveredDayTasks(null), 20);
+                                  setDraggingItemId(task.id || null);
+                                  e.dataTransfer.setData('text/plain', JSON.stringify({
+                                    id: task.id,
+                                    date: task.date || hoveredDayTasks.dateStr,
+                                    itemType: task.itemType
+                                  }));
+                                  e.dataTransfer.effectAllowed = 'move';
+                                }}
+                                onDragEnd={() => {
+                                  setDraggingItemId(null);
+                                  setDragOverDate(null);
+                                }}
+                                onClick={() => {
+                                  onSelectDate(hoveredDayTasks.date);
+                                  setHoveredDayTasks(null);
+                                }}
+                                className={`p-3 rounded-2xl border transition-all flex items-start justify-between gap-3 cursor-grab active:cursor-grabbing hover:scale-[1.01] select-none ${
+                                  isDone
+                                    ? 'bg-stone-50/70 dark:bg-zinc-900/40 border-stone-200/60 dark:border-zinc-800/60 opacity-60'
+                                    : 'bg-stone-50/90 dark:bg-zinc-800/60 border-stone-200/90 dark:border-zinc-700/80 hover:border-amber-400/60 shadow-xs'
+                                }`}
+                                title={language === 'tr' ? 'Tarihini değiştirmek için takvime sürükleyebilirsiniz' : 'Drag onto calendar to change date'}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                      task.itemType === 'jira' ? 'bg-blue-500' :
+                                      task.itemType === 'todo' ? 'bg-emerald-500' :
+                                      task.itemType === 'sport' ? 'bg-orange-500' : 'bg-rose-500'
+                                    }`} />
+                                    <span className={`text-xs font-black truncate ${isDone ? 'line-through text-stone-400 dark:text-zinc-500' : 'text-stone-900 dark:text-zinc-100'}`}>
+                                      {task.title}
+                                    </span>
+                                  </div>
+                                  {task.description && (
+                                    <p className="text-[11px] text-stone-500 dark:text-zinc-400 line-clamp-2 pl-4">
+                                      {task.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex flex-col items-end shrink-0 text-[11px] gap-1">
+                                  {isDone ? (
+                                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px]">
+                                      ✓ {language === 'tr' ? 'Tamamlandı' : 'Done'}
+                                    </span>
+                                  ) : (
+                                    <span className="font-bold text-stone-600 dark:text-zinc-300 bg-stone-200/60 dark:bg-zinc-700/60 px-1.5 py-0.5 rounded-md text-[10px]">
+                                      {task.startTime || '--:--'}
+                                    </span>
+                                  )}
+                                  {task.priority && !isDone && (
+                                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                                      task.priority === 'urgent' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
+                                      task.priority === 'high' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400' :
+                                      'bg-stone-200/50 text-stone-500 dark:text-zinc-400'
+                                    }`}>
+                                      {task.priority === 'urgent' ? (language === 'tr' ? 'Acil' : 'Urgent') :
+                                       task.priority === 'high' ? (language === 'tr' ? 'Yüksek' : 'High') : task.priority}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Footer */}
-              <div className="px-5 py-3 bg-stone-50 dark:bg-zinc-900/90 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between text-xs">
+              <div className="px-5 py-3 bg-stone-50 dark:bg-zinc-900/90 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between gap-2 text-xs flex-wrap">
                 <span className="text-[11px] text-stone-400 dark:text-zinc-500 flex items-center gap-1.5">
                   <span>💡</span>
                   <span>{language === 'tr' ? 'Sürükleyerek başka bir güne taşıyabilirsiniz' : 'Drag to move to another day'}</span>
                 </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectDate(hoveredDayTasks.date);
-                    setHoveredDayTasks(null);
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 font-bold text-xs transition shadow-xs"
-                >
-                  {language === 'tr' ? 'Günü Aç' : 'Open Day'}
-                </button>
+                <div className="flex items-center gap-2">
+                  {onAddMeeting && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAddMeeting(hoveredDayTasks.date);
+                        setHoveredDayTasks(null);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-400/30 transition shadow-xs cursor-pointer active:scale-95"
+                    >
+                      <FaVideo className="text-[10px]" />
+                      <span>{t('planner.monthlyAddMeeting')}</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectDate(hoveredDayTasks.date);
+                      setHoveredDayTasks(null);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-stone-950 font-bold text-xs transition shadow-xs cursor-pointer active:scale-95"
+                  >
+                    {language === 'tr' ? 'Günü Aç' : 'Open Day'}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

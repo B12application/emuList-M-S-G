@@ -637,7 +637,7 @@ export default function JiraBoardView({
                 )}
               </div>
               <p className="text-xs text-stone-500 dark:text-zinc-400">
-                Sürüklenebilir görevler, fikirler, notlar, alt checklistler ve yorumlar
+                {t('planner.stickyBoardDesc') || 'Sürüklenebilir görevler, fikirler, notlar, alt checklistler ve yorumlar'}
               </p>
             </div>
           </div>
@@ -825,23 +825,19 @@ export default function JiraBoardView({
           }}
         >
           {/* Boş Durum İpucu */}
-          {displayItems.length === 0 ? (
+          {displayItems.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
               <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-500 mb-3 shadow-inner">
                 <FaThumbtack size={28} className="rotate-45" />
               </div>
               <h3 className="font-black text-base text-stone-800 dark:text-zinc-200 mb-1">
-                Panoda gösterilecek not bulunamadı
+                {t('planner.emptyCanvasTitle') || 'Panoda gösterilecek not bulunamadı'}
               </h3>
               <p className="text-xs text-stone-400 dark:text-zinc-500 max-w-sm">
                 {completedCount > 0 && hideCompleted
                   ? `${completedCount} görev tamamlandığı için gizlendi. Görmek için yukarıdaki "Bitenler Gizli" düğmesine tıklayın.`
-                  : 'Yeni bir not, fikir veya görev eklemek için yukarıdaki "+ Yeni Not" butonuna tıklayın.'}
+                  : (t('planner.emptyCanvasPrompt') || 'Panoda henüz yapışkan not yok. Not eklemek için butona tıklayın veya panoya çift dokunun.')}
               </p>
-            </div>
-          ) : (
-            <div className="sticky bottom-4 left-4 z-40 pointer-events-none inline-flex items-center gap-2 text-[11px] font-bold text-stone-500 dark:text-zinc-400 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-stone-200/60 dark:border-zinc-800/60 shadow-sm">
-              <span>💡 Notları tutup ekranda istediğin yere taşıyabilir, altındaki 💬 butonuyla yorum yazabilirsin</span>
             </div>
           )}
 

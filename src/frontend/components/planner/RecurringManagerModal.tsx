@@ -94,23 +94,38 @@ export default function RecurringManagerModal({ isOpen, onClose, onRefresh }: Re
                   className="bg-stone-50 dark:bg-zinc-800/40 border border-stone-200 dark:border-zinc-800 p-4 rounded-2xl flex items-center justify-between group"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${master.itemType === 'meeting' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' :
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${master.itemType === 'meeting' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' :
                           master.itemType === 'todo' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' :
                             'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
                         }`}>
                         {master.itemType === 'meeting' ? t('planner.meeting') : master.itemType === 'todo' ? t('planner.task') : 'Jira'}
                       </span>
-                      <span className="text-[10px] font-semibold text-stone-400 dark:text-zinc-500">
-                        {master.startTime}
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-stone-200/80 dark:bg-zinc-700 text-stone-700 dark:text-zinc-300">
+                        {master.recurrenceFrequency === 'daily'
+                          ? t('planner.freqDaily')
+                          : master.recurrenceFrequency === 'weekdays'
+                          ? t('planner.freqWeekdays')
+                          : t('planner.freqWeekly')}
                       </span>
+                      {master.startTime && (
+                        <span className="text-[10px] font-semibold text-stone-400 dark:text-zinc-500">
+                          {master.startTime}
+                        </span>
+                      )}
                     </div>
                     <h4 className="font-bold text-stone-900 dark:text-white truncate pr-4">
                       {master.title}
                     </h4>
                     <p className="text-[10px] text-stone-500 dark:text-zinc-500 mt-1 flex items-center gap-1">
                       <FaCalendarCheck className="text-[9px]" />
-                      {t('planner.activeNext3Weeks')}
+                      {master.recurrenceFrequency === 'daily'
+                        ? t('planner.activeDailySeries')
+                        : master.recurrenceFrequency === 'weekdays'
+                        ? t('planner.activeWeekdaysSeries')
+                        : master.recurrenceFrequency === 'monthly'
+                        ? t('planner.activeMonthlySeries')
+                        : t('planner.activeNext3Weeks')}
                     </p>
                   </div>
 

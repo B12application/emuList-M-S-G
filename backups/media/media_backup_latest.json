@@ -1,11 +1,11 @@
 {
   "version": "2.0",
-  "exportedAt": "2026-10-08T00:42:42.019Z",
+  "exportedAt": "2026-10-21T23:54:13.698Z",
   "targetUserId": "ZKU7SObBkeNzMicltUKJjo6ybHH2",
-  "totalCount": 400,
+  "totalCount": 412,
   "stats": {
-    "movieCount": 254,
-    "seriesCount": 78,
+    "movieCount": 263,
+    "seriesCount": 81,
     "gameCount": 56,
     "bookCount": 12
   },
@@ -548,6 +548,20 @@
       "runtime": "130 min"
     },
     {
+      "id": "6Z9RSq0nIV4UgZ4oxqt6",
+      "title": "Organize İşler",
+      "type": "series",
+      "rating": "5.7",
+      "image": "https://image.tmdb.org/t/p/w342/7KnFHnuHjeOMkrE5zfw0G7e9daC.jpg",
+      "description": "When a mythical map falls into the hands of a legendary scam artist, he decides to pull one last con before leaving it all behind for good.",
+      "watched": true,
+      "genre": "Comedy, Crime, Action & Adventure",
+      "imdbId": "tt38732131",
+      "totalSeasons": 1,
+      "releaseDate": "2026-10-16",
+      "runtime": "106 min"
+    },
+    {
       "id": "6bKy4sQWxKj8v875EHgj",
       "title": "Mission: Impossible - The Final Reckoning",
       "type": "movie",
@@ -897,6 +911,19 @@
       "imdbId": "tt37536947"
     },
     {
+      "id": "9UGw4J5yBkBIVFbPMRP0",
+      "title": "The Uprising",
+      "type": "movie",
+      "rating": "8.0",
+      "image": "https://image.tmdb.org/t/p/w342/7TUl15TOsIvndKlgMWTtLgtEzZP.jpg",
+      "description": "14. yüzyıl İngiltere'sinde savaş ve veba kasıp kavururken, mütevazı bir köylü isyan başlatır ve adalet ve hayatta kalma için umutsuz bir mücadelede kralın gücüne meydan okumak üzere halktan oluşan bir orduyu birleştirir.",
+      "watched": false,
+      "genre": "Tarih, Dram, Aksiyon",
+      "imdbId": "tt36983905",
+      "releaseDate": "2026-09-10",
+      "runtime": "128 min"
+    },
+    {
       "id": "9Y3WEkP3lh7HR2ch3elF",
       "title": "Caddo Lake",
       "type": "movie",
@@ -1115,6 +1142,19 @@
       "runtime": "60 min"
     },
     {
+      "id": "Bg3v701yKidCkfZFRNXK",
+      "title": "I Think We're Alone Now",
+      "type": "movie",
+      "rating": "5.8",
+      "image": "https://m.media-amazon.com/images/M/MV5BYzM4OWQxMjktZjFhOC00ODMzLWFiNTctZGRiOGM3NjZlYmE4XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "description": "Del is alone in the world. After the human race is wiped out, he lives in his small, empty town, content in his solitude and the utopia he's methodically created for himself--until he is discovered by Grace, an interloper whose history and motives are obscure. To make matters worse, she wants to stay.",
+      "watched": false,
+      "genre": "Drama, Mystery, Sci-Fi",
+      "imdbId": "tt6169694",
+      "releaseDate": "21 Sep 2018",
+      "runtime": "99 min"
+    },
+    {
       "id": "Bm44ClunFY2qH6GJsngU",
       "title": "Bird",
       "type": "movie",
@@ -1166,6 +1206,19 @@
       "imdbId": "tt37287335",
       "releaseDate": "2026-05-13",
       "runtime": "109 min"
+    },
+    {
+      "id": "C5nHuO08aBDnxbyOOha0",
+      "title": "Carrie",
+      "type": "series",
+      "rating": "7.8",
+      "image": "https://m.media-amazon.com/images/M/MV5BZTRhNGJmY2YtYjNmOC00ZTA4LThjMzktYTEwYTdkZDE0OTllXkEyXkFqcGc@._V1_QL75_UX380_CR0,4,380,562_.jpg",
+      "description": "Misfit student Carrie White has spent her life hidden away inside the walls of her home with her fiercely protective mother, Margaret. After her father's sudden, untimely death thrusts her into the unforgiving ecosystem of public high school, Carrie is forced to navigate a viral bullying scandal that tears through her community, the relentless pressure and casual cruelty of the social media age, and the awakening of mysterious telekinetic powers that rise alongside her adolescence.",
+      "watched": false,
+      "genre": "Drama, Horror",
+      "imdbId": "tt11540908",
+      "totalSeasons": 1,
+      "releaseDate": "07 Oct 2026"
     },
     {
       "id": "CG1c2hdSpuGRAh3zKhCt",
@@ -1372,6 +1425,19 @@
       "imdbId": "tt0450259",
       "releaseDate": "08 Dec 2006",
       "runtime": "143 min"
+    },
+    {
+      "id": "EnAK5eTzXR8xJSU8tgVM",
+      "title": "Fall 2: Ölümcül Tırmanış",
+      "type": "movie",
+      "rating": "7.1",
+      "image": "https://image.tmdb.org/t/p/w342/zP0U2J7eyrbRhgmDWa0xcWTqvqR.jpg",
+      "description": "Tayland'ın sarp Kwan Dağı'nda tırmanırken yüzlerce metre yükseklikte mahsur kalan iki dağcı, baş döndürücü bir boşluğun ortasında ölüm kalım savaşı verir. Çaresizliğin ve acımasız doğa koşullarının pençesindeki ikili için her an zamana karşı bir yarışa dönüşür.",
+      "watched": true,
+      "genre": "Gerilim",
+      "imdbId": "tt31192372",
+      "releaseDate": "2026-09-01",
+      "runtime": "97 min"
     },
     {
       "id": "EqnOT0DsUsIRGMBsmG0H",
@@ -2502,6 +2568,19 @@
       "releaseDate": "10 Sep 2023"
     },
     {
+      "id": "SDJ1AtxXku6YC8Yx3Pmn",
+      "title": "Seni Taniyorum",
+      "type": "series",
+      "rating": "6.7",
+      "image": "https://m.media-amazon.com/images/M/MV5BYWNjNzcxYzctZGM4Zi00OWUwLTkyODctNzc1Y2U4MjZiZDY0XkEyXkFqcGc@._V1_QL75_UY562_CR21,0,380,562_.jpg",
+      "description": "N/A",
+      "watched": true,
+      "genre": "Drama, Thriller",
+      "imdbId": "tt39397536",
+      "totalSeasons": 1,
+      "releaseDate": "17 Sep 2026"
+    },
+    {
       "id": "SOcsO2AZdrwG6FqnOmFA",
       "title": "Kneecap",
       "type": "movie",
@@ -3463,6 +3542,19 @@
       "genre": "Antiques & Collectibles / Books"
     },
     {
+      "id": "d66iNY0TxgDg3TiY0fMX",
+      "title": "Tenzing",
+      "type": "movie",
+      "rating": "8.4",
+      "image": "https://image.tmdb.org/t/p/w342/eI0QW02PYqhnmIvLRdn9vrfVVP7.jpg",
+      "description": "A determined man embarks on a high-stakes quest—and defies seemingly impossible odds—to fulfill his dream of being the first to reach the summit of Mount Everest.",
+      "watched": true,
+      "genre": "Drama, History",
+      "imdbId": "tt6262770",
+      "releaseDate": "2026-10-09",
+      "runtime": "126 min"
+    },
+    {
       "id": "d7r4ieRQ8mdI9oB1Eqbd",
       "title": "Hitman 3",
       "type": "game",
@@ -3483,6 +3575,19 @@
       "watched": false,
       "genre": "Action, RPG",
       "releaseDate": "2023-02-10"
+    },
+    {
+      "id": "dcN23wYfG7fKl3LooiWg",
+      "title": "Maintenance Required",
+      "type": "movie",
+      "rating": "5.3",
+      "image": "https://m.media-amazon.com/images/M/MV5BNGZlN2Y5ZGEtMmU0MS00ZWI0LThlMjQtMjIyZTIxMWRlYjNlXkEyXkFqcGc@._V1_QL75_UX380_CR0,4,380,562_.jpg",
+      "description": "Charlie, forced to reevaluate her all-female mechanic shop, unknowingly confides in her online confidant Beau, who turns out to be her real-life business rival, their connection blossoms amidst professional rivalry.",
+      "watched": false,
+      "genre": "Comedy, Romance",
+      "imdbId": "tt33335602",
+      "releaseDate": "08 Oct 2025",
+      "runtime": "102 min"
     },
     {
       "id": "dcbxaFqQx06oYFDVI6xV",
@@ -3550,6 +3655,19 @@
       "imdbId": "tt4996328",
       "releaseDate": "23 Feb 2024",
       "runtime": "118 min"
+    },
+    {
+      "id": "ePXkU5BvbfTry7sXfBB0",
+      "title": "The Social Reckoning",
+      "type": "movie",
+      "rating": "8.2",
+      "image": "https://image.tmdb.org/t/p/w342/nZ8cQbjAQHRuSqwxvuYhOfxyhfW.jpg",
+      "description": "Frances Haugen, a young Facebook engineer, enlists the help of Jeff Horwitz, a Wall Street Journal reporter, to go on a dangerous journey that ends up blowing the whistle on the social network's most guarded secrets.",
+      "watched": false,
+      "genre": "Drama, Thriller",
+      "imdbId": "tt37510326",
+      "releaseDate": "2026-10-07",
+      "runtime": "112 min"
     },
     {
       "id": "eZDEYwEIzT9lKhkvhxD7",
@@ -4457,6 +4575,19 @@
       "author": "Jean-Christophe Grangé"
     },
     {
+      "id": "sJZIOa50C52WmM8OGFwm",
+      "title": "Animals",
+      "type": "movie",
+      "rating": "6.5",
+      "image": "https://image.tmdb.org/t/p/w342/cyltXU1lAGhRFBuHQIMWBAPj8fI.jpg",
+      "description": "When the son of an L.A. mayoral candidate is kidnapped, he and his wife have a few hours to come up with the ransom payment. With most of their money spent on his political campaign, they have to get their hands dirty and expose a side of their lives they never intended to see the light of day.",
+      "watched": true,
+      "genre": "Thriller, Drama",
+      "imdbId": "tt31049299",
+      "releaseDate": "2026-10-09",
+      "runtime": "106 min"
+    },
+    {
       "id": "sY06RblOXBkF8jZIZUyT",
       "title": "Resident Evil 9: Requiem",
       "type": "game",
@@ -4620,6 +4751,19 @@
       "imdbId": "tt30460310",
       "totalSeasons": 1,
       "releaseDate": "25 May 2026"
+    },
+    {
+      "id": "u9eOyla3aBN0GnPBtsXK",
+      "title": "Digger",
+      "type": "movie",
+      "rating": "7.5",
+      "image": "https://image.tmdb.org/t/p/w342/tPvspXZzprJhYu6jGXvX1myfmlj.jpg",
+      "description": "Dünyanın en güçlü adamı, kendi yol açtığı felaket her şeyi yok etmeden önce, insanlığın kurtarıcısı olduğunu kanıtlamak için hummalı bir mücadeleye girişir.",
+      "watched": false,
+      "genre": "Komedi, Dram",
+      "imdbId": "tt31450459",
+      "releaseDate": "2026-09-28",
+      "runtime": "129 min"
     },
     {
       "id": "uH11TqHzg5eMhF7tnq2p",
@@ -4846,6 +4990,19 @@
       "imdbId": "tt2726560",
       "releaseDate": "10 Apr 2015",
       "runtime": "123 min"
+    },
+    {
+      "id": "xNG32mqSBHchXXppKNof",
+      "title": "Paris, Texas",
+      "type": "movie",
+      "rating": "8.1",
+      "image": "https://m.media-amazon.com/images/M/MV5BYWY5YzE4YmUtZWFhMS00YjYxLWI5ZGUtNDEyNmMzNDVjMGEwXkEyXkFqcGc@._V1_QL75_UX380_CR0,12,380,562_.jpg",
+      "description": "After an absence of 4 years, Travis Henderson suddenly reappears in a deserted part of south Texas. His brother Walt fetches him and he is soon reunited with his son Hunter. He can't really explain why he's been away or why he's suddenly reappeared. Walt has been raising Travis' son Hunter and it takes a while for the two of them to get reacquainted. They eventually set off together to find Jane, Travis' wife and Hunter's mother. She is found working in a peep show in Houston but a happy family reunion isn't in the cards.",
+      "watched": false,
+      "genre": "Drama",
+      "imdbId": "tt0087884",
+      "releaseDate": "23 Aug 1984",
+      "runtime": "145 min"
     },
     {
       "id": "xagM2TgSlvifsOv0Azs1",

@@ -20,7 +20,7 @@ interface SearchResult {
     image: string;
     year?: string;
     subtitle?: string;
-    source?: 'tmdb' | 'omdb';
+    source?: 'tmdb' | 'omdb' | 'openlib' | 'google';
 }
 
 export interface MediaDetails {
@@ -50,6 +50,7 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
     const [showResults, setShowResults] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [apiPreference, setApiPreference] = useState<'omdb' | 'tmdb'>('omdb');
+    const [bookApiPreference, setBookApiPreference] = useState<'openlibrary' | 'googlebooks'>('openlibrary');
     const [searchLang, setSearchLang] = useState<'en' | 'tr'>(() => {
         try {
             const saved = localStorage.getItem('b12_media_search_lang');
@@ -119,13 +120,14 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                         }));
                     }
                 } else if (type === 'book') {
-                    const bookResults = await searchBooks(query);
+                    const bookResults = await searchBooks(query, bookApiPreference);
                     searchResults = (bookResults || []).map(r => ({
                         id: r.id,
                         title: r.volumeInfo.title,
-                        image: r.volumeInfo.imageLinks?.thumbnail || '',
+                        image: getBookCoverUrl(r.volumeInfo.imageLinks) || r.volumeInfo.imageLinks?.thumbnail || '',
                         subtitle: formatAuthors(r.volumeInfo.authors),
-                        year: r.volumeInfo.publishedDate?.split('-')[0]
+                        year: r.volumeInfo.publishedDate?.split('-')[0],
+                        source: r.id.startsWith('ol_') ? 'openlib' : 'google'
                     }));
                 } else if (type === 'game') {
                     const gameResults = await searchGames(query);
@@ -149,7 +151,7 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [query, type, apiPreference, searchLang, t]);
+    }, [query, type, apiPreference, bookApiPreference, searchLang, t]);
 
     const handleSelect = async (result: SearchResult) => {
         // Blur active input element immediately to close virtual keyboard on mobile devices
@@ -237,14 +239,15 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                 }
             } else if (type === 'book') {
                 const data = await getBookById(result.id);
+                const bookCover = getBookCoverUrl(data.volumeInfo.imageLinks) || result.image || '';
                 details = {
-                    title: data.volumeInfo.title,
-                    image: getBookCoverUrl(data.volumeInfo.imageLinks),
+                    title: data.volumeInfo.title || result.title,
+                    image: bookCover,
                     description: data.volumeInfo.description || '',
                     rating: data.volumeInfo.averageRating ? normalizeBookRating(data.volumeInfo.averageRating) : '0',
-                    author: formatAuthors(data.volumeInfo.authors),
+                    author: formatAuthors(data.volumeInfo.authors) || result.subtitle || '',
                     genres: data.volumeInfo.categories || [],
-                    releaseDate: data.volumeInfo.publishedDate || ''
+                    releaseDate: data.volumeInfo.publishedDate || result.year || ''
                 };
             } else {
                 const data = await getGameById(Number(result.id));
@@ -388,6 +391,42 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                 </div>
             )}
 
+            {/* API Engine Selection Toggle - For Books */}
+            {type === 'book' && (
+                <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 px-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-extrabold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                            {t('create.searchSource') || 'Kaynak'}
+                        </span>
+                        <div className="flex items-center bg-stone-100 dark:bg-zinc-800 p-0.5 rounded-xl shadow-inner border border-stone-200/60 dark:border-zinc-700/60">
+                            <button
+                                type="button"
+                                onClick={() => setBookApiPreference('openlibrary')}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                    bookApiPreference === 'openlibrary'
+                                        ? 'bg-emerald-500 text-white shadow-xs'
+                                        : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                }`}
+                            >
+                                Open Library <span className="text-[9px] opacity-75 font-normal">({t('create.openLibraryUnlimited') || 'Sınırsız'})</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setBookApiPreference('googlebooks')}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                    bookApiPreference === 'googlebooks'
+                                        ? 'bg-amber-400 text-stone-950 shadow-xs'
+                                        : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white'
+                                }`}
+                            >
+                                Google Books
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Results Dropdown Floating Layer */}
             {showResults && results.length > 0 && (
                 <div className="absolute z-50 left-0 right-0 mt-2 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-stone-200/90 dark:border-zinc-700/90 rounded-2xl shadow-2xl max-h-80 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
@@ -429,9 +468,11 @@ export default function SearchInput({ type, onSelect }: SearchInputProps) {
                                         <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${
                                             result.source === 'tmdb' 
                                                 ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400' 
+                                                : result.source === 'openlib'
+                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                                 : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                                         }`}>
-                                            {result.source}
+                                            {result.source === 'openlib' ? 'OpenLib' : result.source}
                                         </span>
                                     )}
                                 </div>

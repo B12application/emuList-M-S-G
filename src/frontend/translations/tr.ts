@@ -262,6 +262,8 @@ export const translationsTR = {
         searchPlaceholderMovieTr: 'Film ara (Türkçe)...',
         searchPlaceholderSeriesEn: 'Dizi ara (Orijinal / İngilizce)...',
         searchPlaceholderSeriesTr: 'Dizi ara (Türkçe)...',
+        openLibraryUnlimited: 'Sınırsız',
+        googleBooksQuotaNotice: 'Google Books kotası dolu veya anahtar yok, Open Library kullanılıyor.',
     },
 
     // HomePage

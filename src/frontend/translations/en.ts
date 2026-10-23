@@ -264,6 +264,8 @@ export const translationsEN = {
         searchPlaceholderMovieTr: 'Search movie (Turkish)...',
         searchPlaceholderSeriesEn: 'Search series (Original / English)...',
         searchPlaceholderSeriesTr: 'Search series (Turkish)...',
+        openLibraryUnlimited: 'Unlimited',
+        googleBooksQuotaNotice: 'Google Books quota exceeded or key missing, using Open Library.',
     },
 
     // HomePage

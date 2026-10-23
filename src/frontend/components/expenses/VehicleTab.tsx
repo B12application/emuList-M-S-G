@@ -7,11 +7,13 @@ import useVehicle from '../../hooks/useVehicle';
 import type { VehicleData } from '../../hooks/useVehicle';
 import useExpenses from '../../hooks/useExpenses';
 import { addCalendarAlert } from '../../../backend/services/plannerService';
-import { FaCar, FaTools, FaCalendarAlt, FaPlus, FaTrash, FaSave, FaBell, FaGasPump, FaCheckCircle, FaWrench, FaEdit, FaIdCard, FaCircle, FaSnowflake, FaSun, FaHistory } from 'react-icons/fa';
+import { FaCar, FaTools, FaCalendarAlt, FaPlus, FaTrash, FaSave, FaBell, FaGasPump, FaCheckCircle, FaWrench, FaEdit, FaIdCard, FaCircle, FaSnowflake, FaSun, FaHistory, FaExchangeAlt, FaShieldAlt } from 'react-icons/fa';
 import { GiCarWheel, GiCrackedGlass } from 'react-icons/gi';
 import { format, differenceInDays, addMonths, parseISO, isValid } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import VehicleSellAndReplaceModal from './VehicleSellAndReplaceModal';
+import PastVehiclesModal from './PastVehiclesModal';
 
 // Import local images directly
 import img1 from '../../assets/IMG_1143.jpg';
@@ -47,9 +49,42 @@ export default function VehicleTab() {
   const { t, language } = useLanguage();
   useTheme();
   const { user } = useAuth();
-  const { vehicle, logs, maintenanceRecords, saveVehicle, addLog, deleteLog, addMaintenanceRecord, deleteMaintenanceRecord, isLoading, isSaving } = useVehicle();
+  const { pastVehicles, allVehicles, logs, maintenanceRecords, saveVehicle, sellAndReplaceVehicle, reactivateVehicle, deletePastVehicle, addLog, deleteLog, addMaintenanceRecord, deleteMaintenanceRecord, isLoading, isSaving } = useVehicle();
   const { expenses, categories } = useExpenses();
 
+  // Selected vehicle state
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+
+  // Active vehicle (not sold, or first)
+  const activeVehicle = useMemo(() => {
+    return allVehicles.find(v => v.status === 'active') ||
+           allVehicles.find(v => v.status !== 'sold') ||
+           allVehicles[0] ||
+           null;
+  }, [allVehicles]);
+
+  // Currently viewed vehicle (selected or default active)
+  const vehicle = useMemo(() => {
+    if (selectedVehicleId) {
+      const found = allVehicles.find(v => v.id === selectedVehicleId);
+      if (found) return found;
+    }
+    return activeVehicle;
+  }, [allVehicles, selectedVehicleId, activeVehicle]);
+
+  // Sorted vehicles (active first, then newest)
+  const sortedVehicles = useMemo(() => {
+    return [...allVehicles].sort((a, b) => {
+      if (a.status !== 'sold' && b.status === 'sold') return -1;
+      if (a.status === 'sold' && b.status !== 'sold') return 1;
+      const dateA = a.purchaseDate || (a.createdAt ? format(new Date(a.createdAt), 'yyyy-MM-dd') : '');
+      const dateB = b.purchaseDate || (b.createdAt ? format(new Date(b.createdAt), 'yyyy-MM-dd') : '');
+      return dateB.localeCompare(dateA);
+    });
+  }, [allVehicles]);
+
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [showPastVehiclesModal, setShowPastVehiclesModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string | number>('');
@@ -57,13 +92,17 @@ export default function VehicleTab() {
     purchaseDate: '2024-01-01',
     purchaseKm: 10000,
     currentKm: 15000,
+    purchasePrice: 0,
     nextMaintenanceKm: 25000,
     insuranceDate: '',
     inspectionDate: '',
+    cascoDate: '',
     mtvYear: new Date().getFullYear(),
     mtvPaid1: false,
     mtvPaid2: false,
     fuelCategory: 'Yakıt',
+    color: '',
+    bodyType: 'sedan',
     licensePlate: '34 DEMO 01',
     brand: 'Premium Car',
     model: 'GT',
@@ -85,6 +124,8 @@ export default function VehicleTab() {
     damageHistory: 'Tamamen orijinal, hatasız.',
     imageUrl1: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
     imageUrl2: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80',
+    imagePosition1: 'center center',
+    imagePosition2: 'center center',
     carBodyStatus: {}
   });
 
@@ -106,6 +147,25 @@ export default function VehicleTab() {
   const [isUploading, setIsUploading] = useState<Record<'image1' | 'image2', boolean>>({ image1: false, image2: false });
   const fileInputRef1 = useRef<HTMLInputElement | null>(null);
   const fileInputRef2 = useRef<HTMLInputElement | null>(null);
+
+  // Drag-to-reposition state
+  const [imgDrag, setImgDrag] = useState<{
+    slot: 'image1' | 'image2';
+    startX: number; startY: number;
+    startPosX: number; startPosY: number;
+  } | null>(null);
+
+  const parseImagePos = (pos?: string): [number, number] => {
+    if (!pos) return [50, 50];
+    const parts = pos.trim().split(/\s+/);
+    const toNum = (v: string) => {
+      if (v === 'left' || v === 'top') return 0;
+      if (v === 'center') return 50;
+      if (v === 'right' || v === 'bottom') return 100;
+      return parseFloat(v) || 50;
+    };
+    return [toNum(parts[0] || 'center'), toNum(parts[1] || 'center')];
+  };
 
   const uploadImageFile = async (file: File, slot: 'image1' | 'image2') => {
     if (!user) {
@@ -171,7 +231,7 @@ export default function VehicleTab() {
       const key = slot === 'image1' ? 'imageUrl1' : 'imageUrl2';
       try {
         toast.loading('Bilgiler kaydediliyor...');
-        await saveVehicle({ ...formData, [key]: url });
+        await saveVehicle({ id: vehicle?.id, ...formData, [key]: url });
         setFormData(prev => ({ ...prev, [key]: url }));
         setImageFiles(prev => ({ ...prev, [slot]: null }));
         setImagePreviews(prev => ({ ...prev, [slot]: null }));
@@ -260,7 +320,7 @@ export default function VehicleTab() {
       const dataUrl = await convertImageToDataUrl(file, 800, 0.55, 150 * 1024);
       const key = slot === 'image1' ? 'imageUrl1' : 'imageUrl2';
       toast.loading('Bilgiler kaydediliyor...');
-      await saveVehicle({ ...formData, [key]: dataUrl });
+      await saveVehicle({ id: vehicle?.id, ...formData, [key]: dataUrl });
       setFormData(prev => ({ ...prev, [key]: dataUrl }));
       setImageFiles(prev => ({ ...prev, [slot]: null }));
       setImagePreviews(prev => ({ ...prev, [slot]: null }));
@@ -295,10 +355,59 @@ export default function VehicleTab() {
 
   useEffect(() => {
     if (vehicle) {
-      setFormData(prev => ({ ...prev, ...vehicle }));
+      setFormData({ ...vehicle });
       setNewPart(prev => ({ ...prev, replacedKm: vehicle.currentKm || 0 }));
+      setEditingField(null);
+      setEditingValue('');
     }
   }, [vehicle]);
+
+  // Global mouse/touch move+up for drag-to-reposition
+  useEffect(() => {
+    if (!imgDrag) return;
+
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const deltaX = clientX - imgDrag.startX;
+      const deltaY = clientY - imgDrag.startY;
+      const sensitivity = 0.18; // % per pixel
+      const newX = Math.min(100, Math.max(0, imgDrag.startPosX - deltaX * sensitivity));
+      const newY = Math.min(100, Math.max(0, imgDrag.startPosY - deltaY * sensitivity));
+      const posKey = imgDrag.slot === 'image1' ? 'imagePosition1' : 'imagePosition2';
+      setFormData(prev => ({ ...prev, [posKey]: `${newX.toFixed(1)}% ${newY.toFixed(1)}%` }));
+    };
+
+    const onUp = async (e: MouseEvent | TouchEvent) => {
+      const posKey = imgDrag.slot === 'image1' ? 'imagePosition1' : 'imagePosition2';
+      // read latest formData via functional update
+      let savedPos = '';
+      setFormData(prev => {
+        savedPos = (prev[posKey] as string) || '50% 50%';
+        return prev;
+      });
+      setImgDrag(null);
+      // small delay to let state flush
+      setTimeout(async () => {
+        setFormData(prev => {
+          const latestPos = (prev[posKey] as string) || '50% 50%';
+          saveVehicle({ id: vehicle?.id, ...prev, [posKey]: latestPos });
+          return prev;
+        });
+      }, 50);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onUp);
+    };
+  }, [imgDrag, vehicle?.id]);
 
   const dateLocale = language === 'tr' ? tr : enUS;
 
@@ -309,12 +418,12 @@ export default function VehicleTab() {
 
 
   const handleSave = async () => {
-    if (!user) {
+    if (!user || !vehicle) {
       toast.error('Oturum bulunamadı, tekrar giriş yapın');
       return;
     }
     try {
-      await saveVehicle(formData);
+      await saveVehicle({ id: vehicle.id, ...formData });
       setIsEditing(false);
       toast.success(t('common.success') || 'Kaydedildi');
     } catch (err: any) {
@@ -325,10 +434,10 @@ export default function VehicleTab() {
 
   const handleAddLog = async () => {
     const parsedKm = parseKmInput(newLog.km);
-    if (!parsedKm) return;
+    if (!parsedKm || !vehicle) return;
     try {
       // Calculate KM difference to increment active tire
-      const diff = Math.max(0, parsedKm - (vehicle?.currentKm || 0));
+      const diff = Math.max(0, parsedKm - (vehicle.currentKm || 0));
       const activeSet = tireStats.activeSet;
 
       const tireUpdates = activeSet === 'summer'
@@ -337,11 +446,12 @@ export default function VehicleTab() {
 
       await addLog({
         month: newLog.month,
-        km: parsedKm
+        km: parsedKm,
+        vehicleId: vehicle.id
       });
 
       // Update vehicle with tire mileage increment
-      await saveVehicle({ ...formData, ...tireUpdates, currentKm: parsedKm });
+      await saveVehicle({ id: vehicle.id, ...formData, ...tireUpdates, currentKm: parsedKm });
 
       setNewLog({ month: format(new Date(), 'yyyy-MM'), km: '' });
       setEditingLogId(null);
@@ -363,7 +473,7 @@ export default function VehicleTab() {
   };
 
   const saveFieldEdit = async (key: string) => {
-    if (!user) {
+    if (!user || !vehicle) {
       toast.error('Oturum bulunamadı, tekrar giriş yapın');
       return;
     }
@@ -375,7 +485,7 @@ export default function VehicleTab() {
     }
 
     try {
-      await saveVehicle({ ...formData, [key]: valueToSave });
+      await saveVehicle({ id: vehicle.id, ...formData, [key]: valueToSave });
       setFormData(prev => ({ ...prev, [key]: valueToSave }));
       setEditingField(null);
       setEditingValue('');
@@ -385,7 +495,7 @@ export default function VehicleTab() {
     }
   };
 
-  const handleAddToCalendar = async (type: 'insurance' | 'inspection' | 'mtv', dateStr: string | undefined) => {
+  const handleAddToCalendar = async (type: 'insurance' | 'inspection' | 'casco' | 'mtv', dateStr: string | undefined) => {
     if (!dateStr || !user) {
       toast.error('Geçerli bir tarih yok');
       return;
@@ -394,6 +504,7 @@ export default function VehicleTab() {
     let title = '';
     if (type === 'insurance') title = t('expenses.vehicle.insurance');
     if (type === 'inspection') title = t('expenses.vehicle.inspection');
+    if (type === 'casco') title = t('expenses.vehicle.casco') || 'Kasko Yenileme';
     if (type === 'mtv') title = t('expenses.vehicle.mtv');
 
     try {
@@ -415,12 +526,56 @@ export default function VehicleTab() {
     return Math.max(0, (vehicle.currentKm || 0) - (vehicle.purchaseKm || 0));
   }, [vehicle]);
 
+  // ═══════════════════════════════════════════════════════════
+  // ARAÇ-ÖZEL FİLTRELEME: BAKIM, KM LOGLARI VE AKARYAKIT
+  // ═══════════════════════════════════════════════════════════
+
+  // Filter maintenance records specifically for currently viewed vehicle
+  const vehicleMaintenanceRecords = useMemo(() => {
+    if (!vehicle) return [];
+
+    const sortedVehiclesOldestFirst = [...allVehicles].sort((a, b) => {
+      const dateA = a.purchaseDate || (a.createdAt ? new Date(a.createdAt).toISOString() : '');
+      const dateB = b.purchaseDate || (b.createdAt ? new Date(b.createdAt).toISOString() : '');
+      return dateA.localeCompare(dateB);
+    });
+
+    const isOldestVehicle = sortedVehiclesOldestFirst[0]?.id === vehicle.id || vehicle.status === 'sold';
+
+    return maintenanceRecords.filter(record => {
+      // 1. Explicit vehicleId
+      if (record.vehicleId) {
+        return record.vehicleId === vehicle.id;
+      }
+
+      // 2. Single vehicle in account
+      if (allVehicles.length <= 1) {
+        return true;
+      }
+
+      // 3. Multiple vehicles:
+      // If current vehicle is newer:
+      if (!isOldestVehicle) {
+        if (vehicle.purchaseDate && record.replacedDate && record.replacedDate < vehicle.purchaseDate) {
+          return false;
+        }
+        if (vehicle.createdAt && record.createdAt && record.createdAt < vehicle.createdAt) {
+          return false;
+        }
+        return false;
+      }
+
+      // If current vehicle is older / sold, legacy records belong to it!
+      return true;
+    });
+  }, [maintenanceRecords, vehicle, allVehicles]);
+
   const partStatuses = useMemo(() => {
     if (!vehicle) return [];
 
     // Group records by part name
     const groups: Record<string, any[]> = {};
-    maintenanceRecords.forEach(record => {
+    vehicleMaintenanceRecords.forEach(record => {
       if (!groups[record.partName]) groups[record.partName] = [];
       groups[record.partName].push(record);
     });
@@ -457,42 +612,104 @@ export default function VehicleTab() {
         history
       };
     });
-  }, [maintenanceRecords, vehicle]);
+  }, [vehicleMaintenanceRecords, vehicle]);
+
+  // Filter monthly logs specifically for currently viewed vehicle
+  const vehicleLogs = useMemo(() => {
+    if (!vehicle) return [];
+
+    const sortedVehiclesOldestFirst = [...allVehicles].sort((a, b) => {
+      const dateA = a.purchaseDate || (a.createdAt ? new Date(a.createdAt).toISOString() : '');
+      const dateB = b.purchaseDate || (b.createdAt ? new Date(b.createdAt).toISOString() : '');
+      return dateA.localeCompare(dateB);
+    });
+
+    const isOldestVehicle = sortedVehiclesOldestFirst[0]?.id === vehicle.id || vehicle.status === 'sold';
+
+    return logs.filter(log => {
+      if (log.vehicleId) {
+        return log.vehicleId === vehicle.id;
+      }
+
+      if (allVehicles.length <= 1) {
+        return true;
+      }
+
+      if (!isOldestVehicle) {
+        if (vehicle.purchaseDate && log.month) {
+          const purchaseMonth = vehicle.purchaseDate.substring(0, 7);
+          if (log.month < purchaseMonth) return false;
+        }
+        if (vehicle.createdAt && log.createdAt && log.createdAt < vehicle.createdAt) {
+          return false;
+        }
+        return false;
+      }
+
+      return true;
+    });
+  }, [logs, vehicle, allVehicles]);
+
+  // Filter fuel expenses strictly by the ownership date range of current vehicle
+  const vehicleFuelExpenses = useMemo(() => {
+    if (!vehicle?.fuelCategory || !expenses.length) return [];
+    const purchaseDateStr = vehicle.purchaseDate ? vehicle.purchaseDate.substring(0, 10) : '';
+    const soldDateStr = vehicle.soldDate ? vehicle.soldDate.substring(0, 10) : '';
+
+    return expenses.filter(e => {
+      if (e.category !== vehicle.fuelCategory) return false;
+      const expenseDateStr = e.date ? e.date.substring(0, 10) : '';
+
+      // Must be on or after vehicle purchaseDate
+      if (purchaseDateStr && expenseDateStr < purchaseDateStr) {
+        return false;
+      }
+      // If vehicle is sold, must be on or before soldDate
+      if (soldDateStr && expenseDateStr > soldDateStr) {
+        return false;
+      }
+      return true;
+    });
+  }, [expenses, vehicle]);
 
   const fuelAnalysis = useMemo(() => {
-    if (!logs.length || !expenses.length || !vehicle?.fuelCategory) return [];
+    if (!vehicle?.fuelCategory) return [];
 
-    const sortedLogs = [...logs].sort((a, b) => b.month.localeCompare(a.month));
+    // Distinct months from vehicleLogs and vehicleFuelExpenses
+    const allMonths = new Set<string>();
+    vehicleLogs.forEach(l => allMonths.add(l.month));
+    vehicleFuelExpenses.forEach(e => allMonths.add(e.date.substring(0, 7)));
 
-    return sortedLogs.map((log, index) => {
-      const previousLog = sortedLogs[index + 1];
-      const baselineKm = previousLog ? previousLog.km : (vehicle.purchaseKm || 0);
-      const drivenKm = Math.max(0, log.km - baselineKm);
+    if (allMonths.size === 0) return [];
 
-      const monthExpenses = expenses.filter(e =>
-        e.category === vehicle.fuelCategory &&
-        e.date.startsWith(log.month)
-      );
+    const sortedMonths = Array.from(allMonths).sort((a, b) => b.localeCompare(a));
+    const sortedLogs = [...vehicleLogs].sort((a, b) => b.month.localeCompare(a.month));
 
+    return sortedMonths.map((m) => {
+      const currentLog = sortedLogs.find(l => l.month === m);
+      const priorLog = sortedLogs.find(l => l.month < m);
+      const baselineKm = priorLog ? priorLog.km : (vehicle.purchaseKm || 0);
+      const drivenKm = currentLog ? Math.max(0, currentLog.km - baselineKm) : 0;
+
+      const monthExpenses = vehicleFuelExpenses.filter(e => e.date.startsWith(m));
       const fuelTotal = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
       const costPerKm = drivenKm > 0 ? fuelTotal / drivenKm : 0;
 
       return {
-        month: log.month,
+        month: m,
         drivenKm,
         fuelTotal,
         costPerKm
       };
     }).filter(a => a.drivenKm > 0 || a.fuelTotal > 0);
-  }, [logs, expenses, vehicle]);
+  }, [vehicleLogs, vehicleFuelExpenses, vehicle]);
 
   const fuelSummary = useMemo(() => {
-    if (!fuelAnalysis.length) return { totalFuel: 0, totalKm: 0, avgCostPerKm: 0 };
-    const totalFuel = fuelAnalysis.reduce((sum, item) => sum + item.fuelTotal, 0);
+    const totalFuel = vehicleFuelExpenses.reduce((sum, item) => sum + item.amount, 0);
     const totalKm = fuelAnalysis.reduce((sum, item) => sum + item.drivenKm, 0);
     const avgCostPerKm = totalKm > 0 ? totalFuel / totalKm : 0;
     return { totalFuel, totalKm, avgCostPerKm };
-  }, [fuelAnalysis]);
+  }, [vehicleFuelExpenses, fuelAnalysis]);
 
   const tireStats = useMemo(() => {
     const history = formData.tireHistory || [];
@@ -541,13 +758,14 @@ export default function VehicleTab() {
   }, [formData]);
 
   const handleAddPart = async () => {
-    if (!newPart.partName) {
+    if (!newPart.partName || !vehicle) {
       toast.error('Lütfen parça adı giriniz');
       return;
     }
     try {
       await addMaintenanceRecord({
         ...newPart,
+        vehicleId: vehicle.id,
         lifespanKm: Number(newPart.lifespanKm),
         lifespanMonths: Number(newPart.lifespanMonths),
         replacedKm: Number(newPart.replacedKm)
@@ -567,10 +785,11 @@ export default function VehicleTab() {
   };
 
   const handlePartMaintenanceDone = async () => {
-    if (!confirmingMaintenance) return;
+    if (!confirmingMaintenance || !vehicle) return;
     try {
       await addMaintenanceRecord({
         partName: confirmingMaintenance.partName,
+        vehicleId: vehicle.id,
         lifespanKm: Number(confirmingMaintenance.lifespanKm) || 0,
         lifespanMonths: Number(confirmingMaintenance.lifespanMonths) || 0,
         replacedKm: Number(confirmingMaintenance.replacedKm),
@@ -617,11 +836,37 @@ export default function VehicleTab() {
 
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group">
-              <img src={displayImg1} alt="Vehicle 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div
+              className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group"
+              style={{ cursor: isEditing ? (imgDrag?.slot === 'image1' ? 'grabbing' : 'grab') : 'default' }}
+              onMouseDown={isEditing ? (e) => {
+                e.preventDefault();
+                const [px, py] = parseImagePos(formData.imagePosition1);
+                setImgDrag({ slot: 'image1', startX: e.clientX, startY: e.clientY, startPosX: px, startPosY: py });
+              } : undefined}
+              onTouchStart={isEditing ? (e) => {
+                const [px, py] = parseImagePos(formData.imagePosition1);
+                setImgDrag({ slot: 'image1', startX: e.touches[0].clientX, startY: e.touches[0].clientY, startPosX: px, startPosY: py });
+              } : undefined}
+            >
+              <img
+                src={displayImg1}
+                alt="Vehicle 1"
+                draggable={false}
+                className="w-full h-full object-cover transition-[object-position] duration-100 group-hover:scale-105"
+                style={{ objectPosition: formData.imagePosition1 || '50% 50%' }}
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                 <h2 className="text-white text-xl font-black drop-shadow-md tracking-tight uppercase">{t('expenses.vehicle.title')}</h2>
               </div>
+              {/* Drag hint */}
+              {isEditing && !imgDrag && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span>✥</span> Sürükle &amp; Konumlandır
+                  </div>
+                </div>
+              )}
               {isEditing && (
                 <>
                   <div className="absolute left-4 bottom-4 flex items-center gap-2">
@@ -642,8 +887,34 @@ export default function VehicleTab() {
               <input ref={fileInputRef1} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image1')} />
             </div>
 
-            <div className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block">
-              <img src={displayImg2} alt="Vehicle 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div
+              className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block"
+              style={{ cursor: isEditing ? (imgDrag?.slot === 'image2' ? 'grabbing' : 'grab') : 'default' }}
+              onMouseDown={isEditing ? (e) => {
+                e.preventDefault();
+                const [px, py] = parseImagePos(formData.imagePosition2);
+                setImgDrag({ slot: 'image2', startX: e.clientX, startY: e.clientY, startPosX: px, startPosY: py });
+              } : undefined}
+              onTouchStart={isEditing ? (e) => {
+                const [px, py] = parseImagePos(formData.imagePosition2);
+                setImgDrag({ slot: 'image2', startX: e.touches[0].clientX, startY: e.touches[0].clientY, startPosX: px, startPosY: py });
+              } : undefined}
+            >
+              <img
+                src={displayImg2}
+                alt="Vehicle 2"
+                draggable={false}
+                className="w-full h-full object-cover transition-[object-position] duration-100 group-hover:scale-105"
+                style={{ objectPosition: formData.imagePosition2 || '50% 50%' }}
+              />
+              {/* Drag hint */}
+              {isEditing && !imgDrag && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span>✥</span> Sürükle &amp; Konumlandır
+                  </div>
+                </div>
+              )}
               {isEditing && (
                 <>
                   <div className="absolute left-4 bottom-4 flex items-center gap-2">
@@ -666,6 +937,130 @@ export default function VehicleTab() {
         );
       })()}
 
+      {/* ═══════════════════════════════════════════════════════════
+          ARAÇ SEÇİCİ & GEÇİŞ ÇUBUĞU (VEHICLE SWITCHER)
+      ═══════════════════════════════════════════════════════════ */}
+      {allVehicles.length > 1 && (
+        <div className="bg-white dark:bg-zinc-900/80 p-4 sm:p-5 rounded-[2rem] border border-stone-200/80 dark:border-zinc-800 shadow-sm space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <FaCar size={11} />
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-wider text-stone-700 dark:text-zinc-300">
+                {t('expenses.vehicle.vehicleSwitcher') || 'Araçlarım Arasında Geçiş Yap'}
+              </span>
+            </div>
+            <span className="text-[9px] font-black px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400">
+              {allVehicles.length} {t('expenses.vehicle.registeredVehiclesCount')?.replace('{count}', '') || 'Kayıtlı Araç'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {sortedVehicles.map((car) => {
+              const isSelected = car.id === vehicle?.id;
+              const isSold = car.status === 'sold';
+
+              return (
+                <button
+                  key={car.id}
+                  type="button"
+                  onClick={() => {
+                    if (car.id) {
+                      setSelectedVehicleId(car.id);
+                      setIsEditing(false);
+                      toast.success(`${car.brand || 'Araç'} ${car.model || ''} seçildi`);
+                    }
+                  }}
+                  className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden flex items-center justify-between group ${
+                    isSelected
+                      ? 'bg-stone-900 dark:bg-white text-white dark:text-zinc-950 border-stone-900 dark:border-white shadow-md scale-[1.01]'
+                      : 'bg-stone-50/70 dark:bg-zinc-800/40 border-stone-200/70 dark:border-zinc-800/80 hover:border-amber-400/60 text-stone-800 dark:text-zinc-200 hover:bg-stone-100/70 dark:hover:bg-zinc-800/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        isSelected
+                          ? 'bg-white/10 dark:bg-black/10'
+                          : isSold
+                          ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-600'
+                          : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600'
+                      }`}
+                    >
+                      <FaCar size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-black text-xs tracking-wider uppercase truncate">
+                          {car.licensePlate || '---'}
+                        </span>
+                        <span
+                          className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
+                            isSelected
+                              ? 'bg-white/20 dark:bg-black/20 text-white dark:text-black'
+                              : isSold
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                              : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                          }`}
+                        >
+                          {isSold ? (t('expenses.vehicle.pastSoldBadge') || 'Eski / Satılan') : (t('expenses.vehicle.activeNewBadge') || 'Mevcut / Aktif')}
+                        </span>
+                      </div>
+                      <p
+                        className={`text-[10px] font-bold truncate mt-0.5 ${
+                          isSelected ? 'opacity-80' : 'text-stone-400 dark:text-zinc-400'
+                        }`}
+                      >
+                        {car.brand || 'Araç'} {car.model} {car.year ? `(${car.year})` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  {isSelected && (
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-white shrink-0 ml-2">
+                      {t('expenses.vehicle.viewingVehicleBadge') || 'Görüntülenen'}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Contextual Alert: If Viewing a Past / Sold Vehicle */}
+      {vehicle?.status === 'sold' && (
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <FaHistory size={14} />
+            </div>
+            <div>
+              <p className="text-xs font-black text-amber-900 dark:text-amber-200">
+                Şu anda geçmiş / satılan aracınızın ({vehicle.brand} {vehicle.model} - {vehicle.licensePlate || '---'}) profilini görüntülüyorsunuz.
+              </p>
+              <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                Eski aracınıza ait bakım raporları, sayaç kayıtları ve satış tarihine kadarki akaryakıt analizi bu sayfada yer almaktadır.
+                {vehicle.soldDate ? ` • Satış Tarihi: ${vehicle.soldDate}` : ''}
+                {vehicle.soldPrice ? ` • Satış Fiyatı: ${vehicle.soldPrice.toLocaleString()} ₺` : ''}
+              </p>
+            </div>
+          </div>
+          {activeVehicle && activeVehicle.id !== vehicle.id && (
+            <button
+              onClick={() => {
+                if (activeVehicle.id) setSelectedVehicleId(activeVehicle.id);
+                setIsEditing(false);
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] uppercase tracking-wider shrink-0 shadow-sm transition-all"
+            >
+              {t('expenses.vehicle.backToActiveVehicle') || 'Aktif / Yeni Araca Geri Dön'} →
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Profile Section Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
         <h3 className="text-lg font-black text-stone-900 dark:text-white flex items-center gap-2">
@@ -674,7 +1069,32 @@ export default function VehicleTab() {
           </div>
           Araç Profili & Bilgiler
         </h3>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Aracımı Sattım & Yeni Araç Ekle Butonu */}
+          <button
+            onClick={() => setShowSellModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-sm hover:scale-[1.02] active:scale-95 transition-all"
+            title="Aracınızı sattıktan sonra satış bilgilerini kaydedip yeni satın aldığınız aracı tanımlayın"
+          >
+            <FaExchangeAlt size={11} />
+            {t('expenses.vehicle.sellAndReplace') || 'Aracımı Sattım & Yeni Araç Ekle'}
+          </button>
+
+          {/* Geçmiş / Satılan Araçlarım Butonu */}
+          {pastVehicles.length > 0 && (
+            <button
+              onClick={() => setShowPastVehiclesModal(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider bg-stone-100 dark:bg-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 border border-stone-200 dark:border-zinc-700 transition-all"
+              title="Daha önce satılan araçlarınızı görüntüleyin"
+            >
+              <FaHistory size={11} className="text-amber-500" />
+              <span>{t('expenses.vehicle.soldVehiclesHistory') || 'Satılan Araçlarım'}</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[9px]">
+                {pastVehicles.length}
+              </span>
+            </button>
+          )}
+
           {isEditing && (
             <div className="flex-1 sm:flex-none flex items-center gap-2 bg-stone-100 dark:bg-zinc-800 px-3 py-2 rounded-xl border border-stone-200 dark:border-zinc-700">
               <FaGasPump size={10} className="text-stone-400" />
@@ -708,10 +1128,11 @@ export default function VehicleTab() {
       </div>
 
       {/* Primary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { label: t('expenses.vehicle.currentKm'), value: formData.currentKm, sub: 'KM', isEdit: true, key: 'currentKm' },
           { label: 'Satın Alım KM', value: formData.purchaseKm, sub: 'KM', isEdit: true, key: 'purchaseKm' },
+          { label: t('expenses.vehicle.purchasePrice') || 'Satın Alım Fiyatı', value: formData.purchasePrice, sub: '₺', isEdit: true, key: 'purchasePrice', color: 'text-indigo-600 dark:text-indigo-400' },
           { label: 'Yapılan Toplam Yol', value: totalKmDriven, sub: 'KM', color: 'text-emerald-600 dark:text-emerald-400' },
           { label: 'Sonraki Periyodik Bakım', value: formData.nextMaintenanceKm, sub: 'KM', isEdit: true, key: 'nextMaintenanceKm', color: 'text-amber-500' }
         ].map((stat, i) => (
@@ -804,20 +1225,36 @@ export default function VehicleTab() {
 
               {/* Middle Row: Specs */}
               <div className="p-4 bg-white dark:bg-zinc-900/50 rounded-2xl border border-stone-100 dark:border-zinc-800 shadow-sm">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {[
                     { label: 'Motor', value: formData.engine, icon: <FaTools size={12} />, key: 'engine' },
                     { label: 'Şanzıman', value: formData.transmission, icon: <FaCircle size={8} />, key: 'transmission' },
-                    { label: 'Yakıt', value: formData.fuelType, icon: <FaGasPump size={12} />, key: 'fuelType' }
+                    { label: 'Yakıt', value: formData.fuelType, icon: <FaGasPump size={12} />, key: 'fuelType' },
+                    { label: 'Kasa / Renk', value: `${formData.bodyType || 'Sedan'} ${formData.color ? `• ${formData.color}` : ''}`, icon: <FaCar size={12} />, key: 'bodyType' }
                   ].map((spec, idx) => (
                     <div key={idx} className="space-y-1">
                       <p className="text-[8px] font-black text-stone-400 uppercase">{spec.label}</p>
-                      {isEditing ? (
+                      {isEditing && spec.key !== 'bodyType' ? (
                         <input
                           value={spec.value || ''}
                           onChange={e => setFormData({ ...formData, [spec.key]: e.target.value })}
                           className="w-full bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg px-2 py-1.5 text-[10px] font-black"
                         />
+                      ) : isEditing && spec.key === 'bodyType' ? (
+                        <div className="flex gap-1">
+                          <input
+                            placeholder="Kasa"
+                            value={formData.bodyType || ''}
+                            onChange={e => setFormData({ ...formData, bodyType: e.target.value })}
+                            className="w-1/2 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg px-1.5 py-1 text-[9px] font-black"
+                          />
+                          <input
+                            placeholder="Renk"
+                            value={formData.color || ''}
+                            onChange={e => setFormData({ ...formData, color: e.target.value })}
+                            className="w-1/2 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-lg px-1.5 py-1 text-[9px] font-black"
+                          />
+                        </div>
                       ) : (
                         <p className="text-[11px] font-black text-stone-600 dark:text-zinc-300 flex items-center gap-1.5 uppercase">
                           <span className="text-stone-300">{spec.icon}</span> {spec.value || '---'}
@@ -958,10 +1395,11 @@ export default function VehicleTab() {
             <div className="space-y-3 relative z-10">
               {[
                 { label: t('expenses.vehicle.insurance'), key: 'insuranceDate', icon: '🛡️', type: 'insurance' },
-                { label: t('expenses.vehicle.inspection'), key: 'inspectionDate', icon: '📋', type: 'inspection' }
+                { label: t('expenses.vehicle.inspection'), key: 'inspectionDate', icon: '📋', type: 'inspection' },
+                { label: t('expenses.vehicle.casco') || 'Kasko Bitiş Tarihi', key: 'cascoDate', icon: '📑', type: 'casco' }
               ].map(item => {
                 const value = (formData as any)[item.key];
-                const daysLeft = (item.type === 'insurance' || item.type === 'inspection') && value && isValid(parseISO(value)) ? differenceInDays(parseISO(value), new Date()) : null;
+                const daysLeft = (item.type === 'insurance' || item.type === 'inspection' || item.type === 'casco') && value && isValid(parseISO(value)) ? differenceInDays(parseISO(value), new Date()) : null;
 
                 return (
                   <div key={item.key} className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900/50 rounded-2xl border border-stone-100 dark:border-zinc-800 shadow-sm">
@@ -1153,7 +1591,7 @@ export default function VehicleTab() {
               const newEntry: any = { date: format(new Date(), 'yyyy-MM-dd'), km: currentKm, type: newSet, note: `${newSet === 'summer' ? 'Yazlık' : 'Kışlık'} lastiklere geçiş.` };
               const updatedData = { ...formData, tireLastChangeDate: newEntry.date, tireLastChangeKm: newEntry.km, tireHistory: [...(formData.tireHistory || []), newEntry] };
               setFormData(updatedData);
-              try { await saveVehicle(updatedData); toast.success(`${newSet === 'summer' ? 'Yazlık' : 'Kışlık'} lastiklere geçiş kaydedildi`); }
+              try { await saveVehicle({ id: vehicle?.id, ...updatedData }); toast.success(`${newSet === 'summer' ? 'Yazlık' : 'Kışlık'} lastiklere geçiş kaydedildi`); }
               catch { toast.error('Kaydedilemedi'); }
             }}
             className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.01] active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 group"
@@ -1362,14 +1800,14 @@ export default function VehicleTab() {
 
           {/* Log list */}
           <div className="mt-4 flex-1">
-            <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest mb-2">Kayıt Geçmişi ({logs.length})</p>
+            <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest mb-2">Kayıt Geçmişi ({vehicleLogs.length})</p>
             <div className="space-y-2 overflow-y-auto max-h-[220px] pr-1 custom-scrollbar">
-              {logs.length === 0 ? (
+              {vehicleLogs.length === 0 ? (
                 <div className="p-4 bg-stone-50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-stone-200 dark:border-zinc-800 text-center">
                   <p className="text-[9px] font-bold text-stone-400 uppercase">Henüz kayıt yok</p>
                 </div>
               ) : (
-                logs.map(log => {
+                vehicleLogs.map(log => {
                   const isSelected = editingLogId === log.id;
                   return (
                     <div key={log.id} className={`flex justify-between items-center p-3 rounded-xl border transition-all ${isSelected ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : 'bg-stone-50 dark:bg-zinc-800/30 border-stone-200/60 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'}`}>
@@ -1526,8 +1964,8 @@ export default function VehicleTab() {
               <FaCar size={14} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-stone-900 dark:text-white uppercase tracking-widest leading-none">emuList</p>
-              <p className="text-[8px] font-bold text-stone-400 uppercase tracking-tighter mt-0.5">Smart Vehicle Management</p>
+              <p className="text-[10px] font-black text-stone-900 dark:text-white uppercase tracking-widest leading-none">B12</p>
+              <p className="text-[8px] font-bold text-stone-400 uppercase tracking-tighter mt-0.5">B12 Smart Vehicle Tracker • by EMU</p>
             </div>
           </div>
           <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">© {new Date().getFullYear()} • Güvenli Sürüşler</p>
@@ -1540,9 +1978,32 @@ export default function VehicleTab() {
         </div>
 
         <div className="mt-8 text-center opacity-20 hover:opacity-40 transition-opacity">
-          <p className="text-[7px] font-black text-stone-400 uppercase tracking-[0.3em]">Antigravity Engineering • Vehicle Core v2.0</p>
+          <p className="text-[7px] font-black text-stone-400 uppercase tracking-[0.3em]">Antigravity Engineering • Vehicle Core v2.5</p>
         </div>
       </footer>
+
+      {/* Vehicle Sell & Replace Modal */}
+      <VehicleSellAndReplaceModal
+        isOpen={showSellModal}
+        onClose={() => setShowSellModal(false)}
+        activeVehicle={activeVehicle}
+        onSellAndReplace={async (payload) => {
+          await sellAndReplaceVehicle(payload);
+          setSelectedVehicleId(null);
+        }}
+      />
+
+      {/* Past / Sold Vehicles History Modal */}
+      <PastVehiclesModal
+        isOpen={showPastVehiclesModal}
+        onClose={() => setShowPastVehiclesModal(false)}
+        pastVehicles={pastVehicles}
+        onReactivate={async (id) => {
+          await reactivateVehicle(id);
+          setSelectedVehicleId(id);
+        }}
+        onDelete={deletePastVehicle}
+      />
     </motion.div>
   );
 }

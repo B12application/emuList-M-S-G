@@ -126,6 +126,8 @@ export default function VehicleTab() {
     imageUrl2: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80',
     imagePosition1: 'center center',
     imagePosition2: 'center center',
+    imageScale1: 1,
+    imageScale2: 1,
     carBodyStatus: {}
   });
 
@@ -822,7 +824,7 @@ export default function VehicleTab() {
         const isEmuPersonalCar = !isDemoUser && (vehicle?.licensePlate === '38ANY590' || vehicle?.licensePlate === '38 ANY 590');
         
         let displayImg1 = isEmuPersonalCar ? img1 : (formData.imageUrl1 || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80');
-        let displayImg2 = isEmuPersonalCar ? img2 : (formData.imageUrl2 || 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80');
+        let displayImg2 = isEmuPersonalCar ? img2 : (formData.imageUrl2 || '');
 
         // Prevent leaking personal images if stored URL matches personal assets
         if (!isEmuPersonalCar) {
@@ -830,14 +832,20 @@ export default function VehicleTab() {
             displayImg1 = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80';
           }
           if (displayImg2 === img2 || displayImg2?.includes('IMG_1150')) {
-            displayImg2 = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80';
+            displayImg2 = '';
           }
         }
 
+        const hasSecondImage = Boolean(displayImg2) || Boolean(imagePreviews.image2);
+        const cardHeight = hasSecondImage
+          ? 'h-84 sm:h-96 md:h-[480px] lg:h-[540px]'
+          : 'h-88 sm:h-[440px] md:h-[540px] lg:h-[620px]';
+
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`grid grid-cols-1 ${hasSecondImage || isEditing ? 'md:grid-cols-2' : 'grid-cols-1'} gap-4`}>
+            {/* Image 1 Card */}
             <div
-              className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group"
+              className={`relative ${cardHeight} rounded-[2.5rem] overflow-hidden shadow-2xl border border-stone-200/60 dark:border-zinc-800/80 bg-stone-950 group select-none`}
               style={{ cursor: isEditing ? (imgDrag?.slot === 'image1' ? 'grabbing' : 'grab') : 'default' }}
               onMouseDown={isEditing ? (e) => {
                 e.preventDefault();
@@ -849,90 +857,329 @@ export default function VehicleTab() {
                 setImgDrag({ slot: 'image1', startX: e.touches[0].clientX, startY: e.touches[0].clientY, startPosX: px, startPosY: py });
               } : undefined}
             >
+              {/* Ambient blurred backdrop for zero letterboxing when scaled */}
+              <div
+                className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-30 pointer-events-none"
+                style={{ backgroundImage: `url(${displayImg1})` }}
+              />
+
               <img
                 src={displayImg1}
                 alt="Vehicle 1"
                 draggable={false}
-                className="w-full h-full object-cover transition-[object-position] duration-100 group-hover:scale-105"
-                style={{ objectPosition: formData.imagePosition1 || '50% 50%' }}
+                className="w-full h-full object-cover transition-transform duration-75 select-none"
+                style={{
+                  objectPosition: formData.imagePosition1 || '50% 50%',
+                  transform: `scale(${formData.imageScale1 || 1})`,
+                  transformOrigin: formData.imagePosition1 || '50% 50%'
+                }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <h2 className="text-white text-xl font-black drop-shadow-md tracking-tight uppercase">{t('expenses.vehicle.title')}</h2>
+
+              {/* Bottom luxury overlay with plate and vehicle brand/model */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6 md:p-8 pointer-events-none z-10">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    {vehicle?.brand && (
+                      <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold tracking-wider uppercase">
+                        {vehicle.brand} {vehicle.model || ''}
+                      </span>
+                    )}
+                    {vehicle?.licensePlate && (
+                      <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-stone-950 text-xs font-black tracking-widest uppercase shadow-md">
+                        {vehicle.licensePlate}
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-white text-2xl md:text-3xl font-black drop-shadow-md tracking-tight uppercase">
+                    {t('expenses.vehicle.title')}
+                  </h2>
+                </div>
               </div>
-              {/* Drag hint */}
+
+              {/* Zoom pill in Edit Mode */}
+              {isEditing && (
+                <div
+                  className="absolute top-4 left-4 flex items-center gap-1 bg-black/75 backdrop-blur-md px-2 py-1.5 rounded-2xl border border-white/20 z-20 shadow-xl"
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                  onTouchStart={e => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    title="Uzaklaştır"
+                    onClick={() => {
+                      const cur = formData.imageScale1 || 1;
+                      const next = Math.max(0.7, Number((cur - 0.05).toFixed(2)));
+                      setFormData(prev => ({ ...prev, imageScale1: next }));
+                      saveVehicle({ id: vehicle?.id, ...formData, imageScale1: next });
+                    }}
+                    className="w-7 h-7 flex items-center justify-center text-white/90 hover:bg-white/20 active:scale-95 rounded-xl text-base font-bold transition-all"
+                  >
+                    −
+                  </button>
+                  <span className="text-[11px] font-mono font-black text-amber-400 px-1 min-w-[42px] text-center">
+                    {Math.round((formData.imageScale1 || 1) * 100)}%
+                  </span>
+                  <button
+                    type="button"
+                    title="Yakınlaştır"
+                    onClick={() => {
+                      const cur = formData.imageScale1 || 1;
+                      const next = Math.min(2.5, Number((cur + 0.05).toFixed(2)));
+                      setFormData(prev => ({ ...prev, imageScale1: next }));
+                      saveVehicle({ id: vehicle?.id, ...formData, imageScale1: next });
+                    }}
+                    className="w-7 h-7 flex items-center justify-center text-white/90 hover:bg-white/20 active:scale-95 rounded-xl text-base font-bold transition-all"
+                  >
+                    +
+                  </button>
+                  {Boolean(formData.imageScale1 && formData.imageScale1 !== 1) && (
+                    <button
+                      type="button"
+                      title="Sıfırla"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, imageScale1: 1 }));
+                        saveVehicle({ id: vehicle?.id, ...formData, imageScale1: 1 });
+                      }}
+                      className="text-[10px] text-stone-300 hover:text-white px-1.5 font-bold underline"
+                    >
+                      Sıfırla
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Drag hint chip */}
               {isEditing && !imgDrag && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  <div className="bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-none z-20">
+                  <div className="bg-black/75 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-white/20">
                     <span>✥</span> Sürükle &amp; Konumlandır
                   </div>
                 </div>
               )}
+
+              {/* Photo select and actions in Edit Mode */}
               {isEditing && (
-                <>
-                  <div className="absolute left-4 bottom-4 flex items-center gap-2">
-                    <button onClick={() => fileInputRef1.current?.click()} className="py-2 px-3 bg-white/90 text-stone-900 rounded-lg text-[12px] font-black">Fotoğraf Seç</button>
-                  </div>
-                  {/* Action panel when a file is selected for image1 */}
+                <div className="absolute left-4 bottom-4 flex items-center gap-2 z-20">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef1.current?.click();
+                    }}
+                    className="py-2 px-3.5 bg-white/95 dark:bg-zinc-900/95 text-stone-900 dark:text-white rounded-xl text-xs font-black shadow-lg border border-white/20 hover:scale-105 active:scale-95 transition-transform"
+                  >
+                    📷 Fotoğraf Seç
+                  </button>
                   {(imagePreviews.image1 || imageFiles.image1) && (
-                    <div className="absolute right-4 bottom-4 bg-white/95 dark:bg-zinc-900/90 rounded-xl p-2 flex items-center gap-2">
-                      <button onClick={() => handleUploadAndSave('image1')} disabled={isUploading.image1} className="py-1 px-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg text-[12px] font-black">
-                        {isUploading.image1 ? `Yükleniyor ${uploadProgress.image1 || 0}%` : 'Yükle'}
+                    <div className="bg-white/95 dark:bg-zinc-900/95 rounded-xl p-1.5 flex items-center gap-1.5 shadow-xl border border-white/20">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUploadAndSave('image1');
+                        }}
+                        disabled={isUploading.image1}
+                        className="py-1 px-2.5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg text-xs font-black"
+                      >
+                        {isUploading.image1 ? `Yükleniyor %${uploadProgress.image1 || 0}` : 'Yükle'}
                       </button>
-                      <button onClick={() => handleSaveAsDataUrl('image1')} disabled={isUploading.image1} className="py-1 px-2 bg-amber-500 text-white rounded-lg text-[12px] font-black">Kaydet (Base64)</button>
-                      <button onClick={() => { setImageFiles(prev => ({ ...prev, image1: null })); setImagePreviews(prev => ({ ...prev, image1: null })); toast('Seçim iptal edildi'); }} className="py-1 px-2 bg-stone-200 dark:bg-zinc-700 rounded-lg text-[12px] font-black">İptal</button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveAsDataUrl('image1');
+                        }}
+                        disabled={isUploading.image1}
+                        className="py-1 px-2.5 bg-amber-500 text-white rounded-lg text-xs font-black"
+                      >
+                        Base64
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageFiles(prev => ({ ...prev, image1: null }));
+                          setImagePreviews(prev => ({ ...prev, image1: null }));
+                          toast('Seçim iptal edildi');
+                        }}
+                        className="py-1 px-2 bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg text-xs font-black"
+                      >
+                        ✕
+                      </button>
                     </div>
                   )}
-                </>
+                </div>
               )}
               <input ref={fileInputRef1} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image1')} />
             </div>
 
-            <div
-              className="relative h-64 md:h-72 rounded-[2rem] overflow-hidden shadow-lg border border-stone-200/50 dark:border-zinc-800/50 group hidden md:block"
-              style={{ cursor: isEditing ? (imgDrag?.slot === 'image2' ? 'grabbing' : 'grab') : 'default' }}
-              onMouseDown={isEditing ? (e) => {
-                e.preventDefault();
-                const [px, py] = parseImagePos(formData.imagePosition2);
-                setImgDrag({ slot: 'image2', startX: e.clientX, startY: e.clientY, startPosX: px, startPosY: py });
-              } : undefined}
-              onTouchStart={isEditing ? (e) => {
-                const [px, py] = parseImagePos(formData.imagePosition2);
-                setImgDrag({ slot: 'image2', startX: e.touches[0].clientX, startY: e.touches[0].clientY, startPosX: px, startPosY: py });
-              } : undefined}
-            >
-              <img
-                src={displayImg2}
-                alt="Vehicle 2"
-                draggable={false}
-                className="w-full h-full object-cover transition-[object-position] duration-100 group-hover:scale-105"
-                style={{ objectPosition: formData.imagePosition2 || '50% 50%' }}
-              />
-              {/* Drag hint */}
-              {isEditing && !imgDrag && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  <div className="bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                    <span>✥</span> Sürükle &amp; Konumlandır
-                  </div>
-                </div>
-              )}
-              {isEditing && (
-                <>
-                  <div className="absolute left-4 bottom-4 flex items-center gap-2">
-                    <button onClick={() => fileInputRef2.current?.click()} className="py-2 px-3 bg-white/90 text-stone-900 rounded-lg text-[12px] font-black">Fotoğraf Seç</button>
-                  </div>
-                  {(imagePreviews.image2 || imageFiles.image2) && (
-                    <div className="absolute right-4 bottom-4 bg-white/95 dark:bg-zinc-900/90 rounded-xl p-2 flex items-center gap-2">
-                      <button onClick={() => handleUploadAndSave('image2')} disabled={isUploading.image2} className="py-1 px-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg text-[12px] font-black">
-                        {isUploading.image2 ? `Yükleniyor ${uploadProgress.image2 || 0}%` : 'Yükle'}
+            {/* Image 2 Card or Add Second Image Placeholder */}
+            {hasSecondImage ? (
+              <div
+                className={`relative ${cardHeight} rounded-[2.5rem] overflow-hidden shadow-2xl border border-stone-200/60 dark:border-zinc-800/80 bg-stone-950 group select-none`}
+                style={{ cursor: isEditing ? (imgDrag?.slot === 'image2' ? 'grabbing' : 'grab') : 'default' }}
+                onMouseDown={isEditing ? (e) => {
+                  e.preventDefault();
+                  const [px, py] = parseImagePos(formData.imagePosition2);
+                  setImgDrag({ slot: 'image2', startX: e.clientX, startY: e.clientY, startPosX: px, startPosY: py });
+                } : undefined}
+                onTouchStart={isEditing ? (e) => {
+                  const [px, py] = parseImagePos(formData.imagePosition2);
+                  setImgDrag({ slot: 'image2', startX: e.touches[0].clientX, startY: e.touches[0].clientY, startPosX: px, startPosY: py });
+                } : undefined}
+              >
+                {/* Ambient blurred backdrop */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-30 pointer-events-none"
+                  style={{ backgroundImage: `url(${displayImg2})` }}
+                />
+
+                <img
+                  src={displayImg2}
+                  alt="Vehicle 2"
+                  draggable={false}
+                  className="w-full h-full object-cover transition-transform duration-75 select-none"
+                  style={{
+                    objectPosition: formData.imagePosition2 || '50% 50%',
+                    transform: `scale(${formData.imageScale2 || 1})`,
+                    transformOrigin: formData.imagePosition2 || '50% 50%'
+                  }}
+                />
+
+                {/* Zoom pill in Edit Mode for Image 2 */}
+                {isEditing && (
+                  <div
+                    className="absolute top-4 left-4 flex items-center gap-1 bg-black/75 backdrop-blur-md px-2 py-1.5 rounded-2xl border border-white/20 z-20 shadow-xl"
+                    onClick={e => e.stopPropagation()}
+                    onMouseDown={e => e.stopPropagation()}
+                    onTouchStart={e => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      title="Uzaklaştır"
+                      onClick={() => {
+                        const cur = formData.imageScale2 || 1;
+                        const next = Math.max(0.7, Number((cur - 0.05).toFixed(2)));
+                        setFormData(prev => ({ ...prev, imageScale2: next }));
+                        saveVehicle({ id: vehicle?.id, ...formData, imageScale2: next });
+                      }}
+                      className="w-7 h-7 flex items-center justify-center text-white/90 hover:bg-white/20 active:scale-95 rounded-xl text-base font-bold transition-all"
+                    >
+                      −
+                    </button>
+                    <span className="text-[11px] font-mono font-black text-amber-400 px-1 min-w-[42px] text-center">
+                      {Math.round((formData.imageScale2 || 1) * 100)}%
+                    </span>
+                    <button
+                      type="button"
+                      title="Yakınlaştır"
+                      onClick={() => {
+                        const cur = formData.imageScale2 || 1;
+                        const next = Math.min(2.5, Number((cur + 0.05).toFixed(2)));
+                        setFormData(prev => ({ ...prev, imageScale2: next }));
+                        saveVehicle({ id: vehicle?.id, ...formData, imageScale2: next });
+                      }}
+                      className="w-7 h-7 flex items-center justify-center text-white/90 hover:bg-white/20 active:scale-95 rounded-xl text-base font-bold transition-all"
+                    >
+                      +
+                    </button>
+                    {Boolean(formData.imageScale2 && formData.imageScale2 !== 1) && (
+                      <button
+                        type="button"
+                        title="Sıfırla"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, imageScale2: 1 }));
+                          saveVehicle({ id: vehicle?.id, ...formData, imageScale2: 1 });
+                        }}
+                        className="text-[10px] text-stone-300 hover:text-white px-1.5 font-bold underline"
+                      >
+                        Sıfırla
                       </button>
-                      <button onClick={() => handleSaveAsDataUrl('image2')} disabled={isUploading.image2} className="py-1 px-2 bg-amber-500 text-white rounded-lg text-[12px] font-black">Kaydet (Base64)</button>
-                      <button onClick={() => { setImageFiles(prev => ({ ...prev, image2: null })); setImagePreviews(prev => ({ ...prev, image2: null })); toast('Seçim iptal edildi'); }} className="py-1 px-2 bg-stone-200 dark:bg-zinc-700 rounded-lg text-[12px] font-black">İptal</button>
+                    )}
+                  </div>
+                )}
+
+                {/* Drag hint chip */}
+                {isEditing && !imgDrag && (
+                  <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-none z-20">
+                    <div className="bg-black/75 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-white/20">
+                      <span>✥</span> Sürükle &amp; Konumlandır
                     </div>
-                  )}
-                </>
-              )}
-              <input ref={fileInputRef2} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image2')} />
-            </div>
+                  </div>
+                )}
+
+                {/* Actions in Edit Mode */}
+                {isEditing && (
+                  <div className="absolute left-4 bottom-4 flex items-center gap-2 z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef2.current?.click();
+                      }}
+                      className="py-2 px-3.5 bg-white/95 dark:bg-zinc-900/95 text-stone-900 dark:text-white rounded-xl text-xs font-black shadow-lg border border-white/20 hover:scale-105 active:scale-95 transition-transform"
+                    >
+                      📷 Fotoğraf Seç
+                    </button>
+                    {(imagePreviews.image2 || imageFiles.image2) && (
+                      <div className="bg-white/95 dark:bg-zinc-900/95 rounded-xl p-1.5 flex items-center gap-1.5 shadow-xl border border-white/20">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUploadAndSave('image2');
+                          }}
+                          disabled={isUploading.image2}
+                          className="py-1 px-2.5 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg text-xs font-black"
+                        >
+                          {isUploading.image2 ? `Yükleniyor %${uploadProgress.image2 || 0}` : 'Yükle'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveAsDataUrl('image2');
+                          }}
+                          disabled={isUploading.image2}
+                          className="py-1 px-2.5 bg-amber-500 text-white rounded-lg text-xs font-black"
+                        >
+                          Base64
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setImageFiles(prev => ({ ...prev, image2: null }));
+                            setImagePreviews(prev => ({ ...prev, image2: null }));
+                            toast('Seçim iptal edildi');
+                          }}
+                          className="py-1 px-2 bg-stone-200 dark:bg-zinc-700 text-stone-700 dark:text-zinc-200 rounded-lg text-xs font-black"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <input ref={fileInputRef2} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image2')} />
+              </div>
+            ) : isEditing ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef2.current?.click()}
+                className={`${cardHeight} rounded-[2.5rem] border-2 border-dashed border-stone-300 dark:border-zinc-700 hover:border-amber-500 dark:hover:border-amber-400 bg-stone-100/40 dark:bg-zinc-900/40 flex flex-col items-center justify-center gap-3 transition-all group cursor-pointer p-6 hover:bg-stone-100/70 dark:hover:bg-zinc-900/60`}
+              >
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/15 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                  +
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-stone-800 dark:text-zinc-200">İkinci Araç Fotoğrafı Ekle</p>
+                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">Arka açı, iç mekan veya detay karesi</p>
+                </div>
+                <input ref={fileInputRef2} type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'image2')} />
+              </button>
+            ) : null}
           </div>
         );
       })()}

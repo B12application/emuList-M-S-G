@@ -50,6 +50,8 @@ export interface VehicleData {
   imageUrl2?: string;
   imagePosition1?: string; // CSS object-position e.g. 'center center', 'top center', 'bottom center'
   imagePosition2?: string;
+  imageScale1?: number;
+  imageScale2?: number;
   createdAt: number;
   updatedAt?: number;
 
